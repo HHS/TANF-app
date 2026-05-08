@@ -2,10 +2,9 @@
 # configure-idps.sh
 #
 # Post-startup script to configure Keycloak identity providers with
-# sensitive material that cannot be expressed in realm-export.json:
+# sensitive material that cannot be expressed in the checked-in realm JSON files:
 #   - Login.gov RSA private key for private_key_jwt client authentication
 #   - Login.gov acr_values authorization parameter
-#   - tdp-django and tdp-grafana client redirect URIs and web origins
 #
 # Run this AFTER Keycloak has started and imported the realm.
 # Prerequisites: curl, jq
@@ -14,14 +13,8 @@
 #   KEYCLOAK_URL            - Keycloak base URL (default: http://localhost:8443)
 #   KEYCLOAK_ADMIN          - Admin username (default: admin)
 #   KEYCLOAK_ADMIN_PASSWORD - Admin password (default: admin)
-#   DEPLOY_ENV              - Deployment environment: dev, staging, or prod.
-#                             dev includes localhost redirect URIs; staging/prod do not.
 #   LOGIN_GOV_JWT_KEY       - PEM or base64-encoded Login.gov private key
 #   LOGIN_GOV_ACR_VALUES    - ACR values for Login.gov (default: IAL1)
-#   KC_TDP_REDIRECT_URIS    - Comma-separated list of redirect URIs for the tdp-django client
-#                             (e.g. https://tdp-frontend.app.cloud.gov/*)
-#   KC_TDP_WEB_ORIGINS      - Comma-separated list of web origins for the tdp-django client
-#                             (e.g. https://tdp-frontend.app.cloud.gov)
 #   SKIP_KEYCLOAK_WAIT      - Set to "true" to skip the health check wait
 #                             (useful when running as a CF task after deploy)
 
@@ -32,7 +25,6 @@ KEYCLOAK_URL="${KEYCLOAK_URL:-http://localhost:8443}"
 KEYCLOAK_ADMIN="${KEYCLOAK_ADMIN:-admin}"
 KEYCLOAK_ADMIN_PASSWORD="${KEYCLOAK_ADMIN_PASSWORD:-admin}"
 REALM="tdp"
-DEPLOY_ENV="${DEPLOY_ENV:-dev}"
 LOGIN_GOV_ACR_VALUES="${LOGIN_GOV_ACR_VALUES:-http://idmanagement.gov/ns/assurance/ial/1}"
 
 # Wrapper around curl that shows the actual HTTP error response on failure
@@ -68,22 +60,41 @@ wait_for_keycloak() {
 }
 
 get_admin_token() {
-    local response
-    response=$(curl -sf -X POST "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
-        -H "Content-Type: application/x-www-form-urlencoded" \
-        -d "username=${KEYCLOAK_ADMIN}" \
-        -d "password=${KEYCLOAK_ADMIN_PASSWORD}" \
-        -d "grant_type=password" \
-        -d "client_id=admin-cli")
+    local max_attempts=30
+    local attempt=0
+    local response=""
 
-    TOKEN=$(echo "$response" | jq -r '.access_token')
+    echo "Obtaining admin token from ${KEYCLOAK_URL}..."
 
-    if [ -z "$TOKEN" ] || [ "$TOKEN" == "null" ]; then
-        echo "ERROR: Failed to obtain admin access token"
-        echo "Response: $response"
-        exit 1
+    until [ "$attempt" -ge "$max_attempts" ]; do
+        attempt=$((attempt + 1))
+
+        response=$(curl -s -X POST "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "username=${KEYCLOAK_ADMIN}" \
+            -d "password=${KEYCLOAK_ADMIN_PASSWORD}" \
+            -d "grant_type=password" \
+            -d "client_id=admin-cli") || true
+
+        TOKEN=$(echo "$response" | jq -r '.access_token // empty' 2>/dev/null || true)
+
+        if [ -n "$TOKEN" ]; then
+            echo "Admin token obtained."
+            return
+        fi
+
+        echo "  Attempt ${attempt}/${max_attempts} - admin token endpoint not ready yet..."
+        if [ -n "$response" ]; then
+            echo "  Response: $response"
+        fi
+        sleep 2
+    done
+
+    echo "ERROR: Failed to obtain admin access token after ${max_attempts} attempts"
+    if [ -n "$response" ]; then
+        echo "Final response: $response"
     fi
-    echo "Admin token obtained."
+    exit 1
 }
 
 configure_login_gov_signing_key() {
@@ -307,156 +318,22 @@ hide_login_gov_from_login_page() {
     echo "Login.gov hidden from login page (TDP frontend uses kc_idp_hint, unaffected)."
 }
 
-configure_tdp_client_urls() {
-    echo "Configuring tdp-django client redirect URIs and web origins (env: ${DEPLOY_ENV})..."
-
-    local client_id
-    client_id=$(kc_api "${KEYCLOAK_URL}/admin/realms/${REALM}/clients?clientId=tdp-django" \
-        -H "Authorization: Bearer ${TOKEN}" | jq -r '.[0].id')
-
-    if [ -z "$client_id" ] || [ "$client_id" == "null" ]; then
-        echo "WARNING: tdp-django client not found, skipping URL configuration."
-        return
+main() {
+    echo "=== Keycloak IdP Configuration ==="
+    if [ "${SKIP_KEYCLOAK_WAIT:-false}" == "true" ]; then
+        echo "Skipping health check wait (SKIP_KEYCLOAK_WAIT=true)."
+    else
+        wait_for_keycloak
     fi
-
-    local client_config
-    client_config=$(kc_api "${KEYCLOAK_URL}/admin/realms/${REALM}/clients/${client_id}" \
-        -H "Authorization: Bearer ${TOKEN}")
-
-    # Build redirect URI and web origin arrays from env vars (comma-separated).
-    local redirect_uris='[]'
-    local web_origins='[]'
-
-    if [ -n "${KC_TDP_REDIRECT_URIS:-}" ]; then
-        IFS=',' read -ra uris <<< "$KC_TDP_REDIRECT_URIS"
-        for uri in "${uris[@]}"; do
-            uri=$(echo "$uri" | xargs)  # trim whitespace
-            redirect_uris=$(echo "$redirect_uris" | jq --arg v "$uri" '. + [$v]')
-        done
-    fi
-
-    if [ -n "${KC_TDP_WEB_ORIGINS:-}" ]; then
-        IFS=',' read -ra origins <<< "$KC_TDP_WEB_ORIGINS"
-        for origin in "${origins[@]}"; do
-            origin=$(echo "$origin" | xargs)
-            web_origins=$(echo "$web_origins" | jq --arg v "$origin" '. + [$v]')
-        done
-    fi
-
-    # For dev only: also allow localhost and 127.0.0.1 for local development.
-    if [ "$DEPLOY_ENV" == "dev" ]; then
-        redirect_uris=$(echo "$redirect_uris" | jq '. + [
-            "http://localhost:3000/*",
-            "http://localhost:8080/*",
-            "http://localhost:8989/*",
-            "http://127.0.0.1:3000/*",
-            "http://127.0.0.1:8080/*",
-            "http://127.0.0.1:8989/*"
-        ]')
-        web_origins=$(echo "$web_origins" | jq '. + [
-            "http://localhost:3000",
-            "http://localhost:8080",
-            "http://localhost:8989",
-            "http://127.0.0.1:3000",
-            "http://127.0.0.1:8080",
-            "http://127.0.0.1:8989"
-        ]')
-    elif [ -z "${KC_TDP_REDIRECT_URIS:-}" ]; then
-        echo "WARNING: KC_TDP_REDIRECT_URIS is not set for env '${DEPLOY_ENV}'. tdp-django client will have no redirect URIs."
-    fi
-
-    client_config=$(echo "$client_config" | jq \
-        --argjson redirect_uris "$redirect_uris" \
-        --argjson web_origins "$web_origins" \
-        '.redirectUris = $redirect_uris | .webOrigins = $web_origins')
-
-    kc_api -X PUT "${KEYCLOAK_URL}/admin/realms/${REALM}/clients/${client_id}" \
-        -H "Authorization: Bearer ${TOKEN}" \
-        -H "Content-Type: application/json" \
-        -d "$client_config" > /dev/null
-
-    echo "tdp-django redirect URIs: $(echo "$redirect_uris" | jq -c .)"
-    echo "tdp-django web origins:   $(echo "$web_origins" | jq -c .)"
+    get_admin_token
+    configure_master_realm_security_headers
+    configure_login_gov_signing_key
+    configure_login_gov_acr_values
+    configure_login_gov_logout_params
+    hide_login_gov_from_login_page
+    echo "=== IdP configuration complete ==="
 }
 
-configure_grafana_client_urls() {
-    if [ -z "${KC_GRAFANA_REDIRECT_URI:-}" ] && [ "$DEPLOY_ENV" != "dev" ]; then
-        echo "WARNING: KC_GRAFANA_REDIRECT_URI not set for env '${DEPLOY_ENV}', skipping Grafana client URL configuration."
-        return
-    fi
-
-    echo "Configuring tdp-grafana client redirect URIs and web origins (env: ${DEPLOY_ENV})..."
-
-    local client_id
-    client_id=$(kc_api "${KEYCLOAK_URL}/admin/realms/${REALM}/clients?clientId=tdp-grafana" \
-        -H "Authorization: Bearer ${TOKEN}" | jq -r '.[0].id')
-
-    if [ -z "$client_id" ] || [ "$client_id" == "null" ]; then
-        echo "WARNING: tdp-grafana client not found, skipping."
-        return
-    fi
-
-    local client_config
-    client_config=$(kc_api "${KEYCLOAK_URL}/admin/realms/${REALM}/clients/${client_id}" \
-        -H "Authorization: Bearer ${TOKEN}")
-
-    local redirect_uris='[]'
-    local web_origins='[]'
-    local post_logout_uri=""
-
-    if [ -n "${KC_GRAFANA_REDIRECT_URI:-}" ]; then
-        redirect_uris=$(echo "$redirect_uris" | jq --arg v "$KC_GRAFANA_REDIRECT_URI" '. + [$v]')
-    fi
-    if [ -n "${KC_GRAFANA_WEB_ORIGIN:-}" ]; then
-        web_origins=$(echo "$web_origins" | jq --arg v "$KC_GRAFANA_WEB_ORIGIN" '. + [$v]')
-    fi
-    if [ -n "${KC_GRAFANA_POST_LOGOUT_URI:-}" ]; then
-        post_logout_uri="$KC_GRAFANA_POST_LOGOUT_URI"
-    fi
-
-    # For dev only: also include localhost Grafana.
-    if [ "$DEPLOY_ENV" == "dev" ]; then
-        redirect_uris=$(echo "$redirect_uris" | jq '. + ["http://localhost:9400/login/generic_oauth"]')
-        web_origins=$(echo "$web_origins" | jq '. + ["http://localhost:9400"]')
-        post_logout_uri="${post_logout_uri:+${post_logout_uri}##}http://localhost:9400/*"
-    fi
-
-    client_config=$(echo "$client_config" | jq \
-        --argjson redirect_uris "$redirect_uris" \
-        --argjson web_origins "$web_origins" \
-        '.redirectUris = $redirect_uris | .webOrigins = $web_origins')
-
-    if [ -n "$post_logout_uri" ]; then
-        client_config=$(echo "$client_config" | jq \
-            --arg v "$post_logout_uri" \
-            '.attributes["post.logout.redirect.uris"] = $v')
-    fi
-
-    # Remove masked clientSecret before PUT to avoid overwriting the real value.
-    client_config=$(echo "$client_config" | jq 'del(.secret)')
-
-    kc_api -X PUT "${KEYCLOAK_URL}/admin/realms/${REALM}/clients/${client_id}" \
-        -H "Authorization: Bearer ${TOKEN}" \
-        -H "Content-Type: application/json" \
-        -d "$client_config" > /dev/null
-
-    echo "tdp-grafana redirect URIs: $(echo "$redirect_uris" | jq -c .)"
-    echo "tdp-grafana web origins:   $(echo "$web_origins" | jq -c .)"
-}
-
-# --- Main ---
-echo "=== Keycloak IdP Configuration ==="
-if [ "${SKIP_KEYCLOAK_WAIT:-false}" == "true" ]; then
-    echo "Skipping health check wait (SKIP_KEYCLOAK_WAIT=true)."
-else
-    wait_for_keycloak
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main "$@"
 fi
-get_admin_token
-configure_master_realm_security_headers
-configure_login_gov_signing_key
-configure_login_gov_acr_values
-configure_login_gov_logout_params
-hide_login_gov_from_login_page
-configure_tdp_client_urls
-configure_grafana_client_urls
-echo "=== IdP configuration complete ==="

@@ -16,9 +16,13 @@ echo "=== Container entrypoint ==="
 echo "  Nginx port:       ${NGINX_PORT}"
 echo "  Keycloak port:    ${KEYCLOAK_INTERNAL_PORT}"
 echo "  Management port:  ${KEYCLOAK_MANAGEMENT_PORT}"
+echo "  Realm env:        ${DEPLOY_ENV:-local}"
 
 # Generate nginx config from template
 sed "s/LISTEN_PORT/${NGINX_PORT}/" /opt/keycloak/nginx.conf.template > /tmp/nginx.conf
+
+# Copy the selected environment-specific realm import before Keycloak starts.
+/opt/keycloak/select-realm-config.sh
 
 # Start Keycloak in background
 echo "Starting Keycloak: kc.sh $* --http-port=${KEYCLOAK_INTERNAL_PORT} --cache=local"
