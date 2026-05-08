@@ -35,4 +35,4 @@ exclude = [
 # History
 # ---------------------------------------------------------------------------
 [history]
-persistence = "save-all"
+persistence = "none"
