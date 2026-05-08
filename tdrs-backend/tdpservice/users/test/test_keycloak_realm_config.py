@@ -25,6 +25,13 @@ def get_client(realm, client_id):
     )
 
 
+def get_client_scope(realm, scope_name):
+    """Return the named client scope from the rendered realm."""
+    return next(
+        scope for scope in realm["clientScopes"] if scope["name"] == scope_name
+    )
+
+
 def load_realm_config(env_name):
     """Load the selected full realm config for an environment."""
     return load_json(REALM_CONFIG_PATHS[env_name])
@@ -75,3 +82,29 @@ def test_prod_config_excludes_local_urls():
     assert grafana_client["redirectUris"] == [
         "https://grafana.app.cloud.gov/login/generic_oauth"
     ]
+
+
+def test_all_realm_configs_include_tdp_api_audience_scope():
+    """Every realm should let tdp-cli tokens declare the Django API audience."""
+    for env_name in ("local", "staging", "prod"):
+        realm = load_realm_config(env_name)
+        scope = get_client_scope(realm, "tdp-api-audience")
+        mapper = scope["protocolMappers"][0]
+
+        assert mapper["protocolMapper"] == "oidc-audience-mapper"
+        assert mapper["config"]["included.client.audience"] == "tdp-django"
+        assert mapper["config"]["access.token.claim"] == "true"
+        assert mapper["config"]["id.token.claim"] == "false"
+
+
+def test_all_realm_configs_attach_api_audience_only_to_tdp_cli():
+    """The API audience scope should be defaulted for tdp-cli, not API/Grafana."""
+    for env_name in ("local", "staging", "prod"):
+        realm = load_realm_config(env_name)
+        cli_client = get_client(realm, "tdp-cli")
+        django_client = get_client(realm, "tdp-django")
+        grafana_client = get_client(realm, "tdp-grafana")
+
+        assert "tdp-api-audience" in cli_client["defaultClientScopes"]
+        assert "tdp-api-audience" not in django_client["defaultClientScopes"]
+        assert "tdp-api-audience" not in grafana_client["defaultClientScopes"]
