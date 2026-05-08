@@ -127,6 +127,15 @@ tasks:
       - task: backend-up
       - docker compose -f docker-compose.yml exec web sh -c "pytest --basetemp=/home/tdpapp/ {{.PYTEST_ARGS}}"
 
+  backend-pytest-go-integration:
+    desc: 'Run the live Go parser integration suite. E.g: task backend-pytest-go-integration PYTEST_ARGS="-k section1 -vv"'
+    dir: tdrs-backend
+    vars:
+      PYTEST_ARGS: '{{.PYTEST_ARGS | default ""}}'
+    cmds:
+      - task: backend-up
+      - docker compose -f docker-compose.yml exec web sh -c "DJANGO_SETTINGS_MODULE=tdpservice.settings.go_parser_integration DJANGO_CONFIGURATION=GoParserIntegration pytest -c pytest-go-parser.ini --basetemp=/home/tdpapp/ tdpservice/parsers/test/integration {{.PYTEST_ARGS}}"
+
   backend-pytest-cov:
     desc: 'Generate coverage.json file in the backend container. E.g: task backend-pytest-cov PYTEST_ARGS="tdpservice/test/ -s -vv"'
     dir: tdrs-backend
@@ -412,8 +421,25 @@ tasks:
       - task: backend-down
       - task: frontend-down
 
+  create-infected-test-file:
+    desc: Create a test file with a valid TANF header that ClamAV will flag as infected
+    dir: tdrs-backend
+    preconditions:
+      - sh: docker compose ps clamav-rest --status running -q 2>/dev/null
+        msg: "clamav-rest container is not running. Start it first with: task backend-up"
+    cmds:
+      - |
+        printf 'HEADER20204A06   TAN1ED\nTDP-INFECTED-TEST-MARKER\nTRAILER0000001         \n' > infected_test.txt
+      - >-
+        docker compose exec -T clamav-rest sh -c
+        'echo "TDP.Test.Infected:0:*:5444502d494e4645435445442d544553542d4d41524b4552" > /var/lib/clamav/tdp-test.ndb
+        && pkill -USR2 clamd
+        && sleep 5
+        && tail -1 /var/log/clamav/clamd.log'
+      - echo "Created tdrs-backend/infected_test.txt and loaded ClamAV test signature. Upload this file through the frontend to test AV rejection."
+
   parser:compile-check:
-    desc: Compile all Go parser packages and tests, including integration-tagged packages
+    desc: Compile all Go parser packages and tests
     dir: tdrs-services/parser
     cmds:
       - make compile-check
@@ -457,7 +483,7 @@ tasks:
       - make validate-config
 
   parser:test-all-coverage:
-    desc: Run all Go parser unit and integration tests with coverage
+    desc: Run all Go parser tests with coverage
     dir: tdrs-services/parser
     cmds:
       - make test-all-coverage
