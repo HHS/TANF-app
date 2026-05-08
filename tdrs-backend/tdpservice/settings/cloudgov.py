@@ -60,7 +60,6 @@ class CloudGov(Common):
     s3_staticfiles_creds = get_cloudgov_service_creds_by_instance_name(
         cloudgov_services["s3"], f"tdp-staticfiles-{services_basename}"
     )
-
     keycloak_creds = get_cloudgov_service_creds_by_instance_name(
         cloudgov_services.get("user-provided", []),
         f"tdp-keycloak-{services_basename}",
@@ -211,7 +210,6 @@ class CloudGov(Common):
     OIDC_OP_TOKEN_ENDPOINT = f"{_KC_REALM_URL}/protocol/openid-connect/token"
     OIDC_OP_USER_ENDPOINT = f"{_KC_REALM_URL}/protocol/openid-connect/userinfo"
     OIDC_OP_JWKS_ENDPOINT = f"{_KC_REALM_URL}/protocol/openid-connect/certs"
-
 
 class Development(CloudGov):
     """Settings for applications deployed in the Cloud.gov dev space."""

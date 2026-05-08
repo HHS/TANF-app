@@ -2,7 +2,7 @@
 # configure-idps.sh
 #
 # Post-startup script to configure Keycloak identity providers with
-# sensitive material that cannot be expressed in realm-export.json:
+# sensitive material that cannot be expressed in the checked-in realm JSON files:
 #   - Login.gov RSA private key for private_key_jwt client authentication
 #   - Login.gov acr_values authorization parameter
 #   - tdp-django and tdp-grafana client redirect URIs and web origins
@@ -68,22 +68,41 @@ wait_for_keycloak() {
 }
 
 get_admin_token() {
-    local response
-    response=$(curl -sf -X POST "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
-        -H "Content-Type: application/x-www-form-urlencoded" \
-        -d "username=${KEYCLOAK_ADMIN}" \
-        -d "password=${KEYCLOAK_ADMIN_PASSWORD}" \
-        -d "grant_type=password" \
-        -d "client_id=admin-cli")
+    local max_attempts=30
+    local attempt=0
+    local response=""
 
-    TOKEN=$(echo "$response" | jq -r '.access_token')
+    echo "Obtaining admin token from ${KEYCLOAK_URL}..."
 
-    if [ -z "$TOKEN" ] || [ "$TOKEN" == "null" ]; then
-        echo "ERROR: Failed to obtain admin access token"
-        echo "Response: $response"
-        exit 1
+    until [ "$attempt" -ge "$max_attempts" ]; do
+        attempt=$((attempt + 1))
+
+        response=$(curl -s -X POST "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "username=${KEYCLOAK_ADMIN}" \
+            -d "password=${KEYCLOAK_ADMIN_PASSWORD}" \
+            -d "grant_type=password" \
+            -d "client_id=admin-cli") || true
+
+        TOKEN=$(echo "$response" | jq -r '.access_token // empty' 2>/dev/null || true)
+
+        if [ -n "$TOKEN" ]; then
+            echo "Admin token obtained."
+            return
+        fi
+
+        echo "  Attempt ${attempt}/${max_attempts} - admin token endpoint not ready yet..."
+        if [ -n "$response" ]; then
+            echo "  Response: $response"
+        fi
+        sleep 2
+    done
+
+    echo "ERROR: Failed to obtain admin access token after ${max_attempts} attempts"
+    if [ -n "$response" ]; then
+        echo "Final response: $response"
     fi
-    echo "Admin token obtained."
+    exit 1
 }
 
 configure_login_gov_signing_key() {
@@ -407,18 +426,60 @@ configure_grafana_client_urls() {
     echo "tdp-grafana web origins:   $(echo "$web_origins" | jq -c .)"
 }
 
-# --- Main ---
-echo "=== Keycloak IdP Configuration ==="
-if [ "${SKIP_KEYCLOAK_WAIT:-false}" == "true" ]; then
-    echo "Skipping health check wait (SKIP_KEYCLOAK_WAIT=true)."
-else
-    wait_for_keycloak
+hide_login_gov_from_login_page() {
+    echo "Hiding Login.gov from Keycloak login page..."
+
+    # TDP frontend uses kc_idp_hint=login-gov to bypass the login page entirely,
+    # so hiding Login.gov from the login page does not affect TDP auth.
+    # This ensures only AMS (and the local password form) appear on the login page,
+    # which is the correct behavior for Grafana and any other direct Keycloak login.
+    local idp_config
+    idp_config=$(kc_api "${KEYCLOAK_URL}/admin/realms/${REALM}/identity-provider/instances/login-gov" \
+        -H "Authorization: Bearer ${TOKEN}")
+
+    if [ -z "$idp_config" ] || [ "$(echo "$idp_config" | jq -r '.alias')" == "null" ]; then
+        echo "WARNING: Login.gov IdP not found, skipping."
+        return
+    fi
+
+    local already_hidden
+    already_hidden=$(echo "$idp_config" | jq -r '.hideOnLogin // false')
+
+    if [ "$already_hidden" == "true" ]; then
+        echo "Login.gov already hidden on login page."
+        return
+    fi
+
+    # Remove the masked clientSecret before PUT to avoid overwriting the real value.
+    # Keycloak's GET API returns secrets as "**********" and PUTting that back would
+    # replace the actual secret with the literal masked string.
+    idp_config=$(echo "$idp_config" | jq '.hideOnLogin = true | del(.config.clientSecret)')
+
+    kc_api -X PUT "${KEYCLOAK_URL}/admin/realms/${REALM}/identity-provider/instances/login-gov" \
+        -H "Authorization: Bearer ${TOKEN}" \
+        -H "Content-Type: application/json" \
+        -d "$idp_config" > /dev/null
+
+    echo "Login.gov hidden from login page (TDP frontend uses kc_idp_hint, unaffected)."
+}
+
+main() {
+    echo "=== Keycloak IdP Configuration ==="
+    if [ "${SKIP_KEYCLOAK_WAIT:-false}" == "true" ]; then
+        echo "Skipping health check wait (SKIP_KEYCLOAK_WAIT=true)."
+    else
+        wait_for_keycloak
+    fi
+    get_admin_token
+    configure_master_realm_security_headers
+    configure_login_gov_signing_key
+    configure_login_gov_acr_values
+    configure_login_gov_logout_params
+    configure_tdp_client_urls
+    configure_grafana_client_urls
+    echo "=== IdP configuration complete ==="
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main "$@"
 fi
-get_admin_token
-configure_master_realm_security_headers
-configure_login_gov_signing_key
-configure_login_gov_acr_values
-configure_login_gov_logout_params
-configure_tdp_client_urls
-configure_grafana_client_urls
-echo "=== IdP configuration complete ==="
