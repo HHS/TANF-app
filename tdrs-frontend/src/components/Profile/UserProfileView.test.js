@@ -120,7 +120,7 @@ describe('UserProfileView', () => {
   })
 
   it('renders correct message for AMS users', () => {
-    const amsUser = { ...mockUser, email: 'jane@acf.hhs.gov' }
+    const amsUser = { ...mockUser, email: 'jane@hhs.gov', idp: 'ams' }
     renderWithStore(
       <UserProfileView
         user={amsUser}

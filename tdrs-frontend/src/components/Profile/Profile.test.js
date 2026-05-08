@@ -451,10 +451,11 @@ describe('Profile', () => {
     expect(screen.getByLabelText(/first name/i)).toBeInTheDocument()
   })
 
-  it('handles AMS user (acf.hhs.gov email)', () => {
+  it('handles AMS user authenticated with ACF AMS', () => {
     const amsUser = {
       ...baseUser,
-      email: 'test@acf.hhs.gov',
+      email: 'test@hhs.gov',
+      idp: 'ams',
       account_approval_status: 'Approved',
     }
 
@@ -748,7 +749,8 @@ describe('Profile', () => {
       pending_requests: 1,
       account_approval_status: 'Approved',
       roles: [{ id: 1, name: 'OFA System Admin', permissions: [] }],
-      email: 'regional-user@acf.hhs.gov',
+      email: 'regional-user@hhs.gov',
+      idp: 'ams',
       regions: [{ id: 5, name: 'Chicago' }],
     }
 
@@ -821,7 +823,8 @@ describe('Profile', () => {
       pending_requests: 1,
       account_approval_status: 'Approved',
       roles: [{ id: 1, name: 'OFA System Admin', permissions: [] }],
-      email: 'regional-user@acf.hhs.gov',
+      email: 'regional-user@hhs.gov',
+      idp: 'ams',
       regions: [{ id: 5, name: 'Chicago' }],
     }
 
