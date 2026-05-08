@@ -235,10 +235,7 @@ make test-short
 # Run tests with coverage report
 make test-coverage
 
-# Run integration tests (requires a running PostgreSQL instance)
-make test-integration
-
-# Run all tests (unit + integration) with coverage
+# Run all tests with coverage
 make test-all-coverage
 
 # Compile all packages and tests without executing them
@@ -279,20 +276,6 @@ gotestsum -- -count=1 -run TestAccumulatorKeyedGrouping ./internal/parser/...
 gotestsum -- -count=1 ./internal/validation/...
 ```
 
-### Integration Tests
-
-Integration tests are gated behind the `integration` build tag and require a PostgreSQL database:
-
-```sh
-# Set up the database connection
-export DATABASE_URL=postgres://tdpuser:something_secure@localhost:5432/tdrs_test?sslmode=disable
-
-# Run integration tests
-make test-integration
-```
-
----
-
 ## SQLC (Database Code Generation)
 
 The Go parser uses [SQLC](https://sqlc.dev) to generate type-safe Go code from SQL. The schema in `schema.sql` mirrors the Django model definitions.
@@ -326,7 +309,11 @@ task parser:validate-config
 task parser:test-all-coverage
 ```
 
-For integration tests in CI, CircleCI reuses the existing backend docker-compose stack, including PostgreSQL and the Django migration flow, before running the Go parser integration suite with `DATABASE_URL` pointed at that migrated test database.
+Live Go parser integration coverage runs through the backend pytest suite:
+
+```sh
+task backend-pytest-go-integration
+```
 
 ---
 
@@ -359,6 +346,27 @@ For integration tests in CI, CircleCI reuses the existing backend docker-compose
               "--server.local.section", "1",
               "--server.local.fiscal-year", "2023",
               "--server.local.quarter", "2"]
+},
+{
+    "name": "Go Celery",
+    "type": "go",
+    "request": "launch",
+    "mode": "auto",
+    "program": "${workspaceFolder}/tdrs-services/parser/cmd/parser",
+    "cwd": "${workspaceFolder}/tdrs-services/parser",
+    "env": {
+        "AWS_ACCESS_KEY_ID": "test",
+        "AWS_SECRET_ACCESS_KEY": "test"
+    },
+    "args": ["--database.url", "postgres://tdpuser:something_secure@localhost:5432/tdrs_test?sslmode=disable",
+              "--server.mode=celery",
+              "--server.celery.redis-url=redis://localhost:6379/0",
+              "--storage.source=s3",
+              "--storage.s3.key-prefix=dev",
+              "--storage.s3.bucket=tdp-datafiles-localstack",
+              "--storage.s3.endpoint=http://localhost:4566",
+              "--storage.s3.region=us-gov-west-1",
+              "--writer.mode=database"]
 },
 {
     "name": "Go DryRun",

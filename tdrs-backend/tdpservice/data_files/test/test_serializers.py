@@ -11,7 +11,6 @@ from tdpservice.data_files.validators import (
     validate_file_infection,
 )
 from tdpservice.security.clients import ClamAVClient
-from tdpservice.security.models import ClamAVFileScan
 
 
 @pytest.mark.django_db
@@ -56,15 +55,7 @@ def test_immutability_of_data_file(data_file_instance):
 
 @pytest.mark.django_db
 def test_created_at(data_file_data, data_analyst):
-    """If a serializer has valid data it will return a valid object."""
-    ClamAVFileScan.objects.record_scan(
-        data_file_data["file"],
-        data_file_data["file"].name,
-        f"File scan marked as CLEAN for file: {data_file_data['file'].name}",
-        ClamAVFileScan.Result.CLEAN,
-        data_analyst,
-    )
-
+    """Test that serializer creates a DataFile with a created_at timestamp."""
     create_serializer = DataFileSerializer(
         context={"user": data_analyst}, data=data_file_data
     )
@@ -72,7 +63,6 @@ def test_created_at(data_file_data, data_analyst):
     data_file = create_serializer.save()
 
     assert data_file.created_at
-    assert data_file.av_scans.exists()
 
 
 @pytest.mark.django_db
@@ -81,30 +71,6 @@ def test_state_not_exposed_by_serializer(data_file_instance):
     serialized = DataFileSerializer(data_file_instance).data
 
     assert "state" not in serialized
-
-
-@pytest.mark.django_db
-def test_data_file_still_created_if_av_scan_fails_to_create(
-    data_file_data, mocker, data_analyst
-):
-    """Test valid DataFile is still created if ClamAV scan isn't recorded.
-
-    In this scenario all validation would have already passed but in the event
-    the ClamAVFileScan isn't found in the database due to an error or race
-    condition we should still store the DataFile.
-    """
-    mocker.patch(
-        "tdpservice.security.models.ClamAVFileScanManager.record_scan",
-        return_value=None,
-    )
-    create_serializer = DataFileSerializer(
-        context={"user": data_analyst}, data=data_file_data
-    )
-    assert create_serializer.is_valid() is True
-    data_file = create_serializer.save()
-
-    assert data_file is not None
-    assert data_file.av_scans.count() == 0
 
 
 @pytest.mark.parametrize(
@@ -150,7 +116,7 @@ def test_rejects_invalid_file_extensions(file_name):
 
 @pytest.mark.django_db
 def test_rejects_infected_file(infected_file, fake_file_name, user, settings):
-    """Test infected files are rejected by serializer validation."""
+    """Test infected files are rejected by the AV validator helper."""
     settings.CLAMAV_NEEDED = True
     with pytest.raises(ValidationError):
         validate_file_infection(infected_file, fake_file_name, user)
@@ -160,7 +126,7 @@ def test_rejects_infected_file(infected_file, fake_file_name, user, settings):
 def test_rejects_uploads_on_clamav_connection_error(
     fake_file, fake_file_name, mocker, user, settings
 ):
-    """Test that DataFiles cannot pass validation if ClamAV is down."""
+    """Test that the AV validator helper rejects if ClamAV is down."""
     settings.CLAMAV_NEEDED = True
     mocker.patch(
         "tdpservice.security.clients.ClamAVClient.scan_file",
