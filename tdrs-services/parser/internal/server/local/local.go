@@ -8,7 +8,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"go-parser/internal/config"
-	"go-parser/internal/decoder"
 	"go-parser/internal/pipeline"
 	"go-parser/internal/server"
 	"go-parser/internal/storage/reader"
@@ -119,29 +118,9 @@ func (server *Server) Run(ctx context.Context) error {
 	}
 	defer sink.Close()
 
-	// ---- Open file and create decoder ----
+	// ---- Open file, decode, and run pipeline ----
 	source := reader.NewLocalSource(local.FilePath)
-	file, err := source.Open(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to open file: %w", err)
-	}
-	defer file.Close()
-	defer source.Cleanup()
-
-	spec := server.Registry.GetFileSpec(dfCtx.Program, dfCtx.Section)
-	if spec == nil {
-		return fmt.Errorf("no file spec for %s section %d", dfCtx.Program, dfCtx.Section)
-	}
-
-	dec, err := decoder.CreateDecoder(file, spec)
-	if err != nil {
-		return fmt.Errorf("failed to create decoder: %w", err)
-	}
-	defer dec.Close()
-
-	// ---- Run pipeline ----
-	pipeln := pipeline.NewPipeline(sink, server.Registry, server.Validators, pipeline.NewConfig(server.Config))
-	result, err := pipeln.Process(ctx, dec, dfCtx)
+	result, err := server.RunPipeline(ctx, source, sink, dfCtx)
 	if err != nil {
 		return fmt.Errorf("failed to process file: %w", err)
 	}

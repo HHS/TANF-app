@@ -7,6 +7,7 @@ from django.contrib.admin.sites import AdminSite
 import pytest
 
 from tdpservice.data_files.admin.admin import DataFileAdmin
+from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.models import DataFile
 from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.parsers.test.factories import DataFileSummaryFactory
@@ -39,6 +40,15 @@ def test_DataFileAdmin_exposes_state_in_admin():
 
     assert "parsing_state" in data_file_admin.list_display
     assert "parsing_state" in properties_fieldset[1]["fields"]
+
+
+@pytest.mark.django_db
+def test_DataFileAdmin_parsing_state_uses_choice_label():
+    """Test DataFileAdmin displays friendly submission state labels."""
+    data_file = DataFileFactory(state=SubmissionState.PARSE_FAILED)
+    data_file_admin = DataFileAdmin(DataFile, AdminSite())
+
+    assert data_file_admin.parsing_state(data_file) == "Parse failed"
 
 
 @pytest.mark.django_db
