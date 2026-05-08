@@ -145,8 +145,9 @@ class TestTokenVerification:
     ):
         """A signature-verification error is surfaced as 401, not 500."""
         mock_verify.side_effect = jwt.InvalidTokenError("bad signature")
-        with pytest.raises(AuthenticationFailed):
+        with pytest.raises(AuthenticationFailed) as exc_info:
             auth.authenticate(request_with_token())
+        assert str(exc_info.value.detail) == "Invalid bearer token."
 
     @patch("tdpservice.users.authentication._verify_keycloak_bearer_token")
     def test_missing_email_in_claims_rejects(
@@ -316,8 +317,9 @@ class TestBearerTokenIntentVerification:
             exp=datetime.now(timezone.utc) - timedelta(minutes=5),
         )
 
-        with pytest.raises(AuthenticationFailed):
+        with pytest.raises(AuthenticationFailed) as exc_info:
             auth.authenticate(request_with_token(token))
+        assert str(exc_info.value.detail) == "Bearer token has expired."
 
 
 @pytest.mark.django_db

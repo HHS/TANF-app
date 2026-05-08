@@ -119,6 +119,9 @@ class KeycloakBearerTokenAuthentication(BaseAuthentication):
 
         try:
             payload = _verify_keycloak_bearer_token(token)
+        except jwt.ExpiredSignatureError as exc:
+            logger.info("Bearer token expired: %s", exc)
+            raise AuthenticationFailed(_("Bearer token has expired."))
         except (jwt.InvalidTokenError, requests.RequestException) as exc:
             logger.info("Bearer token verification failed: %s", exc)
             raise AuthenticationFailed(_("Invalid bearer token."))
