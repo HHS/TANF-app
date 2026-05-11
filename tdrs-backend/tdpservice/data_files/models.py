@@ -210,8 +210,9 @@ class DataFile(FileRecord):
     @property
     def filename(self):
         """Return the correct filename for this data file."""
-        if self.program_type in [DataFile.ProgramType.FRA, DataFile.ProgramType.TANF]:
-            return self.stt.filenames.get(self.section, None)
+        filename = self.stt.filenames.get(self.section, None)
+        if filename is not None:
+            return filename
 
         program_type = (
             self.program_type.title()

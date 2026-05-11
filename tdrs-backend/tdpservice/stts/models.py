@@ -4,6 +4,17 @@ from django.db import models
 from django.db.models import constraints
 
 DEFAULT_NUMBER_OF_SECTIONS = 4
+LEGACY_PROGRAM_PREFIXES = ("TAN ", "SSP ", "TRIBAL ", "TRIBAL TANF ", "TRIBAL_")
+
+
+def _normalize_section_name(section):
+    """Return a section name without legacy program prefixes."""
+    upper_section = section.upper()
+    for prefix in LEGACY_PROGRAM_PREFIXES:
+        if upper_section.startswith(prefix):
+            return section[len(prefix) :]
+
+    return section
 
 
 class Region(models.Model):
@@ -50,8 +61,7 @@ class STT(models.Model):
         """The number of sections this STT submits."""
         if self.filenames is None:
             return DEFAULT_NUMBER_OF_SECTIONS
-        divisor = int(self.ssp) + 1
-        return len(self.filenames) // divisor
+        return len({_normalize_section_name(section) for section in self.filenames})
 
     class Meta:
         """Metadata."""
