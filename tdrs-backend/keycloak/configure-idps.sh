@@ -289,6 +289,12 @@ configure_master_realm_security_headers() {
     echo "Master realm X-Frame-Options set to SAMEORIGIN."
 }
 
+append_json_array_unique() {
+    local array_json="$1"
+    local value="$2"
+    echo "$array_json" | jq --arg value "$value" 'if index($value) then . else . + [$value] end'
+}
+
 configure_tdp_client_urls() {
     echo "Configuring tdp-django client redirect URIs and web origins (env: ${DEPLOY_ENV})..."
 
@@ -305,46 +311,55 @@ configure_tdp_client_urls() {
     client_config=$(kc_api "${KEYCLOAK_URL}/admin/realms/${REALM}/clients/${client_id}" \
         -H "Authorization: Bearer ${TOKEN}")
 
-    # Build redirect URI and web origin arrays from env vars (comma-separated).
-    local redirect_uris='[]'
-    local web_origins='[]'
+    # Preserve current Keycloak values unless explicit replacement env vars are provided.
+    local redirect_uris
+    local web_origins
+    redirect_uris=$(echo "$client_config" | jq '.redirectUris // []')
+    web_origins=$(echo "$client_config" | jq '.webOrigins // []')
 
     if [ -n "${KC_TDP_REDIRECT_URIS:-}" ]; then
+        redirect_uris='[]'
         IFS=',' read -ra uris <<< "$KC_TDP_REDIRECT_URIS"
         for uri in "${uris[@]}"; do
             uri=$(echo "$uri" | xargs)  # trim whitespace
-            redirect_uris=$(echo "$redirect_uris" | jq --arg v "$uri" '. + [$v]')
+            redirect_uris=$(append_json_array_unique "$redirect_uris" "$uri")
         done
+    else
+        echo "KC_TDP_REDIRECT_URIS not set; preserving existing tdp-django redirect URIs."
     fi
 
     if [ -n "${KC_TDP_WEB_ORIGINS:-}" ]; then
+        web_origins='[]'
         IFS=',' read -ra origins <<< "$KC_TDP_WEB_ORIGINS"
         for origin in "${origins[@]}"; do
             origin=$(echo "$origin" | xargs)
-            web_origins=$(echo "$web_origins" | jq --arg v "$origin" '. + [$v]')
+            web_origins=$(append_json_array_unique "$web_origins" "$origin")
         done
+    else
+        echo "KC_TDP_WEB_ORIGINS not set; preserving existing tdp-django web origins."
     fi
 
     # For dev only: also allow localhost and 127.0.0.1 for local development.
     if [ "$DEPLOY_ENV" == "dev" ]; then
-        redirect_uris=$(echo "$redirect_uris" | jq '. + [
-            "http://localhost:3000/*",
-            "http://localhost:8080/*",
-            "http://localhost:8989/*",
-            "http://127.0.0.1:3000/*",
-            "http://127.0.0.1:8080/*",
-            "http://127.0.0.1:8989/*"
-        ]')
-        web_origins=$(echo "$web_origins" | jq '. + [
-            "http://localhost:3000",
-            "http://localhost:8080",
-            "http://localhost:8989",
-            "http://127.0.0.1:3000",
-            "http://127.0.0.1:8080",
-            "http://127.0.0.1:8989"
-        ]')
-    elif [ -z "${KC_TDP_REDIRECT_URIS:-}" ]; then
-        echo "WARNING: KC_TDP_REDIRECT_URIS is not set for env '${DEPLOY_ENV}'. tdp-django client will have no redirect URIs."
+        for uri in \
+            "http://localhost:3000/*" \
+            "http://localhost:8080/*" \
+            "http://localhost:8989/*" \
+            "http://127.0.0.1:3000/*" \
+            "http://127.0.0.1:8080/*" \
+            "http://127.0.0.1:8989/*"; do
+            redirect_uris=$(append_json_array_unique "$redirect_uris" "$uri")
+        done
+
+        for origin in \
+            "http://localhost:3000" \
+            "http://localhost:8080" \
+            "http://localhost:8989" \
+            "http://127.0.0.1:3000" \
+            "http://127.0.0.1:8080" \
+            "http://127.0.0.1:8989"; do
+            web_origins=$(append_json_array_unique "$web_origins" "$origin")
+        done
     fi
 
     client_config=$(echo "$client_config" | jq \
