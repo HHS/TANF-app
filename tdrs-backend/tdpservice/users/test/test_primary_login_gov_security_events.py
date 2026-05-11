@@ -10,7 +10,10 @@ from django.utils import timezone
 import pytest
 
 from tdpservice.security.models import SecurityEventToken, SecurityEventType
-from tdpservice.users.api.login import TokenAuthorizationOIDC
+from tdpservice.users.api.login import (
+    TokenAuthorizationLoginDotGov,
+    TokenAuthorizationOIDC,
+)
 
 
 @pytest.mark.django_db
@@ -81,6 +84,40 @@ def test_login_gov_uuid_change_without_account_purged(user):
     )
 
 
+@pytest.mark.django_db
+@patch("tdpservice.users.api.login.TokenAuthorizationOIDC.login_user")
+def test_login_gov_user_email_syncs_when_sub_matches(mock_login_user, user, rf):
+    """Test a Login.gov email change is reflected from OIDC claims on next login."""
+    old_email = "old_email@example.com"
+    new_email = "new_email@example.com"
+    user.username = old_email
+    user.email = old_email
+    user.login_gov_uuid = uuid.uuid4()
+    user.save()
+
+    request = rf.get("/oidc/login.gov")
+    request.session = {}
+    view = TokenAuthorizationLoginDotGov()
+
+    result_user = view.handle_user(
+        request,
+        "id-token",
+        {
+            "id_token": {
+                "sub": str(user.login_gov_uuid),
+                "email": new_email,
+            },
+            "access_token": None,
+        },
+    )
+
+    user.refresh_from_db()
+    assert result_user == user
+    assert user.email == new_email
+    assert user.username == new_email
+    mock_login_user.assert_called_once()
+
+
 @pytest.mark.django_db(transaction=True)
 @patch("tdpservice.security.views.requests.get")
 @patch("tdpservice.security.views.jwt.get_unverified_header")
@@ -94,8 +131,9 @@ def test_user_changed_login_gov_email(
     user,
     client,
 ):
-    """Test EMAIL_CHANGED SET updates user email and username when new-value is present."""
+    """Test EMAIL_CHANGED SET records the event without updating user email."""
     old_email = user.email
+    old_username = user.username
     new_email = "new_email@example.com"
 
     # Configure external dependencies and JWT decoding
@@ -127,12 +165,10 @@ def test_user_changed_login_gov_email(
 
     assert response.status_code == 200
 
-    # User should be updated
     user.refresh_from_db()
-    assert user.email == new_email
-    assert user.username == new_email
+    assert user.email == old_email
+    assert user.username == old_username
 
-    # Token should be recorded with correct metadata
     assert SecurityEventToken.objects.count() == 1
     token = SecurityEventToken.objects.first()
     assert token.user == user
