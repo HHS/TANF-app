@@ -5,6 +5,8 @@ import (
 	"errors"
 	"sync"
 	"testing"
+
+	"go-parser/internal/sentinel"
 )
 
 // mockSink records all Flush calls for verification.
@@ -37,10 +39,8 @@ func (m *mockSink) Flush(_ context.Context, tableName string, columns []string, 
 	return int64(len(rows)), nil
 }
 
-func (m *mockSink) RollbackDatafile(_ context.Context, _ int32, _ []string, _ string) error {
-	return nil
-}
-func (m *mockSink) Close() error { return nil }
+func (m *mockSink) RollbackDatafile(_ context.Context, _ int32, _ []string) error { return nil }
+func (m *mockSink) Close() error                                                  { return nil }
 
 func (m *mockSink) totalRows() int {
 	m.mu.Lock()
@@ -109,6 +109,34 @@ func TestTableWriter_SendAndStop(t *testing.T) {
 	}
 	if sink.totalRows() != 5 {
 		t.Errorf("expected 5 rows flushed to sink, got %d", sink.totalRows())
+	}
+}
+
+func TestTableWriter_AbortDiscardsBufferedRows(t *testing.T) {
+	sink := &mockSink{}
+	tw := NewTableWriter("test_table", []string{"id", "name"}, 100)
+	ctx := context.Background()
+
+	tw.Start(ctx, sink)
+
+	for i := range 5 {
+		if err := tw.SendRow(ctx, []any{i, "row"}); err != nil {
+			t.Fatalf("SendRow failed: %v", err)
+		}
+	}
+
+	if err := tw.Abort(); err != nil {
+		t.Fatalf("Abort failed: %v", err)
+	}
+
+	if tw.TotalWritten() != 0 {
+		t.Errorf("expected 0 written, got %d", tw.TotalWritten())
+	}
+	if sink.totalRows() != 0 {
+		t.Errorf("expected 0 rows flushed to sink, got %d", sink.totalRows())
+	}
+	if err := tw.SendRow(ctx, []any{99, "row"}); !errors.Is(err, sentinel.ErrWriterAborted) {
+		t.Errorf("SendRow after abort error = %v, want ErrWriterAborted", err)
 	}
 }
 

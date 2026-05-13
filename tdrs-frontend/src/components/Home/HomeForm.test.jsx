@@ -318,6 +318,7 @@ describe('Pre-approval Home page', () => {
         authenticated: true,
         user: {
           email: 'admin@acf.hhs.gov',
+          idp: 'ams',
           roles: [],
           access_request: false,
         },
@@ -392,6 +393,7 @@ describe('Pre-approval Home page', () => {
         authenticated: true,
         user: {
           email: 'admin@acf.hhs.gov',
+          idp: 'ams',
           roles: [],
           access_request: false,
         },
@@ -445,6 +447,7 @@ describe('Pre-approval Home page', () => {
         authenticated: true,
         user: {
           email: 'admin@acf.hhs.gov',
+          idp: 'ams',
           roles: [],
           access_request: false,
         },
@@ -498,6 +501,7 @@ describe('Pre-approval Home page', () => {
         authenticated: true,
         user: {
           email: 'admin@acf.hhs.gov',
+          idp: 'ams',
           roles: [],
           access_request: false,
         },
@@ -561,6 +565,7 @@ describe('Pre-approval Home page', () => {
         authenticated: true,
         user: {
           email: 'admin@acf.hhs.gov',
+          idp: 'ams',
           roles: [],
           access_request: false,
         },
@@ -620,6 +625,7 @@ describe('Pre-approval Home page', () => {
         authenticated: true,
         user: {
           email: 'admin@acf.hhs.gov',
+          idp: 'ams',
           roles: [],
           access_request: false,
         },
@@ -682,6 +688,7 @@ describe('Pre-approval Home page', () => {
         authenticated: true,
         user: {
           email: 'admin@acf.hhs.gov',
+          idp: 'ams',
           roles: [],
           access_request: false,
         },
@@ -744,6 +751,7 @@ describe('Pre-approval Home page', () => {
         authenticated: true,
         user: {
           email: 'admin@acf.hhs.gov',
+          idp: 'ams',
           roles: [],
           access_request: false,
         },

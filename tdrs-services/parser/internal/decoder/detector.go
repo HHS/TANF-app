@@ -1,7 +1,6 @@
 package decoder
 
 import (
-	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -9,9 +8,8 @@ import (
 	"go-parser/internal/config"
 	"go-parser/internal/config/filespec"
 	"go-parser/internal/config/schema"
+	"go-parser/internal/sentinel"
 )
-
-var ErrUnknownRecordType = errors.New("unknown record type")
 
 // RecordTypeDetector determines which schema applies to each row.
 type RecordTypeDetector struct {
@@ -78,7 +76,7 @@ func (d *RecordTypeDetector) detectByPrefix(row Row) (*schema.CompiledSchema, er
 	if len(preview) > 20 {
 		preview = preview[:20] + "..."
 	}
-	return nil, fmt.Errorf("%w: no matching prefix for line: %q", ErrUnknownRecordType, preview)
+	return nil, fmt.Errorf("%w: no matching prefix for line: %q", sentinel.ErrUnknownRecordType, preview)
 }
 
 // detectByColumn determines schema by looking at a column value (for columnar files).
@@ -98,7 +96,7 @@ func (d *RecordTypeDetector) detectByColumn(row Row) (*schema.CompiledSchema, er
 
 	sch := d.registry.GetSchema(recordType)
 	if sch == nil {
-		return nil, fmt.Errorf("%w: %s", ErrUnknownRecordType, recordType)
+		return nil, fmt.Errorf("%w: %s", sentinel.ErrUnknownRecordType, recordType)
 	}
 
 	return sch, nil

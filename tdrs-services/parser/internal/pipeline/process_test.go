@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"slices"
@@ -81,7 +82,11 @@ func testSSPContext() DataFileContext {
 
 // capturingSink captures all flushed data for assertions.
 type capturingSink struct {
-	tables map[string][][]any // tableName -> rows
+	tables         map[string][][]any // tableName -> rows
+	rollbackCalls  int
+	rollbackErr    error
+	rollbackID     int32
+	rollbackTables []string
 }
 
 func newCapturingSink() *capturingSink {
@@ -95,7 +100,17 @@ func (s *capturingSink) Flush(_ context.Context, tableName string, _ []string, r
 	return int64(len(rows)), nil
 }
 
-func (s *capturingSink) RollbackDatafile(_ context.Context, _ int32, _ []string, _ string) error {
+func (s *capturingSink) RollbackDatafile(_ context.Context, datafileID int32, tables []string) error {
+	s.rollbackCalls++
+	s.rollbackID = datafileID
+	s.rollbackTables = slices.Clone(tables)
+	if s.rollbackErr != nil {
+		return s.rollbackErr
+	}
+	delete(s.tables, "parser_error")
+	for _, table := range tables {
+		delete(s.tables, table)
+	}
 	return nil
 }
 func (s *capturingSink) Close() error { return nil }
@@ -262,6 +277,158 @@ func TestProcess_TANF_S1_MissingHeader(t *testing.T) {
 	}
 	if got := sink.errorRows(pipelineCfg)[1][6]; got != "No records created." {
 		t.Errorf("second error_message = %v, want %q", got, "No records created.")
+	}
+}
+
+func TestProcess_TANF_MultipleHeaders_RollbacksAndWritesOffendingRow(t *testing.T) {
+	reg := loadRegistry(t)
+	validators := loadValidators(t, reg)
+
+	header := "HEADER20241A06000TAN1ED"
+	t1Line := "T1" + "202401" + "12345678901" + strings.Repeat(" ", 100)
+	trailer := "TRAILER0000001"
+	content := strings.Join([]string{header, t1Line, header, trailer}, "\n") + "\n"
+	filePath := writeTempFile(t, content)
+
+	f, err := os.Open(filePath)
+	if err != nil {
+		t.Fatalf("failed to open file: %v", err)
+	}
+	defer f.Close()
+
+	spec := reg.GetFileSpec("TAN", 1)
+	dec, err := decoder.CreateDecoder(f, spec)
+	if err != nil {
+		t.Fatalf("CreateDecoder failed: %v", err)
+	}
+	defer dec.Close()
+
+	sink := newCapturingSink()
+	pipelineCfg := TestConfig()
+	pipelineCfg.IncludeRecords = true
+	pipelineCfg.IncludeErrors = true
+	p := NewPipeline(sink, reg, validators, pipelineCfg)
+
+	result, err := p.Process(context.Background(), dec, testTANFContext())
+	if err != nil {
+		t.Fatalf("Process returned unexpected error: %v", err)
+	}
+	if result.ErrorCount != 1 {
+		t.Errorf("ErrorCount = %d, want 1", result.ErrorCount)
+	}
+	if sink.rollbackCalls != 1 {
+		t.Fatalf("rollbackCalls = %d, want 1", sink.rollbackCalls)
+	}
+	if sink.rollbackID != testTANFContext().DatafileID {
+		t.Errorf("rollbackID = %d, want %d", sink.rollbackID, testTANFContext().DatafileID)
+	}
+	if sink.totalRecords() != 0 {
+		t.Errorf("expected rollback to leave 0 record rows, got %d", sink.totalRecords())
+	}
+	if sink.errorCount() != 1 {
+		t.Fatalf("sink error count = %d, want 1", sink.errorCount())
+	}
+
+	errRow := sink.tables["parser_error"][0]
+	if got := errRow[0]; got != int32(3) {
+		t.Errorf("row_number = %v, want 3", got)
+	}
+	if got := errRow[6]; got != "Multiple headers found." {
+		t.Errorf("error_message = %v, want %q", got, "Multiple headers found.")
+	}
+}
+
+func TestProcess_TANF_MultipleHeaders_RollbackFailurePropagates(t *testing.T) {
+	reg := loadRegistry(t)
+	validators := loadValidators(t, reg)
+
+	header := "HEADER20241A06000TAN1ED"
+	content := strings.Join([]string{header, header}, "\n") + "\n"
+	filePath := writeTempFile(t, content)
+
+	f, err := os.Open(filePath)
+	if err != nil {
+		t.Fatalf("failed to open file: %v", err)
+	}
+	defer f.Close()
+
+	spec := reg.GetFileSpec("TAN", 1)
+	dec, err := decoder.CreateDecoder(f, spec)
+	if err != nil {
+		t.Fatalf("CreateDecoder failed: %v", err)
+	}
+	defer dec.Close()
+
+	rollbackErr := errors.New("rollback failed")
+	sink := newCapturingSink()
+	sink.rollbackErr = rollbackErr
+	pipelineCfg := TestConfig()
+	pipelineCfg.IncludeRecords = true
+	pipelineCfg.IncludeErrors = true
+	p := NewPipeline(sink, reg, validators, pipelineCfg)
+
+	result, err := p.Process(context.Background(), dec, testTANFContext())
+	if err == nil {
+		t.Fatal("expected rollback error")
+	}
+	if result != nil {
+		t.Fatalf("result = %#v, want nil", result)
+	}
+	if !errors.Is(err, rollbackErr) {
+		t.Fatalf("error = %v, want rollback failure", err)
+	}
+	if sink.rollbackCalls != 1 {
+		t.Fatalf("rollbackCalls = %d, want 1", sink.rollbackCalls)
+	}
+	if sink.errorCount() != 0 {
+		t.Fatalf("sink error count = %d, want 0 when rollback fails", sink.errorCount())
+	}
+}
+
+func TestProcess_RollbackDoesNotPoisonLaterProcess(t *testing.T) {
+	reg := loadRegistry(t)
+	validators := loadValidators(t, reg)
+
+	sink := newCapturingSink()
+	pipelineCfg := TestConfig()
+	pipelineCfg.IncludeRecords = true
+	pipelineCfg.IncludeErrors = true
+	p := NewPipeline(sink, reg, validators, pipelineCfg)
+
+	header := "HEADER20241A06000TAN1ED"
+	badPath := writeTempFile(t, strings.Join([]string{header, header}, "\n")+"\n")
+	badFile, err := os.Open(badPath)
+	if err != nil {
+		t.Fatalf("failed to open bad file: %v", err)
+	}
+	defer badFile.Close()
+	spec := reg.GetFileSpec("TAN", 1)
+	badDec, err := decoder.CreateDecoder(badFile, spec)
+	if err != nil {
+		t.Fatalf("CreateDecoder for bad file failed: %v", err)
+	}
+	defer badDec.Close()
+
+	if _, err := p.Process(context.Background(), badDec, testTANFContext()); err != nil {
+		t.Fatalf("first Process returned unexpected error: %v", err)
+	}
+
+	t1Line := "T1" + "202401" + "12345678901" + strings.Repeat(" ", 100)
+	trailer := "TRAILER0000001"
+	goodPath := writeTempFile(t, strings.Join([]string{header, t1Line, trailer}, "\n")+"\n")
+	goodFile, err := os.Open(goodPath)
+	if err != nil {
+		t.Fatalf("failed to open good file: %v", err)
+	}
+	defer goodFile.Close()
+	goodDec, err := decoder.CreateDecoder(goodFile, spec)
+	if err != nil {
+		t.Fatalf("CreateDecoder for good file failed: %v", err)
+	}
+	defer goodDec.Close()
+
+	if _, err := p.Process(context.Background(), goodDec, testTANFContext()); err != nil {
+		t.Fatalf("second Process failed after prior rollback: %v", err)
 	}
 }
 

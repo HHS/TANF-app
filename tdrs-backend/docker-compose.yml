@@ -53,6 +53,7 @@ services:
     build:
       context: ./keycloak
     environment:
+      - DEPLOY_ENV=local
       - KC_DB=postgres
       - KC_DB_URL=jdbc:postgresql://keycloak-pg:5432/keycloak
       - KC_DB_USERNAME=keycloak
@@ -97,12 +98,13 @@ services:
     build:
       context: ./keycloak
     environment:
+      - DEPLOY_ENV=local
       - KEYCLOAK_MANAGEMENT_URL=http://keycloak:9000
       - KEYCLOAK_URL=http://keycloak:8080
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
       - LOGIN_GOV_JWT_KEY=${JWT_KEY}
-    entrypoint: [ "/bin/bash", "/opt/keycloak/configure-idps.sh" ]
+    entrypoint: ["/bin/bash", "/opt/keycloak/configure-idps.sh"]
     depends_on:
       - keycloak
 
@@ -150,7 +152,7 @@ services:
     image: curlimages/curl:8.5.0
     volumes:
       - ./plg/grafana/init-grafana-orgs.sh:/init-grafana-orgs.sh:ro
-    entrypoint: [ "/bin/sh", "/init-grafana-orgs.sh" ]
+    entrypoint: ["/bin/sh", "/init-grafana-orgs.sh"]
     depends_on:
       - grafana
 
@@ -214,7 +216,7 @@ services:
   tempo:
     restart: always
     image: grafana/tempo:latest
-    command: [ "-config.file=/etc/tempo.yaml" ]
+    command: ["-config.file=/etc/tempo.yaml"]
     volumes:
       - ./plg/tempo/tempo.local.yml:/etc/tempo.yaml
       - tempo-data:/var/tempo
@@ -325,7 +327,7 @@ services:
       ./plg/grafana_views/generate_views.py --all && ./manage.py runscript
       apply_grafana_views && touch /tmp/web-ready && exec ./gunicorn_start.sh"
     healthcheck:
-      test: [ "CMD-SHELL", "test -f /tmp/web-ready" ]
+      test: ["CMD-SHELL", "test -f /tmp/web-ready"]
       interval: 5s
       timeout: 5s
       retries: 24
@@ -352,7 +354,7 @@ services:
     build:
       context: ../tdrs-services/parser
       dockerfile: Dockerfile
-    command: [ "--server.mode=celery", "--storage.source=s3" ]
+    command: ["--server.mode=celery", "--storage.source=s3"]
     environment:
       - REDIS_URL=redis://redis-server:6379/0
       - GO_PARSER_QUEUE=${GO_PARSER_QUEUE:-go-parser}
