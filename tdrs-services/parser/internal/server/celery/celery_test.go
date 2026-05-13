@@ -50,69 +50,6 @@ func TestRun_MissingRedisURL(t *testing.T) {
 	}
 }
 
-func TestSummaryStatusForResult(t *testing.T) {
-	tests := []struct {
-		name   string
-		result *pipeline.ParsingResult
-		want   string
-	}{
-		{
-			name:   "nil result rejected",
-			result: nil,
-			want:   summaryStatusRejected,
-		},
-		{
-			name:   "no errors accepted",
-			result: &pipeline.ParsingResult{ErrorCount: 0},
-			want:   summaryStatusAccepted,
-		},
-		{
-			name:   "header or precheck result without stats rejected",
-			result: &pipeline.ParsingResult{ErrorCount: 1},
-			want:   summaryStatusRejected,
-		},
-		{
-			name: "record precheck partially accepted",
-			result: &pipeline.ParsingResult{
-				ErrorCount: 1,
-				ErrorStats: &pipeline.ErrorStats{
-					RecordPreCheck: 1,
-				},
-			},
-			want: summaryStatusPartiallyAccepted,
-		},
-		{
-			name: "case consistency partially accepted",
-			result: &pipeline.ParsingResult{
-				ErrorCount: 1,
-				ErrorStats: &pipeline.ErrorStats{
-					CaseConsistency: 1,
-				},
-			},
-			want: summaryStatusPartiallyAccepted,
-		},
-		{
-			name: "nonblocking errors accepted with errors",
-			result: &pipeline.ParsingResult{
-				ErrorCount: 2,
-				ErrorStats: &pipeline.ErrorStats{
-					FieldValue:       1,
-					ValueConsistency: 1,
-				},
-			},
-			want: summaryStatusAcceptedWithErrors,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := summaryStatusForResult(tt.result); got != tt.want {
-				t.Errorf("summaryStatusForResult() = %q, want %q", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestRecordTotalsForResult(t *testing.T) {
 	result := &pipeline.ParsingResult{
 		RecordCounts: map[string]int64{
@@ -129,5 +66,37 @@ func TestRecordTotalsForResult(t *testing.T) {
 	}
 	if total != 12 {
 		t.Errorf("total = %d, want 15", total)
+	}
+}
+
+func TestDataFileStateForParsingResult(t *testing.T) {
+	tests := []struct {
+		name   string
+		result *pipeline.ParsingResult
+		want   string
+	}{
+		{
+			name:   "nil result fails",
+			result: nil,
+			want:   dataFileStateParseFailed,
+		},
+		{
+			name:   "no parser errors completes",
+			result: &pipeline.ParsingResult{ErrorCount: 0},
+			want:   dataFileStateParseCompleted,
+		},
+		{
+			name:   "parser errors mark parsed with errors",
+			result: &pipeline.ParsingResult{ErrorCount: 1},
+			want:   dataFileStateParsedWithErrors,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := dataFileStateForParsingResult(tt.result); got != tt.want {
+				t.Errorf("dataFileStateForParsingResult() = %q, want %q", got, tt.want)
+			}
+		})
 	}
 }

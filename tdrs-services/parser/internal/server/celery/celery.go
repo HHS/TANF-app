@@ -262,6 +262,15 @@ func (s *Server) processTask(taskCtx context.Context, dataFileID int32) error {
 		return fmt.Errorf("pipeline processing failed: %w", err)
 	}
 
+	dataFileState := dataFileStateForParsingResult(result)
+	totalCreated, totalInFile := recordTotalsForResult(result)
+	if err := db.UpdateDataFileSummaryResult(taskCtx, s.dbPool, summaryTable, dataFileID, totalInFile, totalCreated); err != nil {
+		return fmt.Errorf("failed to update shadow datafile summary result: %w", err)
+	}
+	if err := db.UpdateDataFileState(taskCtx, s.dbPool, dataFileTable, dataFileID, dataFileState); err != nil {
+		return fmt.Errorf("failed to update shadow datafile state: %w", err)
+	}
+
 	// 6. Log results.
 	log.Printf("data_file_id=%d processed in %s", dataFileID, result.Duration)
 	for table, count := range result.RecordCounts {
@@ -271,31 +280,14 @@ func (s *Server) processTask(taskCtx context.Context, dataFileID int32) error {
 	return nil
 }
 
-func summaryStatusForResult(result *pipeline.ParsingResult) string {
+func dataFileStateForParsingResult(result *pipeline.ParsingResult) string {
 	if result == nil {
-		return summaryStatusRejected
-	}
-	if result.ErrorCount == 0 {
-		return summaryStatusAccepted
-	}
-	if result.ErrorStats == nil {
-		return summaryStatusRejected
-	}
-	if result.ErrorStats.RecordPreCheck > 0 || result.ErrorStats.CaseConsistency > 0 {
-		return summaryStatusPartiallyAccepted
-	}
-	return summaryStatusAcceptedWithErrors
-}
-
-func dataFileStateForSummaryStatus(status string) string {
-	switch status {
-	case summaryStatusAccepted:
-		return dataFileStateParseCompleted
-	case summaryStatusRejected:
 		return dataFileStateParseFailed
-	default:
+	}
+	if result.ErrorCount > 0 {
 		return dataFileStateParsedWithErrors
 	}
+	return dataFileStateParseCompleted
 }
 
 func recordTotalsForResult(result *pipeline.ParsingResult) (created int64, total int64) {

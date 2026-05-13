@@ -115,17 +115,16 @@ func EnsureDataFileSummary(ctx context.Context, pool *pgxpool.Pool, tableName st
 }
 
 // UpdateDataFileSummaryResult updates the final status and aggregate counts for a summary row.
-func UpdateDataFileSummaryResult(ctx context.Context, pool *pgxpool.Pool, tableName string, datafileID int32, status string, totalInFile int64, totalCreated int64) error {
+func UpdateDataFileSummaryResult(ctx context.Context, pool *pgxpool.Pool, tableName string, datafileID int32, totalInFile int64, totalCreated int64) error {
 	table := pgx.Identifier{tableName}.Sanitize()
 	query := `
 		UPDATE %s
-		SET status = $1,
-		    total_number_of_records_in_file = $2,
-		    total_number_of_records_created = $3
-		WHERE datafile_id = $4
+		SET total_number_of_records_in_file = $1,
+		    total_number_of_records_created = $2
+		WHERE datafile_id = $3
 	`
 
-	_, err := pool.Exec(ctx, fmt.Sprintf(query, table), status, totalInFile, totalCreated, datafileID)
+	_, err := pool.Exec(ctx, fmt.Sprintf(query, table), totalInFile, totalCreated, datafileID)
 	if err != nil {
 		return fmt.Errorf("update %s result for datafile_id=%d: %w", tableName, datafileID, err)
 	}
