@@ -354,6 +354,7 @@ tasks:
     cmds:
       - export CYPRESS_TOKEN=local-cypress-token
       - docker compose -f docker-compose.yml exec web python manage.py delete_cypress_users -usernames new-cypress@teamraft.com cypress-admin@teamraft.com cypress-data-analyst-dana@teamraft.com cypress-fra-data-analyst-derek@teamraft.com cypress-data-analyst-donna@teamraft.com cypress-fra-data-analyst-david@teamraft.com cypress-fra-ofa-regional-staff-rachel@acf.hhs.gov cypress-fra-ofa-regional-staff-robert@acf.hhs.gov cypress-fra-ofa-regional-staff-rita@acf.hhs.gov cypress-fra-ofa-regional-staff-ryan@acf.hhs.gov
+      - docker compose -f docker-compose.yml exec web python manage.py reset_cypress_profile_editing_users --allow-non-debug
       - docker compose -f docker-compose.yml exec web python manage.py loaddata cypress/users cypress/data_files cypress/regions cypress/profile_editing_regions cypress/profile_editing_users cypress/feature_flags
 
   frontend-e2e-local:
@@ -420,6 +421,23 @@ tasks:
     cmds:
       - task: backend-down
       - task: frontend-down
+
+  create-infected-test-file:
+    desc: Create a test file with a valid TANF header that ClamAV will flag as infected
+    dir: tdrs-backend
+    preconditions:
+      - sh: docker compose ps clamav-rest --status running -q 2>/dev/null
+        msg: "clamav-rest container is not running. Start it first with: task backend-up"
+    cmds:
+      - |
+        printf 'HEADER20204A06   TAN1ED\nTDP-INFECTED-TEST-MARKER\nTRAILER0000001         \n' > infected_test.txt
+      - >-
+        docker compose exec -T clamav-rest sh -c
+        'echo "TDP.Test.Infected:0:*:5444502d494e4645435445442d544553542d4d41524b4552" > /var/lib/clamav/tdp-test.ndb
+        && pkill -USR2 clamd
+        && sleep 5
+        && tail -1 /var/log/clamav/clamd.log'
+      - echo "Created tdrs-backend/infected_test.txt and loaded ClamAV test signature. Upload this file through the frontend to test AV rejection."
 
   parser:compile-check:
     desc: Compile all Go parser packages and tests

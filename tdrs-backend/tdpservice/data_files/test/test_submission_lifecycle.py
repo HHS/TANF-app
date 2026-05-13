@@ -142,3 +142,19 @@ def test_transition_datafile_supports_parse_failed_state():
     data_file.refresh_from_db()
 
     assert data_file.state == SubmissionState.PARSE_FAILED
+
+
+@pytest.mark.parametrize(
+    "state",
+    [
+        SubmissionState.PARSE_FAILED,
+        SubmissionState.PARSED_WITH_ERRORS,
+        SubmissionState.PARSE_COMPLETED,
+    ],
+)
+def test_parse_outcome_states_can_reparse(state):
+    """Test parsed files can transition back to parse_started for reparse."""
+    transition = validate_transition(state, SubmissionState.PARSE_STARTED)
+
+    assert transition.previous_state == state
+    assert transition.next_state == SubmissionState.PARSE_STARTED

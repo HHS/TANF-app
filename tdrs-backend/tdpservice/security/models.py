@@ -35,6 +35,7 @@ class ClamAVFileScanManager(models.Manager):
         msg: str,
         result: "ClamAVFileScan.Result",
         uploaded_by: User,
+        data_file: DataFile | None = None,
     ) -> "ClamAVFileScan":
         """Create a new ClamAVFileScan instance with associated LogEntry."""
         try:
@@ -50,6 +51,7 @@ class ClamAVFileScanManager(models.Manager):
             file_shasum=file_shasum,
             result=result,
             uploaded_by=uploaded_by,
+            data_file=data_file,
         )
 
         # Create a new LogEntry that is tied to this model instance.
