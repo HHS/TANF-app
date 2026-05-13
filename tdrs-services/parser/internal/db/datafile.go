@@ -9,9 +9,31 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+const (
+	productionDataFileTable        = "data_files_datafile"
+	shadowDataFileTable            = "shadow_data_files_datafile"
+	productionDataFileSummaryTable = "parsers_datafilesummary"
+	shadowDataFileSummaryTable     = "shadow_parsers_datafilesummary"
+)
+
 // GetDataFile retrieves a DataFile-compatible record by its primary key.
 func GetDataFile(ctx context.Context, pool *pgxpool.Pool, tableName string, id int32) (*ShadowDataFilesDatafile, error) {
-	df, err := New(pool).GetDataFile(ctx, id)
+	queries := New(pool)
+	var (
+		df  ShadowDataFilesDatafile
+		err error
+	)
+
+	switch tableName {
+	case shadowDataFileTable:
+		df, err = queries.GetDataFile(ctx, id)
+	case productionDataFileTable:
+		var productionDf DataFilesDatafile
+		productionDf, err = queries.GetProductionDataFile(ctx, id)
+		df = shadowDataFileFromProduction(productionDf)
+	default:
+		err = fmt.Errorf("unsupported datafile table %q", tableName)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("query %s id=%d: %w", tableName, id, err)
 	}
@@ -21,24 +43,17 @@ func GetDataFile(ctx context.Context, pool *pgxpool.Pool, tableName string, id i
 
 // EnsureShadowDataFile copies production DataFile metadata into the Go parser shadow table.
 func EnsureShadowDataFile(ctx context.Context, pool *pgxpool.Pool, tableName string, df *ShadowDataFilesDatafile) error {
-	if err := New(pool).EnsureShadowDataFile(ctx, EnsureShadowDataFileParams{
-		ID:               df.ID,
-		OriginalFilename: df.OriginalFilename,
-		Slug:             df.Slug,
-		Extension:        df.Extension,
-		Quarter:          df.Quarter,
-		Year:             df.Year,
-		Section:          df.Section,
-		Version:          df.Version,
-		SttID:            df.SttID,
-		UserID:           df.UserID,
-		CreatedAt:        df.CreatedAt,
-		File:             df.File,
-		S3VersioningID:   df.S3VersioningID,
-		ProgramType:      df.ProgramType,
-		IsProgramAudit:   df.IsProgramAudit,
-		State:            df.State,
-	}); err != nil {
+	queries := New(pool)
+	var err error
+	switch tableName {
+	case shadowDataFileTable:
+		err = queries.EnsureShadowDataFile(ctx, ensureShadowDataFileParams(df))
+	case productionDataFileTable:
+		err = queries.EnsureProductionDataFile(ctx, ensureProductionDataFileParams(df))
+	default:
+		err = fmt.Errorf("unsupported datafile table %q", tableName)
+	}
+	if err != nil {
 		return fmt.Errorf("upsert %s id=%d: %w", tableName, df.ID, err)
 	}
 
@@ -47,10 +62,23 @@ func EnsureShadowDataFile(ctx context.Context, pool *pgxpool.Pool, tableName str
 
 // UpdateDataFileState updates the submission state for a DataFile-compatible table.
 func UpdateDataFileState(ctx context.Context, pool *pgxpool.Pool, tableName string, datafileID int32, state string) error {
-	if err := New(pool).UpdateDataFileState(ctx, UpdateDataFileStateParams{
-		ID:    datafileID,
-		State: state,
-	}); err != nil {
+	queries := New(pool)
+	var err error
+	switch tableName {
+	case shadowDataFileTable:
+		err = queries.UpdateDataFileState(ctx, UpdateDataFileStateParams{
+			ID:    datafileID,
+			State: state,
+		})
+	case productionDataFileTable:
+		err = queries.UpdateProductionDataFileState(ctx, UpdateProductionDataFileStateParams{
+			ID:    datafileID,
+			State: state,
+		})
+	default:
+		err = fmt.Errorf("unsupported datafile table %q", tableName)
+	}
+	if err != nil {
 		return fmt.Errorf("update %s state for id=%d: %w", tableName, datafileID, err)
 	}
 
@@ -59,7 +87,17 @@ func UpdateDataFileState(ctx context.Context, pool *pgxpool.Pool, tableName stri
 
 // EnsureDataFileSummary creates or resets the shadow DataFileSummary for the given datafile.
 func EnsureDataFileSummary(ctx context.Context, pool *pgxpool.Pool, tableName string, datafileID int32) error {
-	if err := New(pool).EnsureDataFileSummary(ctx, datafileID); err != nil {
+	queries := New(pool)
+	var err error
+	switch tableName {
+	case shadowDataFileSummaryTable:
+		err = queries.EnsureDataFileSummary(ctx, datafileID)
+	case productionDataFileSummaryTable:
+		err = queries.EnsureProductionDataFileSummary(ctx, datafileID)
+	default:
+		err = fmt.Errorf("unsupported datafile summary table %q", tableName)
+	}
+	if err != nil {
 		return fmt.Errorf("upsert %s for datafile_id=%d: %w", tableName, datafileID, err)
 	}
 
@@ -77,11 +115,24 @@ func UpdateDataFileSummaryResult(ctx context.Context, pool *pgxpool.Pool, tableN
 		return fmt.Errorf("update %s result for datafile_id=%d: %w", tableName, datafileID, err)
 	}
 
-	if err := New(pool).UpdateDataFileSummaryResult(ctx, UpdateDataFileSummaryResultParams{
-		DatafileID:                  datafileID,
-		TotalNumberOfRecordsInFile:  totalInFileInt4,
-		TotalNumberOfRecordsCreated: totalCreatedInt4,
-	}); err != nil {
+	queries := New(pool)
+	switch tableName {
+	case shadowDataFileSummaryTable:
+		err = queries.UpdateDataFileSummaryResult(ctx, UpdateDataFileSummaryResultParams{
+			DatafileID:                  datafileID,
+			TotalNumberOfRecordsInFile:  totalInFileInt4,
+			TotalNumberOfRecordsCreated: totalCreatedInt4,
+		})
+	case productionDataFileSummaryTable:
+		err = queries.UpdateProductionDataFileSummaryResult(ctx, UpdateProductionDataFileSummaryResultParams{
+			DatafileID:                  datafileID,
+			TotalNumberOfRecordsInFile:  totalInFileInt4,
+			TotalNumberOfRecordsCreated: totalCreatedInt4,
+		})
+	default:
+		err = fmt.Errorf("unsupported datafile summary table %q", tableName)
+	}
+	if err != nil {
 		return fmt.Errorf("update %s result for datafile_id=%d: %w", tableName, datafileID, err)
 	}
 
@@ -90,10 +141,23 @@ func UpdateDataFileSummaryResult(ctx context.Context, pool *pgxpool.Pool, tableN
 
 // UpdateDataFileSummaryStatus updates the status of a DataFileSummary for the given datafile.
 func UpdateDataFileSummaryStatus(ctx context.Context, pool *pgxpool.Pool, tableName string, datafileID int32, status string) error {
-	if err := New(pool).UpdateDataFileSummaryStatus(ctx, UpdateDataFileSummaryStatusParams{
-		DatafileID: datafileID,
-		Status:     status,
-	}); err != nil {
+	queries := New(pool)
+	var err error
+	switch tableName {
+	case shadowDataFileSummaryTable:
+		err = queries.UpdateDataFileSummaryStatus(ctx, UpdateDataFileSummaryStatusParams{
+			DatafileID: datafileID,
+			Status:     status,
+		})
+	case productionDataFileSummaryTable:
+		err = queries.UpdateProductionDataFileSummaryStatus(ctx, UpdateProductionDataFileSummaryStatusParams{
+			DatafileID: datafileID,
+			Status:     status,
+		})
+	default:
+		err = fmt.Errorf("unsupported datafile summary table %q", tableName)
+	}
+	if err != nil {
 		return fmt.Errorf("update %s status for datafile_id=%d: %w", tableName, datafileID, err)
 	}
 
@@ -105,4 +169,67 @@ func int64ToInt4(value int64) (pgtype.Int4, error) {
 		return pgtype.Int4{}, fmt.Errorf("value %d is outside int4 range", value)
 	}
 	return pgtype.Int4{Int32: int32(value), Valid: true}, nil
+}
+
+func shadowDataFileFromProduction(df DataFilesDatafile) ShadowDataFilesDatafile {
+	return ShadowDataFilesDatafile{
+		ID:               df.ID,
+		OriginalFilename: df.OriginalFilename,
+		Slug:             df.Slug,
+		Extension:        df.Extension,
+		Quarter:          df.Quarter,
+		Year:             df.Year,
+		Section:          df.Section,
+		Version:          df.Version,
+		SttID:            df.SttID,
+		UserID:           df.UserID,
+		CreatedAt:        df.CreatedAt,
+		File:             df.File,
+		S3VersioningID:   df.S3VersioningID,
+		ProgramType:      df.ProgramType,
+		IsProgramAudit:   df.IsProgramAudit,
+		State:            df.State,
+	}
+}
+
+func ensureShadowDataFileParams(df *ShadowDataFilesDatafile) EnsureShadowDataFileParams {
+	return EnsureShadowDataFileParams{
+		ID:               df.ID,
+		OriginalFilename: df.OriginalFilename,
+		Slug:             df.Slug,
+		Extension:        df.Extension,
+		Quarter:          df.Quarter,
+		Year:             df.Year,
+		Section:          df.Section,
+		Version:          df.Version,
+		SttID:            df.SttID,
+		UserID:           df.UserID,
+		CreatedAt:        df.CreatedAt,
+		File:             df.File,
+		S3VersioningID:   df.S3VersioningID,
+		ProgramType:      df.ProgramType,
+		IsProgramAudit:   df.IsProgramAudit,
+		State:            df.State,
+	}
+}
+
+func ensureProductionDataFileParams(df *ShadowDataFilesDatafile) EnsureProductionDataFileParams {
+	return EnsureProductionDataFileParams{
+		ID:               df.ID,
+		OriginalFilename: df.OriginalFilename,
+		Slug:             df.Slug,
+		Extension:        df.Extension,
+		Quarter:          df.Quarter,
+		Year:             df.Year,
+		Section:          df.Section,
+		Version:          df.Version,
+		SttID:            df.SttID,
+		UserID:           df.UserID,
+		CreatedAt:        df.CreatedAt,
+		File:             df.File,
+		S3VersioningID:   df.S3VersioningID,
+		ProgramType:      df.ProgramType,
+		IsProgramAudit:   df.IsProgramAudit,
+		State:            df.State,
+	}
 }

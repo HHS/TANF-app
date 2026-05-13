@@ -30,6 +30,97 @@ func (q *Queries) EnsureDataFileSummary(ctx context.Context, datafileID int32) e
 	return err
 }
 
+const ensureProductionDataFile = `-- name: EnsureProductionDataFile :exec
+INSERT INTO data_files_datafile (
+    id, original_filename, slug, extension, quarter, year, section, version,
+    stt_id, user_id, created_at, file, s3_versioning_id, program_type,
+    is_program_audit, state
+)
+VALUES (
+    $1, $2, $3, $4,
+    $5, $6, $7, $8,
+    $9, $10, $11, $12,
+    $13, $14, $15,
+    $16
+)
+ON CONFLICT (id) DO UPDATE SET
+    original_filename = EXCLUDED.original_filename,
+    slug = EXCLUDED.slug,
+    extension = EXCLUDED.extension,
+    quarter = EXCLUDED.quarter,
+    year = EXCLUDED.year,
+    section = EXCLUDED.section,
+    version = EXCLUDED.version,
+    stt_id = EXCLUDED.stt_id,
+    user_id = EXCLUDED.user_id,
+    created_at = EXCLUDED.created_at,
+    file = EXCLUDED.file,
+    s3_versioning_id = EXCLUDED.s3_versioning_id,
+    program_type = EXCLUDED.program_type,
+    is_program_audit = EXCLUDED.is_program_audit,
+    state = EXCLUDED.state
+`
+
+type EnsureProductionDataFileParams struct {
+	ID               int32
+	OriginalFilename string
+	Slug             string
+	Extension        string
+	Quarter          string
+	Year             int32
+	Section          string
+	Version          int32
+	SttID            int32
+	UserID           pgtype.UUID
+	CreatedAt        pgtype.Timestamptz
+	File             pgtype.Text
+	S3VersioningID   pgtype.Text
+	ProgramType      string
+	IsProgramAudit   bool
+	State            string
+}
+
+func (q *Queries) EnsureProductionDataFile(ctx context.Context, arg EnsureProductionDataFileParams) error {
+	_, err := q.db.Exec(ctx, ensureProductionDataFile,
+		arg.ID,
+		arg.OriginalFilename,
+		arg.Slug,
+		arg.Extension,
+		arg.Quarter,
+		arg.Year,
+		arg.Section,
+		arg.Version,
+		arg.SttID,
+		arg.UserID,
+		arg.CreatedAt,
+		arg.File,
+		arg.S3VersioningID,
+		arg.ProgramType,
+		arg.IsProgramAudit,
+		arg.State,
+	)
+	return err
+}
+
+const ensureProductionDataFileSummary = `-- name: EnsureProductionDataFileSummary :exec
+INSERT INTO parsers_datafilesummary (
+    status, datafile_id, case_aggregates, total_number_of_records_in_file,
+    total_number_of_records_created, error_report
+)
+VALUES ('Pending', $1, NULL, 0, 0, NULL)
+ON CONFLICT (datafile_id) DO UPDATE SET
+    status = EXCLUDED.status,
+    case_aggregates = EXCLUDED.case_aggregates,
+    total_number_of_records_in_file = EXCLUDED.total_number_of_records_in_file,
+    total_number_of_records_created = EXCLUDED.total_number_of_records_created,
+    error_report = EXCLUDED.error_report
+`
+
+func (q *Queries) EnsureProductionDataFileSummary(ctx context.Context, datafileID int32) error {
+	_, err := q.db.Exec(ctx, ensureProductionDataFileSummary, datafileID)
+	return err
+}
+
 const ensureShadowDataFile = `-- name: EnsureShadowDataFile :exec
 INSERT INTO shadow_data_files_datafile (
     id, original_filename, slug, extension, quarter, year, section, version,
@@ -113,6 +204,38 @@ WHERE id = $1
 func (q *Queries) GetDataFile(ctx context.Context, id int32) (ShadowDataFilesDatafile, error) {
 	row := q.db.QueryRow(ctx, getDataFile, id)
 	var i ShadowDataFilesDatafile
+	err := row.Scan(
+		&i.ID,
+		&i.OriginalFilename,
+		&i.Slug,
+		&i.Extension,
+		&i.Quarter,
+		&i.Year,
+		&i.Section,
+		&i.Version,
+		&i.SttID,
+		&i.UserID,
+		&i.CreatedAt,
+		&i.File,
+		&i.S3VersioningID,
+		&i.ProgramType,
+		&i.IsProgramAudit,
+		&i.State,
+	)
+	return i, err
+}
+
+const getProductionDataFile = `-- name: GetProductionDataFile :one
+SELECT id, original_filename, slug, extension, quarter, year, section, version,
+       stt_id, user_id, created_at, file, s3_versioning_id, program_type,
+       is_program_audit, state
+FROM data_files_datafile
+WHERE id = $1
+`
+
+func (q *Queries) GetProductionDataFile(ctx context.Context, id int32) (DataFilesDatafile, error) {
+	row := q.db.QueryRow(ctx, getProductionDataFile, id)
+	var i DataFilesDatafile
 	err := row.Scan(
 		&i.ID,
 		&i.OriginalFilename,
@@ -288,5 +411,55 @@ type UpdateDataFileSummaryStatusParams struct {
 
 func (q *Queries) UpdateDataFileSummaryStatus(ctx context.Context, arg UpdateDataFileSummaryStatusParams) error {
 	_, err := q.db.Exec(ctx, updateDataFileSummaryStatus, arg.Status, arg.DatafileID)
+	return err
+}
+
+const updateProductionDataFileState = `-- name: UpdateProductionDataFileState :exec
+UPDATE data_files_datafile
+SET state = $1
+WHERE id = $2
+`
+
+type UpdateProductionDataFileStateParams struct {
+	State string
+	ID    int32
+}
+
+func (q *Queries) UpdateProductionDataFileState(ctx context.Context, arg UpdateProductionDataFileStateParams) error {
+	_, err := q.db.Exec(ctx, updateProductionDataFileState, arg.State, arg.ID)
+	return err
+}
+
+const updateProductionDataFileSummaryResult = `-- name: UpdateProductionDataFileSummaryResult :exec
+UPDATE parsers_datafilesummary
+SET total_number_of_records_in_file = $1,
+    total_number_of_records_created = $2
+WHERE datafile_id = $3
+`
+
+type UpdateProductionDataFileSummaryResultParams struct {
+	TotalNumberOfRecordsInFile  pgtype.Int4
+	TotalNumberOfRecordsCreated pgtype.Int4
+	DatafileID                  int32
+}
+
+func (q *Queries) UpdateProductionDataFileSummaryResult(ctx context.Context, arg UpdateProductionDataFileSummaryResultParams) error {
+	_, err := q.db.Exec(ctx, updateProductionDataFileSummaryResult, arg.TotalNumberOfRecordsInFile, arg.TotalNumberOfRecordsCreated, arg.DatafileID)
+	return err
+}
+
+const updateProductionDataFileSummaryStatus = `-- name: UpdateProductionDataFileSummaryStatus :exec
+UPDATE parsers_datafilesummary
+SET status = $1
+WHERE datafile_id = $2
+`
+
+type UpdateProductionDataFileSummaryStatusParams struct {
+	Status     string
+	DatafileID int32
+}
+
+func (q *Queries) UpdateProductionDataFileSummaryStatus(ctx context.Context, arg UpdateProductionDataFileSummaryStatusParams) error {
+	_, err := q.db.Exec(ctx, updateProductionDataFileSummaryStatus, arg.Status, arg.DatafileID)
 	return err
 }

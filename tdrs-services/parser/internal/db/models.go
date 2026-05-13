@@ -8,6 +8,35 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type DataFilesDatafile struct {
+	ID               int32
+	OriginalFilename string
+	Slug             string
+	Extension        string
+	Quarter          string
+	Year             int32
+	Section          string
+	Version          int32
+	SttID            int32
+	UserID           pgtype.UUID
+	CreatedAt        pgtype.Timestamptz
+	File             pgtype.Text
+	S3VersioningID   pgtype.Text
+	ProgramType      string
+	IsProgramAudit   bool
+	State            string
+}
+
+type ParsersDatafilesummary struct {
+	ID                          int64
+	Status                      string
+	CaseAggregates              []byte
+	DatafileID                  int32
+	TotalNumberOfRecordsCreated pgtype.Int4
+	TotalNumberOfRecordsInFile  pgtype.Int4
+	ErrorReport                 pgtype.Text
+}
+
 type ShadowDataFilesDatafile struct {
 	ID               int32
 	OriginalFilename string
