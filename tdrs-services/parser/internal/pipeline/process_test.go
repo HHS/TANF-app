@@ -100,14 +100,14 @@ func (s *capturingSink) Flush(_ context.Context, tableName string, _ []string, r
 	return int64(len(rows)), nil
 }
 
-func (s *capturingSink) RollbackDatafile(_ context.Context, datafileID int32, tables []string) error {
+func (s *capturingSink) RollbackDatafile(_ context.Context, datafileID int32, tables []string, errorTableName string) error {
 	s.rollbackCalls++
 	s.rollbackID = datafileID
 	s.rollbackTables = slices.Clone(tables)
 	if s.rollbackErr != nil {
 		return s.rollbackErr
 	}
-	delete(s.tables, "parser_error")
+	delete(s.tables, errorTableName)
 	for _, table := range tables {
 		delete(s.tables, table)
 	}
@@ -329,7 +329,7 @@ func TestProcess_TANF_MultipleHeaders_RollbacksAndWritesOffendingRow(t *testing.
 		t.Fatalf("sink error count = %d, want 1", sink.errorCount())
 	}
 
-	errRow := sink.tables["parser_error"][0]
+	errRow := sink.errorRows(pipelineCfg)[0]
 	if got := errRow[0]; got != int32(3) {
 		t.Errorf("row_number = %v, want 3", got)
 	}

@@ -370,7 +370,7 @@ func (p *Pipeline) abortAndRollback(ctx context.Context, cancelRun context.Cance
 
 func (p *Pipeline) rollbackDatafile(ctx context.Context, dfCtx DataFileContext, router *writer.Router) error {
 	rollbackCtx := context.WithoutCancel(ctx)
-	if rollbackErr := p.sink.RollbackDatafile(rollbackCtx, dfCtx.DatafileID, router.TableNames()); rollbackErr != nil {
+	if rollbackErr := p.sink.RollbackDatafile(rollbackCtx, dfCtx.DatafileID, router.TableNames(), router.ErrorTableName()); rollbackErr != nil {
 		return fmt.Errorf("rollback datafile %d: %w", dfCtx.DatafileID, rollbackErr)
 	}
 	return nil

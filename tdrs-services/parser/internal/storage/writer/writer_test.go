@@ -39,8 +39,10 @@ func (m *mockSink) Flush(_ context.Context, tableName string, columns []string, 
 	return int64(len(rows)), nil
 }
 
-func (m *mockSink) RollbackDatafile(_ context.Context, _ int32, _ []string) error { return nil }
-func (m *mockSink) Close() error                                                  { return nil }
+func (m *mockSink) RollbackDatafile(_ context.Context, _ int32, _ []string, _ string) error {
+	return nil
+}
+func (m *mockSink) Close() error { return nil }
 
 func (m *mockSink) totalRows() int {
 	m.mu.Lock()
