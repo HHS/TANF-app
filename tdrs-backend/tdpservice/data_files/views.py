@@ -5,7 +5,7 @@ from distutils.util import strtobool
 from wsgiref.util import FileWrapper
 
 from django.conf import settings
-from django.db.models import Prefetch
+from django.db.models import Exists, OuterRef, Prefetch
 from django.http import FileResponse, Http404, HttpResponse
 
 from django_filters import rest_framework as filters
@@ -31,6 +31,7 @@ from tdpservice.data_files.s3_client import S3Client
 from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.submission_lifecycle import transition_datafile
 from tdpservice.log_handler import S3FileHandler
+from tdpservice.parsers.models import ParserError
 from tdpservice.scheduling import parser_task
 from tdpservice.scheduling.parser_task import set_error_report
 from tdpservice.security.clients import ClamAVClient
@@ -88,6 +89,14 @@ class DataFileViewSet(ModelViewSet):
                     "-finished_at"
                 ),
                 to_attr="rfms",
+            )
+        )
+        .annotate(
+            has_error=Exists(
+                ParserError.objects.filter(
+                    file=OuterRef("pk"),
+                    deprecated=False
+                )
             )
         )
     )
