@@ -7,7 +7,132 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const ensureDataFileSummary = `-- name: EnsureDataFileSummary :exec
+INSERT INTO shadow_parsers_datafilesummary (
+    status, datafile_id, case_aggregates, total_number_of_records_in_file,
+    total_number_of_records_created, error_report
+)
+VALUES ('Pending', $1, NULL, 0, 0, NULL)
+ON CONFLICT (datafile_id) DO UPDATE SET
+    status = EXCLUDED.status,
+    case_aggregates = EXCLUDED.case_aggregates,
+    total_number_of_records_in_file = EXCLUDED.total_number_of_records_in_file,
+    total_number_of_records_created = EXCLUDED.total_number_of_records_created,
+    error_report = EXCLUDED.error_report
+`
+
+func (q *Queries) EnsureDataFileSummary(ctx context.Context, datafileID int32) error {
+	_, err := q.db.Exec(ctx, ensureDataFileSummary, datafileID)
+	return err
+}
+
+const ensureShadowDataFile = `-- name: EnsureShadowDataFile :exec
+INSERT INTO shadow_data_files_datafile (
+    id, original_filename, slug, extension, quarter, year, section, version,
+    stt_id, user_id, created_at, file, s3_versioning_id, program_type,
+    is_program_audit, state
+)
+VALUES (
+    $1, $2, $3, $4,
+    $5, $6, $7, $8,
+    $9, $10, $11, $12,
+    $13, $14, $15,
+    $16
+)
+ON CONFLICT (id) DO UPDATE SET
+    original_filename = EXCLUDED.original_filename,
+    slug = EXCLUDED.slug,
+    extension = EXCLUDED.extension,
+    quarter = EXCLUDED.quarter,
+    year = EXCLUDED.year,
+    section = EXCLUDED.section,
+    version = EXCLUDED.version,
+    stt_id = EXCLUDED.stt_id,
+    user_id = EXCLUDED.user_id,
+    created_at = EXCLUDED.created_at,
+    file = EXCLUDED.file,
+    s3_versioning_id = EXCLUDED.s3_versioning_id,
+    program_type = EXCLUDED.program_type,
+    is_program_audit = EXCLUDED.is_program_audit,
+    state = EXCLUDED.state
+`
+
+type EnsureShadowDataFileParams struct {
+	ID               int32
+	OriginalFilename string
+	Slug             string
+	Extension        string
+	Quarter          string
+	Year             int32
+	Section          string
+	Version          int32
+	SttID            int32
+	UserID           pgtype.UUID
+	CreatedAt        pgtype.Timestamptz
+	File             pgtype.Text
+	S3VersioningID   pgtype.Text
+	ProgramType      string
+	IsProgramAudit   bool
+	State            string
+}
+
+func (q *Queries) EnsureShadowDataFile(ctx context.Context, arg EnsureShadowDataFileParams) error {
+	_, err := q.db.Exec(ctx, ensureShadowDataFile,
+		arg.ID,
+		arg.OriginalFilename,
+		arg.Slug,
+		arg.Extension,
+		arg.Quarter,
+		arg.Year,
+		arg.Section,
+		arg.Version,
+		arg.SttID,
+		arg.UserID,
+		arg.CreatedAt,
+		arg.File,
+		arg.S3VersioningID,
+		arg.ProgramType,
+		arg.IsProgramAudit,
+		arg.State,
+	)
+	return err
+}
+
+const getDataFile = `-- name: GetDataFile :one
+SELECT id, original_filename, slug, extension, quarter, year, section, version,
+       stt_id, user_id, created_at, file, s3_versioning_id, program_type,
+       is_program_audit, state
+FROM shadow_data_files_datafile
+WHERE id = $1
+`
+
+func (q *Queries) GetDataFile(ctx context.Context, id int32) (ShadowDataFilesDatafile, error) {
+	row := q.db.QueryRow(ctx, getDataFile, id)
+	var i ShadowDataFilesDatafile
+	err := row.Scan(
+		&i.ID,
+		&i.OriginalFilename,
+		&i.Slug,
+		&i.Extension,
+		&i.Quarter,
+		&i.Year,
+		&i.Section,
+		&i.Version,
+		&i.SttID,
+		&i.UserID,
+		&i.CreatedAt,
+		&i.File,
+		&i.S3VersioningID,
+		&i.ProgramType,
+		&i.IsProgramAudit,
+		&i.State,
+	)
+	return i, err
+}
 
 const getSTTs = `-- name: GetSTTs :many
 SELECT id, type, postal_code, name, region_id, state_id, filenames, stt_code, ssp, sample, timezone FROM stts_stt
@@ -114,4 +239,54 @@ func (q *Queries) GetSearchIndexesSSPM1(ctx context.Context) ([]ShadowSearchInde
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateDataFileState = `-- name: UpdateDataFileState :exec
+UPDATE shadow_data_files_datafile
+SET state = $1
+WHERE id = $2
+`
+
+type UpdateDataFileStateParams struct {
+	State string
+	ID    int32
+}
+
+func (q *Queries) UpdateDataFileState(ctx context.Context, arg UpdateDataFileStateParams) error {
+	_, err := q.db.Exec(ctx, updateDataFileState, arg.State, arg.ID)
+	return err
+}
+
+const updateDataFileSummaryResult = `-- name: UpdateDataFileSummaryResult :exec
+UPDATE shadow_parsers_datafilesummary
+SET total_number_of_records_in_file = $1,
+    total_number_of_records_created = $2
+WHERE datafile_id = $3
+`
+
+type UpdateDataFileSummaryResultParams struct {
+	TotalNumberOfRecordsInFile  pgtype.Int4
+	TotalNumberOfRecordsCreated pgtype.Int4
+	DatafileID                  int32
+}
+
+func (q *Queries) UpdateDataFileSummaryResult(ctx context.Context, arg UpdateDataFileSummaryResultParams) error {
+	_, err := q.db.Exec(ctx, updateDataFileSummaryResult, arg.TotalNumberOfRecordsInFile, arg.TotalNumberOfRecordsCreated, arg.DatafileID)
+	return err
+}
+
+const updateDataFileSummaryStatus = `-- name: UpdateDataFileSummaryStatus :exec
+UPDATE shadow_parsers_datafilesummary
+SET status = $1
+WHERE datafile_id = $2
+`
+
+type UpdateDataFileSummaryStatusParams struct {
+	Status     string
+	DatafileID int32
+}
+
+func (q *Queries) UpdateDataFileSummaryStatus(ctx context.Context, arg UpdateDataFileSummaryStatusParams) error {
+	_, err := q.db.Exec(ctx, updateDataFileSummaryStatus, arg.Status, arg.DatafileID)
+	return err
 }
