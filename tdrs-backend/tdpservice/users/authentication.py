@@ -159,8 +159,9 @@ class KeycloakBearerTokenAuthentication(BaseAuthentication):
                 "path": request.path,
             },
         )
-        # Stashed for KeycloakClientRateThrottle to key on; safe attr name.
+        # Stashed for KeycloakClientRateThrottle to key on; safe attr names.
         request._keycloak_client_id = client_id
+        request._keycloak_throttle_ident = f"{client_id}:{user.id}"
         return user, token
 
     def authenticate_header(self, request):

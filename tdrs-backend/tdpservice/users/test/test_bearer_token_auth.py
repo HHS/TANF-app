@@ -408,10 +408,10 @@ class TestAuditAndThrottleHook:
     """Audit logging + the request attribute used by KeycloakClientRateThrottle."""
 
     @patch("tdpservice.users.authentication._verify_keycloak_bearer_token")
-    def test_authenticate_stashes_client_id_on_request(
+    def test_authenticate_stashes_throttle_identity_on_request(
         self, mock_verify, auth, request_with_token
     ):
-        """``request._keycloak_client_id`` is set so the throttle can key off it."""
+        """The throttle identity scopes bearer limits by client and user."""
         user = UserFactory(
             account_approval_status=AccountApprovalStatusChoices.APPROVED,
         )
@@ -423,6 +423,7 @@ class TestAuditAndThrottleHook:
         request = request_with_token()
         auth.authenticate(request)
         assert request._keycloak_client_id == "tdp-cli"
+        assert request._keycloak_throttle_ident == f"tdp-cli:{user.id}"
 
     @patch("tdpservice.users.authentication._verify_keycloak_bearer_token")
     def test_audit_log_contains_client_id(
@@ -467,20 +468,34 @@ class TestAuthenticateHeader:
 
 
 class TestKeycloakClientRateThrottle:
-    """Throttle keys off ``_keycloak_client_id``; non-bearer paths skip."""
+    """Throttle keys off bearer client + user identity; non-bearer paths skip."""
 
-    def test_returns_none_when_no_client_id(self):
+    def test_returns_none_when_no_throttle_identity(self):
         """Sessions and other auth paths pass through without throttling."""
         throttle = KeycloakClientRateThrottle()
-        request = RequestFactory().get("/v1/users/me/")  # no _keycloak_client_id
+        request = RequestFactory().get("/v1/users/me/")
         assert throttle.get_cache_key(request, view=None) is None
 
-    def test_cache_key_uses_client_id(self):
-        """The cache key is scoped per Keycloak client_id, not per user."""
+    def test_cache_key_uses_client_and_user_identity(self):
+        """The cache key is scoped per Keycloak client and Django user."""
         throttle = KeycloakClientRateThrottle()
         request = RequestFactory().get("/v1/users/me/")
-        request._keycloak_client_id = "tdp-cli"
+        request._keycloak_throttle_ident = "tdp-cli:123"
         key = throttle.get_cache_key(request, view=None)
         assert key is not None
         assert "tdp-cli" in key
+        assert "123" in key
         assert "keycloak_client" in key
+
+    def test_same_client_different_users_get_different_cache_keys(self):
+        """One noisy tdp-cli user should not throttle every other tdp-cli user."""
+        throttle = KeycloakClientRateThrottle()
+        first_request = RequestFactory().get("/v1/users/me/")
+        second_request = RequestFactory().get("/v1/users/me/")
+        first_request._keycloak_throttle_ident = "tdp-cli:123"
+        second_request._keycloak_throttle_ident = "tdp-cli:456"
+
+        first_key = throttle.get_cache_key(first_request, view=None)
+        second_key = throttle.get_cache_key(second_request, view=None)
+
+        assert first_key != second_key
