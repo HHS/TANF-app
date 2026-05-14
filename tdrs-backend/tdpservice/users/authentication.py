@@ -1,10 +1,12 @@
 """Define custom authentication class."""
 
+import hashlib
 import json
 import logging
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.utils.translation import gettext_lazy as _
 
 import jwt
@@ -53,12 +55,32 @@ def _expected_keycloak_bearer_client_id():
     return getattr(settings, "KEYCLOAK_BEARER_CLIENT_ID", "tdp-cli")
 
 
+def _jwks_cache_key(key_id):
+    """Return a cache key for a JWKS key scoped to the configured endpoint."""
+    cache_identity = f"{settings.OIDC_OP_JWKS_ENDPOINT}:{key_id}".encode("utf-8")
+    return f"keycloak-jwks:{hashlib.sha256(cache_identity).hexdigest()}"
+
+
+def _jwks_cache_ttl():
+    """Return the TTL for cached JWKS keys."""
+    return getattr(
+        settings,
+        "KEYCLOAK_JWKS_CACHE_TTL",
+        getattr(settings, "DEFAULT_CACHE_TIMEOUT", 300),
+    )
+
+
 def _matching_jwks_key(token):
     """Return the JWKS key matching the token's key id."""
     header = jwt.get_unverified_header(token)
     key_id = header.get("kid")
     if not key_id:
         raise jwt.InvalidTokenError("Token missing kid header.")
+
+    cache_key = _jwks_cache_key(key_id)
+    cached_jwk = cache.get(cache_key)
+    if cached_jwk:
+        return jwt.algorithms.RSAAlgorithm.from_jwk(cached_jwk)
 
     response = requests.get(
         settings.OIDC_OP_JWKS_ENDPOINT,
@@ -70,7 +92,9 @@ def _matching_jwks_key(token):
 
     for key in response.json().get("keys", []):
         if key.get("kid") == key_id:
-            return jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(key))
+            jwk = json.dumps(key)
+            cache.set(cache_key, jwk, timeout=_jwks_cache_ttl())
+            return jwt.algorithms.RSAAlgorithm.from_jwk(jwk)
 
     raise jwt.InvalidTokenError("No matching JWKS key found.")
 

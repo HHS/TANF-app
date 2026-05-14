@@ -561,6 +561,7 @@ class Common(Configuration):
     KEYCLOAK_API_AUDIENCE = os.getenv(
         "KEYCLOAK_API_AUDIENCE", KEYCLOAK_DJANGO_CLIENT_ID
     )
+    KEYCLOAK_JWKS_CACHE_TTL = int(os.getenv("KEYCLOAK_JWKS_CACHE_TTL", 300))
 
     ####################################
     # mozilla-django-oidc Settings     #

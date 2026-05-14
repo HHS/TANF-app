@@ -5,6 +5,7 @@ import logging
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
+from django.core.cache import cache
 from django.test import RequestFactory
 
 from cryptography.hazmat.primitives import serialization
@@ -205,6 +206,14 @@ class TestTokenVerification:
 class TestBearerTokenIntentVerification:
     """Use signed JWTs to prove bearer tokens are meant for this API flow."""
 
+    def setup_method(self):
+        """Keep JWKS cache assertions isolated from other signed-token tests."""
+        cache.clear()
+
+    def teardown_method(self):
+        """Clear cached JWKS keys between tests."""
+        cache.clear()
+
     def test_signed_tdp_cli_token_is_accepted(
         self, auth, request_with_token, signed_bearer_token
     ):
@@ -320,6 +329,28 @@ class TestBearerTokenIntentVerification:
         with pytest.raises(AuthenticationFailed) as exc_info:
             auth.authenticate(request_with_token(token))
         assert str(exc_info.value.detail) == "Bearer token has expired."
+
+    def test_matching_jwks_key_is_cached_by_kid(
+        self, auth, request_with_token, signed_bearer_token, requests_mock
+    ):
+        """Repeat bearer auth with the same kid should not refetch JWKS."""
+        user = UserFactory(
+            account_approval_status=AccountApprovalStatusChoices.APPROVED,
+        )
+        token = signed_bearer_token(
+            email=user.email,
+            login_gov_uuid=str(user.login_gov_uuid),
+        )
+
+        auth.authenticate(request_with_token(token))
+        auth.authenticate(request_with_token(token))
+
+        jwks_calls = [
+            request
+            for request in requests_mock.request_history
+            if request.url == KEYCLOAK_TEST_JWKS_ENDPOINT
+        ]
+        assert len(jwks_calls) == 1
 
 
 @pytest.mark.django_db
