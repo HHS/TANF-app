@@ -752,7 +752,10 @@ class Common(Configuration):
     CELERY_WORKER_SEND_TASK_EVENTS = True
     CELERY_TASK_SEND_SENT_EVENT = True
 
-    FRA_PILOT_STATES = json.loads(os.getenv("FRA_PILOT_STATES", "[]"))
+    # TODO: Consider updating logic to allow setting pilot state for specific years
+    FRA_PILOT_STATES = json.loads(
+        os.getenv("FRA_PILOT_STATES", '["AZ", "IA", "NE", "OH", "VA"]')
+    )
 
     # Cloud.gov SET integration settings
     LOGIN_GOV_SET_AUDIENCE = os.getenv(
