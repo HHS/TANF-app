@@ -74,6 +74,9 @@ class DataFileSerializer(serializers.ModelSerializer):
 
     def get_has_error(self, obj):
         """Return whether the file has an error."""
+        # Use annotated value if available, otherwise fallback to query
+        if hasattr(obj, "has_error"):
+            return obj.has_error
         parser_errors = ParserError.objects.filter(file=obj.id, deprecated=False)
         return parser_errors.count() > 0
 
