@@ -104,7 +104,7 @@ func EnsureDataFileSummary(ctx context.Context, pool *pgxpool.Pool, tableName st
 	return nil
 }
 
-// UpdateDataFileSummaryResult updates the final status and aggregate counts for a summary row.
+// UpdateDataFileSummaryResult updates the final aggregate counts for a summary row.
 func UpdateDataFileSummaryResult(ctx context.Context, pool *pgxpool.Pool, tableName string, datafileID int32, totalInFile int64, totalCreated int64) error {
 	totalInFileInt4, err := int64ToInt4(totalInFile)
 	if err != nil {
