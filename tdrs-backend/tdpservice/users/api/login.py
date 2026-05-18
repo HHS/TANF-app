@@ -228,7 +228,6 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         user = CustomAuthentication.authenticate(**auth_options)
         logging.debug("user obj:{}".format(user))
         if user:
-            self._sync_user_email(user, email)
             if (
                 not user.is_active
                 or user.account_approval_status
@@ -237,6 +236,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 raise InactiveUser(
                     f"Login failed, user account is inactive: {user.username}"
                 )
+            self._sync_user_email(user, email)
         else:
             user, login_msg = self._handle_user(email, sub, auth_options)
 
