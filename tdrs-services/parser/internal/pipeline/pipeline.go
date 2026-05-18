@@ -10,13 +10,10 @@ import (
 	"go-parser/internal/config"
 	"go-parser/internal/decoder"
 	"go-parser/internal/parser"
+	"go-parser/internal/sentinel"
 	"go-parser/internal/storage/writer"
 	"go-parser/internal/validation"
 )
-
-// errMultipleHeaders is a sentinel error returned when a second HEADER record
-// is detected during row iteration.
-var errMultipleHeaders = errors.New("Multiple headers found.")
 
 // Pipeline orchestrates the full file parsing process.
 // The pipeline is agnostic to where input comes from and where output goes —
@@ -64,6 +61,9 @@ func NewPipeline(sink writer.Sink, reg *config.Registry, validators *validation.
 // Process parses data from the decoder and writes records via the sink.
 // The caller is responsible for creating and closing the decoder.
 func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataFileContext) (*ParsingResult, error) {
+	runCtx, cancelRun := context.WithCancel(ctx)
+	defer cancelRun()
+
 	// Step 1: Get the file specification
 	spec := p.registry.GetFileSpec(dfCtx.Program, dfCtx.Section)
 	if spec == nil {
@@ -94,7 +94,7 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 		IncludeRecords:      p.config.IncludeRecords,
 		IncludeErrors:       p.config.IncludeErrors,
 	})
-	router.Start(ctx)
+	router.Start(runCtx)
 
 	// Step 2a: Create validation orchestrator shared across all pipeline paths.
 	validationOrchestrator := validation.NewValidationOrchestrator(p.validators, p.config.ShortCircuit)
@@ -104,7 +104,11 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 	// Step 3: Read and parse header (for positional files)
 	headerRow, err := dec.ReadFirst()
 	if err != nil {
-		return nil, fmt.Errorf("failed to read header: %w", err)
+		err = fmt.Errorf("failed to read header: %w", err)
+		if rollbackErr := p.abortAndRollback(ctx, cancelRun, dfCtx, router); rollbackErr != nil {
+			return nil, errors.Join(err, rollbackErr)
+		}
+		return nil, err
 	}
 
 	headerSchema := p.registry.GetSchema(parser.HeaderSchemaPath)
@@ -142,7 +146,11 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 	// Step 4b: Sort the file if presort is enabled
 	if spec.Accumulator.Presort && spec.Accumulator.HasKeyFields() {
 		if err := dec.Sort(detector, decoder.NewKeyExtractor(spec), spec.Accumulator.GroupedSchemas); err != nil {
-			return nil, fmt.Errorf("presort failed: %w", err)
+			err = fmt.Errorf("presort failed: %w", err)
+			if rollbackErr := p.abortAndRollback(ctx, cancelRun, dfCtx, router); rollbackErr != nil {
+				return nil, errors.Join(err, rollbackErr)
+			}
+			return nil, err
 		}
 	}
 
@@ -155,30 +163,43 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 		NumWorkers:     p.config.NumWorkers,
 		WorkBufferSize: p.config.WorkBufferSize,
 	})
-	workers.Start(ctx)
+	workers.Start(runCtx)
 
 	// Step 7: Process rows through the accumulator
 	// TODO: I feel like accumulateBatches can live as a receiver on the accumulator instead a standalone function.
 	acc := parser.NewAccumulator(spec, detector)
-	err = accumulateBatches(ctx, dec, acc, workers, router, dfCtx.DatafileID)
+	err = accumulateBatches(runCtx, dec, acc, workers, router, dfCtx.DatafileID)
 
 	// Step 8: Wait for everything to complete
+	if err != nil {
+		cancelRun()
+	}
 	workers.CloseInputs()
 	workers.Wait()
 
 	if err != nil {
-		if errors.Is(err, errMultipleHeaders) {
-			return p.handleMultipleHeaders(ctx, dfCtx, router, startTime)
+		var multipleHeaders *sentinel.MultipleHeadersError
+		if errors.As(err, &multipleHeaders) {
+			return p.handleMultipleHeaders(ctx, cancelRun, dfCtx, router, multipleHeaders.RowNumber(), startTime)
+		}
+		if rollbackErr := p.abortAndRollback(ctx, cancelRun, dfCtx, router); rollbackErr != nil {
+			return nil, errors.Join(err, rollbackErr)
 		}
 		return nil, err
 	}
 
 	if err := workers.Err(); err != nil {
+		if rollbackErr := p.abortAndRollback(ctx, cancelRun, dfCtx, router); rollbackErr != nil {
+			return nil, errors.Join(err, rollbackErr)
+		}
 		return nil, err
 	}
 
 	// Flush remaining rows in all writers
 	if err := router.Stop(); err != nil {
+		if rollbackErr := p.rollbackDatafile(ctx, dfCtx, router); rollbackErr != nil {
+			return nil, errors.Join(err, rollbackErr)
+		}
 		return nil, err
 	}
 
@@ -333,19 +354,39 @@ func (p *Pipeline) writeNoRecordsCreatedError(
 	return 1, nil
 }
 
-// Handle creating multiple headers error and rolling back serialized data
-func (p *Pipeline) handleMultipleHeaders(ctx context.Context, dfCtx DataFileContext, router *writer.Router, startTime time.Time) (*ParsingResult, error) {
+func (p *Pipeline) abortAndRollback(ctx context.Context, cancelRun context.CancelFunc, dfCtx DataFileContext, router *writer.Router) error {
+	cancelRun()
+
+	var errs []error
+	if abortErr := router.Abort(); abortErr != nil {
+		errs = append(errs, fmt.Errorf("abort writers: %w", abortErr))
+	}
+	if rollbackErr := p.rollbackDatafile(ctx, dfCtx, router); rollbackErr != nil {
+		errs = append(errs, rollbackErr)
+	}
+	return errors.Join(errs...)
+}
+
+func (p *Pipeline) rollbackDatafile(ctx context.Context, dfCtx DataFileContext, router *writer.Router) error {
+	rollbackCtx := context.WithoutCancel(ctx)
+	if rollbackErr := p.sink.RollbackDatafile(rollbackCtx, dfCtx.DatafileID, router.TableNames()); rollbackErr != nil {
+		return fmt.Errorf("rollback datafile %d: %w", dfCtx.DatafileID, rollbackErr)
+	}
+	return nil
+}
+
+// Handle creating multiple headers error and rolling back serialized data.
+func (p *Pipeline) handleMultipleHeaders(ctx context.Context, cancelRun context.CancelFunc, dfCtx DataFileContext, router *writer.Router, rowNumber int, startTime time.Time) (*ParsingResult, error) {
 	// Multiple headers detected: stop writers, rollback all records/errors
 	// already written, then write a single PRE_CHECK error directly via sink.
-	if stopErr := router.Stop(); stopErr != nil {
-		log.Printf("failed to stop router: %v", stopErr)
-	}
-	if rollbackErr := p.sink.RollbackDatafile(ctx, dfCtx.DatafileID, router.TableNames()); rollbackErr != nil {
+	if rollbackErr := p.abortAndRollback(ctx, cancelRun, dfCtx, router); rollbackErr != nil {
 		log.Printf("failed to rollback datafile records: %v", rollbackErr)
+		return nil, rollbackErr
 	}
 
 	log.Printf("Header validation failed: Multiple headers found.")
-	headerErr := writer.SerializeHeaderError(
+	headerErr := writer.SerializeParserError(
+		rowNumber,
 		"Multiple headers found.",
 		validation.ErrorTypePreCheck,
 		dfCtx.DatafileID,
@@ -453,7 +494,7 @@ func accumulateBatches(
 
 		batch, sch, isAccumulated, err := acc.Add(row)
 		if err != nil {
-			if errors.Is(err, decoder.ErrUnknownRecordType) {
+			if errors.Is(err, sentinel.ErrUnknownRecordType) {
 				parserErr := writer.SerializeParserError(
 					row.LineNum(),
 					"Unknown record type was found.",
@@ -470,7 +511,7 @@ func accumulateBatches(
 
 		if !isAccumulated && sch != nil {
 			if row.RecordType() == "HEADER" {
-				return errMultipleHeaders
+				return sentinel.NewMultipleHeadersError(row.LineNum())
 			}
 			log.Printf("Line %d: %s (not accumulated)", row.LineNum(), sch.RecordType)
 		}

@@ -4,7 +4,7 @@ Welcome to the project for the New TANF Data Portal, which will replace the lega
 
 Our vision is to build a new, secure, web-based data reporting system to improve the federal reporting experience for TANF grantees and federal staff. The new system will allow grantees to easily submit accurate data and be confident that they have fulfilled their reporting requirements. This will reduce the burden on all users, improve data quality, lead to better policy and program decision-making, and ultimately help low-income families.
 
---- 
+---
 
 ## Current Build
 
@@ -12,7 +12,7 @@ Our vision is to build a new, secure, web-based data reporting system to improve
 |---|---|---|---|
 |**Build**| [![CircleCI-Dev](https://circleci.com/gh/raft-tech/TANF-app/tree/develop.svg?style=shield)](https://circleci.com/gh/raft-tech/TANF-app/tree/develop) | [![CircleCI-HHS](https://circleci.com/gh/HHS/TANF-app/tree/main.svg?style=shield)](https://circleci.com/gh/HHS/TANF-app/tree/main)|[![CircleCI-HHS](https://circleci.com/gh/HHS/TANF-app/tree/master.svg?style=shield)](https://circleci.com/gh/HHS/TANF-app/tree/master)
 |**Security**| [Dependabot-Dev](https://github.com/raft-tech/TANF-app/security/dependabot) | [Advisories-HHS](https://github.com/HHS/TANF-app/security/advisories) | [Advisories-HHS](https://github.com/HHS/TANF-app/security/advisories)
-|**Frontend Coverage**| [![Codecov-Frontend-Dev](https://codecov.io/gh/raft-tech/TANF-app/branch/develop/graph/badge.svg?flag=dev-frontend)](https://codecov.io/gh/raft-tech/TANF-app?flag=dev-frontend) | [![Codeco-Frontend-HHS](https://codecov.io/gh/HHS/TANF-app/branch/main/graph/badge.svg?flag=main-frontend)](https://codecov.io/gh/HHS/TANF-app?flag=main-frontend)   | [![Codeco-Frontend-HHS](https://codecov.io/gh/HHS/TANF-app/branch/master/graph/badge.svg?flag=master-frontend)](https://codecov.io/gh/HHS/TANF-app?flag=master-frontend) 
+|**Frontend Coverage**| [![Codecov-Frontend-Dev](https://codecov.io/gh/raft-tech/TANF-app/branch/develop/graph/badge.svg?flag=dev-frontend)](https://codecov.io/gh/raft-tech/TANF-app?flag=dev-frontend) | [![Codeco-Frontend-HHS](https://codecov.io/gh/HHS/TANF-app/branch/main/graph/badge.svg?flag=main-frontend)](https://codecov.io/gh/HHS/TANF-app?flag=main-frontend)   | [![Codeco-Frontend-HHS](https://codecov.io/gh/HHS/TANF-app/branch/master/graph/badge.svg?flag=master-frontend)](https://codecov.io/gh/HHS/TANF-app?flag=master-frontend)
 |**Backend Coverage**|  [![Codecov-Backend-Dev](https://codecov.io/gh/raft-tech/TANF-app/branch/develop/graph/badge.svg?flag=dev-backend)](https://codecov.io/gh/raft-tech/TANF-app/branch/develop?flag=dev-backend)|   [![Codecov-Backend-HHS]( https://codecov.io/gh/HHS/TANF-app/branch/main/graph/badge.svg?flag=main-backend)](https://codecov.io/gh/HHS/TANF-app/branch/main?flag=main-backend) |  [![Codecov-Backend-HHS]( https://codecov.io/gh/HHS/TANF-app/branch/master/graph/badge.svg?flag=master-backend)](https://codecov.io/gh/HHS/TANF-app/branch/master?flag=master-backend)
 
 [Link to Current Development Deployments](./docs/Technical-Documentation/TDP-environments-README.md)
@@ -42,20 +42,26 @@ Our vision is to build a new, secure, web-based data reporting system to improve
     + **[Zenhub](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/board?repos=281707402)**: Tracking issues
     + **[Product Updates](./product-updates)**: communication on project updates and research findings to the broader TDP stakeholders and target users
 
+## Working With Agents
+
+This repo includes agent-facing context files to help coding agents understand the monorepo layout, subsystem boundaries, issue tracker workflow, and domain vocabulary. Start with [AGENTS.md](./AGENTS.md), [CONTEXT.md](./CONTEXT.md), [CONTEXT-MAP.md](./CONTEXT-MAP.md), and the supporting files under [docs/agents](./docs/agents).
+
+For a stronger starting point, contributors using local coding agents are encouraged to set up [mattpocock/skills](https://github.com/mattpocock/skills) on their machine with the skills installed under `~/.agents/skills/`. Those skills can then use this repo's agent context files when creating issues, triaging work, diagnosing bugs, practicing TDD, or improving architecture.
+
 ## Infrastructure
 
 TDP Uses Infrastructure as Code (IaC) and DevSecOps automation
 
 ### **Authentication**
 
-TDP application requires strong multi-factor authentication (MFA) for all users, and Personal Identity Verification (PIV) authentication must be used as the 2nd factor for all internal ACF staff. 
-**ACF AMS** authentication service is being used for ACF users, and **Login.gov** authentication service is being used for external users. 
+TDP application requires strong multi-factor authentication (MFA) for all users, and Personal Identity Verification (PIV) authentication must be used as the 2nd factor for all internal ACF staff.
+**ACF AMS** authentication service is being used for ACF users, and **Login.gov** authentication service is being used for external users.
 
 See [Architecture Decision Record 005 - Application Authentication](./docs/Technical-Documentation/Architecture-Decision-Record/005-application-authentication.md) - for more details.
 
 ### **Cloud Environment**
 
-[Cloud.gov](https://cloud.gov/) is being used as the cloud environment. This platform-as-a-service (PaaS) removes almost all of the infrastructure monitoring and maintenance from the system, is already procured for OFA, and has a FedRAMP Joint Authorization Board Provisional Authority to Operate (JAB P-ATO) on file. 
+[Cloud.gov](https://cloud.gov/) is being used as the cloud environment. This platform-as-a-service (PaaS) removes almost all of the infrastructure monitoring and maintenance from the system, is already procured for OFA, and has a FedRAMP Joint Authorization Board Provisional Authority to Operate (JAB P-ATO) on file.
 
 See [Architecture Decision Record 003 - Application Hosting](./docs/Technical-Documentation/Architecture-Decision-Record/003-Application-hosting.md) - for more details.
 
@@ -73,7 +79,7 @@ The application is continuously deployed to the dev, staging, or prod environmen
 
 See [Architecture Decision Record 008 - Deployment Flow](docs/Technical-Documentation/Architecture-Decision-Record/008-deployment-flow.md) - for more details.
 
-## Accessibility 
+## Accessibility
 TDP is developed to be (at minimum) compliant with Section 508 of the Rehabilitation Act which mandates a WCAG 2.0 AA standard. To enable a left-shifted approach to accessibility and aid the team in implementing accessible solutions, Raft maintains an [Accessibility Guide](https://hackmd.io/@mreiter/ByVulbdQd) to help enable those less familiar with a11y testing up and running. For additional documentation & resources regarding project accessibility, see [QASP Accessibility Expectations](https://github.com/raft-tech/TANF-app/blob/develop/docs/How-We-Work/our-priorities-values-expectations.md#deliverable-4-accessibility).
 
 ## Points of Contact

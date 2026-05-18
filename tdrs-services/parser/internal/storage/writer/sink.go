@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/csv"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -45,9 +46,12 @@ func (s *DatabaseSink) Flush(ctx context.Context, tableName string, columns []st
 }
 
 func (s *DatabaseSink) RollbackDatafile(ctx context.Context, datafileID int32, tables []string) error {
+	var errs []error
+
 	// Always clean up parser errors
 	if _, err := s.pool.Exec(ctx, "DELETE FROM parser_error WHERE file_id = $1", datafileID); err != nil {
 		log.Printf("rollback: failed to delete from parser_error for datafile %d: %v", datafileID, err)
+		errs = append(errs, fmt.Errorf("delete parser_error for datafile %d: %w", datafileID, err))
 	}
 
 	// Only delete from tables relevant to the current file spec
@@ -55,9 +59,10 @@ func (s *DatabaseSink) RollbackDatafile(ctx context.Context, datafileID int32, t
 		query := fmt.Sprintf("DELETE FROM %s WHERE datafile_id = $1", table)
 		if _, err := s.pool.Exec(ctx, query, datafileID); err != nil {
 			log.Printf("rollback: failed to delete from %s for datafile %d: %v", table, datafileID, err)
+			errs = append(errs, fmt.Errorf("delete %s for datafile %d: %w", table, datafileID, err))
 		}
 	}
-	return nil
+	return errors.Join(errs...)
 }
 
 func (s *DatabaseSink) Close() error {
