@@ -22,6 +22,10 @@
 #                             (e.g. https://tdp-frontend.app.cloud.gov/*)
 #   KC_TDP_WEB_ORIGINS      - Comma-separated list of web origins for the tdp-django client
 #                             (e.g. https://tdp-frontend.app.cloud.gov)
+#   KC_CLI_REDIRECT_URI     - Additional redirect URI for the tdp-cli client
+#                             (default: http://localhost/*)
+#   KC_CLI_WEB_ORIGIN       - Additional web origin for the tdp-cli client
+#                             (default: http://localhost)
 #   SKIP_KEYCLOAK_WAIT      - Set to "true" to skip the health check wait
 #                             (useful when running as a CF task after deploy)
 
@@ -295,6 +299,196 @@ append_json_array_unique() {
     echo "$array_json" | jq --arg value "$value" 'if index($value) then . else . + [$value] end'
 }
 
+get_client_uuid() {
+    local client_id="$1"
+    kc_api "${KEYCLOAK_URL}/admin/realms/${REALM}/clients?clientId=${client_id}" \
+        -H "Authorization: Bearer ${TOKEN}" | jq -r '.[0].id // empty'
+}
+
+configure_tdp_cli_api_audience() {
+    echo "Configuring tdp-cli client and Django API audience scope..."
+
+    local scope_name="tdp-api-audience"
+    local scope_id
+    scope_id=$(kc_api "${KEYCLOAK_URL}/admin/realms/${REALM}/client-scopes?name=${scope_name}" \
+        -H "Authorization: Bearer ${TOKEN}" | jq -r '.[0].id // empty')
+
+    local scope_json
+    scope_json=$(jq -n \
+        --arg name "$scope_name" \
+        '{
+            name: $name,
+            description: "Adds the Django API audience to access tokens for external API clients.",
+            protocol: "openid-connect",
+            attributes: {
+                "include.in.token.scope": "false",
+                "display.on.consent.screen": "false"
+            }
+        }')
+
+    if [ -z "$scope_id" ]; then
+        kc_api -X POST "${KEYCLOAK_URL}/admin/realms/${REALM}/client-scopes" \
+            -H "Authorization: Bearer ${TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "$scope_json" > /dev/null
+        scope_id=$(kc_api "${KEYCLOAK_URL}/admin/realms/${REALM}/client-scopes?name=${scope_name}" \
+            -H "Authorization: Bearer ${TOKEN}" | jq -r '.[0].id')
+        echo "tdp-api-audience client scope created (${scope_id})."
+    else
+        scope_json=$(echo "$scope_json" | jq --arg id "$scope_id" '.id = $id')
+        kc_api -X PUT "${KEYCLOAK_URL}/admin/realms/${REALM}/client-scopes/${scope_id}" \
+            -H "Authorization: Bearer ${TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "$scope_json" > /dev/null
+        echo "tdp-api-audience client scope updated (${scope_id})."
+    fi
+
+    local mapper_json
+    mapper_json=$(jq -n '{
+        name: "tdp-django audience",
+        protocol: "openid-connect",
+        protocolMapper: "oidc-audience-mapper",
+        consentRequired: false,
+        config: {
+            "included.client.audience": "tdp-django",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+        }
+    }')
+
+    local mapper_id
+    mapper_id=$(kc_api "${KEYCLOAK_URL}/admin/realms/${REALM}/client-scopes/${scope_id}/protocol-mappers/models" \
+        -H "Authorization: Bearer ${TOKEN}" | jq -r 'map(select(.name == "tdp-django audience")) | first.id // empty')
+
+    if [ -n "$mapper_id" ]; then
+        mapper_json=$(echo "$mapper_json" | jq --arg id "$mapper_id" '.id = $id')
+        kc_api -X PUT "${KEYCLOAK_URL}/admin/realms/${REALM}/client-scopes/${scope_id}/protocol-mappers/models/${mapper_id}" \
+            -H "Authorization: Bearer ${TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "$mapper_json" > /dev/null
+        echo "tdp-django audience mapper updated (${mapper_id})."
+    else
+        kc_api -X POST "${KEYCLOAK_URL}/admin/realms/${REALM}/client-scopes/${scope_id}/protocol-mappers/models" \
+            -H "Authorization: Bearer ${TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "$mapper_json" > /dev/null
+        echo "tdp-django audience mapper created."
+    fi
+
+    local redirect_uris='[]'
+    local web_origins='[]'
+    for uri in \
+        "http://localhost/*" \
+        "http://127.0.0.1/*" \
+        "https://oauth.pstmn.io/v1/callback" \
+        "${KC_CLI_REDIRECT_URI:-http://localhost/*}"; do
+        redirect_uris=$(append_json_array_unique "$redirect_uris" "$uri")
+    done
+    for origin in \
+        "http://localhost" \
+        "http://127.0.0.1" \
+        "${KC_CLI_WEB_ORIGIN:-http://localhost}"; do
+        web_origins=$(append_json_array_unique "$web_origins" "$origin")
+    done
+
+    local cli_json
+    cli_json=$(jq -n \
+        --argjson redirect_uris "$redirect_uris" \
+        --argjson web_origins "$web_origins" \
+        '{
+            clientId: "tdp-cli",
+            name: "TDP CLI / Postman",
+            description: "Public client for external API tools (Postman, CLI, CI). Authorization Code + PKCE and Device Authorization Grant; no client secret.",
+            enabled: true,
+            clientAuthenticatorType: "none",
+            protocol: "openid-connect",
+            publicClient: true,
+            standardFlowEnabled: true,
+            implicitFlowEnabled: false,
+            directAccessGrantsEnabled: false,
+            serviceAccountsEnabled: false,
+            authorizationServicesEnabled: false,
+            fullScopeAllowed: true,
+            redirectUris: $redirect_uris,
+            webOrigins: $web_origins,
+            attributes: {
+                "pkce.code.challenge.method": "S256",
+                "oauth2.device.authorization.grant.enabled": "true",
+                "post.logout.redirect.uris": "+"
+            },
+            defaultClientScopes: ["openid", "email", "profile", "tdp-user-attributes", "tdp-api-audience"],
+            optionalClientScopes: []
+        }')
+
+    local cli_id
+    cli_id=$(get_client_uuid "tdp-cli")
+    if [ -z "$cli_id" ]; then
+        kc_api -X POST "${KEYCLOAK_URL}/admin/realms/${REALM}/clients" \
+            -H "Authorization: Bearer ${TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "$cli_json" > /dev/null
+        cli_id=$(get_client_uuid "tdp-cli")
+        echo "tdp-cli client created (${cli_id})."
+    else
+        cli_json=$(echo "$cli_json" | jq --arg id "$cli_id" '.id = $id')
+        kc_api -X PUT "${KEYCLOAK_URL}/admin/realms/${REALM}/clients/${cli_id}" \
+            -H "Authorization: Bearer ${TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "$cli_json" > /dev/null
+        echo "tdp-cli client updated (${cli_id})."
+    fi
+
+    ensure_default_client_scope_attached "$cli_id" "$scope_id" "$scope_name"
+
+    for client_id in "tdp-django" "tdp-grafana"; do
+        local client_uuid
+        client_uuid=$(get_client_uuid "$client_id")
+        if [ -n "$client_uuid" ]; then
+            ensure_default_client_scope_removed "$client_uuid" "$scope_id" "$scope_name" "$client_id"
+        fi
+    done
+
+    echo "tdp-cli redirect URIs: $(echo "$redirect_uris" | jq -c .)"
+    echo "tdp-cli web origins:   $(echo "$web_origins" | jq -c .)"
+}
+
+ensure_default_client_scope_attached() {
+    local client_uuid="$1"
+    local scope_id="$2"
+    local scope_name="$3"
+    local attached
+    attached=$(kc_api "${KEYCLOAK_URL}/admin/realms/${REALM}/clients/${client_uuid}/default-client-scopes" \
+        -H "Authorization: Bearer ${TOKEN}" | jq --arg id "$scope_id" 'any(.[]; .id == $id)')
+
+    if [ "$attached" == "true" ]; then
+        echo "${scope_name} already attached to tdp-cli."
+        return
+    fi
+
+    kc_api -X PUT "${KEYCLOAK_URL}/admin/realms/${REALM}/clients/${client_uuid}/default-client-scopes/${scope_id}" \
+        -H "Authorization: Bearer ${TOKEN}" > /dev/null
+    echo "${scope_name} attached to tdp-cli."
+}
+
+ensure_default_client_scope_removed() {
+    local client_uuid="$1"
+    local scope_id="$2"
+    local scope_name="$3"
+    local client_id="$4"
+    local attached
+    attached=$(kc_api "${KEYCLOAK_URL}/admin/realms/${REALM}/clients/${client_uuid}/default-client-scopes" \
+        -H "Authorization: Bearer ${TOKEN}" | jq --arg id "$scope_id" 'any(.[]; .id == $id)')
+
+    if [ "$attached" != "true" ]; then
+        echo "${scope_name} not attached to ${client_id}; no removal needed."
+        return
+    fi
+
+    kc_api -X DELETE "${KEYCLOAK_URL}/admin/realms/${REALM}/clients/${client_uuid}/default-client-scopes/${scope_id}" \
+        -H "Authorization: Bearer ${TOKEN}" > /dev/null
+    echo "${scope_name} removed from ${client_id}."
+}
+
 configure_tdp_client_urls() {
     echo "Configuring tdp-django client redirect URIs and web origins (env: ${DEPLOY_ENV})..."
 
@@ -491,6 +685,7 @@ main() {
     configure_login_gov_acr_values
     configure_login_gov_logout_params
     configure_tdp_client_urls
+    configure_tdp_cli_api_audience
     configure_grafana_client_urls
     echo "=== IdP configuration complete ==="
 }

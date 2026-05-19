@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 KEYCLOAK_DIR = Path(__file__).resolve().parents[3] / "keycloak"
+CONFIGURE_IDPS_PATH = KEYCLOAK_DIR / "configure-idps.sh"
 REALM_CONFIGS_DIR = KEYCLOAK_DIR / "realm-configs"
 REALM_CONFIG_PATHS = {
     "local": REALM_CONFIGS_DIR / "realm-export.dev-local.json",
@@ -108,3 +109,15 @@ def test_all_realm_configs_attach_api_audience_only_to_tdp_cli():
         assert "tdp-api-audience" in cli_client["defaultClientScopes"]
         assert "tdp-api-audience" not in django_client["defaultClientScopes"]
         assert "tdp-api-audience" not in grafana_client["defaultClientScopes"]
+
+
+def test_configure_idps_applies_cli_audience_to_existing_realms():
+    """Deploy-time config must update existing realms that skip JSON re-import."""
+    script = CONFIGURE_IDPS_PATH.read_text()
+
+    assert "configure_tdp_cli_api_audience()" in script
+    assert "configure_tdp_cli_api_audience" in script.split("main()", maxsplit=1)[1]
+    assert 'scope_name="tdp-api-audience"' in script
+    assert "/client-scopes?name=${scope_name}" in script
+    assert 'get_client_uuid "tdp-cli"' in script
+    assert "default-client-scopes" in script
