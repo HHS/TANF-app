@@ -73,6 +73,7 @@ def apply_user_updates(user: User, claims: dict) -> User:
     """
     login_gov_uuid = claims.get("login_gov_uuid")
     hhs_id = claims.get("hhs_id")
+    email = claims.get("email", "").lower()
     changed = False
 
     if login_gov_uuid and str(user.login_gov_uuid) != login_gov_uuid:
@@ -81,6 +82,11 @@ def apply_user_updates(user: User, claims: dict) -> User:
 
     if hhs_id and user.hhs_id != hhs_id:
         user.hhs_id = hhs_id
+        changed = True
+
+    if email and (user.email != email or user.username != email):
+        user.email = email
+        user.username = email
         changed = True
 
     if changed:
