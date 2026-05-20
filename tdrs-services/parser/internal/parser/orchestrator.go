@@ -69,8 +69,8 @@ func (o *ParsingOrchestrator) parseRow(decodedRecord DecodedRecord) ([]*ParsedRe
 	}
 
 	// Parse shared fields once into a cache (one small allocation per row).
-	// We use ParsedFieldCache to store both the FieldDef pointer and value,
-	// enabling O(1) field metadata access during validation.
+	// We store both FieldDef and Value, even when the value is nil, so validation
+	// can still see required/missing fields.
 	sharedCache := make(ParsedFieldCache, len(schema.Shared))
 	for i := range schema.Shared {
 		field := &schema.Shared[i]
@@ -79,9 +79,7 @@ func (o *ParsingOrchestrator) parseRow(decodedRecord DecodedRecord) ([]*ParsedRe
 			log.Printf("Failed to extract shared field %s: %v", field.Name, err)
 			continue
 		}
-		if value != nil {
-			sharedCache[field.Name] = ParsedField{Def: field, Value: value}
-		}
+		sharedCache[field.Name] = ParsedField{Def: field, Value: value}
 	}
 
 	// Parse each segment into a separate record acquired from the pool
@@ -98,8 +96,13 @@ func (o *ParsingOrchestrator) parseRow(decodedRecord DecodedRecord) ([]*ParsedRe
 			record.SetField(pf.Def, pf.Value)
 		}
 
-		// Parse segment-specific fields directly into record using SetField()
-		missingRequired := false
+		// Parse segment-specific fields directly into record using SetField().
+		// We keep segment 0 records even when required fields are nil so validation
+		// can emit parser errors. Secondary segments are still suppressed when
+		// they have no source data of their own. Computed/source_field values do
+		// not count as segment data for this check because they can be populated
+		// even when the segment's real columns are blank (for example T7 month rows).
+		hasSegmentData := false
 		for i := range segment.Fields {
 			field := &segment.Fields[i]
 			// The extractor expects a FieldGetter for lookups (e.g., source_field resolution)
@@ -108,21 +111,14 @@ func (o *ParsingOrchestrator) parseRow(decodedRecord DecodedRecord) ([]*ParsedRe
 				log.Printf("Failed to extract field %s: %v", field.Name, err)
 				continue
 			}
-			if value != nil {
-				record.SetField(field, value)
-			} else if field.Required || segIdx >= 1 {
-				// TODO: do we generate an error here?
-				// Most multi record schemas don't have the 2 through N segment's field's marked as required.
-				// Therefore if the value is nil and the field is required or the segment index is greater than 0
-				// we skip creating the record since it is invalid.
-				// log.Printf("Skipping record for segment %d, type %s, line %d, field %s is nil", segIdx, record.Schema.RecordType, record.LineNumber, field.Name)
-				missingRequired = true
-				break
+			record.SetField(field, value)
+			if field.SourceField == "" && value != nil {
+				hasSegmentData = true
 			}
 		}
 
-		if missingRequired {
-			// Invalid segment - release record back to pool immediately
+		if segIdx >= 1 && !hasSegmentData {
+			// Blank secondary segment - release record back to pool immediately.
 			schema.ReleaseRecord(record)
 			continue
 		}

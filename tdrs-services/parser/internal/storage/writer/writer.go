@@ -6,6 +6,8 @@ import (
 	"log"
 	"sync"
 	"sync/atomic"
+
+	"go-parser/internal/sentinel"
 )
 
 const (
@@ -25,15 +27,19 @@ type TableWriter struct {
 	threshold int
 
 	// Async operation - channel carries []any rows (already converted)
-	rowChan chan []any
-	sink    Sink
-	wg      sync.WaitGroup
+	rowChan   chan []any
+	abortCh   chan struct{}
+	sink      Sink
+	wg        sync.WaitGroup
+	stopOnce  sync.Once
+	abortOnce sync.Once
 
 	// Internal buffer (owned by the goroutine - no locks needed)
 	rows [][]any
 
 	// Stats (thread-safe)
 	totalWritten atomic.Int64
+	aborted      atomic.Bool
 
 	// Error propagation
 	err   error
@@ -59,6 +65,7 @@ func NewTableWriter(
 		threshold: threshold,
 		// Channel buffer sized for rows
 		rowChan: make(chan []any, threshold),
+		abortCh: make(chan struct{}),
 		rows:    make([][]any, 0, threshold),
 	}
 }
@@ -75,11 +82,21 @@ func (tw *TableWriter) run(ctx context.Context) {
 	defer tw.wg.Done()
 
 	for {
+		if tw.aborted.Load() {
+			tw.discard()
+			return
+		}
+
 		select {
 		case row, ok := <-tw.rowChan:
 			if !ok {
-				// Channel closed - flush remaining and exit
-				tw.flush(ctx)
+				if !tw.aborted.Load() {
+					tw.flush(ctx)
+				}
+				return
+			}
+			if tw.aborted.Load() {
+				tw.discard()
 				return
 			}
 
@@ -93,9 +110,12 @@ func (tw *TableWriter) run(ctx context.Context) {
 				}
 			}
 
+		case <-tw.abortCh:
+			tw.discard()
+			return
+
 		case <-ctx.Done():
-			tw.flush(context.Background()) // Best-effort flush
-			tw.drain()
+			tw.discard()
 			return
 		}
 	}
@@ -103,6 +123,9 @@ func (tw *TableWriter) run(ctx context.Context) {
 
 // SendRow queues a pre-converted []any row for writing
 func (tw *TableWriter) SendRow(ctx context.Context, row []any) error {
+	if tw.aborted.Load() {
+		return sentinel.ErrWriterAborted
+	}
 	// Check for prior errors
 	if err := tw.getError(); err != nil {
 		return err
@@ -111,6 +134,8 @@ func (tw *TableWriter) SendRow(ctx context.Context, row []any) error {
 	select {
 	case tw.rowChan <- row:
 		return nil
+	case <-tw.abortCh:
+		return sentinel.ErrWriterAborted
 	case <-ctx.Done():
 		return ctx.Err()
 	}
@@ -120,12 +145,17 @@ func (tw *TableWriter) SendRow(ctx context.Context, row []any) error {
 // More efficient than calling SendRow in a loop — reduces per-row error checks
 // and context switch overhead when sending many rows (e.g., error batches).
 func (tw *TableWriter) SendRows(ctx context.Context, rows [][]any) error {
+	if tw.aborted.Load() {
+		return sentinel.ErrWriterAborted
+	}
 	if err := tw.getError(); err != nil {
 		return err
 	}
 	for _, row := range rows {
 		select {
 		case tw.rowChan <- row:
+		case <-tw.abortCh:
+			return sentinel.ErrWriterAborted
 		case <-ctx.Done():
 			return ctx.Err()
 		}
@@ -135,7 +165,19 @@ func (tw *TableWriter) SendRows(ctx context.Context, rows [][]any) error {
 
 // Stop closes the channel and waits for the goroutine to finish
 func (tw *TableWriter) Stop() error {
-	close(tw.rowChan)
+	tw.stopOnce.Do(func() {
+		close(tw.rowChan)
+	})
+	tw.wg.Wait()
+	return tw.getError()
+}
+
+// Abort stops this per-run writer without flushing buffered or queued rows.
+func (tw *TableWriter) Abort() error {
+	tw.aborted.Store(true)
+	tw.abortOnce.Do(func() {
+		close(tw.abortCh)
+	})
 	tw.wg.Wait()
 	return tw.getError()
 }
@@ -158,9 +200,21 @@ func (tw *TableWriter) flush(ctx context.Context) error {
 	return nil
 }
 
+func (tw *TableWriter) discard() {
+	tw.rows = make([][]any, 0, tw.threshold)
+}
+
 func (tw *TableWriter) drain() {
-	for range tw.rowChan {
-		// Discard remaining rows to unblock senders
+	for {
+		select {
+		case _, ok := <-tw.rowChan:
+			if !ok {
+				return
+			}
+			// Discard remaining rows to unblock senders
+		case <-tw.abortCh:
+			return
+		}
 	}
 }
 
