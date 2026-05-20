@@ -20,6 +20,7 @@ from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from tdpservice.users.api.canary import normalize_idp
 from tdpservice.users.models import (
     AccountApprovalStatusChoices,
     ChangeRequestAuditLog,
@@ -145,7 +146,9 @@ class UserViewSet(
         if regions is not None:
             instance.regions.set(regions)
 
-        return Response(UserProfileSerializer(instance).data)
+        return Response(
+            UserProfileSerializer(instance, context={"request": request}).data
+        )
 
     @action(methods=["GET"], detail=False)
     def profile(self, request):
@@ -296,8 +299,10 @@ class KeycloakLoginDotGovView(OIDCAuthenticationRequestView):
 
     def get(self, request, *args, **kwargs):
         """Log the Login.gov auth flow before redirecting to Keycloak."""
+        request.session["auth_idp"] = normalize_idp("login-gov")
         logger.info(
-            "Login initiated", extra={"auth_flow": "keycloak", "auth_idp": "dotgov"}
+            "Login initiated",
+            extra={"auth_flow": "keycloak", "auth_idp": "login-gov"},
         )
         return super().get(request, *args, **kwargs)
 
@@ -311,6 +316,7 @@ class KeycloakLoginAMSView(OIDCAuthenticationRequestView):
 
     def get(self, request, *args, **kwargs):
         """Log the AMS auth flow before redirecting to Keycloak."""
+        request.session["auth_idp"] = normalize_idp("ams")
         logger.info(
             "Login initiated", extra={"auth_flow": "keycloak", "auth_idp": "ams"}
         )

@@ -53,6 +53,7 @@ services:
     build:
       context: ./keycloak
     environment:
+      - DEPLOY_ENV=local
       - KC_DB=postgres
       - KC_DB_URL=jdbc:postgresql://keycloak-pg:5432/keycloak
       - KC_DB_USERNAME=keycloak
@@ -97,6 +98,7 @@ services:
     build:
       context: ./keycloak
     environment:
+      - DEPLOY_ENV=local
       - KEYCLOAK_MANAGEMENT_URL=http://keycloak:9000
       - KEYCLOAK_URL=http://keycloak:8080
       - KEYCLOAK_ADMIN=admin
@@ -161,7 +163,10 @@ services:
       - 9093:9093
     volumes:
       - ./plg/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
-    command: --config.file=/etc/alertmanager/alertmanager.yml --storage.path=/alertmanager --log.level=debug --web.external-url=http://localhost:3000/alerts --web.route-prefix=/alerts --cluster.listen-address=""
+    command: --config.file=/etc/alertmanager/alertmanager.yml
+      --storage.path=/alertmanager --log.level=debug
+      --web.external-url=http://localhost:3000/alerts --web.route-prefix=/alerts
+      --cluster.listen-address=""
 
   mimir:
     image: grafana/mimir:2.15.1
@@ -205,7 +210,8 @@ services:
       - ./plg/alloy:/etc/alloy
       - ~/tdp-logs/nginx:/var/log/nginx
       - logs:/logs
-    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/alloy.local.config
+    command: run --server.http.listen-addr=0.0.0.0:12345
+      --storage.path=/var/lib/alloy/data /etc/alloy/alloy.local.config
 
   tempo:
     restart: always
@@ -313,16 +319,18 @@ services:
       args:
         REGISTRY_OWNER: ${REGISTRY_OWNER:-hhs}
     command: >
-      bash -c "./wait_for_services.sh &&
-      ./manage.py makemigrations &&
-      ./manage.py migrate &&
-      ./manage.py populate_stts &&
-      ./manage.py populate_history --auto &&
-      python ./plg/grafana_views/generate_views.py --all &&
-      ./manage.py runscript apply_grafana_views &&
-      ./gunicorn_start.sh"
+      bash -c "rm -f /tmp/web-ready && ./wait_for_services.sh && ./manage.py
+      makemigrations && ./manage.py migrate && ./manage.py populate_stts &&
+      ./manage.py populate_history --auto && python
+      ./plg/grafana_views/generate_views.py --all && ./manage.py runscript
+      apply_grafana_views && touch /tmp/web-ready && exec ./gunicorn_start.sh"
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /tmp/web-ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 10s
     ports:
-      - "5555:5555"
       - "8989:8080"
     tty: true
     depends_on:
@@ -339,6 +347,32 @@ services:
       - "6379:6379"
     volumes:
       - .:/tdpapp
+
+  go-parser:
+    build:
+      context: ../tdrs-services/parser
+      dockerfile: Dockerfile
+    command: ["--server.mode=celery", "--storage.source=s3"]
+    environment:
+      - REDIS_URL=redis://redis-server:6379/0
+      - GO_PARSER_QUEUE=go-parser
+      - DATABASE_URL=postgres://tdpuser:something_secure@postgres:5432/tdrs_test?sslmode=disable
+      - S3_BUCKET=tdp-datafiles-localstack
+      - S3_ENDPOINT=http://localstack:4566
+      - S3_KEY_PREFIX=dev
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-gov-west-1
+      - AWS_EC2_METADATA_DISABLED=true
+    depends_on:
+      redis-server:
+        condition: service_started
+      postgres:
+        condition: service_started
+      localstack:
+        condition: service_started
+      web:
+        condition: service_healthy
 
   celery:
     restart: always
@@ -363,6 +397,8 @@ services:
       - AMS_CLIENT_SECRET
       - AMS_CONFIGURATION_ENDPOINT
       - REDIS_URI=redis://redis-server:6379
+      - CELERY_WORKER_QUEUES=celery
+      - CELERY_GO_PARSER_QUEUE=go-parser
       - REDIS_SERVER_LOCAL=TRUE
       - CYPRESS_TOKEN
       - DJANGO_DEBUG
@@ -385,6 +421,8 @@ services:
     volumes:
       - .:/tdpapp
       - logs:/tmp
+    ports:
+      - "5555:8080"
     image: tdp
     build:
       context: .

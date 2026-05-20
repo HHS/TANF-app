@@ -85,6 +85,7 @@ class ReparseFileMeta(models.Model):
     success = models.BooleanField(default=False)
     started_at = models.DateTimeField(auto_now_add=False, null=True)
     finished_at = models.DateTimeField(auto_now_add=False, null=True)
+    previous_summary_status = models.CharField(max_length=50, null=True, blank=True)
 
     num_records_created = models.PositiveIntegerField(default=0)
     cat_4_errors_generated = models.PositiveIntegerField(default=0)
@@ -209,8 +210,9 @@ class DataFile(FileRecord):
     @property
     def filename(self):
         """Return the correct filename for this data file."""
-        if self.program_type in [DataFile.ProgramType.FRA, DataFile.ProgramType.TANF]:
-            return self.stt.filenames.get(self.section, None)
+        filename = self.stt.filenames.get(self.section, None)
+        if filename is not None:
+            return filename
 
         program_type = (
             self.program_type.title()
