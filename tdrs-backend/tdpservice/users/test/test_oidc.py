@@ -131,6 +131,24 @@ class TestUpdateUser:
         updated = backend.update_user(user, claims)
         assert updated.hhs_id == "EXISTING1234"
 
+    def test_update_user_syncs_email_from_claims(self, backend):
+        """Updates the stored email when the IdP reports a new one for the same user."""
+        user = UserFactory(
+            username="old_email@example.com",
+            email="old_email@example.com",
+            hhs_id=None,
+        )
+        claims = {
+            "email": "new_email@example.com",
+            "login_gov_uuid": str(user.login_gov_uuid),
+        }
+
+        updated = backend.update_user(user, claims)
+        updated.refresh_from_db()
+
+        assert updated.username == "new_email@example.com"
+        assert updated.email == "new_email@example.com"
+
 
 @pytest.mark.django_db
 class TestVerifyClaims:
