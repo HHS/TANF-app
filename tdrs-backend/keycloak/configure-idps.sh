@@ -635,13 +635,11 @@ configure_grafana_client_urls() {
     echo "tdp-grafana web origins:   $(echo "$web_origins" | jq -c .)"
 }
 
-hide_login_gov_from_login_page() {
-    echo "Hiding Login.gov from Keycloak login page..."
+show_login_gov_on_login_page() {
+    echo "Showing Login.gov on Keycloak login page..."
 
-    # TDP frontend uses kc_idp_hint=login-gov to bypass the login page entirely,
-    # so hiding Login.gov from the login page does not affect TDP auth.
-    # This ensures only AMS (and the local password form) appear on the login page,
-    # which is the correct behavior for Grafana and any other direct Keycloak login.
+    # CLI and Postman users authenticate through the public Keycloak login page,
+    # so Login.gov must remain visible even though TDP frontend uses kc_idp_hint.
     local idp_config
     idp_config=$(kc_api "${KEYCLOAK_URL}/admin/realms/${REALM}/identity-provider/instances/login-gov" \
         -H "Authorization: Bearer ${TOKEN}")
@@ -651,25 +649,25 @@ hide_login_gov_from_login_page() {
         return
     fi
 
-    local already_hidden
-    already_hidden=$(echo "$idp_config" | jq -r '.hideOnLogin // false')
+    local already_visible
+    already_visible=$(echo "$idp_config" | jq -r '(.hideOnLogin // false) | not')
 
-    if [ "$already_hidden" == "true" ]; then
-        echo "Login.gov already hidden on login page."
+    if [ "$already_visible" == "true" ]; then
+        echo "Login.gov already visible on login page."
         return
     fi
 
     # Remove the masked clientSecret before PUT to avoid overwriting the real value.
     # Keycloak's GET API returns secrets as "**********" and PUTting that back would
     # replace the actual secret with the literal masked string.
-    idp_config=$(echo "$idp_config" | jq '.hideOnLogin = true | del(.config.clientSecret)')
+    idp_config=$(echo "$idp_config" | jq '.hideOnLogin = false | del(.config.clientSecret)')
 
     kc_api -X PUT "${KEYCLOAK_URL}/admin/realms/${REALM}/identity-provider/instances/login-gov" \
         -H "Authorization: Bearer ${TOKEN}" \
         -H "Content-Type: application/json" \
         -d "$idp_config" > /dev/null
 
-    echo "Login.gov hidden from login page (TDP frontend uses kc_idp_hint, unaffected)."
+    echo "Login.gov visible on login page."
 }
 
 main() {
@@ -684,6 +682,7 @@ main() {
     configure_login_gov_signing_key
     configure_login_gov_acr_values
     configure_login_gov_logout_params
+    show_login_gov_on_login_page
     configure_tdp_client_urls
     configure_tdp_cli_api_audience
     configure_grafana_client_urls

@@ -33,6 +33,13 @@ def get_client_scope(realm, scope_name):
     )
 
 
+def get_identity_provider(realm, alias):
+    """Return the named identity provider from the rendered realm."""
+    return next(
+        idp for idp in realm["identityProviders"] if idp["alias"] == alias
+    )
+
+
 def load_realm_config(env_name):
     """Load the selected full realm config for an environment."""
     return load_json(REALM_CONFIG_PATHS[env_name])
@@ -111,6 +118,15 @@ def test_all_realm_configs_attach_api_audience_only_to_tdp_cli():
         assert "tdp-api-audience" not in grafana_client["defaultClientScopes"]
 
 
+def test_all_realm_configs_show_login_gov_on_login_page():
+    """Manual CLI/Postman auth needs Login.gov visible on the login page."""
+    for env_name in ("local", "staging", "prod"):
+        realm = load_realm_config(env_name)
+        login_gov_idp = get_identity_provider(realm, "login-gov")
+
+        assert login_gov_idp.get("hideOnLogin") is not True
+
+
 def test_configure_idps_applies_cli_audience_to_existing_realms():
     """Deploy-time config must update existing realms that skip JSON re-import."""
     script = CONFIGURE_IDPS_PATH.read_text()
@@ -121,3 +137,12 @@ def test_configure_idps_applies_cli_audience_to_existing_realms():
     assert "/client-scopes?name=${scope_name}" in script
     assert 'get_client_uuid "tdp-cli"' in script
     assert "default-client-scopes" in script
+
+
+def test_configure_idps_shows_login_gov_for_existing_realms():
+    """Deploy-time config must unhide Login.gov when realms skip re-import."""
+    script = CONFIGURE_IDPS_PATH.read_text()
+
+    assert "show_login_gov_on_login_page()" in script
+    assert "show_login_gov_on_login_page" in script.split("main()", maxsplit=1)[1]
+    assert '.hideOnLogin = false | del(.config.clientSecret)' in script
