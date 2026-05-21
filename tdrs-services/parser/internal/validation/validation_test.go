@@ -785,6 +785,11 @@ func TestGroupValidatorParameterizedExpression(t *testing.T) {
 		t.Fatalf("failed to compile expression: %v", err)
 	}
 
+	countPerRecordResults := func(t *testing.T, output any) int {
+		t.Helper()
+		return len(toPerRecordResults(output, &CompiledValidator{ID: "test_group_validator"}))
+	}
+
 	t.Run("no T1 records - should pass", func(t *testing.T) {
 		group := testutil.NewTestGroup(
 			testutil.NewTestRecord(t2Schema, 1, map[string]any{"FAMILY_AFFILIATION": 2}),
@@ -801,8 +806,8 @@ func TestGroupValidatorParameterizedExpression(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to run: %v", err)
 		}
-		if records := toRecordSlice(result); len(records) != 0 {
-			t.Errorf("expected no records when no T1, got %d", len(records))
+		if count := countPerRecordResults(t, result); count != 0 {
+			t.Errorf("expected no records when no T1, got %d", count)
 		}
 	})
 
@@ -823,8 +828,8 @@ func TestGroupValidatorParameterizedExpression(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to run: %v", err)
 		}
-		if records := toRecordSlice(result); len(records) != 0 {
-			t.Errorf("expected no records when T2 has FA=1, got %d", len(records))
+		if count := countPerRecordResults(t, result); count != 0 {
+			t.Errorf("expected no records when T2 has FA=1, got %d", count)
 		}
 	})
 
@@ -845,8 +850,8 @@ func TestGroupValidatorParameterizedExpression(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to run: %v", err)
 		}
-		if records := toRecordSlice(result); len(records) != 0 {
-			t.Errorf("expected no records when T3 has FA=1, got %d", len(records))
+		if count := countPerRecordResults(t, result); count != 0 {
+			t.Errorf("expected no records when T3 has FA=1, got %d", count)
 		}
 	})
 
@@ -867,8 +872,8 @@ func TestGroupValidatorParameterizedExpression(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to run: %v", err)
 		}
-		if records := toRecordSlice(result); len(records) != 1 {
-			t.Errorf("expected 1 record when no T2/T3 has FA=1, got %d", len(records))
+		if count := countPerRecordResults(t, result); count != 1 {
+			t.Errorf("expected 1 record when no T2/T3 has FA=1, got %d", count)
 		}
 	})
 
@@ -888,8 +893,8 @@ func TestGroupValidatorParameterizedExpression(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to run: %v", err)
 		}
-		if records := toRecordSlice(result); len(records) != 1 {
-			t.Errorf("expected 1 record when T1 has no T2/T3, got %d", len(records))
+		if count := countPerRecordResults(t, result); count != 1 {
+			t.Errorf("expected 1 record when T1 has no T2/T3, got %d", count)
 		}
 	})
 
@@ -912,8 +917,8 @@ func TestGroupValidatorParameterizedExpression(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to run: %v", err)
 		}
-		if records := toRecordSlice(result); len(records) != 0 {
-			t.Errorf("expected no records when at least one T2 has FA=1, got %d", len(records))
+		if count := countPerRecordResults(t, result); count != 0 {
+			t.Errorf("expected no records when at least one T2 has FA=1, got %d", count)
 		}
 	})
 }
