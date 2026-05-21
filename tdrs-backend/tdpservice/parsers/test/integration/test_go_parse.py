@@ -635,7 +635,7 @@ class TestGoParse:
         )
         assert (
             cat4_errors[2].error_message
-            == "Partial duplicate record detected with record type M3 at line 3275."
+            == "Partial duplicate record detected with record type M3 at line 3275. Record is a partial duplicate of the record at line number 3274. Duplicated fields causing error: Item 0 (Record Type), Item 3 (Reporting Month/Year), Item 5 (Case Number), Item 60 (Family Affiliation), Item 61 (Date of Birth), and Item 62 (Social Security Number)."
         )
 
         # We have a few more errors because the go parser separates the the OR'd
