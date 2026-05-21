@@ -250,7 +250,7 @@ func TestProcess_FRAInvalidFirstRowWritesPreCheckError(t *testing.T) {
 				t.Fatalf("sink error count = %d, want 1", sink.errorCount())
 			}
 
-			row := sink.tables["parser_error"][0]
+			row := sink.tables["shadow_parser_error"][0]
 			if got := row[0]; got != int32(1) {
 				t.Errorf("row_number = %v, want %d", got, 1)
 			}
@@ -380,7 +380,7 @@ func TestProcess_TANF_S1_MissingHeader(t *testing.T) {
 	if got := sink.errorRows(pipelineCfg)[1][6]; got != "No records created." {
 		t.Errorf("second error_message = %v, want %q", got, "No records created.")
 	}
-	if got := sink.tables["parser_error"][1][0]; got != int32(0) {
+	if got := sink.tables["shadow_parser_error"][1][0]; got != int32(0) {
 		t.Errorf("second row_number = %v, want %d", got, 0)
 	}
 }

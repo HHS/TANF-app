@@ -26,7 +26,7 @@ func (s *captureSink) Flush(_ context.Context, tableName string, columns []strin
 	return int64(len(rows)), nil
 }
 
-func (s *captureSink) RollbackDatafile(_ context.Context, _ int32, _ []string) error {
+func (s *captureSink) RollbackDatafile(_ context.Context, _ int32, _ []string, _ string) error {
 	return nil
 }
 
