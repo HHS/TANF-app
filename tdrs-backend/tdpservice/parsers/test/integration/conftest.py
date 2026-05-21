@@ -1,5 +1,6 @@
 """Fixtures for live Go parser integration tests."""
 
+import time
 from contextlib import closing
 from typing import Iterable
 
@@ -15,6 +16,8 @@ from tdpservice.parsers.models import DataFileSummary, ParserError
 from tdpservice.search_indexes.util import MODELS
 from tdpservice.stts.models import STT, Region
 from tdpservice.users.models import User
+
+MAX_DATAFILE_DELETE_ATTEMPTS = 5
 
 
 @pytest.fixture(scope="session")
@@ -51,21 +54,28 @@ def _delete_datafiles_outside_transaction(datafile_ids: Iterable[int]) -> None:
     with closing(_connect_to_default_database()) as conn:
         conn.autocommit = True
         with conn.cursor() as cursor:
-            for table_name, column_name in delete_specs:
-                cursor.execute(
-                    sql.SQL("DELETE FROM {} WHERE {} = ANY(%s)").format(
-                        sql.Identifier(table_name),
-                        sql.Identifier(column_name),
-                    ),
-                    [datafile_ids],
-                )
+            for attempt in range(1, MAX_DATAFILE_DELETE_ATTEMPTS + 1):
+                for table_name, column_name in delete_specs:
+                    cursor.execute(
+                        sql.SQL("DELETE FROM {} WHERE {} = ANY(%s)").format(
+                            sql.Identifier(table_name),
+                            sql.Identifier(column_name),
+                        ),
+                        [datafile_ids],
+                    )
 
-            cursor.execute(
-                sql.SQL("DELETE FROM {} WHERE id = ANY(%s)").format(
-                    sql.Identifier(DataFile._meta.db_table),
-                ),
-                [datafile_ids],
-            )
+                try:
+                    cursor.execute(
+                        sql.SQL("DELETE FROM {} WHERE id = ANY(%s)").format(
+                            sql.Identifier(DataFile._meta.db_table),
+                        ),
+                        [datafile_ids],
+                    )
+                    return
+                except psycopg2.errors.ForeignKeyViolation:
+                    if attempt == MAX_DATAFILE_DELETE_ATTEMPTS:
+                        raise
+                    time.sleep(attempt)
 
 
 def _delete_models(model, object_ids: Iterable[object]) -> None:
