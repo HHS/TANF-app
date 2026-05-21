@@ -19,8 +19,7 @@
           name: Run Go parser integration tests
           command: |
             cd tdrs-backend
-            GO_PARSER_SHADOW_MODE=False docker compose up --build -d go-parser
-            docker compose -f docker-compose.yml exec web sh -c "DJANGO_SETTINGS_MODULE=tdpservice.settings.go_parser_integration DJANGO_CONFIGURATION=GoParserIntegration pytest -c pytest-go-parser.ini --basetemp=/home/tdpapp/ tdpservice/parsers/test/integration"
+            task backend-pytest-go-integration
       - upload-codecov:
           component: backend
           coverage-report: ./tdrs-backend/coverage.xml
