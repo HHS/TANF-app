@@ -105,7 +105,7 @@ field_validators:
 
   # Education level validator - 0-16 or 98-99
   - id: education_level
-    expr: "(int(Value) >= 0 and int(Value) <= 16) or (int(Value) >= 98 and int(Value) <= 99)"
+    expr: "(int(trim(string(Value))) >= 0 and int(trim(string(Value))) <= 16) or (int(trim(string(Value))) >= 98 and int(trim(string(Value))) <= 99)"
     message: "{{.RecordType}} Item {{.Item}}: must be 0-16 or 98-99, got {{.Value}}"
 
   # Work eligible indicator validator - 0-9 or 11, 12
@@ -128,6 +128,11 @@ field_validators:
     expr: "quarter(Value) >= 1 and quarter(Value) <= 4"
     message: "{{.RecordType}} Item {{.Item}}: quarter must be 1-4"
 
+  # Calendar quarter validator - checks YYYYQ quarter digit is 1-4
+  - id: calendar_quarter_is_valid
+    expr: "len(string(Value)) == 5 and int(string(Value)[4:5]) >= 1 and int(string(Value)[4:5]) <= 4"
+    message: "{{.RecordType}} Item {{.Item}}: quarter must be 1-4"
+
   # Closure reason validator - 01-19 or 99
   - id: closure_reason
     expr: "(int(Value) >= 1 and int(Value) <= 19) or int(Value) == 99"
@@ -136,8 +141,19 @@ field_validators:
   # Education level validator (no zero) - 1-16 or 98-99
   # Used by M2, M3 where 0 is not a valid education level
   - id: education_level_no_zero
-    expr: "(int(Value) >= 1 and int(Value) <= 16) or (int(Value) >= 98 and int(Value) <= 99)"
+    expr: "(int(trim(string(Value))) >= 1 and int(trim(string(Value))) <= 16) or (int(trim(string(Value))) >= 98 and int(trim(string(Value))) <= 99)"
     message: "{{.RecordType}} Item {{.Item}}: must be 1-16 or 98-99, got {{.Value}}"
+
+  # FRA SSN validator - matches the Python FRA validator set.
+  - id: fra_ssn
+    expr: "isNumeric(string(Value)) and len(string(Value)) == 9 and string(Value)[0:3] not in ['000', '666'] and string(Value)[3:5] != '00' and string(Value)[5:9] != '0000'"
+    error_type: CASE_CONSISTENCY
+    message: "{{.RecordType}} Item {{.Item}}: Social Security Number is not valid."
+
+  # Tribal closure reason validator - 01-18 or 99.
+  - id: tribal_closure_reason
+    expr: "(int(trim(string(Value))) >= 1 and int(trim(string(Value))) <= 18) or int(trim(string(Value))) == 99"
+    message: "{{.RecordType}} Item {{.Item}}: must be 01-18 or 99, got {{.Value}}"
 
   # =============================================================================
   # Header field validators
@@ -221,6 +237,18 @@ record_validators:
     error_type: RECORD_PRE_CHECK
     fields: [RPT_MONTH_YEAR]
 
+  - id: calendar_quarter_is_valid
+    expr: |
+      let calendar_quarter = GetString('CALENDAR_QUARTER');
+      len(calendar_quarter) == 5
+        and isNumeric(calendar_quarter)
+        and int(calendar_quarter[0:4]) >= 2020
+        and int(calendar_quarter[4:5]) > 0
+        and int(calendar_quarter[4:5]) < 5
+    error_type: RECORD_PRE_CHECK
+    fields: [CALENDAR_QUARTER]
+    message: "{{.RecordType}}: {{.Values.CALENDAR_QUARTER}} is invalid. Calendar Quarter must be a numeric representing the Calendar Year and Quarter formatted as YYYYQ"
+
   - id: rpt_month_year_matches_header_year_quarter
     expr: >
       year(GetString('RPT_MONTH_YEAR')) == fiscalToCalendarYear(DataFileContext.FiscalYear, DataFileContext.FiscalQuarter)
@@ -228,6 +256,14 @@ record_validators:
     error_type: RECORD_PRE_CHECK
     fields: [RPT_MONTH_YEAR]
     message: "{{.RecordType}}: Reporting month year {{.Values.RPT_MONTH_YEAR}} does not match file reporting year:{{.DataFileContext.FiscalYear}}, quarter:{{.DataFileContext.FiscalQuarter}}."
+
+  - id: exit_date_matches_fiscal_period
+    expr: >
+      year(GetString('EXIT_DATE')) == fiscalToCalendarYear(DataFileContext.FiscalYear, DataFileContext.FiscalQuarter)
+      and string(quarter(GetString('EXIT_DATE'))) == fiscalToCalendarQuarter(DataFileContext.FiscalYear, DataFileContext.FiscalQuarter)
+    error_type: CASE_CONSISTENCY
+    fields: [EXIT_DATE]
+    message: "Exit date ({{.Values.EXIT_DATE}}) is not valid. Date must be in the range of {{.DataFileContext.FiscalYear}}."
 
   # --- VALUE_CONSISTENCY validators (allow record serialization) ---
 
@@ -309,6 +345,12 @@ record_validators:
   - id: t2_family_affil_1_2_work_part_status
     expr: "if GetInt('FAMILY_AFFILIATION') in [1, 2] { GetString('WORK_PART_STATUS') in ['01', '02', '05', '07', '09', '15', '17', '18', '19', '99'] } else { true }"
     message: "If FAMILY_AFFILIATION is 1-2, WORK_PART_STATUS must be 01, 02, 05, 07, 09, 15, 17, 18, 19, or 99"
+    fields: [FAMILY_AFFILIATION, WORK_PART_STATUS]
+
+  # Tribal TANF allows WORK_PART_STATUS 01-03, 05-09, 11-19, or 99.
+  - id: tribal_t2_family_affil_1_2_work_part_status
+    expr: "if GetInt('FAMILY_AFFILIATION') in [1, 2] { (GetInt('WORK_PART_STATUS') in 1..3) or (GetInt('WORK_PART_STATUS') in 5..9) or (GetInt('WORK_PART_STATUS') in 11..19) or GetString('WORK_PART_STATUS') == '99' } else { true }"
+    message: "If FAMILY_AFFILIATION is 1-2, WORK_PART_STATUS must be 01-03, 05-09, 11-19, or 99"
     fields: [FAMILY_AFFILIATION, WORK_PART_STATUS]
 
   # When WORK_ELIGIBLE_INDICATOR is 1-5, WORK_PART_STATUS must not be 99
@@ -516,17 +558,21 @@ group_validators:
   # Record type must have at least one related record in the same case.
   # Params: record_type (string), related_record_types (array of strings)
   - id: requires_related_record
-    expr: "RecordCounts[Params.record_type] == 0 or hasAnyRecordType(RecordCounts, Params.related_record_types)"
+    expr: |
+      filter(Group.Records, {
+          .GetRecordType() == Params.record_type and not any(Params.related_record_types, { RecordCounts[#] > 0 })
+        })
     message: "When {{.Params.record_type}} is present, at least one related record type must also be present"
+    result_mode: per_record
 
   # Record type must have at least one related record with a specific int field value.
   # Params: record_type (string), related_record_types (array of strings), field_name (string), expected_value (int)
   - id: requires_related_record_with_int_value
-    expr: "RecordCounts[Params.record_type] == 0 or anyRecordOfTypesHasInt(Group, Params.related_record_types, Params.field_name, Params.expected_value)"
+    expr: |
+      filter(Group.Records, {
+          .GetRecordType() == Params.record_type and not any(Group.Records, {
+              .GetRecordType() in Params.related_record_types and .GetInt(Params.field_name) == Params.expected_value
+            })
+        })
     message: "When {{.Params.record_type}} is present, at least one related record must have {{.Params.field_name}} == {{.Params.expected_value}}"
-
-  # Record type requires a corresponding record type in the same case.
-  # Params: record_type (string), required_record_type (string)
-  - id: requires_corresponding_record
-    expr: "RecordCounts[Params.record_type] == 0 or RecordCounts[Params.required_record_type] >= 1"
-    message: "When {{.Params.record_type}} is present, {{.Params.required_record_type}} must also be present"
+    result_mode: per_record

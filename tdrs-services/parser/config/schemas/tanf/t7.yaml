@@ -16,6 +16,9 @@ record_validators:
   - id: record_length_min
     params:
       min: 247
+  - id: rpt_month_year_matches_header_year_quarter
+  - id: calendar_quarter_is_valid
+    error_type: RECORD_PRE_CHECK
 
 # Fields shared across all segments (included in every output row)
 shared:
@@ -213,7 +216,7 @@ segments:
         start: 31
         end: 32
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -225,11 +228,11 @@ segments:
         start: 32
         end: 34
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -238,11 +241,11 @@ segments:
         start: 34
         end: 41
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999
 
   # Stratum 2, Month B
@@ -264,7 +267,7 @@ segments:
         start: 31
         end: 32
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -276,11 +279,11 @@ segments:
         start: 32
         end: 34
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -289,11 +292,11 @@ segments:
         start: 41
         end: 48
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999
 
   # Stratum 2, Month C
@@ -315,7 +318,7 @@ segments:
         start: 31
         end: 32
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -327,11 +330,11 @@ segments:
         start: 32
         end: 34
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -340,11 +343,11 @@ segments:
         start: 48
         end: 55
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999
 
   # Stratum 3, Month A
@@ -366,7 +369,7 @@ segments:
         start: 55
         end: 56
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -378,11 +381,11 @@ segments:
         start: 56
         end: 58
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -391,11 +394,11 @@ segments:
         start: 58
         end: 65
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999
 
   # Stratum 3, Month B
@@ -417,7 +420,7 @@ segments:
         start: 55
         end: 56
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -429,11 +432,11 @@ segments:
         start: 56
         end: 58
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -442,11 +445,11 @@ segments:
         start: 65
         end: 72
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999
 
   # Stratum 3, Month C
@@ -468,7 +471,7 @@ segments:
         start: 55
         end: 56
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -480,11 +483,11 @@ segments:
         start: 56
         end: 58
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -493,11 +496,11 @@ segments:
         start: 72
         end: 79
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999
 
   # Stratum 4, Month A
@@ -519,7 +522,7 @@ segments:
         start: 79
         end: 80
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -531,11 +534,11 @@ segments:
         start: 80
         end: 82
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -544,11 +547,11 @@ segments:
         start: 82
         end: 89
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999
 
   # Stratum 4, Month B
@@ -570,7 +573,7 @@ segments:
         start: 79
         end: 80
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -582,11 +585,11 @@ segments:
         start: 80
         end: 82
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -595,11 +598,11 @@ segments:
         start: 89
         end: 96
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999
 
   # Stratum 4, Month C
@@ -621,7 +624,7 @@ segments:
         start: 79
         end: 80
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -633,11 +636,11 @@ segments:
         start: 80
         end: 82
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -646,11 +649,11 @@ segments:
         start: 96
         end: 103
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999
 
   # Stratum 5, Month A
@@ -672,7 +675,7 @@ segments:
         start: 103
         end: 104
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -684,11 +687,11 @@ segments:
         start: 104
         end: 106
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -697,11 +700,11 @@ segments:
         start: 106
         end: 113
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999
 
   # Stratum 5, Month B
@@ -723,7 +726,7 @@ segments:
         start: 103
         end: 104
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -735,11 +738,11 @@ segments:
         start: 104
         end: 106
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -748,11 +751,11 @@ segments:
         start: 113
         end: 120
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999
 
   # Stratum 5, Month C
@@ -774,7 +777,7 @@ segments:
         start: 103
         end: 104
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -786,11 +789,11 @@ segments:
         start: 104
         end: 106
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -799,11 +802,11 @@ segments:
         start: 120
         end: 127
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999
 
   # Stratum 6, Month A
@@ -825,7 +828,7 @@ segments:
         start: 127
         end: 128
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -837,11 +840,11 @@ segments:
         start: 128
         end: 130
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -850,11 +853,11 @@ segments:
         start: 130
         end: 137
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999
 
   # Stratum 6, Month B
@@ -876,7 +879,7 @@ segments:
         start: 127
         end: 128
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -888,11 +891,11 @@ segments:
         start: 128
         end: 130
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -901,11 +904,11 @@ segments:
         start: 137
         end: 144
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999
 
   # Stratum 6, Month C
@@ -927,7 +930,7 @@ segments:
         start: 127
         end: 128
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -939,11 +942,11 @@ segments:
         start: 128
         end: 130
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -952,11 +955,11 @@ segments:
         start: 144
         end: 151
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999
 
   # Stratum 7, Month A
@@ -978,7 +981,7 @@ segments:
         start: 151
         end: 152
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -990,11 +993,11 @@ segments:
         start: 152
         end: 154
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -1003,11 +1006,11 @@ segments:
         start: 154
         end: 161
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999
 
   # Stratum 7, Month B
@@ -1029,7 +1032,7 @@ segments:
         start: 151
         end: 152
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -1041,11 +1044,11 @@ segments:
         start: 152
         end: 154
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -1054,11 +1057,11 @@ segments:
         start: 161
         end: 168
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999
 
   # Stratum 7, Month C
@@ -1080,7 +1083,7 @@ segments:
         start: 151
         end: 152
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -1092,11 +1095,11 @@ segments:
         start: 152
         end: 154
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -1105,11 +1108,11 @@ segments:
         start: 168
         end: 175
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999
 
   # Stratum 8, Month A
@@ -1131,7 +1134,7 @@ segments:
         start: 175
         end: 176
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -1143,11 +1146,11 @@ segments:
         start: 176
         end: 178
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -1156,11 +1159,11 @@ segments:
         start: 178
         end: 185
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999
 
   # Stratum 8, Month B
@@ -1182,7 +1185,7 @@ segments:
         start: 175
         end: 176
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -1194,11 +1197,11 @@ segments:
         start: 176
         end: 178
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -1207,11 +1210,11 @@ segments:
         start: 185
         end: 192
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999
 
   # Stratum 8, Month C
@@ -1233,7 +1236,7 @@ segments:
         start: 175
         end: 176
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -1245,11 +1248,11 @@ segments:
         start: 176
         end: 178
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -1258,11 +1261,11 @@ segments:
         start: 192
         end: 199
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999
 
   # Stratum 9, Month A
@@ -1284,7 +1287,7 @@ segments:
         start: 199
         end: 200
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -1296,11 +1299,11 @@ segments:
         start: 200
         end: 202
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -1309,11 +1312,11 @@ segments:
         start: 202
         end: 209
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999
 
   # Stratum 9, Month B
@@ -1335,7 +1338,7 @@ segments:
         start: 199
         end: 200
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -1347,11 +1350,11 @@ segments:
         start: 200
         end: 202
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -1360,11 +1363,11 @@ segments:
         start: 209
         end: 216
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999
 
   # Stratum 9, Month C
@@ -1386,7 +1389,7 @@ segments:
         start: 199
         end: 200
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -1398,11 +1401,11 @@ segments:
         start: 200
         end: 202
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -1411,11 +1414,11 @@ segments:
         start: 216
         end: 223
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999
 
   # Stratum 10, Month A
@@ -1437,7 +1440,7 @@ segments:
         start: 223
         end: 224
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -1449,11 +1452,11 @@ segments:
         start: 224
         end: 226
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -1462,11 +1465,11 @@ segments:
         start: 226
         end: 233
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999
 
   # Stratum 10, Month B
@@ -1488,7 +1491,7 @@ segments:
         start: 223
         end: 224
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -1500,11 +1503,11 @@ segments:
         start: 224
         end: 226
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -1513,11 +1516,11 @@ segments:
         start: 233
         end: 240
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999
 
   # Stratum 10, Month C
@@ -1539,7 +1542,7 @@ segments:
         start: 223
         end: 224
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_values
             params:
@@ -1551,11 +1554,11 @@ segments:
         start: 224
         end: 226
         type: string
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 99
 
       - name: FAMILIES_MONTH
@@ -1564,9 +1567,9 @@ segments:
         start: 240
         end: 247
         type: integer
-        required: false
+        required: true
         field_validators:
           - id: in_range_int
             params:
-              min: 0
+              min: 1
               max: 9999999

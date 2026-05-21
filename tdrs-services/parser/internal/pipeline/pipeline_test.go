@@ -34,7 +34,7 @@ func (d *stubDecoder) ReadFirst() (decoder.Row, error) { return nil, nil }
 func (d *stubDecoder) Rows() iter.Seq2[decoder.Row, error] {
 	return func(yield func(decoder.Row, error) bool) {}
 }
-func (d *stubDecoder) Sort(_ *decoder.RecordTypeDetector, _ decoder.KeyExtractor, _ []string) error {
+func (d *stubDecoder) Sort(_ *decoder.RecordTypeDetector, _ []filespec.KeyFieldDef, _ []string) error {
 	return nil
 }
 func (d *stubDecoder) Close() error { return nil }

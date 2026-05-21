@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"slices"
 	"strconv"
+	"strings"
 
 	"go-parser/internal/config/schema"
 	"go-parser/internal/decoder"
@@ -16,18 +17,11 @@ type DecodedRecord struct {
 }
 
 // DecodedGroup holds all decoded records belonging to a logical group.
-// For key-based grouping: all records with the same (RPT_MONTH_YEAR, CASE_NUMBER).
-// For non-keyed: each record is its own group (Key is empty).
+// For key-based grouping, all records share the same configured composite key.
+// For non-keyed files, each record is its own group.
 type DecodedGroup struct {
-	// Key is the composite grouping key: "YYYYMM|CASE_NUMBER"
-	// Empty string if no key_fields are configured (each record is its own group).
+	// Key is the composite grouping key built from configured key_fields.
 	Key string
-
-	// RptMonthYear is extracted from the key for convenience (empty if no key_fields)
-	RptMonthYear string
-
-	// CaseNumber is extracted from the key for convenience (empty if no key_fields)
-	CaseNumber string
 
 	// DecodedRecords contains all rows for this group
 	DecodedRecords []DecodedRecord
@@ -172,11 +166,12 @@ func (pr *ParsedRecord) GetInt(fieldName string) int {
 	case int:
 		return val
 	case string:
-		if val == "" {
+		trimmed := strings.TrimSpace(val)
+		if trimmed == "" {
 			return 0
 		}
 		// Parse string as int, return 0 on failure
-		i, err := strconv.Atoi(val)
+		i, err := strconv.Atoi(trimmed)
 		if err != nil {
 			return 0
 		}
@@ -260,9 +255,7 @@ type ParseContext struct {
 // ParsedGroup contains parsing results for a single RecordGroup.
 type ParsedGroup struct {
 	// Key is the grouping key (empty for non-keyed records)
-	Key          string
-	RptMonthYear string
-	CaseNumber   string
+	Key string
 
 	// Records contains all successfully parsed records in this group
 	Records []*ParsedRecord
@@ -271,16 +264,6 @@ type ParsedGroup struct {
 // GetKey returns the grouping key.
 func (pg *ParsedGroup) GetKey() string {
 	return pg.Key
-}
-
-// GetRptMonthYear returns the reporting month/year.
-func (pg *ParsedGroup) GetRptMonthYear() string {
-	return pg.RptMonthYear
-}
-
-// GetCaseNumber returns the case number.
-func (pg *ParsedGroup) GetCaseNumber() string {
-	return pg.CaseNumber
 }
 
 // ParsedBatch contains parsing results for a Batch (one or more groups).

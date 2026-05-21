@@ -81,6 +81,7 @@ class KeycloakOIDCBackend(OIDCAuthenticationBackend):
         """Update existing user attributes from Keycloak claims on each login."""
         login_gov_uuid = claims.get("login_gov_uuid")
         hhs_id = claims.get("hhs_id")
+        email = claims.get("email", "").lower()
         changed = False
 
         if login_gov_uuid and str(user.login_gov_uuid) != login_gov_uuid:
@@ -89,6 +90,11 @@ class KeycloakOIDCBackend(OIDCAuthenticationBackend):
 
         if hhs_id and user.hhs_id != hhs_id:
             user.hhs_id = hhs_id
+            changed = True
+
+        if email and (user.email != email or user.username != email):
+            user.email = email
+            user.username = email
             changed = True
 
         if changed:

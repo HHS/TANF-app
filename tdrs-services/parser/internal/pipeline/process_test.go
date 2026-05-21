@@ -81,6 +81,17 @@ func testSSPContext() DataFileContext {
 	}
 }
 
+func testFRAContext() DataFileContext {
+	return DataFileContext{
+		Program:       "FRA",
+		Section:       1,
+		DatafileID:    1,
+		FiscalYear:    2024,
+		FiscalQuarter: "Q2",
+		SectionName:   "FRA Work Outcome TANF Exiters",
+	}
+}
+
 // capturingSink captures all flushed data for assertions.
 type capturingSink struct {
 	mu             sync.Mutex
@@ -175,6 +186,83 @@ func writeTempFile(t *testing.T, content string) string {
 }
 
 // --- End-to-end Process tests ---
+
+func TestProcess_FRAInvalidFirstRowWritesPreCheckError(t *testing.T) {
+	reg := loadRegistry(t)
+	validators := loadValidators(t, reg)
+
+	tests := []struct {
+		name    string
+		content string
+	}{
+		{
+			name:    "comment row",
+			content: "# This line represents a header which is not allowed in fra files.\n202401,946412419\n",
+		},
+		{
+			name:    "empty first row",
+			content: "\n202401,946412419\n",
+		},
+		{
+			name:    "missing column value",
+			content: "202401,\n",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			filePath := writeTempFile(t, tt.content)
+			f, err := os.Open(filePath)
+			if err != nil {
+				t.Fatalf("failed to open file: %v", err)
+			}
+			defer f.Close()
+
+			spec := reg.GetFileSpec("FRA", 1)
+			if spec == nil {
+				t.Fatal("GetFileSpec(FRA, 1) returned nil")
+			}
+
+			dec, err := decoder.CreateDecoder(f, spec)
+			if err != nil {
+				t.Fatalf("CreateDecoder failed: %v", err)
+			}
+			defer dec.Close()
+
+			sink := newCapturingSink()
+			pipelineCfg := TestConfig()
+			pipelineCfg.IncludeRecords = true
+			pipelineCfg.IncludeErrors = true
+			p := NewPipeline(sink, reg, validators, pipelineCfg)
+
+			result, err := p.Process(context.Background(), dec, testFRAContext())
+			if err != nil {
+				t.Fatalf("Process failed: %v", err)
+			}
+
+			if result.ErrorCount != 1 {
+				t.Errorf("ErrorCount = %d, want 1", result.ErrorCount)
+			}
+			if sink.totalRecords() != 0 {
+				t.Errorf("totalRecords = %d, want 0", sink.totalRecords())
+			}
+			if sink.errorCount() != 1 {
+				t.Fatalf("sink error count = %d, want 1", sink.errorCount())
+			}
+
+			row := sink.tables["parser_error"][0]
+			if got := row[0]; got != int32(1) {
+				t.Errorf("row_number = %v, want %d", got, 1)
+			}
+			if got := row[6]; got != "File does not begin with FRA data." {
+				t.Errorf("error_message = %v, want %q", got, "File does not begin with FRA data.")
+			}
+			if got := row[7]; got != "1" {
+				t.Errorf("error_type = %v, want %q", got, "1")
+			}
+		})
+	}
+}
 
 func TestProcess_TANF_S1_ValidData(t *testing.T) {
 	reg := loadRegistry(t)
@@ -291,6 +379,9 @@ func TestProcess_TANF_S1_MissingHeader(t *testing.T) {
 	}
 	if got := sink.errorRows(pipelineCfg)[1][6]; got != "No records created." {
 		t.Errorf("second error_message = %v, want %q", got, "No records created.")
+	}
+	if got := sink.tables["parser_error"][1][0]; got != int32(0) {
+		t.Errorf("second row_number = %v, want %d", got, 0)
 	}
 }
 
