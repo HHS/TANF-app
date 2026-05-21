@@ -36,7 +36,7 @@ class STTSerializer(serializers.ModelSerializer):
 class STTPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
     """Accept STT ID only for updates but return full STT in response."""
 
-    queryset = STT.objects.all()
+    queryset = STT.objects.select_related("state")
 
     def to_representation(self, value):
         """Return full STT object on outgoing serialization."""
@@ -47,7 +47,9 @@ class STTPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
 class RegionPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
     """Accept Region ID only for updates but return full Region in response."""
 
-    queryset = Region.objects.all()
+    queryset = Region.objects.prefetch_related(
+        "stts__state"
+    )
 
     def to_representation(self, value):
         """Return full Region object on outgoing serialization."""

@@ -131,6 +131,24 @@ class TestUpdateUser:
         updated = backend.update_user(user, claims)
         assert updated.hhs_id == "EXISTING1234"
 
+    def test_update_user_syncs_email_from_claims(self, backend):
+        """Updates the stored email when the IdP reports a new one for the same user."""
+        user = UserFactory(
+            username="old_email@example.com",
+            email="old_email@example.com",
+            hhs_id=None,
+        )
+        claims = {
+            "email": "new_email@example.com",
+            "login_gov_uuid": str(user.login_gov_uuid),
+        }
+
+        updated = backend.update_user(user, claims)
+        updated.refresh_from_db()
+
+        assert updated.username == "new_email@example.com"
+        assert updated.email == "new_email@example.com"
+
 
 @pytest.mark.django_db
 class TestVerifyClaims:
@@ -154,6 +172,19 @@ class TestVerifyClaims:
         }
         assert backend.verify_claims(claims) is False
 
+    def test_rejects_hhs_user_via_login_gov(self, backend):
+        """HHS staff (@hhs.gov) must not authenticate via Login.gov."""
+        UserFactory(
+            username="staff@hhs.gov",
+            email="staff@hhs.gov",
+            account_approval_status=AccountApprovalStatusChoices.APPROVED,
+        )
+        claims = {
+            "email": "staff@hhs.gov",
+            "identity_provider": "login-gov",
+        }
+        assert backend.verify_claims(claims) is False
+
     def test_allows_acf_user_via_ams(self, backend):
         """ACF staff authenticating via AMS should be allowed."""
         UserFactory(
@@ -163,6 +194,19 @@ class TestVerifyClaims:
         )
         claims = {
             "email": "staff@acf.hhs.gov",
+            "identity_provider": "ams",
+        }
+        assert backend.verify_claims(claims) is True
+
+    def test_allows_hhs_user_via_ams(self, backend):
+        """HHS staff authenticating via AMS should be allowed."""
+        UserFactory(
+            username="staff@hhs.gov",
+            email="staff@hhs.gov",
+            account_approval_status=AccountApprovalStatusChoices.APPROVED,
+        )
+        claims = {
+            "email": "staff@hhs.gov",
             "identity_provider": "ams",
         }
         assert backend.verify_claims(claims) is True

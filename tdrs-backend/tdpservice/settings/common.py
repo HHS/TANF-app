@@ -539,8 +539,7 @@ class Common(Configuration):
     # Canary cutover: percentage of new login requests routed through Keycloak (0-100).
     # 0 = 100% legacy (default), 100 = 100% Keycloak. Changeable via cf set-env.
     KEYCLOAK_AUTH_PERCENTAGE = int(os.getenv("KEYCLOAK_AUTH_PERCENTAGE", "0"))
-
-    KEYCLOAK_SYNC_ENABLED = bool(strtobool(os.getenv("KEYCLOAK_SYNC_ENABLED", "no")))
+    KEYCLOAK_SYNC_ENABLED = bool(strtobool(os.getenv("KEYCLOAK_SYNC_ENABLED", "yes")))
     KEYCLOAK_SERVER_URL = os.getenv("KEYCLOAK_SERVER_URL", "http://keycloak:8080")
     KEYCLOAK_REALM = os.getenv("KEYCLOAK_REALM", "tdp")
     KEYCLOAK_ADMIN_CLIENT_ID = os.getenv("KEYCLOAK_ADMIN_CLIENT_ID", "tdp-django")
@@ -753,7 +752,10 @@ class Common(Configuration):
     CELERY_WORKER_SEND_TASK_EVENTS = True
     CELERY_TASK_SEND_SENT_EVENT = True
 
-    FRA_PILOT_STATES = json.loads(os.getenv("FRA_PILOT_STATES", "[]"))
+    # TODO: Consider updating logic to allow setting pilot state for specific years
+    FRA_PILOT_STATES = json.loads(
+        os.getenv("FRA_PILOT_STATES", '["AZ", "IA", "NE", "OH", "VA"]')
+    )
 
     # Cloud.gov SET integration settings
     LOGIN_GOV_SET_AUDIENCE = os.getenv(

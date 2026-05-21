@@ -18,7 +18,8 @@ from rest_framework.response import Response
 from tdpservice.core.utils import log
 from tdpservice.security.models import SecurityEventToken, SecurityEventType
 from tdpservice.users.models import AccountApprovalStatusChoices
-from tdpservice.users.serializers import UserSerializer
+from tdpservice.users.oidc import FEDERAL_STAFF_EMAIL_DOMAINS
+from tdpservice.users.serializers import UserProfileSerializer
 
 from ..authentication import CustomAuthentication
 from .login_redirect_oidc import LoginRedirectAMS
@@ -121,6 +122,16 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         """Handle user email exceptions."""
         pass
 
+    def _sync_user_email(self, user, email):
+        """Sync the stored user email from trusted OIDC claims."""
+        if not email or (user.email == email and user.username == email):
+            return
+
+        user.email = email
+        user.username = email
+        user.save(update_fields=["email", "username"])
+        logger.info("Updated user email from OIDC claims: %s", user.username)
+
     def _handle_user(self, email, sub, auth_options):
         """Handle user."""
         User = get_user_model()
@@ -217,14 +228,17 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         # corresponding emails externally.
         user = CustomAuthentication.authenticate(**auth_options)
         logging.debug("user obj:{}".format(user))
-        if user and (
-            not user.is_active
-            or user.account_approval_status == AccountApprovalStatusChoices.DEACTIVATED
-        ):
-            raise InactiveUser(
-                f"Login failed, user account is inactive: {user.username}"
-            )
-        elif not user:
+        if user:
+            if (
+                not user.is_active
+                or user.account_approval_status
+                == AccountApprovalStatusChoices.DEACTIVATED
+            ):
+                raise InactiveUser(
+                    f"Login failed, user account is inactive: {user.username}"
+                )
+            self._sync_user_email(user, email)
+        else:
             user, login_msg = self._handle_user(email, sub, auth_options)
 
         self.verify_email(user)
@@ -352,9 +366,9 @@ class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
         return auth_options
 
     def verify_email(self, user):
-        """Handle user email exception to disallow ACF staff to utilize non-AMS authentication."""
+        """Reject federal staff email domains from authenticating through Login.gov."""
 
-        if "@acf.hhs.gov" in user.email:
+        if user.email.lower().endswith(FEDERAL_STAFF_EMAIL_DOMAINS):
             user_groups = list(user.groups.values_list("name", flat=True))
             raise ACFUserLoginDotGov(
                 "{} attempted Login.gov authentication with role(s): {}".format(
@@ -448,6 +462,14 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
 class CypressLoginDotGovAuthenticationOverride(TokenAuthorizationOIDC):
     """Override Login.gov authentication for Cypress users."""
 
+    @staticmethod
+    def get_cypress_idp(username: str) -> str:
+        """Infer the IdP Cypress should emulate from the test user's email domain."""
+        normalized_username = username.lower()
+        if normalized_username.endswith(FEDERAL_STAFF_EMAIL_DOMAINS):
+            return "ams"
+        return "login-gov"
+
     def get(self, request):
         """Create a session for the specified user, if they exist."""
         username = request.query_params.get("username", None)
@@ -464,6 +486,7 @@ class CypressLoginDotGovAuthenticationOverride(TokenAuthorizationOIDC):
         except User.DoesNotExist:
             return Response({"error": "User does not exist"}, status=400)
 
+        request.session["auth_idp"] = self.get_cypress_idp(username)
         login(
             request,
             u,
@@ -473,7 +496,7 @@ class CypressLoginDotGovAuthenticationOverride(TokenAuthorizationOIDC):
 
         response_data = {
             "authenticated": True,
-            "user": UserSerializer(u, context={"request", request}).data,
+            "user": UserProfileSerializer(u, context={"request": request}).data,
         }
 
         if u.is_superuser:

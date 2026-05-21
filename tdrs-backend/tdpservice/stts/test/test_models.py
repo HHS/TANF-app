@@ -19,6 +19,36 @@ def test_stt_string_representation(stts):
 
 
 @pytest.mark.django_db
+@pytest.mark.parametrize(
+    "filenames, expected_num_sections",
+    [
+        (
+            {
+                "Active Case Data": "active.txt",
+                "Closed Case Data": "closed.txt",
+                "Aggregate Data": "aggregate.txt",
+            },
+            3,
+        ),
+        (
+            {
+                "Active Case Data": "tanf-active.txt",
+                "Closed Case Data": "tanf-closed.txt",
+                "SSP Active Case Data": "ssp-active.txt",
+                "SSP Closed Case Data": "ssp-closed.txt",
+            },
+            2,
+        ),
+    ],
+)
+def test_stt_num_sections_counts_unique_sections(filenames, expected_num_sections):
+    """num_sections counts sections, not program-prefixed filename keys."""
+    stt = STT.objects.create(name="Section Count Test", filenames=filenames, ssp=True)
+
+    assert stt.num_sections == expected_num_sections
+
+
+@pytest.mark.django_db
 def test_stt_has_timezone_field(stts):
     """Test that STT model has timezone field with a valid IANA timezone."""
     stt = STT.objects.get(name="Alaska")
