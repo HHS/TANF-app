@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 from django.core.cache import cache
-from django.test import RequestFactory
+from django.test import RequestFactory, override_settings
 
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -18,7 +18,10 @@ from rest_framework.exceptions import AuthenticationFailed
 from tdpservice.users.authentication import KeycloakBearerTokenAuthentication
 from tdpservice.users.models import AccountApprovalStatusChoices
 from tdpservice.users.test.factories import UserFactory
-from tdpservice.users.throttling import KeycloakClientRateThrottle
+from tdpservice.users.throttling import (
+    KeycloakClientRateThrottle,
+    get_keycloak_throttle_cache,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -530,3 +533,16 @@ class TestKeycloakClientRateThrottle:
         second_key = throttle.get_cache_key(second_request, view=None)
 
         assert first_key != second_key
+
+    @override_settings(
+        CACHES={
+            "default": {
+                "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            }
+        }
+    )
+    def test_cache_falls_back_to_default_when_throttle_alias_is_missing(self):
+        """Management commands should not fail if settings omit throttle cache."""
+        cache = get_keycloak_throttle_cache()
+
+        assert cache is not None

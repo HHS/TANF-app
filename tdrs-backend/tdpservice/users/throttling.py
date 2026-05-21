@@ -9,8 +9,17 @@ request.
 """
 
 from django.core.cache import caches
+from django.core.cache.backends.base import InvalidCacheBackendError
 
 from rest_framework.throttling import SimpleRateThrottle
+
+
+def get_keycloak_throttle_cache():
+    """Return the throttle cache, falling back safely during startup checks."""
+    try:
+        return caches["throttle"]
+    except InvalidCacheBackendError:
+        return caches["default"]
 
 
 class KeycloakClientRateThrottle(SimpleRateThrottle):
@@ -21,7 +30,7 @@ class KeycloakClientRateThrottle(SimpleRateThrottle):
     Redis-backed ``throttle`` cache so they're shared across web workers.
     """
 
-    cache = caches["throttle"]
+    cache = get_keycloak_throttle_cache()
     scope = "keycloak_client"
 
     def get_cache_key(self, request, view):

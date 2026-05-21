@@ -166,6 +166,12 @@ class CloudGov(Common):
                 "KEY_PREFIX": f"{cloudgov_name}-{c}",  # does include "prod" for prod, can specify per env in classes below
             }
 
+        CACHES["throttle"] = {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": f"{REDIS_URI}/{brokers['caches']['feature-flags']}",
+            "KEY_PREFIX": f"{cloudgov_name}-throttle",
+        }
+
     OTEL_EXPORTER_OTLP_ENDPOINT = os.getenv(
         "OTEL_EXPORTER_OTLP_ENDPOINT", "http://tempo.apps.internal:4317"
     )
