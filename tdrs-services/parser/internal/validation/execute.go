@@ -78,7 +78,45 @@ func ExecuteGroup(cv *CompiledValidator, env any) []*ValidationResult {
 		}}
 	}
 
-	records := toRecordSlice(output)
+	return toPerRecordResults(output, cv)
+}
+
+func toPerRecordResults(output any, cv *CompiledValidator) []*ValidationResult {
+	if output == nil {
+		return nil
+	}
+
+	if records, ok := output.([]*parser.ParsedRecord); ok {
+		return resultsFromRecords(records, cv)
+	}
+
+	if matches, ok := output.([]*DuplicateMatch); ok {
+		return resultsFromDuplicateMatches(matches, cv)
+	}
+
+	// The expr engine may wrap results as []any
+	if anySlice, ok := output.([]any); ok {
+		var records []*parser.ParsedRecord
+		var matches []*DuplicateMatch
+		for _, item := range anySlice {
+			if rec, ok := item.(*parser.ParsedRecord); ok {
+				records = append(records, rec)
+				continue
+			}
+			if match, ok := item.(*DuplicateMatch); ok {
+				matches = append(matches, match)
+			}
+		}
+		if len(matches) > 0 {
+			return resultsFromDuplicateMatches(matches, cv)
+		}
+		return resultsFromRecords(records, cv)
+	}
+
+	return nil
+}
+
+func resultsFromRecords(records []*parser.ParsedRecord, cv *CompiledValidator) []*ValidationResult {
 	if len(records) == 0 {
 		return nil
 	}
@@ -96,26 +134,28 @@ func ExecuteGroup(cv *CompiledValidator, env any) []*ValidationResult {
 	return results
 }
 
-// toRecordSlice converts the raw output of a per_record expression to a record slice.
-func toRecordSlice(output any) []*parser.ParsedRecord {
-	if output == nil {
+func resultsFromDuplicateMatches(matches []*DuplicateMatch, cv *CompiledValidator) []*ValidationResult {
+	if len(matches) == 0 {
 		return nil
 	}
 
-	if records, ok := output.([]*parser.ParsedRecord); ok {
-		return records
-	}
-
-	// The expr engine may wrap results as []any
-	if anySlice, ok := output.([]any); ok {
-		var records []*parser.ParsedRecord
-		for _, item := range anySlice {
-			if rec, ok := item.(*parser.ParsedRecord); ok {
-				records = append(records, rec)
-			}
+	results := make([]*ValidationResult, 0, len(matches))
+	for _, match := range matches {
+		if match == nil || match.Record == nil {
+			continue
 		}
-		return records
-	}
 
-	return nil
+		results = append(results, &ValidationResult{
+			Valid:       false,
+			ValidatorID: cv.ID,
+			LineNumber:  match.Record.GetLineNumber(),
+			RecordType:  match.Record.GetRecordType(),
+			Validator:   cv,
+			Context: map[string]any{
+				"ExistingLineNumber": match.ExistingLineNumber,
+				"DuplicatedFields":   match.DuplicatedFields,
+			},
+		})
+	}
+	return results
 }

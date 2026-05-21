@@ -126,6 +126,37 @@ func TestConvertError_BasicRow(t *testing.T) {
 	}
 }
 
+func TestRenderErrorMessage_WithValidationContext(t *testing.T) {
+	cs := makeTestSchema("T2", []schema.FieldDef{
+		{Name: "SSN", FriendlyName: "Social Security Number", Item: "9"},
+	})
+	rec := makeTestRecord(cs, 12, map[string]any{"SSN": "111111111"})
+
+	msgTmpl, _ := template.New("partial_duplicate").Parse(
+		"Partial duplicate record detected with record type {{.RecordType}} at line {{.LineNumber}}. Record is a partial duplicate of the record at line number {{.ExistingLineNumber}}. Duplicated fields causing error: {{.DuplicatedFields}}",
+	)
+	vr := &validation.ValidationResult{
+		Valid:       false,
+		ErrorType:   validation.ErrorTypeCaseConsistency,
+		ValidatorID: "partial_duplicates",
+		Context: map[string]any{
+			"ExistingLineNumber": 5,
+			"DuplicatedFields":   "Item 9 (Social Security Number).",
+		},
+		Validator: &validation.CompiledValidator{
+			ID:        "partial_duplicates",
+			ErrorType: validation.ErrorTypeCaseConsistency,
+			Message:   msgTmpl,
+		},
+	}
+
+	got := renderErrorMessage(vr, rec)
+	want := "Partial duplicate record detected with record type T2 at line 12. Record is a partial duplicate of the record at line number 5. Duplicated fields causing error: Item 9 (Social Security Number)."
+	if got != want {
+		t.Errorf("renderErrorMessage() = %q, want %q", got, want)
+	}
+}
+
 func TestConvertError_NilContentTypeID(t *testing.T) {
 	cs := makeTestSchema("T1", []schema.FieldDef{
 		{Name: "CASE_NUMBER"},

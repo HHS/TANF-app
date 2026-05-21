@@ -43,6 +43,7 @@ type ValidationResult struct {
 	Error           error  // Set if expression evaluation failed
 	DataFileContext *DataFileContext
 	Validator       *CompiledValidator
+	Context         map[string]any
 }
 
 // BlocksRecord returns true if this error type blocks record serialization.

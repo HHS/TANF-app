@@ -967,6 +967,30 @@ func TestExecuteGroupEdgeCases(t *testing.T) {
 		}
 	})
 
+	t.Run("per_record expression returning duplicate matches", func(t *testing.T) {
+		ce, _ := registry.getOrCompileExpr(ScopeGroup, "getPartialDuplicates(Group, 'T2', ['SSN'])", "per_record")
+		cv := &CompiledValidator{ID: "partial_duplicates", Expr: ce, ResultMode: "per_record"}
+
+		group := testutil.NewTestGroup(
+			testutil.NewTestRecord(t2Schema, 1, map[string]any{"SSN": "111111111", "FAMILY_AFFILIATION": 1}),
+			testutil.NewTestRecord(t2Schema, 2, map[string]any{"SSN": "111111111", "FAMILY_AFFILIATION": 2}),
+		)
+		env := NewGroupEnv(group)
+		results := ExecuteGroup(cv, env)
+		if len(results) != 1 {
+			t.Fatalf("expected 1 result, got %d", len(results))
+		}
+		if results[0].LineNumber != 2 {
+			t.Errorf("expected LineNumber=2, got %d", results[0].LineNumber)
+		}
+		if results[0].Context["ExistingLineNumber"] != 1 {
+			t.Errorf("expected ExistingLineNumber=1, got %v", results[0].Context["ExistingLineNumber"])
+		}
+		if results[0].Context["DuplicatedFields"] == "" {
+			t.Error("expected DuplicatedFields context")
+		}
+	})
+
 	t.Run("single mode delegates to Execute", func(t *testing.T) {
 		ce, _ := registry.getOrCompileExpr(ScopeGroup, "RecordCounts['T2'] > 0", "single")
 		cv := &CompiledValidator{ID: "has_t2", Expr: ce, ResultMode: "single"}

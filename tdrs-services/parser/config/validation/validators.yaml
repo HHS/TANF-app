@@ -522,7 +522,7 @@ group_validators:
     expr: "getPartialDuplicates(Group, Params.record_type, Params.fields)"
     error_type: CASE_CONSISTENCY
     result_mode: per_record
-    message: "Partial duplicate record detected with record type {{.RecordType}} at line {{.LineNumber}}."
+    message: "Partial duplicate record detected with record type {{.RecordType}} at line {{.LineNumber}}. Record is a partial duplicate of the record at line number {{.ExistingLineNumber}}. Duplicated fields causing error: {{.DuplicatedFields}}"
 
   # Partial duplicate detection with field exclusion (excludes exact dups)
   # Params: record_type, fields, exclude_field, exclude_values
@@ -530,7 +530,7 @@ group_validators:
     expr: "getPartialDuplicatesExcluding(Group, Params.record_type, Params.fields, Params.exclude_field, Params.exclude_values)"
     error_type: CASE_CONSISTENCY
     result_mode: per_record
-    message: "Partial duplicate record detected with record type {{.RecordType}} at line {{.LineNumber}}."
+    message: "Partial duplicate record detected with record type {{.RecordType}} at line {{.LineNumber}}. Record is a partial duplicate of the record at line number {{.ExistingLineNumber}}. Duplicated fields causing error: {{.DuplicatedFields}}"
 
   # =============================================================================
   # Federally funded SSN validator (group scope, per-record errors)

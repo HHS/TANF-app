@@ -26,6 +26,10 @@ var (
 	t2Schema = func() *schema.CompiledSchema {
 		cs := testutil.NewTestSchema("T2", "SSN", "FAMILY_AFFILIATION")
 		cs.Shared[0].Required = true
+		cs.Shared[0].Item = "9"
+		cs.Shared[0].FriendlyName = "Social Security Number"
+		cs.Shared[1].Item = "10"
+		cs.Shared[1].FriendlyName = "Family Affiliation"
 		return cs
 	}()
 	t3Schema = testutil.NewTestSchema("T3", "FAMILY_AFFILIATION")
@@ -1369,6 +1373,15 @@ func TestGetPartialDuplicates(t *testing.T) {
 		if len(dups) != 1 {
 			t.Errorf("expected 1 partial duplicate, got %d", len(dups))
 		}
+		if dups[0].Record.GetLineNumber() != 2 {
+			t.Errorf("expected duplicate record to be line 2, got %d", dups[0].Record.GetLineNumber())
+		}
+		if dups[0].ExistingLineNumber != 1 {
+			t.Errorf("expected existing line 1, got %d", dups[0].ExistingLineNumber)
+		}
+		if dups[0].DuplicatedFields != "Item 9 (Social Security Number)." {
+			t.Errorf("unexpected duplicated fields: %q", dups[0].DuplicatedFields)
+		}
 	})
 
 	t.Run("exact duplicate is excluded from partial duplicates", func(t *testing.T) {
@@ -1409,7 +1422,28 @@ func TestGetPartialDuplicatesExcluding(t *testing.T) {
 		if len(dups) != 1 {
 			t.Errorf("expected 1 partial duplicate, got %d", len(dups))
 		}
+		if dups[0].Record.GetLineNumber() != 2 {
+			t.Errorf("expected duplicate record to be line 2, got %d", dups[0].Record.GetLineNumber())
+		}
+		if dups[0].ExistingLineNumber != 1 {
+			t.Errorf("expected existing line 1, got %d", dups[0].ExistingLineNumber)
+		}
 	})
+}
+
+func TestFormatDuplicatedFields(t *testing.T) {
+	rec := testutil.NewTestRecord(t2Schema, 1, nil)
+
+	got := formatDuplicatedFields(rec, []string{"SSN", "FAMILY_AFFILIATION"})
+	want := "Item 9 (Social Security Number), and Item 10 (Family Affiliation)."
+	if got != want {
+		t.Errorf("formatDuplicatedFields() = %q, want %q", got, want)
+	}
+
+	got = formatDuplicatedFields(rec, []string{"UNKNOWN_FIELD"})
+	if got != "UNKNOWN_FIELD." {
+		t.Errorf("formatDuplicatedFields() fallback = %q, want UNKNOWN_FIELD.", got)
+	}
 }
 
 func TestBuildCompositeKey(t *testing.T) {
