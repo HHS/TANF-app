@@ -78,7 +78,7 @@ def parse_datafile(dfs, datafile, timeout_seconds=GO_PARSE_TIMEOUT_SECONDS):
 
     async_result = celery_app.send_task(
         GO_PARSE_TASK_NAME,
-        args=[datafile.pk],
+        args=[datafile.pk, 0],
         queue=settings.CELERY_GO_PARSER_QUEUE,
     )
 

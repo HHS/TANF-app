@@ -134,7 +134,26 @@ tasks:
       PYTEST_ARGS: '{{.PYTEST_ARGS | default ""}}'
     cmds:
       - task: backend-up
-      - docker compose -f docker-compose.yml exec web sh -c "DJANGO_SETTINGS_MODULE=tdpservice.settings.go_parser_integration DJANGO_CONFIGURATION=GoParserIntegration pytest -c pytest-go-parser.ini --basetemp=/home/tdpapp/ tdpservice/parsers/test/integration {{.PYTEST_ARGS}}"
+      - |
+        set -e
+        queue="go-parser-integration-$(date +%s)-$$"
+        post_parse_queue="${queue}-post-parse"
+        container="tdrs-backend-go-parser-integration-$(date +%s)-$$"
+
+        cleanup() {
+          docker rm -f "${container}" >/dev/null 2>&1 || true
+        }
+        trap cleanup EXIT
+
+        docker compose -f docker-compose.yml build go-parser
+        docker compose -f docker-compose.yml run --rm --detach \
+          --name "${container}" \
+          -e GO_PARSER_SHADOW_MODE=false \
+          -e GO_PARSER_QUEUE="${queue}" \
+          -e GO_PARSER_POST_PARSE_QUEUE="${post_parse_queue}" \
+          go-parser
+
+        docker compose -f docker-compose.yml exec web sh -c "CELERY_GO_PARSER_QUEUE=${queue} DJANGO_SETTINGS_MODULE=tdpservice.settings.go_parser_integration DJANGO_CONFIGURATION=GoParserIntegration pytest -c pytest-go-parser.ini --basetemp=/home/tdpapp/ tdpservice/parsers/test/integration {{.PYTEST_ARGS}}"
 
   backend-pytest-cov:
     desc: 'Generate coverage.json file in the backend container. E.g: task backend-pytest-cov PYTEST_ARGS="tdpservice/test/ -s -vv"'
