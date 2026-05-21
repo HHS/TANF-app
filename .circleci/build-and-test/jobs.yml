@@ -15,11 +15,6 @@
           command: |
             cd tdrs-backend;
             docker-compose run --rm web bash -c "./wait_for_services.sh && pytest --cov-report=xml"
-      - run:
-          name: Run Go parser integration tests
-          command: |
-            cd tdrs-backend
-            task backend-pytest-go-integration
       - upload-codecov:
           component: backend
           coverage-report: ./tdrs-backend/coverage.xml
@@ -149,6 +144,11 @@
           command: |
             . "$BASH_ENV"
             task parser:validate-config
+      - run:
+          name: Run Go parser integration tests
+          command: |
+            cd tdrs-backend
+            task backend-pytest-go-integration
       - run:
           name: Run Go parser tests with coverage
           command: |
