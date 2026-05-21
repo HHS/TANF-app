@@ -18,6 +18,7 @@ from tdpservice.data_files.models import (
 from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.parsers.models import (
     DataFileSummary,
+    ParserError,
     ShadowDataFileSummary,
     ShadowParserError,
 )
@@ -80,7 +81,7 @@ def setup_parse_mocks(monkeypatch, dfs=None):
     monkeypatch.setattr(parser_task.logger, "handlers", handlers, raising=False)
     monkeypatch.setattr(parser_task, "change_log_filename", lambda *a, **k: None)
 
-    def fake_update_dfs(dfs, data_file):
+    def fake_update_dfs(dfs, data_file, **kwargs):
         dfs.save()
 
     monkeypatch.setattr(parser_task, "update_dfs", fake_update_dfs)
@@ -97,7 +98,7 @@ def setup_parse_mocks(monkeypatch, dfs=None):
     monkeypatch.setattr(
         parser_task.ErrorReportFactory,
         "get_error_report_generator",
-        staticmethod(lambda data_file: DummyReport()),
+        staticmethod(lambda data_file, parser_error_model=None: DummyReport()),
     )
     return handlers
 
@@ -248,7 +249,9 @@ def test_update_dfs_uses_fra_aggregates(monkeypatch, stt):
         datafile=datafile, status=DataFileSummary.Status.ACCEPTED
     )
 
-    monkeypatch.setattr(parser_task, "fra_total_errors", lambda df: {"fra": 1})
+    monkeypatch.setattr(
+        parser_task, "fra_total_errors", lambda df, **kwargs: {"fra": 1}
+    )
 
     parser_task.update_dfs(dfs, datafile)
 
@@ -269,11 +272,13 @@ def test_update_dfs_uses_case_aggregates(monkeypatch, stt):
         datafile=datafile, status=DataFileSummary.Status.ACCEPTED
     )
 
-    monkeypatch.setattr(parser_task, "case_aggregates_by_month", lambda *a: {"case": 2})
+    monkeypatch.setattr(
+        parser_task, "case_aggregates_by_month", lambda *a, **kwargs: {"case": 2}
+    )
     monkeypatch.setattr(
         parser_task,
         "total_errors_by_month",
-        lambda *a: pytest.fail("total_errors_by_month should not be used"),
+        lambda *a, **kwargs: pytest.fail("total_errors_by_month should not be used"),
     )
 
     parser_task.update_dfs(dfs, datafile)
@@ -298,9 +303,11 @@ def test_update_dfs_uses_total_errors(monkeypatch, stt):
     monkeypatch.setattr(
         parser_task,
         "case_aggregates_by_month",
-        lambda *a: pytest.fail("case_aggregates_by_month should not be used"),
+        lambda *a, **kwargs: pytest.fail("case_aggregates_by_month should not be used"),
     )
-    monkeypatch.setattr(parser_task, "total_errors_by_month", lambda *a: {"total": 3})
+    monkeypatch.setattr(
+        parser_task, "total_errors_by_month", lambda *a, **kwargs: {"total": 3}
+    )
 
     parser_task.update_dfs(dfs, datafile)
 
@@ -415,6 +422,58 @@ def test_post_parse_parse_error_rejects_shadow_summary(stt):
 
 
 @pytest.mark.django_db
+@override_settings(GO_PARSER_SHADOW_MODE=False)
+def test_post_parse_can_finalize_production_summary(monkeypatch, stt):
+    """Finalize Go parser production output when shadow mode is disabled."""
+    datafile = DataFileFactory(
+        stt=stt,
+        version=4,
+        state=SubmissionState.VIRUS_SCAN_COMPLETED,
+        section=DataFile.Section.AGGREGATE_DATA,
+    )
+    summary = DataFileSummary.objects.create(
+        datafile=datafile,
+        status=DataFileSummary.Status.PENDING,
+    )
+    ParserError.objects.create(
+        file=datafile,
+        row_number=1,
+        column_number="1",
+        item_number="1",
+        field_name="FIELD",
+        rpt_month_year=201910,
+        case_number="CASE",
+        error_message="FIELD is invalid",
+        error_type=parser_task.ParserErrorCategoryChoices.FIELD_VALUE,
+        fields_json={"friendly_name": {"FIELD": "Field"}},
+    )
+
+    sent = {"called": False}
+    monkeypatch.setattr(
+        parser_task,
+        "send_data_submitted_email",
+        lambda *args, **kwargs: sent.update(called=True),
+    )
+
+    parser_task.post_parse(datafile.id)
+
+    summary.refresh_from_db()
+    datafile.refresh_from_db()
+
+    assert summary.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+    assert summary.case_aggregates == {
+        "months": [
+            {"month": "Oct", "total_errors": 1},
+            {"month": "Nov", "total_errors": 0},
+            {"month": "Dec", "total_errors": 0},
+        ]
+    }
+    assert "data_file.txt_error_report" in summary.error_report.name
+    assert datafile.state == SubmissionState.VIRUS_SCAN_COMPLETED
+    assert sent["called"] is False
+
+
+@pytest.mark.django_db
 def test_parse_success_sends_email(monkeypatch, data_analyst):
     """Send notification email on successful parse."""
     datafile = DataFileFactory(
@@ -477,7 +536,7 @@ def test_parse_success_reparse_updates_file_meta(monkeypatch, data_analyst):
         parser_task.ReparseMeta, "set_total_num_records_post", lambda *a, **k: None
     )
 
-    def fake_update_dfs(dfs, data_file):
+    def fake_update_dfs(dfs, data_file, **kwargs):
         dfs.status = DataFileSummary.Status.ACCEPTED
         dfs.save()
 
@@ -532,7 +591,9 @@ def test_parse_success_reparse_suppresses_email_for_accepted_to_accepted(
     monkeypatch.setattr(
         parser_task,
         "update_dfs",
-        lambda dfs, data_file: setattr(dfs, "status", DataFileSummary.Status.ACCEPTED),
+        lambda dfs, data_file, **kwargs: setattr(
+            dfs, "status", DataFileSummary.Status.ACCEPTED
+        ),
     )
     monkeypatch.setattr(
         parser_task.ParserError.objects,
@@ -584,7 +645,7 @@ def test_parse_success_reparse_still_sends_email_for_unchanged_nonaccepted_statu
     monkeypatch.setattr(
         parser_task,
         "update_dfs",
-        lambda dfs, data_file: setattr(
+        lambda dfs, data_file, **kwargs: setattr(
             dfs, "status", DataFileSummary.Status.ACCEPTED_WITH_ERRORS
         ),
     )
@@ -735,7 +796,7 @@ def test_parse_transitions_to_parse_completed(monkeypatch, data_analyst):
         datafile=datafile, status=DataFileSummary.Status.PENDING
     )
 
-    def fake_update_dfs(dfs, data_file):
+    def fake_update_dfs(dfs, data_file, **kwargs):
         dfs.status = DataFileSummary.Status.ACCEPTED
         dfs.save()
 
@@ -763,7 +824,7 @@ def test_parse_transitions_to_parsed_with_errors(monkeypatch, data_analyst):
         datafile=datafile, status=DataFileSummary.Status.PENDING
     )
 
-    def fake_update_dfs(dfs, data_file):
+    def fake_update_dfs(dfs, data_file, **kwargs):
         dfs.status = DataFileSummary.Status.ACCEPTED_WITH_ERRORS
         dfs.save()
 
