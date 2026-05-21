@@ -235,9 +235,16 @@ func sectionNumber(section string) int {
 	switch section {
 	case "Active Case Data":
 		return 1
+	// TODO: We should probably move off of the number system for sections.
+	case "Work Outcomes of TANF Exiters":
+		return 1
 	case "Closed Case Data":
 		return 2
+	case "Secondary School Attainment":
+		return 2
 	case "Aggregate Data":
+		return 3
+	case "Supplemental Work Outcomes":
 		return 3
 	case "Stratum Data":
 		return 4

@@ -140,7 +140,6 @@ func serializeSspM3(record *parser.ParsedRecord, datafileID int32) [][]any {
 		record.Get("RecordType"),
 		record.Get("RPT_MONTH_YEAR"),
 		record.Get("CASE_NUMBER"),
-		record.Get("FIPS_CODE"),
 		record.Get("FAMILY_AFFILIATION"),
 		record.Get("DATE_OF_BIRTH"),
 		record.Get("SSN"),

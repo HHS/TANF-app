@@ -33,9 +33,8 @@ type sortableRow struct {
 // Sorter reads all rows from a decoder, separates non-grouped records,
 // and stable-sorts data records by key fields.
 type Sorter struct {
-	spec           *filespec.FileSpec
 	detector       *decoder.RecordTypeDetector
-	keyExtractor   decoder.KeyExtractor
+	keyFields      []filespec.KeyFieldDef
 	groupedSchemas map[string]bool
 }
 
@@ -48,9 +47,8 @@ func NewSorter(spec *filespec.FileSpec, detector *decoder.RecordTypeDetector) *S
 	}
 
 	return &Sorter{
-		spec:           spec,
 		detector:       detector,
-		keyExtractor:   decoder.NewKeyExtractor(spec),
+		keyFields:      spec.Accumulator.KeyFields.OrderedFields(),
 		groupedSchemas: groupedSchemas,
 	}
 }
@@ -95,7 +93,7 @@ func (s *Sorter) Sort(dec decoder.Decoder) (*SortResult, error) {
 		}
 
 		// Extract sort key
-		key, err := s.keyExtractor.ExtractKey(row)
+		key, err := row.ExtractKey(s.keyFields)
 		if err != nil {
 			// Key extraction failed — collect for error reporting
 			result.UnkeyedRows = append(result.UnkeyedRows, row)

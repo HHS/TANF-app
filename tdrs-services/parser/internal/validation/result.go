@@ -155,6 +155,11 @@ func (gvr *GroupValidationResult) HasBlockingGroupErrors() bool {
 				return true
 			}
 		}
+		for _, err := range rr.FieldErrors {
+			if err.BlocksGroup() {
+				return true
+			}
+		}
 	}
 	return false
 }

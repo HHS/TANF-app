@@ -16,6 +16,10 @@ record_validators:
   - id: record_length_min
     params:
       min: 379
+  - id: rpt_month_year_matches_header_year_quarter
+  - id: calendar_quarter_is_valid
+    error_type: RECORD_PRE_CHECK
+
   # Sum validators
   - id: sum_equals
     params:

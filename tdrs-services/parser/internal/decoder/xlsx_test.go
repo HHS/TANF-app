@@ -55,8 +55,8 @@ func TestXLSXDecoder_Format(t *testing.T) {
 	}
 }
 
-func TestXLSXDecoder_ReadFirst_ReturnsNil(t *testing.T) {
-	path := createTestXLSX(t, [][]string{{"a", "b"}})
+func TestXLSXDecoder_ReadFirst_BuffersFirstRow(t *testing.T) {
+	path := createTestXLSX(t, [][]string{{"a", "b"}, {"c", "d"}})
 
 	dec, err := NewXLSXDecoder(path, "TE1")
 	if err != nil {
@@ -68,8 +68,26 @@ func TestXLSXDecoder_ReadFirst_ReturnsNil(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ReadFirst() error: %v", err)
 	}
-	if row != nil {
-		t.Errorf("ReadFirst() = %v, want nil for XLSX decoder", row)
+	cr := row.(*ColumnarRow)
+	if cr.ColumnCount() != 2 {
+		t.Fatalf("ReadFirst() ColumnCount() = %d, want 2", cr.ColumnCount())
+	}
+	if got := cr.Column(0); got != "a" {
+		t.Errorf("ReadFirst() Column(0) = %v, want %q", got, "a")
+	}
+
+	var rows []Row
+	for row, err := range dec.Rows() {
+		if err != nil {
+			t.Fatalf("Rows() error: %v", err)
+		}
+		rows = append(rows, row)
+	}
+	if len(rows) != 2 {
+		t.Fatalf("Rows() got %d rows, want 2", len(rows))
+	}
+	if got := rows[0].(*ColumnarRow).Column(0); got != "a" {
+		t.Errorf("Rows() first row Column(0) = %v, want buffered first row", got)
 	}
 }
 

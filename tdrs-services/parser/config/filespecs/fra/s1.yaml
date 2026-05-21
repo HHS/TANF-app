@@ -50,13 +50,42 @@ record_type_detection:
 # Configuration for how records are collected and grouped for processing.
 #
 # FRA files don't have case-based grouping like TANF/SSP.
-# Each record is independent (one exiter per row).
 # Duplicates are detected by EXIT_DATE + SSN combination.
 accumulator:
-
-  # No key_fields for FRA - records are not grouped by case
+  # For columnar files, start is interpreted as the column index.
+  key_fields:
+    fields:
+      - name: exit_date
+        start: 0
+        end: 1
+      - name: ssn
+        start: 1
+        end: 2
 
   batch_size: 1
 
-  # No grouping needed for FRA records
-  grouped_schemas: []
+  # Sort by EXIT_DATE + SSN before accumulation so duplicate records are adjacent.
+  presort: true
+
+  grouped_schemas:
+    - fra/te1
+
+validation_orchestrator:
+  categories:
+  - id: 1
+    name: Record pre-check
+    default_error_type: CASE_CONSISTENCY
+  - id: 2
+    name: Field validation
+    default_error_type: CASE_CONSISTENCY
+  - id: 3
+    name: Cross-field
+    default_error_type: CASE_CONSISTENCY
+  - id: 4
+    name: Group validation
+    default_error_type: CASE_CONSISTENCY
+
+group_validators:
+  - id: exact_duplicates
+    params:
+      record_type: TE1

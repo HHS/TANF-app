@@ -134,23 +134,32 @@ func (c *AccumulatorConfig) EffectiveBatchSize() int {
 
 // HasKeyFields returns true if key-based grouping is configured.
 func (c *AccumulatorConfig) HasKeyFields() bool {
-	return c.KeyFields != nil && (c.KeyFields.RptMonthYear.End > 0 || c.KeyFields.CaseNumber.End > 0)
+	return c.KeyFields != nil && len(c.KeyFields.Fields) > 0
 }
 
-// KeyFieldsConfig defines byte positions for extracting the grouping key.
+// KeyFieldsConfig defines positions for extracting the grouping key.
 type KeyFieldsConfig struct {
-	// RptMonthYear is the position of the reporting month/year field
-	RptMonthYear PositionDef `yaml:"rpt_month_year"`
-
-	// CaseNumber is the position of the case number field
-	CaseNumber PositionDef `yaml:"case_number"`
+	// Fields is the ordered list of grouping key fields.
+	Fields []KeyFieldDef `yaml:"fields"`
 }
 
-// PositionDef defines a byte range within a line.
+func (c *KeyFieldsConfig) OrderedFields() []KeyFieldDef {
+	if c == nil {
+		return nil
+	}
+	return c.Fields
+}
+
+type KeyFieldDef struct {
+	Name        string `yaml:"name"`
+	PositionDef `yaml:",inline"`
+}
+
+// PositionDef defines a byte range for positional files or a column index for columnar files.
 type PositionDef struct {
-	// Start is the starting byte position (0-indexed, inclusive)
+	// Start is the starting byte position or column index (0-indexed, inclusive).
 	Start int `yaml:"start"`
 
-	// End is the ending byte position (0-indexed, exclusive)
+	// End is the ending byte position or the next column index (0-indexed, exclusive).
 	End int `yaml:"end"`
 }

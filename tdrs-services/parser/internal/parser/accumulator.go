@@ -87,56 +87,57 @@ func (a *Accumulator) Add(row decoder.Row) (batch *DecodedBatch, sch *schema.Com
 	line := DecodedRecord{Row: row, Schema: sch}
 
 	// Generate the grouping key
-	key, rptMonth, caseNum, err := a.generateKey(row)
+	groupingKey, err := a.generateKey(row)
 	if err != nil {
 		return nil, nil, false, fmt.Errorf("line %d: failed to generate key: %w", row.LineNum(), err)
 	}
 
-	return a.addRecord(line, sch, key, rptMonth, caseNum)
+	return a.addRecord(line, sch, groupingKey)
 }
 
 // generateKey creates a grouping key for the row.
 // When key_fields configured: extracts composite key from row data.
 // When no key_fields: uses line number as unique key (every record is its own group).
-func (a *Accumulator) generateKey(row decoder.Row) (key, rptMonth, caseNum string, err error) {
+func (a *Accumulator) generateKey(row decoder.Row) (groupingKey, error) {
 	if !a.hasKeyFields {
 		// Each record is its own group - unique key guarantees immediate flush
-		return "line:" + strconv.Itoa(row.LineNum()), "", "", nil
+		return groupingKey{Value: "line:" + strconv.Itoa(row.LineNum())}, nil
 	}
 	return a.extractKey(row)
 }
 
 // addRecord handles all records using key-change detection.
 // If the key changes from the current group, the current group is flushed.
-func (a *Accumulator) addRecord(line DecodedRecord, sch *schema.CompiledSchema, key, rptMonth, caseNum string) (*DecodedBatch, *schema.CompiledSchema, bool, error) {
+func (a *Accumulator) addRecord(line DecodedRecord, sch *schema.CompiledSchema, key groupingKey) (*DecodedBatch, *schema.CompiledSchema, bool, error) {
 	var completedBatch *DecodedBatch
 
 	// Check if this is a new group
 	if a.currentGroup == nil {
 		// First record - start a new group
-		a.currentGroup = &DecodedGroup{
-			Key:            key,
-			RptMonthYear:   rptMonth,
-			CaseNumber:     caseNum,
-			DecodedRecords: make([]DecodedRecord, 0, 8),
-		}
-	} else if a.currentGroup.Key != key {
+		a.currentGroup = newDecodedGroup(key)
+	} else if a.currentGroup.Key != key.Value {
 		// Key changed - current group is complete
 		completedBatch = a.flushCurrentGroup()
 
 		// Start new group
-		a.currentGroup = &DecodedGroup{
-			Key:            key,
-			RptMonthYear:   rptMonth,
-			CaseNumber:     caseNum,
-			DecodedRecords: make([]DecodedRecord, 0, 8),
-		}
+		a.currentGroup = newDecodedGroup(key)
 	}
 
 	// Add line to current group
 	a.currentGroup.DecodedRecords = append(a.currentGroup.DecodedRecords, line)
 
 	return completedBatch, sch, true, nil
+}
+
+type groupingKey struct {
+	Value string
+}
+
+func newDecodedGroup(key groupingKey) *DecodedGroup {
+	return &DecodedGroup{
+		Key:            key.Value,
+		DecodedRecords: make([]DecodedRecord, 0, 8),
+	}
 }
 
 // flushCurrentGroup handles the completed group based on batch_size configuration.
@@ -169,29 +170,12 @@ func (a *Accumulator) flushCurrentGroup() *DecodedBatch {
 }
 
 // extractKey extracts the grouping key from a row.
-func (a *Accumulator) extractKey(row decoder.Row) (key, rptMonth, caseNum string, err error) {
-	pr, ok := row.(*decoder.PositionalRow)
-	if !ok {
-		return "", "", "", fmt.Errorf("key-based grouping requires PositionalRow, got %T", row)
+func (a *Accumulator) extractKey(row decoder.Row) (groupingKey, error) {
+	key, err := row.ExtractKey(a.spec.Accumulator.KeyFields.OrderedFields())
+	if err != nil {
+		return groupingKey{}, err
 	}
-
-	data := pr.Data()
-	keyConfig := a.spec.Accumulator.KeyFields
-
-	// Validate line length
-	minLen := keyConfig.CaseNumber.End
-	if len(data) < minLen {
-		return "", "", "", fmt.Errorf("line too short: need %d bytes, got %d", minLen, len(data))
-	}
-
-	// Extract key components
-	rptMonth = data[keyConfig.RptMonthYear.Start:keyConfig.RptMonthYear.End]
-	caseNum = data[keyConfig.CaseNumber.Start:keyConfig.CaseNumber.End]
-
-	// Composite key with separator
-	key = rptMonth + "|" + caseNum
-
-	return key, rptMonth, caseNum, nil
+	return groupingKey{Value: key}, nil
 }
 
 // Drain returns all accumulated groups as Batches and resets the accumulator.
