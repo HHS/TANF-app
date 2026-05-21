@@ -35,9 +35,6 @@ const (
 	dataFileStateParsedWithErrors = "parsed_with_errors"
 	dataFileStateParseCompleted   = "parse_completed"
 
-	summaryStatusAccepted           = "Accepted"
-	summaryStatusAcceptedWithErrors = "Accepted with Errors"
-	summaryStatusPartiallyAccepted  = "Partially Accepted"
 	summaryStatusRejected           = "Rejected"
 )
 
