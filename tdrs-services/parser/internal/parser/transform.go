@@ -2,7 +2,12 @@ package parser
 
 import (
 	"fmt"
+	"math"
+	"strconv"
 	"strings"
+	"time"
+
+	"github.com/xuri/excelize/v2"
 )
 
 // TransformFunc defines the signature for all transform functions.
@@ -20,6 +25,7 @@ var Registry = map[string]TransformFunc{
 	"zero_pad":                  ZeroPad,
 	"ssn_decrypt":               SSNDecrypt,
 	"calendar_quarter_to_month": CalendarQuarterToMonth,
+	"fra_exit_date":             FRAExitDate,
 }
 
 // Apply looks up and executes a transform by name.
@@ -140,4 +146,88 @@ func CalendarQuarterToMonth(value string, params map[string]any, _ *ParseContext
 	}
 
 	return year + months[monthIndex], nil
+}
+
+// FRAExitDate normalizes FRA EXIT_DATE values to YYYYMM.
+// FRA XLSX files may contain a real Excel date cell, which excelize exposes as
+// either a formatted date string or an Excel serial number depending on styling.
+func FRAExitDate(value string, _ map[string]any, _ *ParseContext) (string, error) {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" {
+		return "", nil
+	}
+
+	if isYYYYMM(trimmed) {
+		return trimmed, nil
+	}
+
+	if len(trimmed) == 6 && isDigits(trimmed) {
+		return value, nil
+	}
+
+	if f, err := strconv.ParseFloat(trimmed, 64); err == nil {
+		if math.Trunc(f) == f {
+			if serialDate, err := excelize.ExcelDateToTime(f, false); err == nil {
+				return serialDate.Format("200601"), nil
+			}
+		}
+	}
+
+	for _, layout := range fraExitDateLayouts {
+		if parsed, err := time.Parse(layout, trimmed); err == nil {
+			return parsed.Format("200601"), nil
+		}
+	}
+
+	return value, nil
+}
+
+var fraExitDateLayouts = []string{
+	"2006-01-02",
+	"2006-1-2",
+	"2006/01/02",
+	"2006/1/2",
+	"1/2/2006",
+	"01/02/2006",
+	"1/2/06",
+	"01/02/06",
+	"1-2-2006",
+	"01-02-2006",
+	"1-2-06",
+	"01-02-06",
+	"2006-01-02 15:04:05",
+	"2006/01/02 15:04:05",
+	"1/2/2006 15:04:05",
+	"01/02/2006 15:04:05",
+	"Jan-06",
+	"January-06",
+	"Jan 2006",
+	"January 2006",
+}
+
+func isYYYYMM(value string) bool {
+	if len(value) != 6 {
+		return false
+	}
+	if !isDigits(value) {
+		return false
+	}
+	year, err := strconv.Atoi(value[:4])
+	if err != nil || year < 1900 {
+		return false
+	}
+	month, err := strconv.Atoi(value[4:])
+	if err != nil {
+		return false
+	}
+	return month >= 1 && month <= 12
+}
+
+func isDigits(value string) bool {
+	for _, r := range value {
+		if r < '0' || r > '9' {
+			return false
+		}
+	}
+	return value != ""
 }

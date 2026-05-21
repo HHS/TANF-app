@@ -1,12 +1,15 @@
 package decoder
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"unicode/utf8"
 
 	"go-parser/internal/config/filespec"
+	"go-parser/internal/sentinel"
 )
 
 // CreateDecoder creates the appropriate decoder based on file format and content type.
@@ -19,17 +22,18 @@ func CreateDecoder(file *os.File, spec *filespec.FileSpec) (Decoder, error) {
 	case filespec.FormatColumnar:
 		return createColumnarDecoder(file, spec)
 	default:
-		return nil, fmt.Errorf("unknown format: %s", spec.Format)
+		return nil, fmt.Errorf("%w: unknown format %q", sentinel.ErrDecoderUnknown, spec.Format)
 	}
 }
 
 // createColumnarDecoder determines whether the file is CSV or XLSX based on MIME type.
 func createColumnarDecoder(file *os.File, spec *filespec.FileSpec) (Decoder, error) {
 	buf := make([]byte, 512)
-	_, err := file.Read(buf)
+	n, err := file.Read(buf)
 	if err != nil && err != io.EOF {
 		return nil, err
 	}
+	sample := buf[:n]
 
 	// Rewind the file pointer for later reading
 	if _, err := file.Seek(0, io.SeekStart); err != nil {
@@ -45,7 +49,16 @@ func createColumnarDecoder(file *os.File, spec *filespec.FileSpec) (Decoder, err
 		return NewXLSXDecoder(file.Name(), spec.RecordTypeDetection.Schema)
 	case "text/plain; charset=utf-8", "text/csv; charset=utf-8":
 		return NewCSVDecoder(file, spec.RecordTypeDetection.Schema), nil
+	case "application/octet-stream":
+		if isBinaryContent(sample) {
+			return nil, fmt.Errorf("%w: %s has binary content", sentinel.ErrDecoderUnknown, file.Name())
+		}
+		return NewCSVDecoder(file, spec.RecordTypeDetection.Schema), nil
 	default:
-		return nil, fmt.Errorf("%s has an unknown or unexpected content type: %s", file.Name(), contentType)
+		return nil, fmt.Errorf("%w: %s has an unknown or unexpected content type: %s", sentinel.ErrDecoderUnknown, file.Name(), contentType)
 	}
+}
+
+func isBinaryContent(sample []byte) bool {
+	return bytes.Contains(sample, []byte{0}) || !utf8.Valid(sample)
 }

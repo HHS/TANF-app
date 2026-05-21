@@ -169,9 +169,7 @@ func TestWorkerPool_ProcessesBatches(t *testing.T) {
 		BatchID: 1,
 		DecodedGroups: []*parser.DecodedGroup{
 			{
-				Key:          "202401|12345",
-				RptMonthYear: "202401",
-				CaseNumber:   "12345",
+				Key: "202401|12345",
 				DecodedRecords: []parser.DecodedRecord{
 					{Row: row, Schema: t1Schema},
 				},
@@ -245,9 +243,7 @@ func TestWorkerPool_MultipleBatches(t *testing.T) {
 			BatchID: i + 1,
 			DecodedGroups: []*parser.DecodedGroup{
 				{
-					Key:          "202401|12345",
-					RptMonthYear: "202401",
-					CaseNumber:   "12345",
+					Key: "202401|12345",
 					DecodedRecords: []parser.DecodedRecord{
 						{Row: row, Schema: t1Schema},
 					},
@@ -421,14 +417,10 @@ func TestWorkerPool_ProcessBatch_WithMultipleGroups(t *testing.T) {
 		DecodedGroups: []*parser.DecodedGroup{
 			{
 				Key:            "202401|11111",
-				RptMonthYear:   "202401",
-				CaseNumber:     "11111",
 				DecodedRecords: []parser.DecodedRecord{{Row: row1, Schema: t1Schema}},
 			},
 			{
 				Key:            "202401|22222",
-				RptMonthYear:   "202401",
-				CaseNumber:     "22222",
 				DecodedRecords: []parser.DecodedRecord{{Row: row2, Schema: t1Schema}},
 			},
 		},

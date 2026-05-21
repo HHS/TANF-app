@@ -42,9 +42,7 @@ func NewTestRecord(s *schema.CompiledSchema, lineNum int, values map[string]any)
 // NewTestGroup creates a ParsedGroup with default key fields for testing.
 func NewTestGroup(records ...*parser.ParsedRecord) *parser.ParsedGroup {
 	return &parser.ParsedGroup{
-		Key:          "202401|12345",
-		RptMonthYear: "202401",
-		CaseNumber:   "12345",
-		Records:      records,
+		Key:     "202401|12345",
+		Records: records,
 	}
 }

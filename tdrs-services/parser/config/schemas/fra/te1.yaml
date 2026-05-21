@@ -12,6 +12,9 @@ section: 1
 document: "FRA Work Outcome TANF Exiters"
 format: csv
 
+record_validators:
+  - id: exit_date_matches_fiscal_period
+
 # RecordType is a constant field (always "TE1") - not present in CSV data
 # but required in the database table
 shared:
@@ -31,6 +34,8 @@ segments:
         column: 0
         type: integer
         required: true
+        transform:
+          name: fra_exit_date
 
       - name: SSN
         friendly_name: Social Security Number
@@ -38,3 +43,5 @@ segments:
         column: 1
         type: string
         required: true
+        field_validators:
+          - id: fra_ssn

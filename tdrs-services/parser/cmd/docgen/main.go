@@ -249,7 +249,7 @@ func buildRecordDoc(cs *schema.CompiledSchema, schemaPath string, validators *va
 		Description: cs.Description,
 	}
 
-	for _, cv := range validators.GetRecordValidators(cs.RecordType) {
+	for _, cv := range validators.GetRecordValidators(schemaPath) {
 		vDoc := validatorToDoc(cv, cs.RecordType, nil)
 		if cv.ErrorType == validation.ErrorTypeRecordPreCheck {
 			recDoc.PreCheck = append(recDoc.PreCheck, vDoc)
@@ -259,19 +259,19 @@ func buildRecordDoc(cs *schema.CompiledSchema, schemaPath string, validators *va
 	}
 
 	for _, field := range cs.Shared {
-		recDoc.Fields = append(recDoc.Fields, buildFieldDoc(field, cs.RecordType, validators))
+		recDoc.Fields = append(recDoc.Fields, buildFieldDoc(field, cs.RecordType, schemaPath, validators))
 	}
 
 	if len(cs.Segments) > 0 {
 		for _, field := range cs.Segments[0].Fields {
-			recDoc.Fields = append(recDoc.Fields, buildFieldDoc(field, cs.RecordType, validators))
+			recDoc.Fields = append(recDoc.Fields, buildFieldDoc(field, cs.RecordType, schemaPath, validators))
 		}
 	}
 
 	return recDoc
 }
 
-func buildFieldDoc(field schema.FieldDef, recordType string, validators *validation.ValidatorRegistry) FieldDoc {
+func buildFieldDoc(field schema.FieldDef, recordType string, schemaPath string, validators *validation.ValidatorRegistry) FieldDoc {
 	fDoc := FieldDoc{
 		Name:         field.Name,
 		Item:         field.Item,
@@ -283,7 +283,7 @@ func buildFieldDoc(field schema.FieldDef, recordType string, validators *validat
 	// Deduplicate validators — multi-segment records (e.g. T3) register the same
 	// validators once per segment, producing duplicates for the same field name.
 	seen := make(map[string]bool)
-	for _, cv := range validators.GetFieldValidators(recordType, field.Name) {
+	for _, cv := range validators.GetFieldValidators(schemaPath, field.Name) {
 		key := cv.ID + "|" + cv.Expr.Expr
 		if seen[key] {
 			continue
@@ -344,9 +344,9 @@ func htmlFuncMap() template.FuncMap {
 			}
 			return "No"
 		},
-		"joinFields":      func(fields []string) string { return strings.Join(fields, ", ") },
-		"friendlyError":   friendlyErrorType,
-		"hasValidators":   func(f FieldDoc) bool { return len(f.Validators) > 0 },
-		"hasFields":       func(v ValidatorDoc) bool { return len(v.Fields) > 0 },
+		"joinFields":    func(fields []string) string { return strings.Join(fields, ", ") },
+		"friendlyError": friendlyErrorType,
+		"hasValidators": func(f FieldDoc) bool { return len(f.Validators) > 0 },
+		"hasFields":     func(v ValidatorDoc) bool { return len(v.Fields) > 0 },
 	}
 }

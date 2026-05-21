@@ -28,6 +28,30 @@ func buildNonKeyedSpec() *filespec.FileSpec {
 	}
 }
 
+func buildKeyedColumnarSpec() *filespec.FileSpec {
+	batchSize := 1
+	return &filespec.FileSpec{
+		Program: "FRA",
+		Section: 1,
+		Format:  filespec.FormatColumnar,
+		Schemas: []string{"fra/te1"},
+		RecordTypeDetection: filespec.RecordTypeDetection{
+			Method: "fixed",
+			Schema: "fra/te1",
+		},
+		Accumulator: filespec.AccumulatorConfig{
+			KeyFields: &filespec.KeyFieldsConfig{
+				Fields: []filespec.KeyFieldDef{
+					{Name: "exit_date", PositionDef: filespec.PositionDef{Start: 0, End: 1}},
+					{Name: "ssn", PositionDef: filespec.PositionDef{Start: 1, End: 2}},
+				},
+			},
+			BatchSize:      &batchSize,
+			GroupedSchemas: []string{"fra/te1"},
+		},
+	}
+}
+
 // buildNonKeyedSchemas creates schemas for the non-keyed spec.
 func buildNonKeyedSchemas() map[string]*schema.CompiledSchema {
 	return map[string]*schema.CompiledSchema{
@@ -58,8 +82,10 @@ func buildBatchSize0Spec() *filespec.FileSpec {
 		},
 		Accumulator: filespec.AccumulatorConfig{
 			KeyFields: &filespec.KeyFieldsConfig{
-				RptMonthYear: filespec.PositionDef{Start: 2, End: 8},
-				CaseNumber:   filespec.PositionDef{Start: 8, End: 19},
+				Fields: []filespec.KeyFieldDef{
+					{Name: "rpt_month_year", PositionDef: filespec.PositionDef{Start: 2, End: 8}},
+					{Name: "case_number", PositionDef: filespec.PositionDef{Start: 8, End: 19}},
+				},
 			},
 			BatchSize:      &batchSize,
 			GroupedSchemas: []string{"tanf/t1", "tanf/t2", "tanf/t3"},
@@ -131,6 +157,41 @@ func TestAccumulator_AddGroupedSchema_ReturnsBatchOnKeyChange(t *testing.T) {
 	}
 	if batch2.TotalRecords() != 1 {
 		t.Errorf("expected 1 record in batch, got %d", batch2.TotalRecords())
+	}
+}
+
+func TestAccumulator_AddColumnarGroupedSchema_ReturnsBatchOnKeyChange(t *testing.T) {
+	spec := buildKeyedColumnarSpec()
+	schemas := buildNonKeyedSchemas()
+	registry := config.NewTestRegistry(schemas)
+	detector := decoder.NewRecordTypeDetector(spec, registry)
+	acc := NewAccumulator(spec, detector)
+
+	row1 := decoder.NewColumnarRow(1, "TE1", 2, []any{"202401", "111111111"})
+	batch1, _, isAcc1, err := acc.Add(row1)
+	if err != nil {
+		t.Fatalf("Add row1: %v", err)
+	}
+	if !isAcc1 {
+		t.Error("expected isAccumulated=true for TE1")
+	}
+	if batch1 != nil {
+		t.Error("expected no batch after first row")
+	}
+
+	row2 := decoder.NewColumnarRow(2, "TE1", 2, []any{"202401", "222222222"})
+	batch2, _, isAcc2, err := acc.Add(row2)
+	if err != nil {
+		t.Fatalf("Add row2: %v", err)
+	}
+	if !isAcc2 {
+		t.Error("expected isAccumulated=true for second TE1")
+	}
+	if batch2 == nil {
+		t.Fatal("expected batch when columnar key changes with batch_size=1")
+	}
+	if got := batch2.DecodedGroups[0].Key; got != "202401|111111111" {
+		t.Errorf("completed group key = %q, want %q", got, "202401|111111111")
 	}
 }
 
@@ -228,11 +289,8 @@ func TestAccumulator_DifferentKeysFlushPreviousGroup(t *testing.T) {
 
 	// Verify the flushed group has the right key
 	group := batch.DecodedGroups[0]
-	if group.RptMonthYear != "202401" {
-		t.Errorf("expected RptMonthYear=%q, got %q", "202401", group.RptMonthYear)
-	}
-	if group.CaseNumber != "CASE0000001" {
-		t.Errorf("expected CaseNumber=%q, got %q", "CASE0000001", group.CaseNumber)
+	if group.Key != "202401|CASE0000001" {
+		t.Errorf("expected Key=%q, got %q", "202401|CASE0000001", group.Key)
 	}
 }
 
@@ -390,7 +448,7 @@ func TestAccumulator_ExtractKeyTooShort(t *testing.T) {
 	detector := decoder.NewRecordTypeDetector(spec, registry)
 	acc := NewAccumulator(spec, detector)
 
-	// Row data is too short for key extraction (needs at least 19 bytes for CaseNumber end)
+	// Row data is too short for key extraction (needs at least 19 bytes for configured key fields)
 	row := makeRow(1, "T1short")
 	_, _, _, err := acc.Add(row)
 	if err == nil {

@@ -70,12 +70,13 @@ accumulator:
   # These byte positions are used BEFORE full parsing to quickly
   # determine which case a record belongs to.
   key_fields:
-    rpt_month_year:
-      start: 2
-      end: 8
-    case_number:
-      start: 8
-      end: 19
+    fields:
+      - name: rpt_month_year
+        start: 2
+        end: 8
+      - name: case_number
+        start: 8
+        end: 19
 
   batch_size: 1
 
@@ -137,17 +138,17 @@ group_validators:
     message: "Every T1 record should have at least one corresponding T2 or T3 record with FAMILY_AFFILIATION == 1"
 
   # T2 records require at least one T1 record in the same case
-  - id: requires_corresponding_record
+  - id: requires_related_record
     params:
       record_type: T2
-      required_record_type: T1
+      related_record_types: [T1]
     message: "Every T2 record should have at least one corresponding T1 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
 
   # T3 records require at least one T1 record in the same case
-  - id: requires_corresponding_record
+  - id: requires_related_record
     params:
       record_type: T3
-      required_record_type: T1
+      related_record_types: [T1]
     message: "Every T3 record should have at least one corresponding T1 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
 
   # Federally funded recipients

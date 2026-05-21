@@ -324,6 +324,7 @@ def tribal_section_1_inconsistency_file(stt_user, stt):
         stt,
         "Active Case Data",
         DataFile.ProgramType.TRIBAL,
+        year=2020,
     )
 
 
@@ -371,7 +372,7 @@ def tanf_section_4_file_with_errors(stt_user, stt):
         stt_user,
         stt,
         "Stratum Data",
-        DataFile.ProgramType.TRIBAL,
+        DataFile.ProgramType.TANF,
         year=2022,
     )
 
@@ -650,10 +651,9 @@ def m3_go_cat2_invalid_68_69_file():
         program_type=DataFile.ProgramType.SSP,
         file__data=(
             b"HEADER20234A24   SSP1ED\n"
-            b"M12023101111111112721401400351021331100273000000000000000105400000000000000000000000000000000"
-            b"00222222000000002229                                     \n"
-            b"M320231011111111127120110615WTTTP99B#222122222043011000000004201001013333333330000000110000009999"
-            b"8888\n"
+            b"M120231011111111127214014003510213311002730000000000000001054"
+            b"0000000000000000000000000000000000222222000000002229                                     \n"
+            b"M320231011111111127120110615WTTTP99B#2221222220430010000000042010010133333333300000001100000099998888\n"
             b"TRAILER0000002         "
         ),
     )
@@ -796,7 +796,7 @@ def tanf_s4_exact_dup_file():
         section="Stratum Data",
         file__name="s4_exact_duplicate.txt",
         file__section="Stratum Data",
-        program_type=DataFile.ProgramType.SSP,
+        program_type=DataFile.ProgramType.TANF,
         file__data=(
             b"HEADER20214S06   TAN1 D\n"
             b"T720214101006853700680540068454103000312400037850003180104000347400036460003583106"

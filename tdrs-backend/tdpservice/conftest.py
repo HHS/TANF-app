@@ -439,6 +439,12 @@ register(OwaspZapScanFactory)
 
 
 @pytest.fixture(autouse=True)
+def disable_keycloak_sync(settings):
+    """Keep tests from making live Keycloak calls unless explicitly enabled."""
+    settings.KEYCLOAK_SYNC_ENABLED = False
+
+
+@pytest.fixture(autouse=True)
 def change_test_dir(monkeypatch, tmp_path):
     """Change the working directory to a temporary directory for all tests."""
     monkeypatch.chdir(tmp_path)
