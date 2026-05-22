@@ -2321,7 +2321,7 @@ class TestGoParse:
         parser_errors = (
             ParserError.objects.filter(file=cat4_edge_case_file)
             .filter(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
-            .order_by("row_number")
+            .order_by("row_number", "id")
         )
 
         assert TANF_T1.objects.filter(datafile=cat4_edge_case_file).count() == 2
