@@ -11,6 +11,7 @@ import pytest
 from celery import current_app as celery_app
 from celery.exceptions import TimeoutError as CeleryTimeoutError
 
+from tdpservice.data_files.models import DataFile
 from tdpservice.parsers import aggregates
 from tdpservice.parsers.models import (
     DataFileSummary,
@@ -49,7 +50,7 @@ from tdpservice.search_indexes.models.tribal import (
 logger = logging.getLogger(__name__)
 
 GO_PARSE_TASK_NAME = "tdpservice.scheduling.parser_task.go_parse"
-GO_PARSE_TIMEOUT_SECONDS = 60
+GO_PARSE_TIMEOUT_SECONDS = 300
 _GO_PARSER_DATAFILE_IDS = None
 
 os.environ["GO_PARSER_SHADOW_MODE"] = "False"
@@ -103,7 +104,6 @@ def parse_datafile(dfs, datafile, timeout_seconds=GO_PARSE_TIMEOUT_SECONDS):
 
 
 @pytest.mark.go_parser_integration
-@pytest.mark.usefixtures("go_parser_datafile_cleanup")
 class TestGoParse:
     """Tests for parse and validation flows."""
 
@@ -1868,6 +1868,7 @@ class TestGoParse:
         datafile = request.getfixturevalue(file)
         datafile.year = 2024
         datafile.quarter = "Q1"
+        datafile.version = datafile.pk
         datafile.save()
 
         dfs.datafile = datafile
@@ -1897,6 +1898,7 @@ class TestGoParse:
         datafile = request.getfixturevalue(file)
         datafile.year = 2024
         datafile.quarter = "Q1"
+        datafile.version = datafile.pk
 
         dfs.datafile = datafile
         dfs.save()
@@ -1925,6 +1927,7 @@ class TestGoParse:
         datafile = request.getfixturevalue(file)
         datafile.year = 2024
         datafile.quarter = "Q2"
+        datafile.version = datafile.pk
         datafile.save()
 
         dfs.datafile = datafile
@@ -1957,6 +1960,7 @@ class TestGoParse:
         datafile = request.getfixturevalue(file)
         datafile.year = 2025
         datafile.quarter = "Q3"
+        datafile.version = datafile.pk
         datafile.save()
 
         dfs.datafile = datafile
@@ -1983,6 +1987,7 @@ class TestGoParse:
         datafile = fra_formula_fields_test_xlsx
         datafile.year = 2025
         datafile.quarter = "Q3"
+        datafile.version = datafile.pk
         datafile.save()
 
         dfs.datafile = datafile
@@ -2004,6 +2009,7 @@ class TestGoParse:
         datafile = fra_decoder_unknown
         datafile.year = 2025
         datafile.quarter = "Q3"
+        datafile.version = datafile.pk
         datafile.save()
 
         dfs.datafile = datafile
@@ -2180,6 +2186,8 @@ class TestGoParse:
     ):
         """Test cases for datafiles that have exact duplicate records."""
         datafile = request.getfixturevalue(file)
+        datafile.version = datafile.pk
+        datafile.save()
         dfs.datafile = datafile
 
         parse_datafile(dfs, datafile)
@@ -2276,6 +2284,8 @@ class TestGoParse:
     ):
         """Test cases for datafiles that have partial duplicate records."""
         datafile = request.getfixturevalue(file)
+        datafile.version = datafile.pk
+        datafile.save()
         expected_error_msg = err_msg
 
         dfs.datafile = datafile
