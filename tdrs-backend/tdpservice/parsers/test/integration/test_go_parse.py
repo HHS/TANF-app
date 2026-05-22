@@ -11,7 +11,6 @@ import pytest
 from celery import current_app as celery_app
 from celery.exceptions import TimeoutError as CeleryTimeoutError
 
-from tdpservice.data_files.models import DataFile
 from tdpservice.parsers import aggregates
 from tdpservice.parsers.models import (
     DataFileSummary,
