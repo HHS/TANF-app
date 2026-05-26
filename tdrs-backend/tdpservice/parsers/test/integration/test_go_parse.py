@@ -11,12 +11,14 @@ import pytest
 from celery import current_app as celery_app
 from celery.exceptions import TimeoutError as CeleryTimeoutError
 
+from tdpservice.data_files.models import DataFile
 from tdpservice.parsers import aggregates
 from tdpservice.parsers.models import (
     DataFileSummary,
     ParserError,
     ParserErrorCategoryChoices,
 )
+from tdpservice.parsers.test.factories import ParsingFileFactory
 from tdpservice.search_indexes.models.fra import TANF_Exiter1
 from tdpservice.search_indexes.models.ssp import (
     SSP_M1,
@@ -141,6 +143,105 @@ class TestGoParse:
 
     #     parser_errors = ParserError.objects.filter(file=bad_trailer_file_2)
     #     return bad_trailer_file_2, dfs, parser_errors
+
+    @pytest.mark.django_db(transaction=True)
+    @pytest.mark.parametrize(
+        "program_type,section_name,header",
+        [
+            (
+                DataFile.ProgramType.TANF,
+                DataFile.Section.ACTIVE_CASE_DATA,
+                "HEADER20244A06   TAN1ED",
+            ),
+            (
+                DataFile.ProgramType.TANF,
+                DataFile.Section.AGGREGATE_DATA,
+                "HEADER20244G06   TAN1ED",
+            ),
+            (
+                DataFile.ProgramType.TANF,
+                DataFile.Section.STRATUM_DATA,
+                "HEADER20244S06   TAN1ED",
+            ),
+            (
+                DataFile.ProgramType.SSP,
+                DataFile.Section.ACTIVE_CASE_DATA,
+                "HEADER20244A06   SSP1ED",
+            ),
+            (
+                DataFile.ProgramType.SSP,
+                DataFile.Section.AGGREGATE_DATA,
+                "HEADER20244G06   SSP1ED",
+            ),
+            (
+                DataFile.ProgramType.SSP,
+                DataFile.Section.STRATUM_DATA,
+                "HEADER20244S06   SSP1ED",
+            ),
+            (
+                DataFile.ProgramType.TRIBAL,
+                DataFile.Section.ACTIVE_CASE_DATA,
+                "HEADER20244A00123TAN1ED",
+            ),
+            (
+                DataFile.ProgramType.TRIBAL,
+                DataFile.Section.AGGREGATE_DATA,
+                "HEADER20244G00123TAN1ED",
+            ),
+            (
+                DataFile.ProgramType.TRIBAL,
+                DataFile.Section.STRATUM_DATA,
+                "HEADER20244S00123TAN1ED",
+            ),
+        ],
+    )
+    def test_go_parse_zero_record_header_trailer_only_files(
+        self, dfs, program_type, section_name, header
+    ):
+        """Test Go parser accepts valid zero-record TANF, SSP, and Tribal files."""
+        datafile = ParsingFileFactory(
+            year=2025,
+            quarter="Q1",
+            section=section_name,
+            program_type=program_type,
+            file__name=f"{program_type}-{section_name}-zero-records.txt",
+            file__section=section_name,
+            file__data=(f"{header}\nTRAILER0000000         ".encode()),
+        )
+
+        parse_datafile(dfs, datafile)
+
+        assert ParserError.objects.filter(file=datafile).count() == 0
+        assert dfs.total_number_of_records_in_file == 0
+        assert dfs.total_number_of_records_created == 0
+        assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
+
+    @pytest.mark.django_db(transaction=True)
+    def test_go_parse_zero_record_bad_trailer_count_rejected(self, dfs):
+        """Test Go parser rejects zero-record files when trailer count is not zero."""
+        datafile = ParsingFileFactory(
+            year=2025,
+            quarter="Q1",
+            section=DataFile.Section.ACTIVE_CASE_DATA,
+            program_type=DataFile.ProgramType.TANF,
+            file__name="tanf-active-zero-records-bad-trailer-count.txt",
+            file__section=DataFile.Section.ACTIVE_CASE_DATA,
+            file__data=(b"HEADER20244A06   TAN1ED\n" b"TRAILER0000001         "),
+        )
+
+        parse_datafile(dfs, datafile)
+
+        assert dfs.get_status() == DataFileSummary.Status.REJECTED
+        assert ParserError.objects.filter(
+            file=datafile,
+            error_message="TRAILER record count 1 does not match 0 detail records.",
+            error_type=ParserErrorCategoryChoices.PRE_CHECK,
+        ).exists()
+        assert ParserError.objects.filter(
+            file=datafile,
+            error_message="No records created.",
+            error_type=ParserErrorCategoryChoices.PRE_CHECK,
+        ).exists()
 
     @pytest.mark.django_db(transaction=True)
     def test_go_small_correct_file_case_consistency_error(
