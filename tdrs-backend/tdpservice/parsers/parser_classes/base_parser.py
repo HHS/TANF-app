@@ -41,6 +41,9 @@ class BaseParser(ABC):
         self.current_row = None
         self.current_row_num = 0
 
+        self.detail_rows_seen = 0
+        self.valid_zero_record_submission = False
+
         # Specifying unsaved_records here may or may not work for FRA files. If not, we can move it down the
         # inheritance hierarchy.
         self.unsaved_records = Records()
@@ -213,12 +216,10 @@ class BaseParser(ABC):
 
     def create_no_records_created_pre_check_error(self):
         """Generate a precheck error if no records were created."""
-        no_records_allowed = (
-            "Closed Case Data" in self.section
-            and self.dfs.total_number_of_records_created
-            == self.dfs.total_number_of_records_in_file
-        )
-        if self.dfs.total_number_of_records_created == 0 and not no_records_allowed:
+        if (
+            self.dfs.total_number_of_records_created == 0
+            and not self.valid_zero_record_submission
+        ):
             errors = {}
             generate_error = self.error_generator_factory.get_generator(
                 ErrorGeneratorType.MSG_ONLY_PRECHECK, 0
