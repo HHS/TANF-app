@@ -4,6 +4,8 @@ import (
 	"strings"
 	"text/template"
 
+	"go-parser/internal/config/schema"
+	"go-parser/internal/decoder"
 	"go-parser/internal/parser"
 )
 
@@ -21,6 +23,38 @@ var fieldRequiredMessage = template.Must(
 type ValidationOrchestrator struct {
 	registry     *ValidatorRegistry
 	shortCircuit bool
+}
+
+// FileRecordStats contains file-level parsing context for header/trailer validation.
+type FileRecordStats struct {
+	DetailRows         int64
+	MaxLineNumber      int
+	HeaderCount        int
+	HeaderRowNumber    int
+	HeaderValid        bool
+	TrailerCount       int
+	TrailerRowNumber   int
+	TrailerRecordCount int
+	TrailerValid       bool
+}
+
+// NewFileRecordStats seeds file-level context from the already-validated header.
+func NewFileRecordStats(parseCtx *parser.ParseContext) *FileRecordStats {
+	stats := &FileRecordStats{}
+	if parseCtx != nil && parseCtx.Header != nil {
+		stats.HeaderCount = 1
+		stats.HeaderRowNumber = parseCtx.Header.LineNumber
+		stats.HeaderValid = true
+	}
+	return stats
+}
+
+// TrailerRowValidationResult contains the validation outcome for one trailer row.
+type TrailerRowValidationResult struct {
+	Record           *parser.ParsedRecord
+	ValidationResult *RecordValidationResult
+	ParseError       error
+	MultipleTrailers bool
 }
 
 // NewValidationOrchestrator creates a new validation orchestrator.
@@ -91,6 +125,69 @@ func (o *ValidationOrchestrator) CreateNoRecordsCreatedError() *ValidationResult
 			Message:    noRecordsCreatedMessage,
 		},
 	}
+}
+
+// IsValidZeroRecordSubmission returns whether file-level context describes
+// a structurally valid zero-record submission for a section that allows it.
+func (o *ValidationOrchestrator) IsValidZeroRecordSubmission(sectionName string, stats *FileRecordStats) bool {
+	if stats == nil {
+		return false
+	}
+	switch sectionName {
+	case "Active Case Data", "Closed Case Data", "Aggregate Data", "Stratum Data":
+	default:
+		return false
+	}
+	return stats.DetailRows == 0 &&
+		stats.HeaderCount == 1 &&
+		stats.HeaderValid &&
+		stats.TrailerCount == 1 &&
+		stats.TrailerValid &&
+		stats.TrailerRecordCount == 0
+}
+
+// ValidateTrailerRow parses and validates a trailer row, updating file-level
+// trailer context while leaving error serialization to the pipeline.
+func (o *ValidationOrchestrator) ValidateTrailerRow(
+	row decoder.Row,
+	trailerSchema *schema.CompiledSchema,
+	dfCtx *DataFileContext,
+	stats *FileRecordStats,
+) *TrailerRowValidationResult {
+	result := &TrailerRowValidationResult{}
+	if stats == nil {
+		stats = &FileRecordStats{}
+	}
+
+	stats.TrailerCount++
+	result.MultipleTrailers = stats.TrailerCount > 1
+	if trailerSchema == nil {
+		return result
+	}
+
+	trailerRecord, err := parser.ParseTrailer(row, trailerSchema)
+	if err != nil {
+		result.ParseError = err
+		return result
+	}
+
+	recordResult := o.ValidateRecord(trailerRecord, dfCtx)
+	result.Record = trailerRecord
+	result.ValidationResult = recordResult
+
+	if stats.TrailerCount == 1 {
+		stats.TrailerRowNumber = row.LineNum()
+		stats.TrailerRecordCount = trailerRecord.GetInt("record_count")
+		stats.TrailerValid = !recordResult.HasErrors()
+	}
+	return result
+}
+
+// ValidateRecord validates a single record.
+func (o *ValidationOrchestrator) ValidateRecord(rec *parser.ParsedRecord, dfCtx *DataFileContext) *RecordValidationResult {
+	result := &RecordValidationResult{Record: rec}
+	o.validateRecord(result, rec, false, dfCtx)
+	return result
 }
 
 // ValidateHeader validates a single header record with DataFileContext injected

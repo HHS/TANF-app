@@ -448,6 +448,11 @@ record_validators:
     message: "HEADER: record length is {{.RecordLength}} characters but must be 23."
     description: "RecordLength includes trailing newline (23 or 24 are both valid for a 23-char header)"
 
+  - id: trailer_record_length
+    expr: "RecordLength == 23"
+    error_type: RECORD_PRE_CHECK
+    message: "TRAILER: record length is {{.RecordLength}} characters but must be 23."
+
   - id: header_tribe_fips_program_agree
     expr: >
       ((GetString('program_type') == 'TAN' and (isEmpty(GetString('state_fips')) or GetString('state_fips') == '00'))

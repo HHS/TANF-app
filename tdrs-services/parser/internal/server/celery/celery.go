@@ -334,7 +334,7 @@ func recordTotalsForResult(result *pipeline.ParsingResult) (created int64, total
 		}
 		created += count
 	}
-	total = created
+	total = result.DetailRecordCount
 	return created, total
 }
 
