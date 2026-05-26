@@ -307,6 +307,127 @@ def test_isOlderThan(val, min_age, kwargs, exp_result, exp_message):
 
 
 @pytest.mark.parametrize(
+    "date_of_birth, rpt_month_year, exp_age",
+    [
+        ("20060901", "202410", 18.1),
+        ("20061002", "202410", 18.0),
+        ("20061001", "202410", 18.0),
+    ],
+)
+def test_calculate_age_first(date_of_birth, rpt_month_year, exp_age):
+    """Test AGE_FIRST calculation against reporting month boundaries."""
+    assert category3.calculate_age_first(date_of_birth, rpt_month_year) == exp_age
+
+
+@pytest.mark.parametrize(
+    "record, oasdi_item, exp_result, exp_message",
+    [
+        (
+            {
+                "DATE_OF_BIRTH": "20060901",
+                "RPT_MONTH_YEAR": "202410",
+                "REC_OASDI_INSURANCE": 0,
+            },
+            "19A",
+            False,
+            "Since person is older than 18, then 19A "
+            "(Received Disability Benefits: OASDI Program) must be 1 or 2",
+        ),
+        (
+            {
+                "DATE_OF_BIRTH": "20060901",
+                "RPT_MONTH_YEAR": "202410",
+                "REC_OASDI_INSURANCE": 1,
+            },
+            "19A",
+            True,
+            None,
+        ),
+        (
+            {
+                "DATE_OF_BIRTH": "20061002",
+                "RPT_MONTH_YEAR": "202410",
+                "REC_OASDI_INSURANCE": 0,
+            },
+            "19A",
+            True,
+            None,
+        ),
+        (
+            {
+                "DATE_OF_BIRTH": "20060901",
+                "RPT_MONTH_YEAR": "202410",
+                "REC_OASDI_INSURANCE": 0,
+            },
+            "18A",
+            False,
+            "Since person is older than 18, then 18A "
+            "(Received Disability Benefits: OASDI Program) must be 1 or 2",
+        ),
+        (
+            {
+                "DATE_OF_BIRTH": "bad-date",
+                "RPT_MONTH_YEAR": "202410",
+                "REC_OASDI_INSURANCE": 0,
+            },
+            "19A",
+            True,
+            None,
+        ),
+    ],
+)
+def test_validate__REC_OASDI_INSURANCE__AGE_FIRST(
+    record, oasdi_item, exp_result, exp_message
+):
+    """Test REC_OASDI_INSURANCE validator using AGE_FIRST semantics."""
+    schema = TanfDataReportSchema(
+        fields=[
+            Field(
+                item="15",
+                name="DATE_OF_BIRTH",
+                friendly_name="Date of Birth",
+                type=FieldType.ALPHA_NUMERIC,
+                startIndex=20,
+                endIndex=28,
+                required=True,
+                validators=[],
+            ),
+            Field(
+                item="4",
+                name="RPT_MONTH_YEAR",
+                friendly_name="Reporting Year and Month",
+                type=FieldType.NUMERIC,
+                startIndex=2,
+                endIndex=8,
+                required=True,
+                validators=[],
+            ),
+            Field(
+                item=oasdi_item,
+                name="REC_OASDI_INSURANCE",
+                friendly_name="Received Disability Benefits: OASDI Program",
+                type=FieldType.NUMERIC,
+                startIndex=44,
+                endIndex=45,
+                required=False,
+                validators=[],
+            ),
+        ]
+    )
+
+    result = category3.validate__REC_OASDI_INSURANCE__AGE_FIRST()(record, schema)
+
+    assert result.valid == exp_result
+    assert result.error_message == exp_message
+    assert result.deprecated is False
+    assert result.field_names == [
+        "DATE_OF_BIRTH",
+        "RPT_MONTH_YEAR",
+        "REC_OASDI_INSURANCE",
+    ]
+
+
+@pytest.mark.parametrize(
     "val, kwargs, exp_result, exp_message",
     [
         ("123456789", {}, True, None),
