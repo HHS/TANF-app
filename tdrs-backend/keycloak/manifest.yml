@@ -1,0 +1,33 @@
+version: 1
+applications:
+  - name: keycloak
+    memory: 768M
+    disk_quota: 5G
+    instances: 1
+    health-check-type: process
+    timeout: 180
+    env:
+      KC_DB: postgres
+      KC_PROXY_HEADERS: xforwarded
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+      KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
+      KC_HTTP_METRICS_HISTOGRAMS_ENABLED: "true"
+      KC_EVENT_METRICS_USER_ENABLED: "true"
+      KC_EVENT_METRICS_USER_EVENTS: client_login,code_to_token,login,logout,refresh_token,token_exchange
+      KC_EVENT_METRICS_USER_TAGS: realm,idp,clientId
+    command: |
+      DB_HOST=$(echo $VCAP_SERVICES | jq -r '."aws-rds"[0].credentials.host')
+      DB_PORT=$(echo $VCAP_SERVICES | jq -r '."aws-rds"[0].credentials.port')
+      DB_NAME=$(echo $VCAP_SERVICES | jq -r '."aws-rds"[0].credentials.db_name')
+      DB_USER=$(echo $VCAP_SERVICES | jq -r '."aws-rds"[0].credentials.username')
+      DB_PASS=$(echo $VCAP_SERVICES | jq -r '."aws-rds"[0].credentials.password')
+      export KC_DB_URL="jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}"
+      export KC_DB_USERNAME="${DB_USER}"
+      export KC_DB_PASSWORD="${DB_PASS}"
+      /opt/keycloak/entrypoint.sh start --import-realm --optimized
+    docker:
+      image: {{ keycloak_image }}
+    services:
+      - {{ rds_service }}

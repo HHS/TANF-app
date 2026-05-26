@@ -233,7 +233,14 @@ record_validators:
   - id: t1_sum_assistance_positive
     expr: "GetInt('AMT_FOOD_STAMP_ASSISTANCE') + GetInt('AMT_SUB_CC') + GetInt('CASH_AMOUNT') + GetInt('CC_AMOUNT') + GetInt('TRANSP_AMOUNT') > 0"
     message: "Sum of AMT_FOOD_STAMP_ASSISTANCE, AMT_SUB_CC, CASH_AMOUNT, CC_AMOUNT, TRANSP_AMOUNT must be greater than 0"
-    fields: [AMT_FOOD_STAMP_ASSISTANCE, AMT_SUB_CC, CASH_AMOUNT, CC_AMOUNT, TRANSP_AMOUNT]
+    fields:
+      [
+        AMT_FOOD_STAMP_ASSISTANCE,
+        AMT_SUB_CC,
+        CASH_AMOUNT,
+        CC_AMOUNT,
+        TRANSP_AMOUNT,
+      ]
 
   # =============================================================================
   # Reusable ifThenAlso validators (parametrized)
@@ -310,7 +317,14 @@ record_validators:
   - id: m1_sum_assistance_positive
     expr: "GetInt('AMT_FOOD_STAMP_ASSISTANCE') + GetInt('AMT_SUB_CC') + GetInt('CASH_AMOUNT') + GetInt('CC_AMOUNT') + GetInt('CC_NBR_MONTHS') > 0"
     message: "Sum of AMT_FOOD_STAMP_ASSISTANCE, AMT_SUB_CC, CASH_AMOUNT, CC_AMOUNT, CC_NBR_MONTHS must be greater than 0"
-    fields: [AMT_FOOD_STAMP_ASSISTANCE, AMT_SUB_CC, CASH_AMOUNT, CC_AMOUNT, CC_NBR_MONTHS]
+    fields:
+      [
+        AMT_FOOD_STAMP_ASSISTANCE,
+        AMT_SUB_CC,
+        CASH_AMOUNT,
+        CC_AMOUNT,
+        CC_NBR_MONTHS,
+      ]
 
   # =============================================================================
   # M2 special case validators (SSP)
@@ -405,6 +419,18 @@ record_validators:
 
 group_validators:
   # =============================================================================
+  # Shared Group/Case Validators
+  # =============================================================================
+
+  # Max records per case - exceeding this will block the entire group from serialization
+  # Params: max
+  - id: max_records_per_case
+    expr: "TotalRecords <= Params.max"
+    error_type: CASE_CONSISTENCY
+    result_mode: single
+    message: "Cases must contain up to {{.Params.max}} person (Child + Adult) records within a given reporting month and year. All records associated with this case have been rejected."
+
+  # =============================================================================
   # TANF Section 1 Group/Case Validators
   # =============================================================================
 
@@ -461,7 +487,6 @@ group_validators:
     result_mode: per_record
     message: "Federally funded recipients must have a valid Social Security number."
     fields: [FUNDING_STREAM, FAMILY_AFFILIATION, SSN]
-
 
   # =============================================================================
   # TANF Section 1 Group/Case Validators

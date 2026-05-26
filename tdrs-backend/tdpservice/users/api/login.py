@@ -121,6 +121,16 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         """Handle user email exceptions."""
         pass
 
+    def _sync_user_email(self, user, email):
+        """Sync the stored user email from trusted OIDC claims."""
+        if not email or (user.email == email and user.username == email):
+            return
+
+        user.email = email
+        user.username = email
+        user.save(update_fields=["email", "username"])
+        logger.info("Updated user email from OIDC claims: %s", user.username)
+
     def _handle_user(self, email, sub, auth_options):
         """Handle user."""
         User = get_user_model()
@@ -217,14 +227,17 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         # corresponding emails externally.
         user = CustomAuthentication.authenticate(**auth_options)
         logging.debug("user obj:{}".format(user))
-        if user and (
-            not user.is_active
-            or user.account_approval_status == AccountApprovalStatusChoices.DEACTIVATED
-        ):
-            raise InactiveUser(
-                f"Login failed, user account is inactive: {user.username}"
-            )
-        elif not user:
+        if user:
+            if (
+                not user.is_active
+                or user.account_approval_status
+                == AccountApprovalStatusChoices.DEACTIVATED
+            ):
+                raise InactiveUser(
+                    f"Login failed, user account is inactive: {user.username}"
+                )
+            self._sync_user_email(user, email)
+        else:
             user, login_msg = self._handle_user(email, sub, auth_options)
 
         self.verify_email(user)

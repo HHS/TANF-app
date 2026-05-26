@@ -210,7 +210,7 @@ function Header() {
                   <li className="usa-nav__secondary-item">
                     <a
                       className="sign-out-link"
-                      href={`${process.env.REACT_APP_BACKEND_URL}/logout/oidc`}
+                      href={`${process.env.REACT_APP_AUTH_URL || process.env.REACT_APP_BACKEND_URL}/logout/oidc`}
                     >
                       <FontAwesomeIcon
                         className="margin-right-1"

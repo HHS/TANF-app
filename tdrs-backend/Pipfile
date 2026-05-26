@@ -72,6 +72,9 @@ opentelemetry-instrumentation-redis = "==0.60b1"
 opentelemetry-instrumentation-celery = "==0.60b1"
 opentelemetry-instrumentation-botocore = "==0.60b1"
 opentelemetry-instrumentation-requests = "==0.60b1"
+python-keycloak = "==4.6.2"
+httpx = ">=0.24,<0.28"
+mozilla-django-oidc = "==4.0.1"
 django-simple-history = "==3.11.0"
 
 [requires]

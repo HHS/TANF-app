@@ -54,6 +54,74 @@ func runGroupValidator(t *testing.T, filespecKey string, validatorID string, gro
 // TANF Section 1 Cat4 Validators
 // =============================================================================
 
+func TestCat4_MaxRecordsPerCase(t *testing.T) {
+	const filespecKey = "TAN:1"
+	const validatorID = "max_records_per_case"
+
+	// get the max_records_per_case validator's `max` param from the filespec
+	validators := testValidators.GetGroupValidators(filespecKey)
+	var cv *validation.CompiledValidator
+	for _, v := range validators {
+		if v.ID == validatorID {
+			cv = v
+			break
+		}
+	}
+	if cv == nil {
+		t.Fatalf("validator %s not found in filespec %s", validatorID, filespecKey)
+	}
+
+	max, ok := cv.Params["max"].(int)
+	if !ok {
+		t.Fatalf("expected int max param, got %T", cv.Params["max"])
+	}
+
+	// build a list of records for the case group
+	buildGroup := func(total int) *parser.ParsedGroup {
+		records := make([]*parser.ParsedRecord, 0, total)
+		for i := 0; i < total; i++ {
+			line := i + 1
+			switch {
+			case i == 0:
+				records = append(records, testutil.NewTestRecord(t1IntSchema, line, nil))
+			case i%2 == 0:
+				records = append(records, testutil.NewTestRecord(t2IntSchema, line, map[string]any{
+					"FAMILY_AFFILIATION": 2,
+				}))
+			default:
+				records = append(records, testutil.NewTestRecord(t3IntSchema, line, map[string]any{
+					"FAMILY_AFFILIATION": 2,
+				}))
+			}
+		}
+		return testutil.NewTestGroup(records...)
+	}
+
+	t.Run("under max should pass", func(t *testing.T) {
+		group := buildGroup(max - 1)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
+		if !result.Valid {
+			t.Errorf("expected valid when total records less than max")
+		}
+	})
+
+	t.Run("at max should pass", func(t *testing.T) {
+		group := buildGroup(max)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
+		if !result.Valid {
+			t.Errorf("expected valid when total records equals max")
+		}
+	})
+
+	t.Run("over max should fail", func(t *testing.T) {
+		group := buildGroup(max + 1)
+		result := runGroupValidator(t, filespecKey, validatorID, group)
+		if result.Valid {
+			t.Errorf("expected invalid when total records equals max")
+		}
+	})
+}
+
 func TestCat4_T1HasT2OrT3(t *testing.T) {
 	const filespecKey = "TAN:1"
 	const validatorID = "t1_has_t2_or_t3"

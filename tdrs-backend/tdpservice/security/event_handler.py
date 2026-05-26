@@ -59,19 +59,21 @@ class SecurityEventHandler:
         """Get the old and new emails from the event data."""
         event_data = security_event.event_data
         subject = event_data.get("subject")
-        new_email = subject.get("subject_type")
         old_email = subject.get("email")
+        new_email = event_data.get("new-value")
         return new_email, old_email
 
     def _handle_email_changed(security_event):
-        """Handle email-changed event."""
+        """Handle email-changed event without mutating the user record."""
         new_email, old_email = SecurityEventHandler._get_emails(security_event)
-
         user = security_event.user
-        user.email = new_email
-        user.username = new_email
-        user.save()
-        logger.info(f"User changed email from {old_email} to {new_email}")
+        logger.info(
+            "User %s identifier changed for email %s; SET new-value=%s. "
+            "User email is synced from OIDC claims on login.",
+            user.username,
+            old_email,
+            new_email,
+        )
 
     def _handle_email_recycled(security_event):
         """Handle email-recycled event."""
@@ -112,6 +114,56 @@ class SecurityEventHandler:
         SecurityEventType.REPROOF_COMPLETE: _handle_reproof_complete,
     }
 
+    user_mutation_event_types = {
+        SecurityEventType.ACCOUNT_DISABLED,
+        SecurityEventType.ACCOUNT_ENABLED,
+        SecurityEventType.ACCOUNT_PURGED,
+    }
+
+    @classmethod
+    def _get_issued_at(cls, decoded_jwt):
+        """Convert the SET issued-at timestamp to a datetime."""
+        iat_timestamp = decoded_jwt.get("iat")
+        if not iat_timestamp:
+            return None
+
+        try:
+            return datetime.fromtimestamp(iat_timestamp, tz=dt_timezone.utc)
+        except (ValueError, TypeError) as e:
+            logger.warning(f"Error converting timestamp {iat_timestamp}: {e}")
+            return None
+
+    @classmethod
+    def _create_security_event(cls, user, event_type, event_data, decoded_jwt):
+        """Create a SecurityEventToken for a known or unmatched event subject."""
+        subject = event_data.get("subject", {})
+        return SecurityEventToken.objects.create(
+            user=user,
+            email=user.email if user else subject.get("email"),
+            event_type=event_type,
+            event_data=event_data,
+            jwt_id=decoded_jwt.get("jti"),
+            issuer=decoded_jwt.get("iss"),
+            issued_at=cls._get_issued_at(decoded_jwt),
+        )
+
+    @classmethod
+    def _mark_processed(cls, security_event):
+        """Mark a security event as processed."""
+        security_event.processed = True
+        security_event.processed_at = timezone.now()
+        security_event.save()
+
+    @classmethod
+    def _has_subject_identifier(cls, subject):
+        """Return whether the event subject contains an identifier we understand."""
+        return bool(subject.get("sub") or subject.get("email"))
+
+    @classmethod
+    def _event_mutates_user(cls, event_type):
+        """Return whether handling the event is allowed to update the user model."""
+        return event_type in cls.user_mutation_event_types
+
     @classmethod
     def _get_user(cls, subject):
         """Get User model from email or UUID."""
@@ -124,17 +176,17 @@ class SecurityEventHandler:
                     "No user found with login_gov_uuid: {}".format(subject.get("sub"))
                 )
         elif "email" in subject:
-            # Check both emails in the subject to see if we have the user
+            if subject.get("subject_type") != "email":
+                raise ValueError(
+                    "Email subject security event must have subject_type 'email'."
+                )
+
             user_qset = User.objects.filter(username=subject.get("email"))
             if user_qset.exists() and user_qset.count() == 1:
                 return user_qset.first()
 
-            user_qset = User.objects.filter(username=subject.get("subject_type"))
-            if user_qset.exists() and user_qset.count() == 1:
-                return user_qset.first()
-
             raise ValueError(
-                "No user found with the provided 'email' or 'subject_type' in subject of security event."
+                "No user found with the provided 'email' in subject of security event."
             )
 
         raise ValueError("No user info found in subject of security event.")
@@ -144,36 +196,36 @@ class SecurityEventHandler:
         """Handle specific event types."""
         try:
             subject = event_data.get("subject", {})
-            user = cls._get_user(subject)
+            try:
+                user = cls._get_user(subject)
+            except ValueError:
+                if cls._event_mutates_user(
+                    event_type
+                ) or not cls._has_subject_identifier(subject):
+                    raise
 
-            # Convert Unix timestamp to datetime if present
-            iat_timestamp = decoded_jwt.get("iat")
-            issued_at = None
-            if iat_timestamp:
-                try:
-                    issued_at = datetime.fromtimestamp(
-                        iat_timestamp, tz=dt_timezone.utc
-                    )
-                except (ValueError, TypeError) as e:
-                    logger.warning(f"Error converting timestamp {iat_timestamp}: {e}")
+                security_event = cls._create_security_event(
+                    None, event_type, event_data, decoded_jwt
+                )
+                cls._mark_processed(security_event)
+                logger.warning(
+                    "Recorded %s event with unmatched subject %s. "
+                    "No user mutation was applied; email is synced from OIDC "
+                    "claims on login.",
+                    event_type,
+                    subject,
+                )
+                return
 
-            security_event = SecurityEventToken.objects.create(
-                user=user,
-                email=user.email,
-                event_type=event_type,
-                event_data=event_data,
-                jwt_id=decoded_jwt.get("jti"),
-                issuer=decoded_jwt.get("iss"),
-                issued_at=issued_at,
+            security_event = cls._create_security_event(
+                user, event_type, event_data, decoded_jwt
             )
 
             # Call the appropriate handler
             handler = cls.handler_map.get(event_type, cls._handle_unknown_event)
             handler(security_event)
 
-            security_event.processed = True
-            security_event.processed_at = timezone.now()
-            security_event.save()
+            cls._mark_processed(security_event)
 
         except Exception as e:
             logger.exception(f"Error handling event {event_type}: {e}")

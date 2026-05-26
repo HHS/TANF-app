@@ -52,7 +52,7 @@ function IdleTimer() {
   })
 
   const onSignOut = () => {
-    window.location.href = `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`
+    window.location.href = `${process.env.REACT_APP_AUTH_URL || process.env.REACT_APP_BACKEND_URL}/logout/oidc`
   }
 
   const onRenewSession = () => {

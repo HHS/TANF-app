@@ -36,6 +36,9 @@ class LoginRedirectLoginDotGov(RedirectView):
 
     def get(self, request, *args, **kwargs):
         """Handle login workflow based on request origin."""
+        logger.info(
+            "Login initiated", extra={"auth_flow": "legacy", "auth_idp": "dotgov"}
+        )
         # Create state and nonce to track requests
         state = secrets.token_hex(32)
         nonce = secrets.token_hex(32)
@@ -106,6 +109,7 @@ class LoginRedirectAMS(RedirectView):
 
     def get(self, request, *args, **kwargs):
         """Handle login workflow based on request origin."""
+        logger.info("Login initiated", extra={"auth_flow": "legacy", "auth_idp": "ams"})
         # Create state and nonce to track requests
         state = secrets.token_hex(32)
         nonce = secrets.token_hex(32)
