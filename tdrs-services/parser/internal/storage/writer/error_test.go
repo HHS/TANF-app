@@ -139,7 +139,7 @@ func TestRenderErrorMessage_WithValidationContext(t *testing.T) {
 		Valid:       false,
 		ErrorType:   validation.ErrorTypeCaseConsistency,
 		ValidatorID: "partial_duplicates",
-		Context: map[string]any{
+		TemplateData: map[string]any{
 			"ExistingLineNumber": 5,
 			"DuplicatedFields":   "Item 9 (Social Security Number).",
 		},
@@ -170,7 +170,7 @@ func TestRenderErrorMessage_ExactDuplicateMatchesPythonMessage(t *testing.T) {
 		Valid:       false,
 		ErrorType:   validation.ErrorTypeCaseConsistency,
 		ValidatorID: "exact_duplicates",
-		Context: map[string]any{
+		TemplateData: map[string]any{
 			"ExistingLineNumber": 5,
 		},
 		Validator: &validation.CompiledValidator{

@@ -104,7 +104,7 @@ func renderErrorMessage(vr *validation.ValidationResult, record *parser.ParsedRe
 	if vr.DataFileContext != nil {
 		ctx["DataFileContext"] = vr.DataFileContext
 	}
-	for key, value := range vr.Context {
+	for key, value := range vr.TemplateData {
 		ctx[key] = value
 	}
 

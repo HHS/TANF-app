@@ -965,8 +965,8 @@ func TestExecuteGroupEdgeCases(t *testing.T) {
 		if results[0].LineNumber == 0 {
 			t.Error("expected LineNumber to be populated on per_record result")
 		}
-		if results[0].Context["ExistingLineNumber"] != 1 {
-			t.Errorf("expected ExistingLineNumber=1, got %v", results[0].Context["ExistingLineNumber"])
+		if results[0].TemplateData["ExistingLineNumber"] != 1 {
+			t.Errorf("expected ExistingLineNumber=1, got %v", results[0].TemplateData["ExistingLineNumber"])
 		}
 	})
 
@@ -986,11 +986,11 @@ func TestExecuteGroupEdgeCases(t *testing.T) {
 		if results[0].LineNumber != 2 {
 			t.Errorf("expected LineNumber=2, got %d", results[0].LineNumber)
 		}
-		if results[0].Context["ExistingLineNumber"] != 1 {
-			t.Errorf("expected ExistingLineNumber=1, got %v", results[0].Context["ExistingLineNumber"])
+		if results[0].TemplateData["ExistingLineNumber"] != 1 {
+			t.Errorf("expected ExistingLineNumber=1, got %v", results[0].TemplateData["ExistingLineNumber"])
 		}
-		if results[0].Context["DuplicatedFields"] == "" {
-			t.Error("expected DuplicatedFields context")
+		if results[0].TemplateData["DuplicatedFields"] == "" {
+			t.Error("expected DuplicatedFields template data")
 		}
 	})
 

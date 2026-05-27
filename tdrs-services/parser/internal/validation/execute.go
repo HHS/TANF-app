@@ -151,7 +151,7 @@ func resultsFromDuplicateMatches(matches []*DuplicateMatch, cv *CompiledValidato
 			LineNumber:  match.Record.GetLineNumber(),
 			RecordType:  match.Record.GetRecordType(),
 			Validator:   cv,
-			Context: map[string]any{
+			TemplateData: map[string]any{
 				"ExistingLineNumber": match.ExistingLineNumber,
 				"DuplicatedFields":   match.DuplicatedFields,
 			},
