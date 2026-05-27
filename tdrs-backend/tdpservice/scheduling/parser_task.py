@@ -7,8 +7,9 @@ from django.core.files import File
 from django.db.utils import DatabaseError
 from django.utils import timezone
 
-from celery import shared_task
+from celery import current_app, shared_task
 
+from tdpservice.core.utils import log
 from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.error_reports import ErrorReportFactory
 from tdpservice.data_files.models import DataFile, ReparseFileMeta
@@ -36,6 +37,39 @@ from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 from tdpservice.users.models import AccountApprovalStatusChoices, User
 
 logger = settings.PARSER_LOGGER
+
+GO_PARSER_TASK_NAME = "tdpservice.scheduling.parser_task.go_parse"
+GO_PARSER_QUEUE = getattr(settings, "GO_PARSER_QUEUE", "go-parser")
+
+
+def queue_go_parse(data_file_id):
+    """Queue a shadow parse task for the Go parser."""
+    try:
+        current_app.send_task(
+            GO_PARSER_TASK_NAME,
+            args=[data_file_id],
+            queue=GO_PARSER_QUEUE,
+            ignore_result=True,
+        )
+    except Exception:
+        data_file = DataFile.objects.get(id=data_file_id)
+        log(
+            f"Failed to submit Go parser shadow task for datafile {data_file_id}.",
+            logger_context={
+                "user_id": data_file.user_id,
+                "content_type": DataFile,
+                "object_id": data_file.pk,
+                "object_repr": repr(data_file),
+            },
+            level="exception",
+        )
+
+
+def queue_parse(data_file_id, reparse_id=None):
+    """Queue production Python parse and companion Go shadow parse tasks."""
+    parse.delay(data_file_id, reparse_id=reparse_id)
+    if settings.GO_PARSER_SHADOW_MODE:
+        queue_go_parse(data_file_id)
 
 
 def set_reparse_file_meta_model_state(reparse_id, file_meta, is_success):

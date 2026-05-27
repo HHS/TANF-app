@@ -3,8 +3,11 @@
 import io
 from types import SimpleNamespace
 
-import pytest
+from django.contrib.admin.models import LogEntry
 from django.db.utils import DatabaseError
+from django.test import override_settings
+
+import pytest
 
 from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.models import DataFile, ReparseFileMeta
@@ -89,6 +92,116 @@ def setup_parse_mocks(monkeypatch, dfs=None):
         staticmethod(lambda data_file: DummyReport()),
     )
     return handlers
+
+
+def test_queue_go_parse_sends_shadow_task(monkeypatch):
+    """Queue Go parser task with the expected Celery task name and payload."""
+    calls = []
+
+    def fake_send_task(name, args=None, queue=None, ignore_result=False):
+        calls.append(
+            {
+                "name": name,
+                "args": args,
+                "queue": queue,
+                "ignore_result": ignore_result,
+            }
+        )
+
+    monkeypatch.setattr(
+        parser_task,
+        "current_app",
+        SimpleNamespace(send_task=fake_send_task),
+    )
+
+    parser_task.queue_go_parse(42)
+
+    assert calls == [
+        {
+            "name": parser_task.GO_PARSER_TASK_NAME,
+            "args": [42],
+            "queue": parser_task.GO_PARSER_QUEUE,
+            "ignore_result": True,
+        }
+    ]
+
+
+@pytest.mark.django_db
+def test_queue_go_parse_logs_submit_failure_to_admin(monkeypatch, stt):
+    """Write Go parser queue submission failures to Django admin logs."""
+    datafile = DataFileFactory(stt=stt, version=1)
+
+    def fake_send_task(*args, **kwargs):
+        raise RuntimeError("redis down")
+
+    monkeypatch.setattr(
+        parser_task,
+        "current_app",
+        SimpleNamespace(send_task=fake_send_task),
+    )
+
+    parser_task.queue_go_parse(datafile.id)
+
+    entry = LogEntry.objects.latest("pk")
+    assert str(entry.user_id) == datafile.user_id
+    assert entry.object_id == str(datafile.pk)
+    assert entry.change_message == (
+        f"Failed to submit Go parser shadow task for datafile {datafile.id}."
+    )
+
+
+def test_queue_parse_queues_python_and_go(monkeypatch):
+    """Queue production Python parse and companion Go shadow parse."""
+    calls = []
+
+    monkeypatch.setattr(
+        parser_task,
+        "parse",
+        SimpleNamespace(
+            delay=lambda data_file_id, reparse_id=None: calls.append(
+                ("python", data_file_id, reparse_id)
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        parser_task,
+        "queue_go_parse",
+        lambda data_file_id: calls.append(("go", data_file_id)),
+    )
+
+    parser_task.queue_parse(42, reparse_id=7)
+
+    assert calls == [
+        ("python", 42, 7),
+        ("go", 42),
+    ]
+
+
+@override_settings(GO_PARSER_SHADOW_MODE=False)
+def test_queue_parse_skips_go_when_shadow_mode_off(monkeypatch):
+    """Queue only the production Python parser when Go shadow mode is disabled."""
+    calls = []
+
+    monkeypatch.setattr(
+        parser_task,
+        "parse",
+        SimpleNamespace(
+            delay=lambda data_file_id, reparse_id=None: calls.append(
+                ("python", data_file_id, reparse_id)
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        parser_task,
+        "queue_go_parse",
+        lambda data_file_id: calls.append(("go", data_file_id)),
+    )
+
+    parser_task.queue_parse(42, reparse_id=7)
+
+    assert calls == [
+        ("python", 42, 7),
+    ]
 
 
 @pytest.mark.django_db
@@ -587,9 +700,7 @@ def test_reparse_transitions_to_parse_started(monkeypatch, stt):
         datafile=datafile, status=DataFileSummary.Status.PENDING
     )
     meta_model = ReparseMeta.objects.create(db_backup_location="s3://backup")
-    ReparseFileMeta.objects.create(
-        data_file=datafile, reparse_meta=meta_model
-    )
+    ReparseFileMeta.objects.create(data_file=datafile, reparse_meta=meta_model)
     setup_parse_mocks(monkeypatch, dfs=dfs)
     monkeypatch.setattr(
         parser_task.ParserFactory, "get_instance", lambda **kwargs: DummyParser()

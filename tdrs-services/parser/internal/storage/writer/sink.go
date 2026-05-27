@@ -25,7 +25,7 @@ type Sink interface {
 	// given datafile ID. The tables slice specifies which record tables to clean
 	// up (only tables relevant to the current file spec). Parser errors are
 	// always cleaned up.
-	RollbackDatafile(ctx context.Context, datafileID int32, tables []string) error
+	RollbackDatafile(ctx context.Context, datafileID int32, tables []string, errorTableName string) error
 
 	// Close performs any final cleanup (close file handles, etc).
 	Close() error
@@ -45,18 +45,19 @@ func (s *DatabaseSink) Flush(ctx context.Context, tableName string, columns []st
 	return s.pool.CopyFrom(ctx, pgx.Identifier{tableName}, columns, pgx.CopyFromRows(rows))
 }
 
-func (s *DatabaseSink) RollbackDatafile(ctx context.Context, datafileID int32, tables []string) error {
+func (s *DatabaseSink) RollbackDatafile(ctx context.Context, datafileID int32, tables []string, errorTableName string) error {
 	var errs []error
 
 	// Always clean up parser errors
-	if _, err := s.pool.Exec(ctx, "DELETE FROM parser_error WHERE file_id = $1", datafileID); err != nil {
-		log.Printf("rollback: failed to delete from parser_error for datafile %d: %v", datafileID, err)
-		errs = append(errs, fmt.Errorf("delete parser_error for datafile %d: %w", datafileID, err))
+	errorTable := pgx.Identifier{errorTableName}.Sanitize()
+	if _, err := s.pool.Exec(ctx, fmt.Sprintf("DELETE FROM %s WHERE file_id = $1", errorTable), datafileID); err != nil {
+		log.Printf("rollback: failed to delete from %s for datafile %d: %v", errorTableName, datafileID, err)
+		errs = append(errs, fmt.Errorf("delete %s for datafile %d: %w", errorTableName, datafileID, err))
 	}
 
 	// Only delete from tables relevant to the current file spec
 	for _, table := range tables {
-		query := fmt.Sprintf("DELETE FROM %s WHERE datafile_id = $1", table)
+		query := fmt.Sprintf("DELETE FROM %s WHERE datafile_id = $1", pgx.Identifier{table}.Sanitize())
 		if _, err := s.pool.Exec(ctx, query, datafileID); err != nil {
 			log.Printf("rollback: failed to delete from %s for datafile %d: %v", table, datafileID, err)
 			errs = append(errs, fmt.Errorf("delete %s for datafile %d: %w", table, datafileID, err))
@@ -122,7 +123,7 @@ func (s *FileSink) Flush(ctx context.Context, tableName string, columns []string
 
 // RollbackDatafile is a best-effort no-op for file sinks since file output
 // does not support selective deletion by datafile ID.
-func (s *FileSink) RollbackDatafile(_ context.Context, _ int32, _ []string) error {
+func (s *FileSink) RollbackDatafile(_ context.Context, _ int32, _ []string, _ string) error {
 	return nil
 }
 

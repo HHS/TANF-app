@@ -3,14 +3,16 @@
 import io
 import os
 
+from django.test import override_settings
+
 import openpyxl
 import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from tdpservice.data_files.enums import SubmissionState
 from tdpservice.core.models import FeatureFlag
-from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.enums import SubmissionState
+from tdpservice.data_files.models import DataFile, ShadowDataFile
 from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.submission_lifecycle import InvalidTransition
 from tdpservice.parsers import util
@@ -312,6 +314,7 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
         self, api_client, data_file_data, user, mocker
     ):
         """Test ability to create data file metadata registry."""
+
         def clean_scan(_file, _file_name, _uploaded_by, data_file=None):
             assert data_file.state == SubmissionState.VIRUS_SCAN_STARTED
             assert not data_file.file
@@ -332,6 +335,24 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
 
         data_file = DataFile.objects.get(id=response.data["id"])
         assert data_file.state == SubmissionState.VIRUS_SCAN_COMPLETED
+
+        shadow_data_file = ShadowDataFile.objects.get(id=data_file.id)
+        assert shadow_data_file.state == SubmissionState.VIRUS_SCAN_COMPLETED
+        assert shadow_data_file.file.name == data_file.file.name
+        assert shadow_data_file.stt_id == data_file.stt_id
+        assert shadow_data_file.user_id == data_file.user_id
+
+    @override_settings(GO_PARSER_SHADOW_MODE=False)
+    def test_create_data_file_file_entry_does_not_create_shadow_when_shadow_mode_off(
+        self, api_client, data_file_data, user
+    ):
+        """Test production-mode Go parser uploads do not create shadow data files."""
+        response = self.post_data_file(api_client, data_file_data)
+        self.assert_data_file_created(response)
+
+        data_file = DataFile.objects.get(id=response.data["id"])
+        assert data_file.state == SubmissionState.VIRUS_SCAN_COMPLETED
+        assert not ShadowDataFile.objects.filter(id=data_file.id).exists()
 
     def test_data_file_file_version_increment(
         self, api_client, data_file_data, other_data_file_data, user

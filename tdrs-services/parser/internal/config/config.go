@@ -32,11 +32,22 @@ type ValidationConfig struct {
 // DatabaseConfig holds connection pool settings.
 type DatabaseConfig struct {
 	URL               string        `yaml:"url"` // Database connection URL (supports ${DATABASE_URL} interpolation)
+	ShadowMode        bool          `yaml:"shadow_mode"`
+	TablePrefix       string        `yaml:"table_prefix"`
 	MaxConns          int           `yaml:"max_conns"`
 	MinConns          int           `yaml:"min_conns"`
 	MaxConnLifetime   time.Duration `yaml:"max_conn_lifetime"`
 	MaxConnIdleTime   time.Duration `yaml:"max_conn_idle_time"`
 	HealthCheckPeriod time.Duration `yaml:"health_check_period"`
+}
+
+// EffectiveTablePrefix returns the table prefix to use for parser-owned writes.
+// When shadow mode is disabled, the Go parser writes to production tables.
+func (c DatabaseConfig) EffectiveTablePrefix() string {
+	if !c.ShadowMode {
+		return ""
+	}
+	return c.TablePrefix
 }
 
 // S3Config holds S3-specific storage settings.
@@ -154,6 +165,8 @@ func DefaultConfig() *Config {
 			ValidatorFiles: []string{"validation/validators.yaml"},
 		},
 		Database: DatabaseConfig{
+			ShadowMode:        true,
+			TablePrefix:       DefaultTablePrefix,
 			MaxConns:          10,
 			MinConns:          2,
 			MaxConnLifetime:   30 * time.Minute,

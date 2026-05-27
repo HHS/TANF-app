@@ -115,7 +115,7 @@ func (s *capturingSink) Flush(_ context.Context, tableName string, _ []string, r
 	return int64(len(rows)), nil
 }
 
-func (s *capturingSink) RollbackDatafile(_ context.Context, datafileID int32, tables []string) error {
+func (s *capturingSink) RollbackDatafile(_ context.Context, datafileID int32, tables []string, errorTableName string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.rollbackCalls++
@@ -124,7 +124,7 @@ func (s *capturingSink) RollbackDatafile(_ context.Context, datafileID int32, ta
 	if s.rollbackErr != nil {
 		return s.rollbackErr
 	}
-	delete(s.tables, "parser_error")
+	delete(s.tables, errorTableName)
 	for _, table := range tables {
 		delete(s.tables, table)
 	}
@@ -138,12 +138,22 @@ func (s *capturingSink) rowCount(tableName string) int {
 	return len(s.tables[tableName])
 }
 
+func parserErrorTableName(pipelineCfg PipelineConfig) string {
+	return config.ParserErrorTableName(pipelineCfg.TablePrefix)
+}
+
+func (s *capturingSink) errorRows(pipelineCfg PipelineConfig) [][]any {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return slices.Clone(s.tables[parserErrorTableName(pipelineCfg)])
+}
+
 func (s *capturingSink) totalRecords() int {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	total := 0
 	for name, rows := range s.tables {
-		if name != "parser_error" {
+		if name != config.ParserErrorTableName("") && name != config.ParserErrorTableName(config.DefaultTablePrefix) {
 			total += len(rows)
 		}
 	}
@@ -153,7 +163,7 @@ func (s *capturingSink) totalRecords() int {
 func (s *capturingSink) errorCount() int {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return len(s.tables["parser_error"])
+	return len(s.tables["shadow_parser_error"]) + len(s.tables["parser_error"])
 }
 
 // --- Helper to create a test data file in a temp dir ---
@@ -240,7 +250,7 @@ func TestProcess_FRAInvalidFirstRowWritesPreCheckError(t *testing.T) {
 				t.Fatalf("sink error count = %d, want 1", sink.errorCount())
 			}
 
-			row := sink.tables["parser_error"][0]
+			row := sink.tables["shadow_parser_error"][0]
 			if got := row[0]; got != int32(1) {
 				t.Errorf("row_number = %v, want %d", got, 1)
 			}
@@ -367,10 +377,10 @@ func TestProcess_TANF_S1_MissingHeader(t *testing.T) {
 	if sink.errorCount() != 2 {
 		t.Errorf("sink error count = %d, want 2", sink.errorCount())
 	}
-	if got := sink.tables["parser_error"][1][6]; got != "No records created." {
+	if got := sink.errorRows(pipelineCfg)[1][6]; got != "No records created." {
 		t.Errorf("second error_message = %v, want %q", got, "No records created.")
 	}
-	if got := sink.tables["parser_error"][1][0]; got != int32(0) {
+	if got := sink.tables["shadow_parser_error"][1][0]; got != int32(0) {
 		t.Errorf("second row_number = %v, want %d", got, 0)
 	}
 }
@@ -424,7 +434,7 @@ func TestProcess_TANF_MultipleHeaders_RollbacksAndWritesOffendingRow(t *testing.
 		t.Fatalf("sink error count = %d, want 1", sink.errorCount())
 	}
 
-	errRow := sink.tables["parser_error"][0]
+	errRow := sink.errorRows(pipelineCfg)[0]
 	if got := errRow[0]; got != int32(3) {
 		t.Errorf("row_number = %v, want 3", got)
 	}
@@ -566,7 +576,7 @@ func TestProcess_EmptyFile(t *testing.T) {
 	if sink.errorCount() != 2 {
 		t.Errorf("sink error count = %d, want 2", sink.errorCount())
 	}
-	if got := sink.tables["parser_error"][1][6]; got != "No records created." {
+	if got := sink.errorRows(pipelineCfg)[1][6]; got != "No records created." {
 		t.Errorf("second error_message = %v, want %q", got, "No records created.")
 	}
 }
@@ -668,10 +678,7 @@ func TestProcess_HeaderOnlyWritesNoRecordsCreatedError(t *testing.T) {
 		t.Errorf("totalRecords = %d, want 0", sink.totalRecords())
 	}
 
-	row := sink.tables["parser_error"][0]
-	if got := row[0]; got != int32(0) {
-		t.Errorf("row_number = %v, want %d", got, 0)
-	}
+	row := sink.errorRows(pipelineCfg)[0]
 	if got := row[6]; got != "No records created." {
 		t.Errorf("error_message = %v, want %q", got, "No records created.")
 	}
@@ -729,11 +736,11 @@ func TestProcess_HeaderValidationFailureAlsoWritesNoRecordsCreatedError(t *testi
 		t.Errorf("sink error count = %d, want 2", sink.errorCount())
 	}
 
-	firstMessage := sink.tables["parser_error"][0][6]
+	firstMessage := sink.errorRows(pipelineCfg)[0][6]
 	if !strings.Contains(firstMessage.(string), "doesn't match file reporting year") {
 		t.Errorf("first error_message = %v, want mismatch message", firstMessage)
 	}
-	if got := sink.tables["parser_error"][1][6]; got != "No records created." {
+	if got := sink.errorRows(pipelineCfg)[1][6]; got != "No records created." {
 		t.Errorf("second error_message = %v, want %q", got, "No records created.")
 	}
 }
@@ -787,7 +794,7 @@ func TestProcess_NonBlockingHeaderErrorWritesParserError(t *testing.T) {
 	}
 
 	found := false
-	for _, row := range sink.tables["parser_error"] {
+	for _, row := range sink.errorRows(pipelineCfg) {
 		if got := row[6]; got == "HEADER Item 8 (Edit Indicator): 3 is not in [1, 2]." {
 			found = true
 			if rowNum := row[0]; rowNum != int32(1) {
@@ -797,7 +804,7 @@ func TestProcess_NonBlockingHeaderErrorWritesParserError(t *testing.T) {
 		}
 	}
 	if !found {
-		t.Fatalf("parser errors = %v, want header validation message", sink.tables["parser_error"])
+		t.Fatalf("parser errors = %v, want header validation message", sink.errorRows(pipelineCfg))
 	}
 }
 
@@ -855,7 +862,7 @@ func TestProcess_BlankRequiredCountyFIPSWritesRequiredFieldError(t *testing.T) {
 	}
 
 	messages := make([]string, 0, sink.errorCount())
-	for _, row := range sink.tables["parser_error"] {
+	for _, row := range sink.errorRows(pipelineCfg) {
 		if msg, ok := row[6].(string); ok {
 			messages = append(messages, msg)
 		}
@@ -907,13 +914,13 @@ func TestProcess_UnknownRecordTypeWritesParserError(t *testing.T) {
 	if sink.errorCount() != 2 {
 		t.Errorf("sink error count = %d, want 2", sink.errorCount())
 	}
-	if got := sink.tables["parser_error"][0][0]; got != int32(2) {
+	if got := sink.errorRows(pipelineCfg)[0][0]; got != int32(2) {
 		t.Errorf("first row_number = %v, want %d", got, 2)
 	}
-	if got := sink.tables["parser_error"][0][6]; got != "Unknown record type was found." {
+	if got := sink.errorRows(pipelineCfg)[0][6]; got != "Unknown record type was found." {
 		t.Errorf("first error_message = %v, want %q", got, "Unknown record type was found.")
 	}
-	if got := sink.tables["parser_error"][1][6]; got != "No records created." {
+	if got := sink.errorRows(pipelineCfg)[1][6]; got != "No records created." {
 		t.Errorf("second error_message = %v, want %q", got, "No records created.")
 	}
 }
