@@ -26,6 +26,7 @@ func loadRegistry(t *testing.T) *Registry {
 		Global:        GlobalConfig{ConfigDir: dir},
 		SchemaFiles:   []string{"schemas/**/*.yaml"},
 		FilespecFiles: []string{"filespecs/**/*.yaml"},
+		Database:      DatabaseConfig{ShadowMode: true, TablePrefix: DefaultTablePrefix},
 	}
 	reg, err := NewRegistry(cfg)
 	if err != nil {
@@ -927,11 +928,11 @@ func TestConfig_LoadContentTypes(t *testing.T) {
 	reg := loadRegistry(t)
 
 	contentTypes := map[string]int32{
-		"tanf_t1":        42,
-		"tanf_t2":        43,
-		"ssp_m1":         44,
-		"tribal_tanf_t1": 45,
-		"tanf_exiter1":   46,
+		"shadowtanf_t1":        42,
+		"shadowtanf_t2":        43,
+		"shadowssp_m1":         44,
+		"shadowtribal_tanf_t1": 45,
+		"shadowtanf_exiter1":   46,
 	}
 	reg.LoadContentTypes(contentTypes)
 

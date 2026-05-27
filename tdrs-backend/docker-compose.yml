@@ -284,6 +284,8 @@ services:
       - AMS_CONFIGURATION_ENDPOINT
       - REDIS_URI=redis://redis-server:6379
       - REDIS_SERVER_LOCAL=TRUE
+      - GO_PARSER_QUEUE=${GO_PARSER_QUEUE:-go-parser}
+      - GO_PARSER_SHADOW_MODE=${GO_PARSER_SHADOW_MODE:-true}
       - CYPRESS_TOKEN
       - DJANGO_DEBUG
       - SENDGRID_API_KEY
@@ -355,7 +357,8 @@ services:
     command: ["--server.mode=celery", "--storage.source=s3"]
     environment:
       - REDIS_URL=redis://redis-server:6379/0
-      - GO_PARSER_QUEUE=go-parser
+      - GO_PARSER_QUEUE=${GO_PARSER_QUEUE:-go-parser}
+      - GO_PARSER_SHADOW_MODE=${GO_PARSER_SHADOW_MODE:-true}
       - DATABASE_URL=postgres://tdpuser:something_secure@postgres:5432/tdrs_test?sslmode=disable
       - S3_BUCKET=tdp-datafiles-localstack
       - S3_ENDPOINT=http://localstack:4566
@@ -400,6 +403,8 @@ services:
       - CELERY_WORKER_QUEUES=celery
       - CELERY_GO_PARSER_QUEUE=go-parser
       - REDIS_SERVER_LOCAL=TRUE
+      - GO_PARSER_QUEUE=go-parser
+      - GO_PARSER_SHADOW_MODE=${GO_PARSER_SHADOW_MODE:-true}
       - CYPRESS_TOKEN
       - DJANGO_DEBUG
       - SENDGRID_API_KEY

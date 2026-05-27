@@ -95,6 +95,7 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 		IncludeSchemas:      p.config.IncludeSchemas,
 		IncludeRecords:      p.config.IncludeRecords,
 		IncludeErrors:       p.config.IncludeErrors,
+		TablePrefix:         p.config.TablePrefix,
 	})
 	router.Start(runCtx)
 
@@ -226,7 +227,7 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 			headerRecord = parseCtx.Header
 		}
 		addedErrorCount, err := p.writeNoRecordsCreatedError(ctx, validationOrchestrator, dfCtx.DatafileID, headerRecord, func(row []any) error {
-			_, err := p.sink.Flush(ctx, "parser_error", writer.ParserErrorColumns(), [][]any{row})
+			_, err := p.sink.Flush(ctx, router.ErrorTableName(), writer.ParserErrorColumns(), [][]any{row})
 			return err
 		})
 		if err != nil {
@@ -393,7 +394,7 @@ func (p *Pipeline) abortAndRollback(ctx context.Context, cancelRun context.Cance
 
 func (p *Pipeline) rollbackDatafile(ctx context.Context, dfCtx DataFileContext, router *writer.Router) error {
 	rollbackCtx := context.WithoutCancel(ctx)
-	if rollbackErr := p.sink.RollbackDatafile(rollbackCtx, dfCtx.DatafileID, router.TableNames()); rollbackErr != nil {
+	if rollbackErr := p.sink.RollbackDatafile(rollbackCtx, dfCtx.DatafileID, router.TableNames(), router.ErrorTableName()); rollbackErr != nil {
 		return fmt.Errorf("rollback datafile %d: %w", dfCtx.DatafileID, rollbackErr)
 	}
 	return nil
@@ -424,7 +425,7 @@ func (p *Pipeline) handleMultipleHeaders(ctx context.Context, cancelRun context.
 		validation.ErrorTypePreCheck,
 		dfCtx.DatafileID,
 	)
-	if _, flushErr := p.sink.Flush(cleanupCtx, "parser_error", writer.ParserErrorColumns(), [][]any{headerErr}); flushErr != nil {
+	if _, flushErr := p.sink.Flush(ctx, router.ErrorTableName(), writer.ParserErrorColumns(), [][]any{headerErr}); flushErr != nil {
 		log.Printf("failed to write multiple headers error: %v", flushErr)
 	}
 	return &ParsingResult{

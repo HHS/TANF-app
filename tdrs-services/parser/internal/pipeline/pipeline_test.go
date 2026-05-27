@@ -18,8 +18,10 @@ type stubSink struct{}
 func (s *stubSink) Flush(_ context.Context, _ string, _ []string, _ [][]any) (int64, error) {
 	return 0, nil
 }
-func (s *stubSink) RollbackDatafile(_ context.Context, _ int32, _ []string) error { return nil }
-func (s *stubSink) Close() error                                                  { return nil }
+func (s *stubSink) RollbackDatafile(_ context.Context, _ int32, _ []string, _ string) error {
+	return nil
+}
+func (s *stubSink) Close() error { return nil }
 
 // Verify writer.Sink interface is satisfied by stubSink at compile time.
 var _ writer.Sink = (*stubSink)(nil)

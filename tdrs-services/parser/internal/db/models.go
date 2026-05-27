@@ -817,6 +817,815 @@ type SearchIndexesTribalTanfT7 struct {
 	LineNumber      pgtype.Int4
 }
 
+type ShadowDataFilesDatafile struct {
+	ID               int32
+	OriginalFilename string
+	Slug             string
+	Extension        string
+	Quarter          string
+	Year             int32
+	Section          string
+	Version          int32
+	SttID            int32
+	UserID           pgtype.UUID
+	CreatedAt        pgtype.Timestamptz
+	File             pgtype.Text
+	S3VersioningID   pgtype.Text
+	ProgramType      string
+	IsProgramAudit   bool
+	State            string
+}
+
+type ShadowParserError struct {
+	ID            int32
+	RowNumber     pgtype.Int4
+	ColumnNumber  pgtype.Text
+	ItemNumber    pgtype.Text
+	FieldName     pgtype.Text
+	CaseNumber    pgtype.Text
+	RptMonthYear  pgtype.Int4
+	ErrorMessage  pgtype.Text
+	ErrorType     string
+	CreatedAt     pgtype.Timestamptz
+	FieldsJson    []byte
+	ContentTypeID pgtype.Int4
+	FileID        pgtype.Int4
+	ObjectID      pgtype.UUID
+	Deprecated    bool
+	ValuesJson    []byte
+}
+
+type ShadowParsersDatafilesummary struct {
+	ID                          int64
+	Status                      string
+	CaseAggregates              []byte
+	DatafileID                  int32
+	TotalNumberOfRecordsCreated pgtype.Int4
+	TotalNumberOfRecordsInFile  pgtype.Int4
+	ErrorReport                 pgtype.Text
+}
+
+type ShadowSearchIndexesProgramauditT1 struct {
+	LineNumber    pgtype.Int4
+	ID            pgtype.UUID
+	RecordType    pgtype.Text
+	RPTMONTHYEAR  pgtype.Int4
+	CASENUMBER    pgtype.Text
+	FUNDINGSTREAM pgtype.Int4
+	CASHAMOUNT    pgtype.Int4
+	DatafileID    pgtype.Int4
+}
+
+type ShadowSearchIndexesProgramauditT2 struct {
+	LineNumber        pgtype.Int4
+	ID                pgtype.UUID
+	RecordType        pgtype.Text
+	RPTMONTHYEAR      pgtype.Int4
+	CASENUMBER        pgtype.Text
+	FAMILYAFFILIATION pgtype.Int4
+	DATEOFBIRTH       pgtype.Text
+	SSN               pgtype.Text
+	CITIZENSHIPSTATUS pgtype.Int4
+	DatafileID        pgtype.Int4
+}
+
+type ShadowSearchIndexesProgramauditT3 struct {
+	LineNumber        pgtype.Int4
+	ID                pgtype.UUID
+	RecordType        pgtype.Text
+	RPTMONTHYEAR      pgtype.Int4
+	CASENUMBER        pgtype.Text
+	FAMILYAFFILIATION pgtype.Int4
+	DATEOFBIRTH       pgtype.Text
+	SSN               pgtype.Text
+	CITIZENSHIPSTATUS pgtype.Int4
+	DatafileID        pgtype.Int4
+}
+
+type ShadowSearchIndexesReparsemetum struct {
+	ID                     int64
+	CreatedAt              pgtype.Timestamptz
+	TimeoutAt              pgtype.Timestamptz
+	NumRecordsDeleted      int32
+	TotalNumRecordsInitial int64
+	TotalNumRecordsPost    int64
+	DbBackupLocation       string
+	FiscalQuarter          pgtype.Text
+	FiscalYear             pgtype.Int4
+	All                    bool
+	NewIndices             bool
+	DeleteOldIndices       bool
+}
+
+type ShadowSearchIndexesSspM1 struct {
+	RecordType               pgtype.Text
+	RPTMONTHYEAR             pgtype.Int4
+	CASENUMBER               pgtype.Text
+	FIPSCODE                 pgtype.Text
+	COUNTYFIPSCODE           pgtype.Text
+	STRATUM                  pgtype.Text
+	ZIPCODE                  pgtype.Text
+	DISPOSITION              pgtype.Int4
+	NBRFAMILYMEMBERS         pgtype.Int4
+	FAMILYTYPE               pgtype.Int4
+	TANFASSTIN6MONTHS        pgtype.Int4
+	RECEIVESSUBHOUSING       pgtype.Int4
+	RECEIVESMEDASSISTANCE    pgtype.Int4
+	RECEIVESFOODSTAMPS       pgtype.Int4
+	AMTFOODSTAMPASSISTANCE   pgtype.Int4
+	RECEIVESSUBCC            pgtype.Int4
+	AMTSUBCC                 pgtype.Int4
+	CHILDSUPPORTAMT          pgtype.Int4
+	FAMILYCASHRESOURCES      pgtype.Int4
+	CASHAMOUNT               pgtype.Int4
+	NBRMONTHS                pgtype.Int4
+	CCAMOUNT                 pgtype.Int4
+	CHILDRENCOVERED          pgtype.Int4
+	CCNBRMONTHS              pgtype.Int4
+	TRANSPAMOUNT             pgtype.Int4
+	TRANSPNBRMONTHS          pgtype.Int4
+	TRANSITIONSERVICESAMOUNT pgtype.Int4
+	TRANSITIONNBRMONTHS      pgtype.Int4
+	OTHERAMOUNT              pgtype.Int4
+	OTHERNBRMONTHS           pgtype.Int4
+	SANCREDUCTIONAMT         pgtype.Int4
+	WORKREQSANCTION          pgtype.Int4
+	FAMILYSANCADULT          pgtype.Int4
+	SANCTEENPARENT           pgtype.Int4
+	NONCOOPERATIONCSE        pgtype.Int4
+	FAILURETOCOMPLY          pgtype.Int4
+	OTHERSANCTION            pgtype.Int4
+	RECOUPMENTPRIOROVRPMT    pgtype.Int4
+	OTHERTOTALREDUCTIONS     pgtype.Int4
+	FAMILYCAP                pgtype.Int4
+	REDUCTIONSONRECEIPTS     pgtype.Int4
+	OTHERNONSANCTION         pgtype.Int4
+	WAIVEREVALCONTROLGRPS    pgtype.Int4
+	ID                       pgtype.UUID
+	DatafileID               pgtype.Int4
+	LineNumber               pgtype.Int4
+}
+
+type ShadowSearchIndexesSspM2 struct {
+	RecordType              pgtype.Text
+	RPTMONTHYEAR            pgtype.Int4
+	CASENUMBER              pgtype.Text
+	FIPSCODE                pgtype.Text
+	FAMILYAFFILIATION       pgtype.Int4
+	NONCUSTODIALPARENT      pgtype.Int4
+	DATEOFBIRTH             pgtype.Text
+	SSN                     pgtype.Text
+	RACEHISPANIC            pgtype.Int4
+	RACEAMERINDIAN          pgtype.Int4
+	RACEASIAN               pgtype.Int4
+	RACEBLACK               pgtype.Int4
+	RACEHAWAIIAN            pgtype.Int4
+	RACEWHITE               pgtype.Int4
+	SEX                     pgtype.Int4
+	FEDOASDIPROGRAM         pgtype.Int4
+	FEDDISABILITYSTATUS     pgtype.Int4
+	DISABLEDTITLEXIVAPDT    pgtype.Int4
+	AIDAGEDBLIND            pgtype.Int4
+	RECEIVESSI              pgtype.Int4
+	MARITALSTATUS           pgtype.Int4
+	RELATIONSHIPHOH         pgtype.Int4
+	PARENTMINORCHILD        pgtype.Int4
+	NEEDSPREGNANTWOMAN      pgtype.Int4
+	EDUCATIONLEVEL          pgtype.Text
+	CITIZENSHIPSTATUS       pgtype.Int4
+	COOPERATIONCHILDSUPPORT pgtype.Int4
+	EMPLOYMENTSTATUS        pgtype.Int4
+	WORKELIGIBLEINDICATOR   pgtype.Int4
+	WORKPARTSTATUS          pgtype.Int4
+	UNSUBEMPLOYMENT         pgtype.Int4
+	SUBPRIVATEEMPLOYMENT    pgtype.Int4
+	SUBPUBLICEMPLOYMENT     pgtype.Int4
+	WORKEXPERIENCEHOP       pgtype.Int4
+	WORKEXPERIENCEEA        pgtype.Int4
+	WORKEXPERIENCEHOL       pgtype.Int4
+	OJT                     pgtype.Int4
+	JOBSEARCHHOP            pgtype.Int4
+	JOBSEARCHEA             pgtype.Int4
+	JOBSEARCHHOL            pgtype.Int4
+	COMMSERVICESHOP         pgtype.Int4
+	COMMSERVICESEA          pgtype.Int4
+	COMMSERVICESHOL         pgtype.Int4
+	VOCATIONALEDTRAININGHOP pgtype.Int4
+	VOCATIONALEDTRAININGEA  pgtype.Int4
+	VOCATIONALEDTRAININGHOL pgtype.Int4
+	JOBSKILLSTRAININGHOP    pgtype.Int4
+	JOBSKILLSTRAININGEA     pgtype.Int4
+	JOBSKILLSTRAININGHOL    pgtype.Int4
+	EDNOHIGHSCHOOLDIPLHOP   pgtype.Int4
+	EDNOHIGHSCHOOLDIPLEA    pgtype.Int4
+	EDNOHIGHSCHOOLDIPLHOL   pgtype.Int4
+	SCHOOLATTENDENCEHOP     pgtype.Int4
+	SCHOOLATTENDENCEEA      pgtype.Int4
+	SCHOOLATTENDENCEHOL     pgtype.Int4
+	PROVIDECCHOP            pgtype.Int4
+	PROVIDECCEA             pgtype.Int4
+	PROVIDECCHOL            pgtype.Int4
+	OTHERWORKACTIVITIES     pgtype.Int4
+	DEEMEDHOURSFOROVERALL   pgtype.Int4
+	DEEMEDHOURSFORTWOPARENT pgtype.Int4
+	EARNEDINCOME            pgtype.Int4
+	UNEARNEDINCOMETAXCREDIT pgtype.Int4
+	UNEARNEDSOCIALSECURITY  pgtype.Int4
+	UNEARNEDSSI             pgtype.Int4
+	UNEARNEDWORKERSCOMP     pgtype.Int4
+	OTHERUNEARNEDINCOME     pgtype.Int4
+	ID                      pgtype.UUID
+	DatafileID              pgtype.Int4
+	LineNumber              pgtype.Int4
+}
+
+type ShadowSearchIndexesSspM3 struct {
+	RecordType            pgtype.Text
+	RPTMONTHYEAR          pgtype.Int4
+	CASENUMBER            pgtype.Text
+	FIPSCODE              pgtype.Text
+	FAMILYAFFILIATION     pgtype.Int4
+	DATEOFBIRTH           pgtype.Text
+	SSN                   pgtype.Text
+	RACEHISPANIC          pgtype.Int4
+	RACEAMERINDIAN        pgtype.Int4
+	RACEASIAN             pgtype.Int4
+	RACEBLACK             pgtype.Int4
+	RACEHAWAIIAN          pgtype.Int4
+	RACEWHITE             pgtype.Int4
+	SEX                   pgtype.Int4
+	RECEIVENONSSIBENEFITS pgtype.Int4
+	RECEIVESSI            pgtype.Int4
+	RELATIONSHIPHOH       pgtype.Int4
+	PARENTMINORCHILD      pgtype.Int4
+	EDUCATIONLEVEL        pgtype.Text
+	CITIZENSHIPSTATUS     pgtype.Int4
+	UNEARNEDSSI           pgtype.Int4
+	OTHERUNEARNEDINCOME   pgtype.Int4
+	ID                    pgtype.UUID
+	DatafileID            pgtype.Int4
+	LineNumber            pgtype.Int4
+}
+
+type ShadowSearchIndexesSspM4 struct {
+	ID             pgtype.UUID
+	RecordType     pgtype.Text
+	RPTMONTHYEAR   pgtype.Int4
+	CASENUMBER     pgtype.Text
+	COUNTYFIPSCODE pgtype.Text
+	STRATUM        pgtype.Text
+	ZIPCODE        pgtype.Text
+	DISPOSITION    pgtype.Int4
+	CLOSUREREASON  pgtype.Text
+	RECSUBHOUSING  pgtype.Int4
+	RECMEDASSIST   pgtype.Int4
+	RECFOODSTAMPS  pgtype.Int4
+	RECSUBCC       pgtype.Int4
+	DatafileID     pgtype.Int4
+	LineNumber     pgtype.Int4
+}
+
+type ShadowSearchIndexesSspM5 struct {
+	ID                    pgtype.UUID
+	RecordType            pgtype.Text
+	RPTMONTHYEAR          pgtype.Int4
+	CASENUMBER            pgtype.Text
+	FAMILYAFFILIATION     pgtype.Int4
+	DATEOFBIRTH           pgtype.Text
+	SSN                   pgtype.Text
+	RACEHISPANIC          pgtype.Int4
+	RACEAMERINDIAN        pgtype.Int4
+	RACEASIAN             pgtype.Int4
+	RACEBLACK             pgtype.Int4
+	RACEHAWAIIAN          pgtype.Int4
+	RACEWHITE             pgtype.Int4
+	SEX                   pgtype.Int4
+	RECOASDIINSURANCE     pgtype.Int4
+	RECFEDERALDISABILITY  pgtype.Int4
+	RECAIDTOTALLYDISABLED pgtype.Int4
+	RECAIDAGEDBLIND       pgtype.Int4
+	RECSSI                pgtype.Int4
+	MARITALSTATUS         pgtype.Int4
+	RELATIONSHIPHOH       pgtype.Text
+	PARENTMINORCHILD      pgtype.Int4
+	NEEDSOFPREGNANTWOMAN  pgtype.Int4
+	EDUCATIONLEVEL        pgtype.Text
+	CITIZENSHIPSTATUS     pgtype.Int4
+	EMPLOYMENTSTATUS      pgtype.Int4
+	AMOUNTEARNEDINCOME    pgtype.Text
+	AMOUNTUNEARNEDINCOME  pgtype.Text
+	DatafileID            pgtype.Int4
+	LineNumber            pgtype.Int4
+}
+
+type ShadowSearchIndexesSspM6 struct {
+	ID              pgtype.UUID
+	RecordType      pgtype.Text
+	CALENDARQUARTER pgtype.Int4
+	RPTMONTHYEAR    pgtype.Int4
+	SSPMOEFAMILIES  pgtype.Int4
+	NUM2PARENTS     pgtype.Int4
+	NUM1PARENTS     pgtype.Int4
+	NUMNOPARENTS    pgtype.Int4
+	NUMRECIPIENTS   pgtype.Int4
+	ADULTRECIPIENTS pgtype.Int4
+	CHILDRECIPIENTS pgtype.Int4
+	NONCUSTODIALS   pgtype.Int4
+	AMTASSISTANCE   pgtype.Int4
+	CLOSEDCASES     pgtype.Int4
+	DatafileID      pgtype.Int4
+	LineNumber      pgtype.Int4
+}
+
+type ShadowSearchIndexesSspM7 struct {
+	ID              pgtype.UUID
+	RecordType      pgtype.Text
+	CALENDARQUARTER pgtype.Int4
+	RPTMONTHYEAR    pgtype.Int4
+	TDRSSECTIONIND  pgtype.Text
+	STRATUM         pgtype.Text
+	FAMILIESMONTH   pgtype.Int4
+	DatafileID      pgtype.Int4
+	LineNumber      pgtype.Int4
+}
+
+type ShadowSearchIndexesTanfExiter1 struct {
+	ID         pgtype.UUID
+	RecordType pgtype.Text
+	EXITDATE   pgtype.Int4
+	SSN        pgtype.Text
+	DatafileID pgtype.Int4
+	LineNumber pgtype.Int4
+}
+
+type ShadowSearchIndexesTanfT1 struct {
+	RecordType               pgtype.Text
+	RPTMONTHYEAR             pgtype.Int4
+	CASENUMBER               pgtype.Text
+	DISPOSITION              pgtype.Int4
+	FIPSCODE                 pgtype.Text
+	COUNTYFIPSCODE           pgtype.Text
+	STRATUM                  pgtype.Text
+	ZIPCODE                  pgtype.Text
+	FUNDINGSTREAM            pgtype.Int4
+	NEWAPPLICANT             pgtype.Int4
+	NBRFAMILYMEMBERS         pgtype.Int4
+	FAMILYTYPE               pgtype.Int4
+	RECEIVESSUBHOUSING       pgtype.Int4
+	RECEIVESMEDASSISTANCE    pgtype.Int4
+	RECEIVESFOODSTAMPS       pgtype.Int4
+	AMTFOODSTAMPASSISTANCE   pgtype.Int4
+	RECEIVESSUBCC            pgtype.Int4
+	AMTSUBCC                 pgtype.Int4
+	CHILDSUPPORTAMT          pgtype.Int4
+	FAMILYCASHRESOURCES      pgtype.Int4
+	CASHAMOUNT               pgtype.Int4
+	NBRMONTHS                pgtype.Int4
+	CCAMOUNT                 pgtype.Int4
+	CHILDRENCOVERED          pgtype.Int4
+	CCNBRMONTHS              pgtype.Int4
+	TRANSPAMOUNT             pgtype.Int4
+	TRANSPNBRMONTHS          pgtype.Int4
+	TRANSITIONSERVICESAMOUNT pgtype.Int4
+	TRANSITIONNBRMONTHS      pgtype.Int4
+	OTHERAMOUNT              pgtype.Int4
+	OTHERNBRMONTHS           pgtype.Int4
+	SANCREDUCTIONAMT         pgtype.Int4
+	WORKREQSANCTION          pgtype.Int4
+	FAMILYSANCADULT          pgtype.Int4
+	SANCTEENPARENT           pgtype.Int4
+	NONCOOPERATIONCSE        pgtype.Int4
+	FAILURETOCOMPLY          pgtype.Int4
+	OTHERSANCTION            pgtype.Int4
+	RECOUPMENTPRIOROVRPMT    pgtype.Int4
+	OTHERTOTALREDUCTIONS     pgtype.Int4
+	FAMILYCAP                pgtype.Int4
+	REDUCTIONSONRECEIPTS     pgtype.Int4
+	OTHERNONSANCTION         pgtype.Int4
+	WAIVEREVALCONTROLGRPS    pgtype.Int4
+	FAMILYEXEMPTTIMELIMITS   pgtype.Int4
+	FAMILYNEWCHILD           pgtype.Int4
+	ID                       pgtype.UUID
+	DatafileID               pgtype.Int4
+	LineNumber               pgtype.Int4
+}
+
+type ShadowSearchIndexesTanfT2 struct {
+	AIDAGEDBLIND            pgtype.Int4
+	CASENUMBER              pgtype.Text
+	CITIZENSHIPSTATUS       pgtype.Int4
+	COMMSERVICESEA          pgtype.Text
+	COMMSERVICESHOL         pgtype.Text
+	COMMSERVICESHOP         pgtype.Text
+	COOPERATIONCHILDSUPPORT pgtype.Int4
+	CURRENTMONTHSTATEEXEMPT pgtype.Int4
+	DATEOFBIRTH             pgtype.Text
+	DEEMEDHOURSFOROVERALL   pgtype.Text
+	DEEMEDHOURSFORTWOPARENT pgtype.Text
+	DISABLEDTITLEXIVAPDT    pgtype.Int4
+	EARNEDINCOME            pgtype.Text
+	EDUCATIONLEVEL          pgtype.Text
+	EDNOHIGHSCHOOLDIPLEA    pgtype.Text
+	EDNOHIGHSCHOOLDIPLHOL   pgtype.Text
+	EDNOHIGHSCHOOLDIPLHOP   pgtype.Text
+	EMPLOYMENTSTATUS        pgtype.Int4
+	FAMILYAFFILIATION       pgtype.Int4
+	FEDDISABILITYSTATUS     pgtype.Int4
+	FEDOASDIPROGRAM         pgtype.Int4
+	SEX                     pgtype.Int4
+	JOBSEARCHEA             pgtype.Text
+	JOBSEARCHHOL            pgtype.Text
+	JOBSEARCHHOP            pgtype.Text
+	JOBSKILLSTRAININGEA     pgtype.Text
+	JOBSKILLSTRAININGHOL    pgtype.Text
+	JOBSKILLSTRAININGHOP    pgtype.Text
+	MARITALSTATUS           pgtype.Int4
+	MONTHSFEDTIMELIMIT      pgtype.Text
+	MONTHSSTATETIMELIMIT    pgtype.Text
+	NEEDSPREGNANTWOMAN      pgtype.Int4
+	NONCUSTODIALPARENT      pgtype.Int4
+	OJT                     pgtype.Text
+	OTHERUNEARNEDINCOME     pgtype.Text
+	OTHERWORKACTIVITIES     pgtype.Text
+	PARENTMINORCHILD        pgtype.Int4
+	PROVIDECCEA             pgtype.Text
+	PROVIDECCHOL            pgtype.Text
+	PROVIDECCHOP            pgtype.Text
+	RACEAMERINDIAN          pgtype.Int4
+	RACEASIAN               pgtype.Int4
+	RACEBLACK               pgtype.Int4
+	RACEHAWAIIAN            pgtype.Int4
+	RACEHISPANIC            pgtype.Int4
+	RACEWHITE               pgtype.Int4
+	RECEIVESSI              pgtype.Int4
+	RELATIONSHIPHOH         pgtype.Text
+	RPTMONTHYEAR            pgtype.Int4
+	RecordType              pgtype.Text
+	SCHOOLATTENDENCEEA      pgtype.Text
+	SCHOOLATTENDENCEHOL     pgtype.Text
+	SCHOOLATTENDENCEHOP     pgtype.Text
+	SSN                     pgtype.Text
+	SUBPRIVATEEMPLOYMENT    pgtype.Text
+	SUBPUBLICEMPLOYMENT     pgtype.Text
+	UNEARNEDINCOMETAXCREDIT pgtype.Text
+	UNEARNEDSOCIALSECURITY  pgtype.Text
+	UNEARNEDSSI             pgtype.Text
+	UNEARNEDWORKERSCOMP     pgtype.Text
+	UNSUBEMPLOYMENT         pgtype.Text
+	VOCATIONALEDTRAININGEA  pgtype.Text
+	VOCATIONALEDTRAININGHOL pgtype.Text
+	VOCATIONALEDTRAININGHOP pgtype.Text
+	WORKELIGIBLEINDICATOR   pgtype.Text
+	WORKEXPERIENCEEA        pgtype.Text
+	WORKEXPERIENCEHOL       pgtype.Text
+	WORKEXPERIENCEHOP       pgtype.Text
+	WORKPARTSTATUS          pgtype.Text
+	ID                      pgtype.UUID
+	DatafileID              pgtype.Int4
+	LineNumber              pgtype.Int4
+}
+
+type ShadowSearchIndexesTanfT3 struct {
+	CASENUMBER            pgtype.Text
+	CITIZENSHIPSTATUS     pgtype.Int4
+	DATEOFBIRTH           pgtype.Text
+	EDUCATIONLEVEL        pgtype.Text
+	FAMILYAFFILIATION     pgtype.Int4
+	SEX                   pgtype.Int4
+	OTHERUNEARNEDINCOME   pgtype.Text
+	PARENTMINORCHILD      pgtype.Int4
+	RACEAMERINDIAN        pgtype.Int4
+	RACEASIAN             pgtype.Int4
+	RACEBLACK             pgtype.Int4
+	RACEHAWAIIAN          pgtype.Int4
+	RACEHISPANIC          pgtype.Int4
+	RACEWHITE             pgtype.Int4
+	RECEIVENONSSABENEFITS pgtype.Int4
+	RECEIVESSI            pgtype.Int4
+	RELATIONSHIPHOH       pgtype.Text
+	RPTMONTHYEAR          pgtype.Int4
+	RecordType            pgtype.Text
+	SSN                   pgtype.Text
+	UNEARNEDSSI           pgtype.Text
+	ID                    pgtype.UUID
+	DatafileID            pgtype.Int4
+	LineNumber            pgtype.Int4
+}
+
+type ShadowSearchIndexesTanfT4 struct {
+	ID             pgtype.UUID
+	DatafileID     pgtype.Int4
+	CASENUMBER     pgtype.Text
+	CLOSUREREASON  pgtype.Text
+	COUNTYFIPSCODE pgtype.Text
+	DISPOSITION    pgtype.Int4
+	RECFOODSTAMPS  pgtype.Int4
+	RECMEDASSIST   pgtype.Int4
+	RECSUBCC       pgtype.Int4
+	RECSUBHOUSING  pgtype.Int4
+	RPTMONTHYEAR   pgtype.Int4
+	RecordType     pgtype.Text
+	STRATUM        pgtype.Text
+	ZIPCODE        pgtype.Text
+	LineNumber     pgtype.Int4
+}
+
+type ShadowSearchIndexesTanfT5 struct {
+	ID                        pgtype.UUID
+	DatafileID                pgtype.Int4
+	AMOUNTEARNEDINCOME        pgtype.Text
+	AMOUNTUNEARNEDINCOME      pgtype.Text
+	CASENUMBER                pgtype.Text
+	CITIZENSHIPSTATUS         pgtype.Int4
+	COUNTABLEMONTHSSTATETRIBE pgtype.Text
+	COUNTABLEMONTHFEDTIME     pgtype.Text
+	DATEOFBIRTH               pgtype.Text
+	EDUCATIONLEVEL            pgtype.Text
+	EMPLOYMENTSTATUS          pgtype.Int4
+	FAMILYAFFILIATION         pgtype.Int4
+	SEX                       pgtype.Int4
+	MARITALSTATUS             pgtype.Int4
+	NEEDSOFPREGNANTWOMAN      pgtype.Int4
+	PARENTMINORCHILD          pgtype.Int4
+	RACEAMERINDIAN            pgtype.Int4
+	RACEASIAN                 pgtype.Int4
+	RACEBLACK                 pgtype.Int4
+	RACEHAWAIIAN              pgtype.Int4
+	RACEHISPANIC              pgtype.Int4
+	RACEWHITE                 pgtype.Int4
+	RECAIDAGEDBLIND           pgtype.Int4
+	RECAIDTOTALLYDISABLED     pgtype.Int4
+	RECFEDERALDISABILITY      pgtype.Int4
+	RECOASDIINSURANCE         pgtype.Int4
+	RECSSI                    pgtype.Int4
+	RELATIONSHIPHOH           pgtype.Text
+	RPTMONTHYEAR              pgtype.Int4
+	RecordType                pgtype.Text
+	SSN                       pgtype.Text
+	LineNumber                pgtype.Int4
+}
+
+type ShadowSearchIndexesTanfT6 struct {
+	ID                  pgtype.UUID
+	DatafileID          pgtype.Int4
+	ASSISTANCE          pgtype.Int4
+	CALENDARQUARTER     pgtype.Int4
+	NUM1PARENTS         pgtype.Int4
+	NUM2PARENTS         pgtype.Int4
+	NUMADULTRECIPIENTS  pgtype.Int4
+	NUMAPPLICATIONS     pgtype.Int4
+	NUMAPPROVED         pgtype.Int4
+	NUMBIRTHS           pgtype.Int4
+	NUMCHILDRECIPIENTS  pgtype.Int4
+	NUMCLOSEDCASES      pgtype.Int4
+	NUMDENIED           pgtype.Int4
+	NUMFAMILIES         pgtype.Int4
+	NUMNONCUSTODIALS    pgtype.Int4
+	NUMNOPARENTS        pgtype.Int4
+	NUMOUTWEDLOCKBIRTHS pgtype.Int4
+	NUMRECIPIENTS       pgtype.Int4
+	RPTMONTHYEAR        pgtype.Int4
+	RecordType          pgtype.Text
+	LineNumber          pgtype.Int4
+}
+
+type ShadowSearchIndexesTanfT7 struct {
+	ID              pgtype.UUID
+	DatafileID      pgtype.Int4
+	CALENDARQUARTER pgtype.Int4
+	FAMILIESMONTH   pgtype.Int4
+	RPTMONTHYEAR    pgtype.Int4
+	RecordType      pgtype.Text
+	STRATUM         pgtype.Text
+	TDRSSECTIONIND  pgtype.Text
+	LineNumber      pgtype.Int4
+}
+
+type ShadowSearchIndexesTribalTanfT1 struct {
+	ID                       pgtype.UUID
+	RecordType               pgtype.Text
+	RPTMONTHYEAR             pgtype.Int4
+	CASENUMBER               pgtype.Text
+	COUNTYFIPSCODE           pgtype.Text
+	STRATUM                  pgtype.Text
+	ZIPCODE                  pgtype.Text
+	FUNDINGSTREAM            pgtype.Int4
+	DISPOSITION              pgtype.Int4
+	NEWAPPLICANT             pgtype.Int4
+	NBRFAMILYMEMBERS         pgtype.Int4
+	FAMILYTYPE               pgtype.Int4
+	RECEIVESSUBHOUSING       pgtype.Int4
+	RECEIVESMEDASSISTANCE    pgtype.Int4
+	RECEIVESFOODSTAMPS       pgtype.Int4
+	AMTFOODSTAMPASSISTANCE   pgtype.Int4
+	RECEIVESSUBCC            pgtype.Int4
+	AMTSUBCC                 pgtype.Int4
+	CHILDSUPPORTAMT          pgtype.Int4
+	FAMILYCASHRESOURCES      pgtype.Int4
+	CASHAMOUNT               pgtype.Int4
+	NBRMONTHS                pgtype.Int4
+	CCAMOUNT                 pgtype.Int4
+	CHILDRENCOVERED          pgtype.Int4
+	CCNBRMONTHS              pgtype.Int4
+	TRANSPAMOUNT             pgtype.Int4
+	TRANSPNBRMONTHS          pgtype.Int4
+	TRANSITIONSERVICESAMOUNT pgtype.Int4
+	TRANSITIONNBRMONTHS      pgtype.Int4
+	OTHERAMOUNT              pgtype.Int4
+	OTHERNBRMONTHS           pgtype.Int4
+	SANCREDUCTIONAMT         pgtype.Int4
+	WORKREQSANCTION          pgtype.Int4
+	FAMILYSANCADULT          pgtype.Int4
+	SANCTEENPARENT           pgtype.Int4
+	NONCOOPERATIONCSE        pgtype.Int4
+	FAILURETOCOMPLY          pgtype.Int4
+	OTHERSANCTION            pgtype.Int4
+	RECOUPMENTPRIOROVRPMT    pgtype.Int4
+	OTHERTOTALREDUCTIONS     pgtype.Int4
+	FAMILYCAP                pgtype.Int4
+	REDUCTIONSONRECEIPTS     pgtype.Int4
+	OTHERNONSANCTION         pgtype.Int4
+	WAIVEREVALCONTROLGRPS    pgtype.Int4
+	FAMILYEXEMPTTIMELIMITS   pgtype.Int4
+	FAMILYNEWCHILD           pgtype.Int4
+	DatafileID               pgtype.Int4
+	LineNumber               pgtype.Int4
+}
+
+type ShadowSearchIndexesTribalTanfT2 struct {
+	ID                      pgtype.UUID
+	RecordType              pgtype.Text
+	RPTMONTHYEAR            pgtype.Int4
+	CASENUMBER              pgtype.Text
+	FAMILYAFFILIATION       pgtype.Int4
+	NONCUSTODIALPARENT      pgtype.Int4
+	DATEOFBIRTH             pgtype.Text
+	SSN                     pgtype.Text
+	RACEHISPANIC            pgtype.Int4
+	RACEAMERINDIAN          pgtype.Int4
+	RACEASIAN               pgtype.Int4
+	RACEBLACK               pgtype.Int4
+	RACEHAWAIIAN            pgtype.Int4
+	RACEWHITE               pgtype.Int4
+	SEX                     pgtype.Int4
+	FEDOASDIPROGRAM         pgtype.Int4
+	FEDDISABILITYSTATUS     pgtype.Int4
+	DISABLEDTITLEXIVAPDT    pgtype.Int4
+	AIDAGEDBLIND            pgtype.Int4
+	RECEIVESSI              pgtype.Int4
+	MARITALSTATUS           pgtype.Int4
+	RELATIONSHIPHOH         pgtype.Text
+	PARENTMINORCHILD        pgtype.Int4
+	NEEDSPREGNANTWOMAN      pgtype.Int4
+	EDUCATIONLEVEL          pgtype.Text
+	CITIZENSHIPSTATUS       pgtype.Int4
+	COOPERATIONCHILDSUPPORT pgtype.Int4
+	MONTHSFEDTIMELIMIT      pgtype.Text
+	MONTHSSTATETIMELIMIT    pgtype.Text
+	CURRENTMONTHSTATEEXEMPT pgtype.Int4
+	EMPLOYMENTSTATUS        pgtype.Int4
+	WORKPARTSTATUS          pgtype.Text
+	UNSUBEMPLOYMENT         pgtype.Text
+	SUBPRIVATEEMPLOYMENT    pgtype.Text
+	SUBPUBLICEMPLOYMENT     pgtype.Text
+	WORKEXPERIENCE          pgtype.Text
+	OJT                     pgtype.Text
+	JOBSEARCH               pgtype.Text
+	COMMSERVICES            pgtype.Text
+	VOCATIONALEDTRAINING    pgtype.Text
+	JOBSKILLSTRAINING       pgtype.Text
+	EDNOHIGHSCHOOLDIPLOMA   pgtype.Text
+	SCHOOLATTENDENCE        pgtype.Text
+	PROVIDECC               pgtype.Text
+	ADDWORKACTIVITIES       pgtype.Text
+	OTHERWORKACTIVITIES     pgtype.Text
+	REQHRSWAIVERDEMO        pgtype.Text
+	EARNEDINCOME            pgtype.Text
+	UNEARNEDINCOMETAXCREDIT pgtype.Text
+	UNEARNEDSOCIALSECURITY  pgtype.Text
+	UNEARNEDSSI             pgtype.Text
+	UNEARNEDWORKERSCOMP     pgtype.Text
+	OTHERUNEARNEDINCOME     pgtype.Text
+	DatafileID              pgtype.Int4
+	LineNumber              pgtype.Int4
+}
+
+type ShadowSearchIndexesTribalTanfT3 struct {
+	ID                    pgtype.UUID
+	RecordType            pgtype.Text
+	RPTMONTHYEAR          pgtype.Int4
+	CASENUMBER            pgtype.Text
+	FAMILYAFFILIATION     pgtype.Int4
+	DATEOFBIRTH           pgtype.Text
+	SSN                   pgtype.Text
+	RACEHISPANIC          pgtype.Int4
+	RACEAMERINDIAN        pgtype.Int4
+	RACEASIAN             pgtype.Int4
+	RACEBLACK             pgtype.Int4
+	RACEHAWAIIAN          pgtype.Int4
+	RACEWHITE             pgtype.Int4
+	SEX                   pgtype.Int4
+	RECEIVENONSSABENEFITS pgtype.Int4
+	RECEIVESSI            pgtype.Int4
+	RELATIONSHIPHOH       pgtype.Text
+	PARENTMINORCHILD      pgtype.Int4
+	EDUCATIONLEVEL        pgtype.Text
+	CITIZENSHIPSTATUS     pgtype.Int4
+	UNEARNEDSSI           pgtype.Text
+	OTHERUNEARNEDINCOME   pgtype.Text
+	DatafileID            pgtype.Int4
+	LineNumber            pgtype.Int4
+}
+
+type ShadowSearchIndexesTribalTanfT4 struct {
+	ID             pgtype.UUID
+	RecordType     pgtype.Text
+	RPTMONTHYEAR   pgtype.Int4
+	CASENUMBER     pgtype.Text
+	COUNTYFIPSCODE pgtype.Text
+	STRATUM        pgtype.Text
+	ZIPCODE        pgtype.Text
+	DISPOSITION    pgtype.Int4
+	CLOSUREREASON  pgtype.Text
+	RECSUBHOUSING  pgtype.Int4
+	RECMEDASSIST   pgtype.Int4
+	RECFOODSTAMPS  pgtype.Int4
+	RECSUBCC       pgtype.Int4
+	DatafileID     pgtype.Int4
+	LineNumber     pgtype.Int4
+}
+
+type ShadowSearchIndexesTribalTanfT5 struct {
+	ID                        pgtype.UUID
+	RecordType                pgtype.Text
+	RPTMONTHYEAR              pgtype.Int4
+	CASENUMBER                pgtype.Text
+	FAMILYAFFILIATION         pgtype.Int4
+	DATEOFBIRTH               pgtype.Text
+	SSN                       pgtype.Text
+	RACEHISPANIC              pgtype.Int4
+	RACEAMERINDIAN            pgtype.Int4
+	RACEASIAN                 pgtype.Int4
+	RACEBLACK                 pgtype.Int4
+	RACEHAWAIIAN              pgtype.Int4
+	RACEWHITE                 pgtype.Int4
+	SEX                       pgtype.Int4
+	RECOASDIINSURANCE         pgtype.Int4
+	RECFEDERALDISABILITY      pgtype.Int4
+	RECAIDTOTALLYDISABLED     pgtype.Int4
+	RECAIDAGEDBLIND           pgtype.Int4
+	RECSSI                    pgtype.Int4
+	MARITALSTATUS             pgtype.Int4
+	RELATIONSHIPHOH           pgtype.Text
+	PARENTMINORCHILD          pgtype.Int4
+	NEEDSOFPREGNANTWOMAN      pgtype.Int4
+	EDUCATIONLEVEL            pgtype.Text
+	CITIZENSHIPSTATUS         pgtype.Int4
+	COUNTABLEMONTHFEDTIME     pgtype.Text
+	COUNTABLEMONTHSSTATETRIBE pgtype.Text
+	EMPLOYMENTSTATUS          pgtype.Int4
+	AMOUNTEARNEDINCOME        pgtype.Text
+	AMOUNTUNEARNEDINCOME      pgtype.Text
+	DatafileID                pgtype.Int4
+	LineNumber                pgtype.Int4
+}
+
+type ShadowSearchIndexesTribalTanfT6 struct {
+	ID                  pgtype.UUID
+	RecordType          pgtype.Text
+	CALENDARQUARTER     pgtype.Int4
+	RPTMONTHYEAR        pgtype.Int4
+	NUMAPPLICATIONS     pgtype.Int4
+	NUMAPPROVED         pgtype.Int4
+	NUMDENIED           pgtype.Int4
+	ASSISTANCE          pgtype.Int4
+	NUMFAMILIES         pgtype.Int4
+	NUM2PARENTS         pgtype.Int4
+	NUM1PARENTS         pgtype.Int4
+	NUMNOPARENTS        pgtype.Int4
+	NUMRECIPIENTS       pgtype.Int4
+	NUMADULTRECIPIENTS  pgtype.Int4
+	NUMCHILDRECIPIENTS  pgtype.Int4
+	NUMNONCUSTODIALS    pgtype.Int4
+	NUMBIRTHS           pgtype.Int4
+	NUMOUTWEDLOCKBIRTHS pgtype.Int4
+	NUMCLOSEDCASES      pgtype.Int4
+	DatafileID          pgtype.Int4
+	LineNumber          pgtype.Int4
+}
+
+type ShadowSearchIndexesTribalTanfT7 struct {
+	ID              pgtype.UUID
+	RecordType      pgtype.Text
+	CALENDARQUARTER pgtype.Int4
+	RPTMONTHYEAR    pgtype.Int4
+	TDRSSECTIONIND  pgtype.Text
+	STRATUM         pgtype.Text
+	FAMILIESMONTH   pgtype.Int4
+	DatafileID      pgtype.Int4
+	LineNumber      pgtype.Int4
+}
+
 type SttsStt struct {
 	ID         int32
 	Type       pgtype.Text

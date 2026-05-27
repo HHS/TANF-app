@@ -17,6 +17,7 @@ from django.utils.html import format_html
 from tdpservice.backends import DataFilesS3Storage
 from tdpservice.common.fields import S3VersionedFileField
 from tdpservice.common.models import FileRecord
+from tdpservice.common.shadow_models import create_shadow_model
 from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.util import (
     create_legacy_s3_log_file_path,
@@ -342,6 +343,59 @@ class DataFile(FileRecord):
     def __str__(self):
         """Return a string representation of the model."""
         return f"filename: {self.original_filename}"
+
+
+ShadowDataFile = create_shadow_model(
+    "ShadowDataFile",
+    DataFile,
+    "shadow_data_files_datafile",
+    app_label="data_files",
+    module=__name__,
+    foreign_key_overrides={
+        "user": models.ForeignKey(
+            "users.User",
+            on_delete=models.CASCADE,
+            related_name="+",
+            blank=False,
+            null=False,
+        ),
+        "stt": models.ForeignKey(
+            "stts.STT",
+            on_delete=models.CASCADE,
+            related_name="+",
+            blank=False,
+            null=False,
+        ),
+    },
+)
+
+
+def create_or_update_shadow_data_file(data_file):
+    """Create or update the Go parser shadow row for a production DataFile."""
+    fields = [
+        "original_filename",
+        "slug",
+        "extension",
+        "created_at",
+        "quarter",
+        "year",
+        "program_type",
+        "section",
+        "is_program_audit",
+        "version",
+        "state",
+        "user",
+        "stt",
+        "file",
+        "s3_versioning_id",
+    ]
+    defaults = {field: getattr(data_file, field) for field in fields}
+
+    shadow_data_file, _ = ShadowDataFile.objects.update_or_create(
+        id=data_file.id,
+        defaults=defaults,
+    )
+    return shadow_data_file
 
 
 class LegacyFileTransferManager(models.Manager):
