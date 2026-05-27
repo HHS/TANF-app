@@ -6,6 +6,16 @@ import (
 	"go-parser/internal/config/schema"
 )
 
+const (
+	// DefaultTablePrefix keeps Go parser output isolated from Django/Python parser tables.
+	DefaultTablePrefix = "shadow_"
+
+	ParserErrorTable       = "parser_error"
+	DataFileTable          = "data_files_datafile"
+	DataFileSummaryTable   = "parsers_datafilesummary"
+	searchIndexTablePrefix = "search_indexes_"
+)
+
 // DbSchemaMetadata holds database information derived from a schema.
 type DbSchemaMetadata struct {
 	TableName     string   // PostgreSQL table name (e.g., "search_indexes_tanf_t1")
@@ -18,7 +28,7 @@ type DbSchemaMetadata struct {
 // Column names are extracted from shared fields + first segment fields.
 // All segments have the same field names (just different byte positions),
 // so we only need fields from the first segment for the database schema.
-func buildDbSchemaMetadata(compiledSchema *schema.CompiledSchema) *DbSchemaMetadata {
+func buildDbSchemaMetadata(compiledSchema *schema.CompiledSchema, tablePrefix string) *DbSchemaMetadata {
 	// Calculate capacity: shared + first segment fields + 3 standard columns
 	capacity := len(compiledSchema.Shared) + 3
 	if len(compiledSchema.Segments) > 0 {
@@ -43,10 +53,33 @@ func buildDbSchemaMetadata(compiledSchema *schema.CompiledSchema) *DbSchemaMetad
 	columns = append(columns, "id", "datafile_id", "line_number")
 
 	return &DbSchemaMetadata{
-		TableName:  recordSchemaToTable(compiledSchema.Path),
+		TableName:  ApplyTablePrefix(recordSchemaToTable(compiledSchema.Path), tablePrefix),
 		Columns:    columns,
 		RecordType: compiledSchema.RecordType,
 	}
+}
+
+// ApplyTablePrefix prefixes Go parser-owned output tables.
+func ApplyTablePrefix(tableName, tablePrefix string) string {
+	if tablePrefix == "" || strings.HasPrefix(tableName, tablePrefix) {
+		return tableName
+	}
+	return tablePrefix + tableName
+}
+
+// ParserErrorTableName returns the configured Go parser error output table.
+func ParserErrorTableName(tablePrefix string) string {
+	return ApplyTablePrefix(ParserErrorTable, tablePrefix)
+}
+
+// DataFileTableName returns the configured Go parser datafile metadata table.
+func DataFileTableName(tablePrefix string) string {
+	return ApplyTablePrefix(DataFileTable, tablePrefix)
+}
+
+// DataFileSummaryTableName returns the configured Go parser summary output table.
+func DataFileSummaryTableName(tablePrefix string) string {
+	return ApplyTablePrefix(DataFileSummaryTable, tablePrefix)
 }
 
 // recordSchemaToTable converts a schema path to its database table name.
@@ -79,7 +112,7 @@ func (r *Registry) buildAllMetadata() {
 		if compiledSchema.RecordType == "HEADER" || compiledSchema.RecordType == "TRAILER" {
 			continue
 		}
-		r.metadata[path] = buildDbSchemaMetadata(compiledSchema)
+		r.metadata[path] = buildDbSchemaMetadata(compiledSchema, r.tablePrefix)
 	}
 }
 
@@ -98,7 +131,7 @@ func (r *Registry) GetSchemaMetadata(schemaPath string) *DbSchemaMetadata {
 //	"fra/te1"    -> "tanf_exiter1"
 func schemaPathToModelName(schemaPath string) string {
 	tableName := recordSchemaToTable(schemaPath)
-	return strings.TrimPrefix(tableName, "search_indexes_")
+	return strings.TrimPrefix(tableName, searchIndexTablePrefix)
 }
 
 // SetContentTypeIDs sets content type IDs for all metadata entries.
@@ -107,6 +140,12 @@ func schemaPathToModelName(schemaPath string) string {
 func (r *Registry) SetContentTypeIDs(contentTypes map[string]int32) {
 	for path, meta := range r.metadata {
 		modelName := schemaPathToModelName(path)
+		if r.tablePrefix != "" && strings.HasPrefix(meta.TableName, r.tablePrefix) {
+			if id, ok := contentTypes["shadow"+modelName]; ok {
+				meta.ContentTypeID = &id
+				continue
+			}
+		}
 		if id, ok := contentTypes[modelName]; ok {
 			meta.ContentTypeID = &id
 		}
