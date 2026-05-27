@@ -19,6 +19,7 @@ type PipelineConfig struct {
 	IncludeSchemas      []string // filter which record types get written (empty = all)
 	IncludeRecords      bool     // whether to write records
 	IncludeErrors       bool     // whether to write errors
+	TablePrefix         string   // prefix for Go parser-owned output tables
 
 	// Validation configuration
 	ShortCircuit bool // Skip field/consistency validators when precheck or group validators fail
@@ -45,6 +46,7 @@ func NewConfig(cfg *config.Config) PipelineConfig {
 		IncludeSchemas:      cfg.Writer.IncludeSchemas,
 		IncludeRecords:      cfg.Writer.IncludeRecords,
 		IncludeErrors:       cfg.Writer.IncludeErrors,
+		TablePrefix:         cfg.Database.EffectiveTablePrefix(),
 		ShortCircuit:        cfg.Validation.ShortCircuit,
 	}
 }

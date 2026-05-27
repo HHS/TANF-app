@@ -17,6 +17,7 @@
 	allowed = ./tdrs-backend/plg/tempo/manifest.yml:*
 	allowed = ./tdrs-backend/plg/deploy.sh:*
 	allowed = ./tdrs-backend/docker-compose.yml:104
+	allowed = .*tdrs-backend/docker-compose.yml:[0-9]+:      - AWS_SECRET_ACCESS_KEY=test
 	allowed = ./tdrs-backend/docker-compose.yml:106
 	allowed = ./tdrs-backend/docker-compose.yml:362
 	allowed = ./tdrs-backend/docker-compose.yml:364

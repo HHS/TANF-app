@@ -637,6 +637,8 @@ class Common(Configuration):
     CELERY_TASK_ROUTES = {
         "tdpservice.scheduling.parser_task.go_parse": {"queue": CELERY_GO_PARSER_QUEUE}
     }
+    GO_PARSER_QUEUE = os.getenv("GO_PARSER_QUEUE", "go-parser")
+    GO_PARSER_SHADOW_MODE = bool(strtobool(os.getenv("GO_PARSER_SHADOW_MODE", "true")))
 
     CELERY_BEAT_SCHEDULE = {
         "Database Backup": {

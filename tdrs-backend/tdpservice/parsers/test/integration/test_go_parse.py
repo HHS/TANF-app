@@ -1,6 +1,7 @@
 """Integration tests for the live Go parser worker."""
 
 import logging
+import os
 import time
 
 from django.conf import settings
@@ -50,6 +51,15 @@ logger = logging.getLogger(__name__)
 GO_PARSE_TASK_NAME = "tdpservice.scheduling.parser_task.go_parse"
 GO_PARSE_TIMEOUT_SECONDS = 60
 _GO_PARSER_DATAFILE_IDS = None
+
+os.environ["GO_PARSER_SHADOW_MODE"] = "False"
+
+
+@pytest.fixture(autouse=True)
+def disable_go_parser_shadow_mode(settings, monkeypatch):
+    """Keep Go parser integration tests pointed at production tables."""
+    monkeypatch.setenv("GO_PARSER_SHADOW_MODE", "False")
+    settings.GO_PARSER_SHADOW_MODE = False
 
 
 def register_go_parser_datafile_for_cleanup(datafile):

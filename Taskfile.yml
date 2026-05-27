@@ -182,9 +182,21 @@ tasks:
       - docker compose -f docker-compose.yml exec postgres sh -c "psql -U tdpuser -d tdrs_test"
 
   dump-parser-schema:
-    desc: Dump selected parser table CREATE TABLE statements to schema-tmp.sql
+    desc: Dump selected parser table CREATE TABLE statements to parser schema.sql, including production and shadow tables
+    vars:
+      TABLE_PREFIX: '{{.TABLE_PREFIX | default ""}}'
     cmds:
       - |
+        set -e
+
+        table_prefix="{{.TABLE_PREFIX}}"
+        table_prefix="${table_prefix:-shadow_}"
+        schema_raw="$(mktemp)"
+        schema_tmp="$(mktemp)"
+        schema_shadow="$(mktemp)"
+        schema_out="$(mktemp)"
+        trap 'rm -f "$schema_raw" "$schema_tmp" "$schema_shadow" "$schema_out"' EXIT
+
         docker compose -f tdrs-backend/docker-compose.yml exec -T postgres pg_dump \
           -U tdpuser \
           -d tdrs_test \
@@ -222,15 +234,26 @@ tasks:
           --table=public.search_indexes_programaudit_t2 \
           --table=public.search_indexes_programaudit_t3 \
           --table=public.search_indexes_tanf_exiter1 \
-          | awk ' \
-            /^ALTER TABLE .* ALTER COLUMN .* ADD GENERATED / { skip = 1; next } \
-            skip && /^\);$/ { skip = 0; next } \
-            skip { next } \
-            /^SET / { next } \
-            /^SELECT pg_catalog\.set_config\(/ { next } \
-            { print } \
-          ' > ./tdrs-services/parser/schema.sql
+          > "$schema_raw"
 
+        awk ' \
+          /^SET / { next } \
+          /^SELECT pg_catalog\.set_config\(/ { next } \
+          { print } \
+        ' "$schema_raw" > "$schema_tmp"
+
+        perl -0ne 'while (/--\n-- Name: (?:data_files_datafile|parser_error|parsers_datafilesummary|search_indexes_(?:reparsemeta|ssp_m[1-7]|tanf_t[1-7]|tribal_tanf_t[1-7]|programaudit_t[1-3]|tanf_exiter1)); Type: TABLE;.*?\n--\n\nCREATE TABLE public\.(?:data_files_datafile|parser_error|parsers_datafilesummary|search_indexes_(?:reparsemeta|ssp_m[1-7]|tanf_t[1-7]|tribal_tanf_t[1-7]|programaudit_t[1-3]|tanf_exiter1)) \(.*?\n\);\n/sg) { print $& }' "$schema_tmp" > "$schema_shadow"
+        if [ ! -s "$schema_shadow" ]; then
+          echo "failed to extract parser-owned table definitions from schema dump" >&2
+          exit 1
+        fi
+
+        {
+          cat "$schema_tmp"
+          TABLE_PREFIX="$table_prefix" perl -pe 'BEGIN { $prefix = $ENV{"TABLE_PREFIX"} || "shadow_" } s/(data_files_datafile|reports_reportfile|parser_error|parsers_datafilesummary|search_indexes_(?:reparsemeta|ssp_m[1-7]|tanf_t[1-7]|tribal_tanf_t[1-7]|programaudit_t[1-3]|tanf_exiter1))/${prefix}$1/g' "$schema_shadow"
+        } > "$schema_out"
+
+        mv "$schema_out" ./tdrs-services/parser/schema.sql
 
   clean:
     desc: Remove ALL containers, images, and volumes (DANGEROUS)
