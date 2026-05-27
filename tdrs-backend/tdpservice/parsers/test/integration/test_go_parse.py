@@ -215,11 +215,11 @@ class TestGoParse:
             (
                 "SSP",
                 "Active Case Data",
-                # Go parser is explicitely looking for records prefixed with "M"
-                "Unknown record type was found.",
+                "Submitted program type (SSP) does not match file program type inferred from "
+                + "Program Type (TAN) and Tribe Code (000).",
                 None,
                 True,
-                2,
+                1,
             ),
         ],
     )
@@ -259,13 +259,18 @@ class TestGoParse:
             assert dfs.case_aggregates == expected_aggregates
 
         err = parser_errors.first()
-        assert (
-            err.error_type == ParserErrorCategoryChoices.PRE_CHECK
-            or ParserErrorCategoryChoices.RECORD_PRE_CHECK
-        )
+        assert err.error_type in [
+            ParserErrorCategoryChoices.PRE_CHECK,
+            ParserErrorCategoryChoices.RECORD_PRE_CHECK,
+        ]
         assert err.error_message == expected_message
         assert err.content_type is None
         assert err.object_id is None
+
+        if program == "SSP" and section == "Active Case Data":
+            assert TANF_T1.objects.count() == 0
+            assert TANF_T2.objects.count() == 0
+            assert TANF_T3.objects.count() == 0
 
     @pytest.mark.django_db(transaction=True)
     @pytest.mark.parametrize(
@@ -1271,6 +1276,10 @@ class TestGoParse:
         assert Tribal_TANF_T1.objects.all().count() == 1
         assert Tribal_TANF_T2.objects.all().count() == 1
         assert Tribal_TANF_T3.objects.all().count() == 2
+        assert not ParserError.objects.filter(
+            file=tribal_section_1_file,
+            error_message__contains="Submitted program type",
+        ).exists()
 
         t1_objs = Tribal_TANF_T1.objects.all().order_by("CASH_AMOUNT")
         t2_objs = Tribal_TANF_T2.objects.all().order_by("MONTHS_FED_TIME_LIMIT")
