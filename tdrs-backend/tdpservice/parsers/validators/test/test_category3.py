@@ -10,6 +10,9 @@ from tdpservice.data_files.models import DataFile
 from tdpservice.parsers.dataclasses import FieldType, ValidationErrorArgs
 from tdpservice.parsers.fields import Field
 from tdpservice.parsers.row_schema import TanfDataReportSchema
+from tdpservice.parsers.schema_defs.ssp.m5 import m5 as ssp_m5
+from tdpservice.parsers.schema_defs.tanf.t5 import t5 as tanf_t5
+from tdpservice.parsers.schema_defs.tribal_tanf.t5 import t5 as tribal_tanf_t5
 from tdpservice.parsers.validators import category3
 from tdpservice.parsers.validators.util import deprecate_call
 from tdpservice.stts.models import STT
@@ -425,6 +428,57 @@ def test_validate__REC_OASDI_INSURANCE__AGE_FIRST(
         "RPT_MONTH_YEAR",
         "REC_OASDI_INSURANCE",
     ]
+
+
+@pytest.mark.parametrize(
+    "schema, oasdi_item",
+    [
+        (tanf_t5[0], "19A"),
+        (ssp_m5[0], "18A"),
+        (tribal_tanf_t5[0], "19A"),
+    ],
+)
+def test_t5_m5_schemas_validate_rec_oasdi_insurance_age_first(schema, oasdi_item):
+    """Test T5/M5 schemas use AGE_FIRST semantics for OASDI validation."""
+    record = {
+        "DATE_OF_BIRTH": "20060901",
+        "RPT_MONTH_YEAR": "202410",
+        "REC_OASDI_INSURANCE": 0,
+    }
+
+    oasdi_errors = [
+        result
+        for validator in schema.postparsing_validators
+        for result in [validator(record, schema)]
+        if not result.valid and "REC_OASDI_INSURANCE" in result.field_names
+    ]
+
+    assert len(oasdi_errors) == 1
+    assert oasdi_errors[0].error_message == (
+        f"Since person is older than 18, then {oasdi_item} "
+        "(Received Disability Benefits: OASDI Program) must be 1 or 2"
+    )
+
+
+@pytest.mark.parametrize("schema", [tanf_t5[0], ssp_m5[0], tribal_tanf_t5[0]])
+def test_t5_m5_schemas_do_not_validate_oasdi_when_turning_18_after_month_first(
+    schema,
+):
+    """Test schemas do not trigger OASDI rule before age is older than 18."""
+    record = {
+        "DATE_OF_BIRTH": "20061002",
+        "RPT_MONTH_YEAR": "202410",
+        "REC_OASDI_INSURANCE": 0,
+    }
+
+    oasdi_errors = [
+        result
+        for validator in schema.postparsing_validators
+        for result in [validator(record, schema)]
+        if not result.valid and "REC_OASDI_INSURANCE" in result.field_names
+    ]
+
+    assert oasdi_errors == []
 
 
 @pytest.mark.parametrize(
