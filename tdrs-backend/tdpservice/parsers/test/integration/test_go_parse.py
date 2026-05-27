@@ -216,10 +216,10 @@ class TestGoParse:
                 "SSP",
                 "Active Case Data",
                 "Submitted program type (SSP) does not match file program type inferred from "
-                + "Program Type (TAN) and Tribe Code (000).",
+                + "Program Type (TAN) and Tribe Code (<no value>).",
                 None,
                 True,
-                1,
+                2,
             ),
         ],
     )
