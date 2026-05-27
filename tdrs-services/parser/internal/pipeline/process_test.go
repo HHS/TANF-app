@@ -439,7 +439,7 @@ func TestProcess_HeaderProgramTypeMismatchWritesPreCheckError(t *testing.T) {
 				t.Errorf("totalRecords = %d, want 0", sink.totalRecords())
 			}
 
-			row := sink.tables["parser_error"][0]
+			row := sink.errorRows(TestConfig())[0]
 			if got := row[0]; got != int32(1) {
 				t.Errorf("row_number = %v, want %d", got, 1)
 			}
@@ -462,13 +462,14 @@ func TestProcess_TribalHeaderMatchesTribalContext(t *testing.T) {
 	content := "HEADER20241A00142TAN1ED\n"
 	_, sink := processContentForTest(t, reg, validators, content, dfCtx)
 
-	for _, row := range sink.tables["parser_error"] {
+	parserErrorRows := sink.errorRows(TestConfig())
+	for _, row := range parserErrorRows {
 		message, ok := row[6].(string)
 		if !ok {
 			t.Fatalf("error_message type = %T, want string", row[6])
 		}
 		if strings.Contains(message, "Submitted program type") {
-			t.Fatalf("parser errors = %v, want no program mismatch error", sink.tables["parser_error"])
+			t.Fatalf("parser errors = %v, want no program mismatch error", parserErrorRows)
 		}
 	}
 }
