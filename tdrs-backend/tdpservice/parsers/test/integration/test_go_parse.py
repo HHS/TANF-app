@@ -627,11 +627,11 @@ class TestGoParse:
         assert cat4_errors.count() == 20
         assert (
             cat4_errors[0].error_message
-            == "Duplicate record detected with record type M3 at line 453."
+            == "Duplicate record detected with record type M3 at line 453. Record is a duplicate of the record at line number 452."
         )
         assert (
             cat4_errors[1].error_message
-            == "Duplicate record detected with record type M3 at line 3273."
+            == "Duplicate record detected with record type M3 at line 3273. Record is a duplicate of the record at line number 3272."
         )
         assert (
             cat4_errors[2].error_message
@@ -2138,7 +2138,7 @@ class TestGoParse:
 
         assert (
             dup_error.error_message
-            == f"Duplicate record detected with record type {record_type} at line 3."
+            == f"Duplicate record detected with record type {record_type} at line 3. Record is a duplicate of the record at line number 2."
         )
 
         model.objects.count() == 0

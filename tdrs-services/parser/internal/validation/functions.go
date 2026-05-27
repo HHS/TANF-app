@@ -47,9 +47,9 @@ func RegisterFunctions() []expr.Option {
 		expr.Function("hasAnyRecordOfTypeWithInt", wrap4(hasAnyRecordOfTypeWithInt),
 			new(func(*parser.ParsedGroup, string, string, int) bool)),
 
-		// Duplicate detection (group scope, return []*ParsedRecord for per_record mode)
+		// Duplicate detection (group scope, return duplicate matches for per_record mode)
 		expr.Function("getExactDuplicates", wrap2(getExactDuplicates),
-			new(func(*parser.ParsedGroup, string) []*parser.ParsedRecord)),
+			new(func(*parser.ParsedGroup, string) []*DuplicateMatch)),
 		expr.Function("getPartialDuplicates", wrap3(getPartialDuplicates),
 			new(func(*parser.ParsedGroup, string, []any) []*DuplicateMatch)),
 		expr.Function("getPartialDuplicatesExcluding", wrap5(getPartialDuplicatesExcluding),
@@ -333,13 +333,16 @@ func hasAnyRecordOfTypeWithInt(group *parser.ParsedGroup, recordType string, fie
 // getExactDuplicates returns records that are exact duplicates of earlier records
 // of the same type within the group. Uses EqualFields for pairwise comparison.
 // The first occurrence is kept; subsequent matches are returned as duplicates.
-func getExactDuplicates(group *parser.ParsedGroup, recordType string) []*parser.ParsedRecord {
+func getExactDuplicates(group *parser.ParsedGroup, recordType string) []*DuplicateMatch {
 	records := getRecordsOfType(group, recordType)
-	var duplicates []*parser.ParsedRecord
+	var duplicates []*DuplicateMatch
 	for i := 1; i < len(records); i++ {
 		for j := 0; j < i; j++ {
 			if records[i].EqualFields(records[j]) && records[i].LineNumber != records[j].LineNumber {
-				duplicates = append(duplicates, records[i])
+				duplicates = append(duplicates, &DuplicateMatch{
+					Record:             records[i],
+					ExistingLineNumber: records[j].LineNumber,
+				})
 				break
 			}
 		}

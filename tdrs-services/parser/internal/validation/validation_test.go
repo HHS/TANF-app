@@ -1317,8 +1317,11 @@ func TestGetExactDuplicates(t *testing.T) {
 		if len(dups) != 1 {
 			t.Errorf("expected 1 duplicate, got %d", len(dups))
 		}
-		if dups[0].GetLineNumber() != 2 {
-			t.Errorf("expected duplicate to be line 2, got %d", dups[0].GetLineNumber())
+		if dups[0].Record.GetLineNumber() != 2 {
+			t.Errorf("expected duplicate to be line 2, got %d", dups[0].Record.GetLineNumber())
+		}
+		if dups[0].ExistingLineNumber != 1 {
+			t.Errorf("expected existing line 1, got %d", dups[0].ExistingLineNumber)
 		}
 	})
 

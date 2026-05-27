@@ -514,7 +514,7 @@ group_validators:
     expr: "getExactDuplicates(Group, Params.record_type)"
     error_type: CASE_CONSISTENCY
     result_mode: per_record
-    message: "Duplicate record detected with record type {{.RecordType}} at line {{.LineNumber}}."
+    message: "Duplicate record detected with record type {{.RecordType}} at line {{.LineNumber}}. Record is a duplicate of the record at line number {{.ExistingLineNumber}}."
 
   # Partial duplicate detection - specific key fields match (excludes exact dups)
   # Params: record_type (string), fields ([]string) - key fields to compare

@@ -157,6 +157,36 @@ func TestRenderErrorMessage_WithValidationContext(t *testing.T) {
 	}
 }
 
+func TestRenderErrorMessage_ExactDuplicateMatchesPythonMessage(t *testing.T) {
+	cs := makeTestSchema("T2", []schema.FieldDef{
+		{Name: "SSN", FriendlyName: "Social Security Number", Item: "9"},
+	})
+	rec := makeTestRecord(cs, 12, map[string]any{"SSN": "111111111"})
+
+	msgTmpl, _ := template.New("exact_duplicate").Parse(
+		"Duplicate record detected with record type {{.RecordType}} at line {{.LineNumber}}. Record is a duplicate of the record at line number {{.ExistingLineNumber}}.",
+	)
+	vr := &validation.ValidationResult{
+		Valid:       false,
+		ErrorType:   validation.ErrorTypeCaseConsistency,
+		ValidatorID: "exact_duplicates",
+		Context: map[string]any{
+			"ExistingLineNumber": 5,
+		},
+		Validator: &validation.CompiledValidator{
+			ID:        "exact_duplicates",
+			ErrorType: validation.ErrorTypeCaseConsistency,
+			Message:   msgTmpl,
+		},
+	}
+
+	got := renderErrorMessage(vr, rec)
+	want := "Duplicate record detected with record type T2 at line 12. Record is a duplicate of the record at line number 5."
+	if got != want {
+		t.Errorf("renderErrorMessage() = %q, want %q", got, want)
+	}
+}
+
 func TestConvertError_NilContentTypeID(t *testing.T) {
 	cs := makeTestSchema("T1", []schema.FieldDef{
 		{Name: "CASE_NUMBER"},

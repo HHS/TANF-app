@@ -949,7 +949,7 @@ func TestExecuteGroupEdgeCases(t *testing.T) {
 		}
 	})
 
-	t.Run("per_record expression returning records", func(t *testing.T) {
+	t.Run("per_record expression returning exact duplicate matches", func(t *testing.T) {
 		ce, _ := registry.getOrCompileExpr(ScopeGroup, "getExactDuplicates(Group, 'T2')", "per_record")
 		cv := &CompiledValidator{ID: "dups", Expr: ce, ResultMode: "per_record"}
 
@@ -960,10 +960,13 @@ func TestExecuteGroupEdgeCases(t *testing.T) {
 		env := NewGroupEnv(group)
 		results := ExecuteGroup(cv, env)
 		if len(results) != 1 {
-			t.Errorf("expected 1 result, got %d", len(results))
+			t.Fatalf("expected 1 result, got %d", len(results))
 		}
-		if len(results) > 0 && results[0].LineNumber == 0 {
+		if results[0].LineNumber == 0 {
 			t.Error("expected LineNumber to be populated on per_record result")
+		}
+		if results[0].Context["ExistingLineNumber"] != 1 {
+			t.Errorf("expected ExistingLineNumber=1, got %v", results[0].Context["ExistingLineNumber"])
 		}
 	})
 
