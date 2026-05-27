@@ -456,6 +456,14 @@ record_validators:
     message: "Tribe Code ({{.Values.tribe_code}}) inconsistency with Program Type ({{.Values.program_type}}) and FIPS Code ({{.Values.state_fips}})."
     fields: [tribe_code, program_type, state_fips]
 
+  - id: header_program_type_match
+    expr: >
+      ((not isTribeCodeEmpty(GetString('tribe_code'))) and DataFileContext.Program == 'TRIBAL')
+      or (isTribeCodeEmpty(GetString('tribe_code')) and DataFileContext.Program == GetString('program_type'))
+    error_type: PRE_CHECK
+    message: "Submitted program type ({{.DataFileContext.Program}}) does not match file program type inferred from Program Type ({{.Values.program_type}}) and Tribe Code ({{.Values.tribe_code}})."
+    fields: [tribe_code, program_type]
+
   - id: header_section_match
     expr: >
       (GetString('type') == 'A' and DataFileContext.SectionName == 'Active Case Data')
