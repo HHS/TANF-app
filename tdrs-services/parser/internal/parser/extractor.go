@@ -163,7 +163,7 @@ func (e *ColumnarExtractor) Extract(
 func convertValue(rawValue, fieldType string) (any, error) {
 	// Check for empty value
 	trimmed := strings.TrimSpace(rawValue)
-	if trimmed == "" {
+	if trimmed == "" || isFillValue(rawValue, '#') || isFillValue(rawValue, '_') {
 		return nil, nil
 	}
 
@@ -181,4 +181,16 @@ func convertValue(rawValue, fieldType string) (any, error) {
 	default:
 		return nil, fmt.Errorf("unknown field type: %s", fieldType)
 	}
+}
+
+func isFillValue(rawValue string, fill rune) bool {
+	if rawValue == "" {
+		return false
+	}
+	for _, r := range rawValue {
+		if r != fill {
+			return false
+		}
+	}
+	return true
 }

@@ -17,7 +17,7 @@ type DataFileContext struct {
 type FieldEnv struct {
 	Value           any
 	Params          map[string]any   // Runtime params from validator definition
-	DataFileContext *DataFileContext  // Set for header validation only; nil otherwise
+	DataFileContext *DataFileContext // Set when validation needs file submission metadata
 }
 
 // NewFieldEnv creates a new field validation environment.
@@ -41,7 +41,7 @@ type RecordEnv struct {
 	LineNumber      int
 	RecordLength    int
 	Params          map[string]any   // Runtime params from validator definition
-	DataFileContext *DataFileContext  // Set for header validation only; nil otherwise
+	DataFileContext *DataFileContext // Set when validation needs file submission metadata
 }
 
 // NewRecordEnv creates a new record validation environment.
@@ -71,10 +71,11 @@ type GroupEnv struct {
 	Group *parser.ParsedGroup
 
 	// Pre-computed aggregates for fast expression evaluation
-	TotalRecords int
-	RecordCounts map[string]int  // "T1" -> count
-	HasType      map[string]bool // "T1" -> true
-	Params       map[string]any  // Runtime params from validator definition
+	TotalRecords    int
+	RecordCounts    map[string]int  // "T1" -> count
+	HasType         map[string]bool // "T1" -> true
+	Params          map[string]any  // Runtime params from validator definition
+	DataFileContext *DataFileContext
 }
 
 // NewGroupEnv creates a new group validation environment with pre-computed aggregates.

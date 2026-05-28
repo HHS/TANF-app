@@ -14,6 +14,8 @@ format: positional
 # Record validators with RECORD_PRE_CHECK error type (block record serialization)
 record_validators:
   - id: case_number_not_empty
+  - id: rpt_month_year_is_valid
+  - id: rpt_month_year_matches_header_year_quarter
 
   # Record validators with VALUE_CONSISTENCY error type (cross-field validation)
   # Race fields when FAMILY_AFFILIATION is 1-2
@@ -163,7 +165,10 @@ segments:
           - id: length
             params:
               n: 8
-          - id: valid_date
+          - id: valid_year
+          - id: valid_month
+          - id: valid_day
+          - id: is_numeric
 
       - name: SSN
         friendly_name: Social Security Number
@@ -372,8 +377,10 @@ segments:
           - id: length
             params:
               n: 8
-          - id: valid_date
-
+          - id: valid_year
+          - id: valid_month
+          - id: valid_day
+          - id: is_numeric
       - name: SSN
         friendly_name: Social Security Number
         item: "69"

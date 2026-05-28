@@ -38,6 +38,8 @@ class TanfDataFileEmail(Enum):
     ACCEPTED_WITH_ERRORS = "tanf/accepted_with_errors.html"
     PARTIALLY_ACCEPTED = "tanf/partially_accepted.html"
     REJECTED = "tanf/rejected.html"
+    REPARSE_ACTION_REQUIRED = "tanf/reparse_action_required.html"
+    REPARSE_ERRORS_RESOLVED = "tanf/reparse_errors_resolved.html"
 
 
 class FraDataFileEmail(Enum):
@@ -47,6 +49,8 @@ class FraDataFileEmail(Enum):
     ACCEPTED_WITH_ERRORS = "fra/accepted_with_errors.html"
     PARTIALLY_ACCEPTED = "fra/partially_accepted.html"
     REJECTED = "fra/rejected.html"
+    REPARSE_ACTION_REQUIRED = "fra/reparse_action_required.html"
+    REPARSE_ERRORS_RESOLVED = "fra/reparse_errors_resolved.html"
 
 
 class AdminEmail(Enum):

@@ -3,6 +3,9 @@
     when: << pipeline.parameters.build_and_test_all >>
     jobs:
       - secrets-check
+      - test-go-parser:
+          requires:
+            - secrets-check
       - test-backend:
           requires:
             - secrets-check
@@ -22,6 +25,15 @@
                 - main
                 - master
                 - /^release.*/
+      - test-go-parser:
+          filters:
+            branches:
+              only:
+                - main
+                - master
+                - /^release.*/
+          requires:
+            - secrets-check
       - test-backend:
           filters:
             branches:
@@ -69,5 +81,13 @@
     jobs:
       - secrets-check
       - test-frontend:
+          requires:
+            - secrets-check
+
+  build-and-test-parser:
+    when: << pipeline.parameters.build_and_test_parser >>
+    jobs:
+      - secrets-check
+      - test-go-parser:
           requires:
             - secrets-check

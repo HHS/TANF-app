@@ -14,8 +14,9 @@ User -> Frontend -> Django /v2/ -> Keycloak -> Identity Provider (Login.gov / AM
 | File | Purpose |
 |---|---|
 | `Dockerfile` | Keycloak 26.0 image with `jq` and `curl` for IdP configuration |
-| `realm-export.json` | Complete "tdp" realm configuration (clients, groups, IdP mappers) |
-| `configure-idps.sh` | Post-startup script that configures Login.gov signing key and ACR values |
+| `realm-configs/` | Full realm exports for `dev-local`, `staging`, and `prod` |
+| `select-realm-config.sh` | Copies the correct checked-in realm export into Keycloak's import path based on `DEPLOY_ENV` |
+| `configure-idps.sh` | Post-startup script for runtime-sensitive IdP settings like signing keys and ACR values |
 | `deploy.sh` | Cloud Foundry deployment script for cloud.gov |
 | `manifest.yml` | Cloud.gov manifest template |
 
@@ -28,6 +29,8 @@ User -> Frontend -> Django /v2/ -> Keycloak -> Identity Provider (Login.gov / AM
   - **keycloak-pg** — PostgreSQL 15.7 database for Keycloak (port 5434)
   - **keycloak** — Keycloak 26.0 server (ports 8443 browser / 8080 internal / 9001 management)
   - **keycloak-configure** — Runs `configure-idps.sh` after Keycloak starts
+
+Local Docker uses `DEPLOY_ENV=local`, which selects the shared `dev-local` realm export before Keycloak starts.
 
 ### Starting Keycloak
 
@@ -126,6 +129,12 @@ Note: `OIDC_OP_AUTHORIZATION_ENDPOINT` and `OIDC_OP_LOGOUT_ENDPOINT` use `KEYCLO
 | `tdp-django` | Confidential (service account) | Backend OIDC authentication and admin API access |
 | `tdp-grafana` | Confidential | Grafana SSO integration |
 
+Realm configurations are stored as full exports in `realm-configs/`:
+
+- `realm-export.dev-local.json` is shared by `local` and `dev` and includes both hosted dev frontend URLs and localhost/`127.0.0.1`.
+- `realm-export.staging.json` allows only the hosted staging frontends.
+- `realm-export.prod.json` allows only the production frontend.
+
 ### Groups
 
 Groups are synced from Django using the mapping in `keycloak_client.py`:
@@ -216,8 +225,9 @@ This will:
 2. Bind the RDS service for the database
 3. Map the internal route `keycloak.apps.internal:8080` (for server-to-server backend/celery calls)
 4. Map the public route `<public_hostname>.app.cloud.gov` (for browser redirects and admin console)
-5. Set `KC_HOSTNAME` so Keycloak generates correct redirect URIs matching the public route
+5. Set `KC_HOSTNAME` and `DEPLOY_ENV` so the correct checked-in realm export is selected inside the container
 6. Set up network policies so backend and celery can reach Keycloak
+7. Run `configure-idps.sh` to configure runtime-sensitive IdP settings after startup
 
 ### Routing Architecture
 
@@ -227,6 +237,12 @@ Keycloak is deployed with two routes:
 - **Public** (`<hostname>.app.cloud.gov`) — used by the browser for OIDC redirects and the admin console. Configured via `KEYCLOAK_BROWSER_URL`.
 
 Set `KEYCLOAK_BROWSER_URL` in the backend's environment to match the public route (e.g., `https://tdp-keycloak-dev.app.cloud.gov`).
+
+For the checked-in realm exports:
+
+- `local` and `dev` both use `realm-export.dev-local.json`, which allows `raft`, `qasp`, and `a11y` hosted frontends plus localhost/`127.0.0.1`.
+- `staging` uses `realm-export.staging.json`, which allows only `develop` and `staging` hosted frontends.
+- `prod` uses `realm-export.prod.json`, which allows only `https://tanfdata.acf.hhs.gov`.
 
 ### Required cloud.gov Environment Variables
 

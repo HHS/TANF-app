@@ -107,6 +107,7 @@ export const loginAsActor = (actor) => {
 }
 
 const setAccountStatus = (actor, status) => {
+  const adminUsername = ACTORS['Admin Alex'].username
   let endpoint = null
   switch (status) {
     case 'Approved':
@@ -122,13 +123,13 @@ const setAccountStatus = (actor, status) => {
       break
   }
 
-  cy.adminLogin('cypress-admin-alex@teamraft.com')
+  cy.adminLogin(adminUsername)
   cy.visit('/')
 
   cy.request({
     method: 'GET',
     url: `${Cypress.env('apiUrl')}/login/cypress`,
-    qs: { username: 'cypress-admin-alex@teamraft.com' },
+    qs: { username: adminUsername },
     headers: {
       'X-Cypress-Token': Cypress.env('cypressToken'),
     },

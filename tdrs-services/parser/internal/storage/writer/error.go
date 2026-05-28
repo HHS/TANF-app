@@ -83,9 +83,10 @@ func renderErrorMessage(vr *validation.ValidationResult, record *parser.ParsedRe
 	}
 
 	// Build template context from record
-	ctx := make(map[string]any, 8) // Pre-size for typical usage
+	ctx := make(map[string]any, 10) // Pre-size for typical usage
 	ctx["RecordType"] = record.Schema.RecordType
 	ctx["LineNumber"] = record.LineNumber
+	ctx["RecordLength"] = record.GetDecodedSize()
 
 	// Add field-specific context if this is a field error
 	if vr.FieldName != "" {
@@ -100,10 +101,19 @@ func renderErrorMessage(vr *validation.ValidationResult, record *parser.ParsedRe
 	if vr.Validator.Params != nil {
 		ctx["Params"] = vr.Validator.Params
 	}
+	if vr.DataFileContext != nil {
+		ctx["DataFileContext"] = vr.DataFileContext
+	}
 
 	// Add all validator-involved fields
 	if len(vr.Validator.Fields) > 0 {
 		ctx["Fields"] = vr.Validator.Fields
+
+		values := make(map[string]any, len(vr.Validator.Fields))
+		for _, fieldName := range vr.Validator.Fields {
+			values[fieldName] = record.Get(fieldName)
+		}
+		ctx["Values"] = values
 	}
 
 	return vr.Message(ctx)
@@ -277,6 +287,27 @@ func toErrorObjectID(recordUUID *pgtype.UUID) pgtype.UUID {
 func SerializeHeaderError(message string, errorType string, datafileID int32) []any {
 	return []any{
 		int32(1),                  // row_number (header is always line 1)
+		nil,                       // column_number
+		nil,                       // item_number
+		nil,                       // field_name
+		nil,                       // case_number
+		nil,                       // rpt_month_year
+		message,                   // error_message
+		mapErrorType(errorType),   // error_type
+		time.Now(),                // created_at
+		nil,                       // fields_json
+		nil,                       // content_type_id
+		datafileID,                // file_id
+		pgtype.UUID{Valid: false}, // object_id
+		false,                     // deprecated
+		nil,                       // values_json
+	}
+}
+
+// SerializeParserError creates a database error row for parser-level line errors.
+func SerializeParserError(rowNumber int, message string, errorType string, datafileID int32) []any {
+	return []any{
+		int32(rowNumber),          // row_number
 		nil,                       // column_number
 		nil,                       // item_number
 		nil,                       // field_name

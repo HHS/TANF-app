@@ -6,6 +6,8 @@ import (
 	"go-parser/internal/testutil"
 )
 
+var defaultTestDataFileContext = &DataFileContext{}
+
 // TestOrchestratorMultiGroupValidation tests validating multiple groups
 func TestOrchestratorMultiGroupValidation(t *testing.T) {
 	registry := newValidatorRegistry()
@@ -24,7 +26,7 @@ func TestOrchestratorMultiGroupValidation(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		rec := testutil.NewTestRecord(t1Schema, 1, nil)
 		group := testutil.NewTestGroup(rec)
-		results = append(results, orchestrator.ValidateGroup(group, "TEST:1"))
+		results = append(results, orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext))
 	}
 
 	if len(results) != 10 {
@@ -55,7 +57,7 @@ func TestOrchestratorFieldValidation(t *testing.T) {
 	rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": -10}) // Negative - should fail
 	group := testutil.NewTestGroup(rec)
 
-	result := orchestrator.ValidateGroup(group, "TEST:1")
+	result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
 
 	// Should have field error
 	if len(result.RecordResults[0].FieldErrors) != 1 {
@@ -88,7 +90,7 @@ func TestOrchestratorNilRequiredFieldSkipsValidators(t *testing.T) {
 	rec := testutil.NewTestRecord(reqSchema, 1, map[string]any{"AMOUNT": nil})
 	group := testutil.NewTestGroup(rec)
 
-	result := orchestrator.ValidateGroup(group, "TEST:1")
+	result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
 
 	// Should have exactly 1 field error (field_required)
 	if len(result.RecordResults[0].FieldErrors) != 1 {
@@ -119,15 +121,37 @@ func TestOrchestratorNilOptionalFieldSkipsValidators(t *testing.T) {
 
 	orchestrator := NewValidationOrchestrator(registry, true)
 
-	// Record with nil optional field (Required defaults to false)
-	rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": nil})
+	optionalSchema := testutil.NewTestSchema("T1", "AMOUNT")
+	rec := testutil.NewTestRecord(optionalSchema, 1, map[string]any{"AMOUNT": nil})
 	group := testutil.NewTestGroup(rec)
 
-	result := orchestrator.ValidateGroup(group, "TEST:1")
+	result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
 
 	// Should have NO errors - optional nil field skips validation entirely
 	if len(result.RecordResults[0].FieldErrors) != 0 {
 		t.Errorf("expected 0 field errors for nil optional field, got %d", len(result.RecordResults[0].FieldErrors))
+	}
+}
+
+func TestOrchestratorOptionalFieldWithValueSkipsValidators(t *testing.T) {
+	registry := newValidatorRegistry()
+	registry.exprOpts = RegisterFunctions()
+
+	fieldExpr, _ := registry.getOrCompileExpr(ScopeField, "Value > 0", "single")
+	registry.field["T1"] = map[string][]*CompiledValidator{
+		"AMOUNT": {{ID: "positive_amount", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
+	}
+
+	orchestrator := NewValidationOrchestrator(registry, true)
+
+	optionalSchema := testutil.NewTestSchema("T1", "AMOUNT")
+	rec := testutil.NewTestRecord(optionalSchema, 1, map[string]any{"AMOUNT": -10})
+	group := testutil.NewTestGroup(rec)
+
+	result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
+
+	if len(result.RecordResults[0].FieldErrors) != 0 {
+		t.Errorf("expected 0 field errors for populated optional field, got %d", len(result.RecordResults[0].FieldErrors))
 	}
 }
 
@@ -153,7 +177,7 @@ func TestOrchestratorShortCircuitSkipsFieldValidation(t *testing.T) {
 
 	rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": -10})
 	group := testutil.NewTestGroup(rec)
-	result := orchestrator.ValidateGroup(group, "TEST:1")
+	result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
 
 	// Precheck error should exist
 	if len(result.RecordResults[0].RecordErrors) != 1 {
@@ -192,7 +216,7 @@ func TestOrchestratorNoShortCircuitRunsAllValidation(t *testing.T) {
 
 	rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": -10})
 	group := testutil.NewTestGroup(rec)
-	result := orchestrator.ValidateGroup(group, "TEST:1")
+	result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
 
 	// Precheck error should exist
 	if len(result.RecordResults[0].RecordErrors) != 1 {
@@ -231,7 +255,7 @@ func TestOrchestratorNoShortCircuitWithGroupBlock(t *testing.T) {
 
 	rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": -10})
 	group := testutil.NewTestGroup(rec)
-	result := orchestrator.ValidateGroup(group, "TEST:1")
+	result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
 
 	// Group error should exist
 	if len(result.GroupErrors) != 1 {
@@ -265,7 +289,7 @@ func TestOrchestratorRecordConsistencyValidation(t *testing.T) {
 	t.Run("consistency check passes", func(t *testing.T) {
 		rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": 100, "CASE_NUMBER": "12345"})
 		group := testutil.NewTestGroup(rec)
-		result := orchestrator.ValidateGroup(group, "TEST:1")
+		result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
 
 		if result.HasErrors() {
 			t.Error("expected no errors when consistency check passes")
@@ -275,7 +299,7 @@ func TestOrchestratorRecordConsistencyValidation(t *testing.T) {
 	t.Run("consistency check fails", func(t *testing.T) {
 		rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": 0, "CASE_NUMBER": ""})
 		group := testutil.NewTestGroup(rec)
-		result := orchestrator.ValidateGroup(group, "TEST:1")
+		result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
 
 		if len(result.RecordResults[0].RecordErrors) != 1 {
 			t.Fatalf("expected 1 record error, got %d", len(result.RecordResults[0].RecordErrors))
@@ -306,7 +330,7 @@ func TestOrchestratorShortCircuitSkipsConsistencyValidation(t *testing.T) {
 
 	rec := testutil.NewTestRecord(t1Schema, 1, nil)
 	group := testutil.NewTestGroup(rec)
-	result := orchestrator.ValidateGroup(group, "TEST:1")
+	result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
 
 	// Only precheck error should exist, consistency should be skipped
 	if len(result.RecordResults[0].RecordErrors) != 1 {
@@ -353,6 +377,66 @@ func TestValidateHeaderDoesNotShortCircuitOnFieldOrConsistencyErrors(t *testing.
 	}
 }
 
+func TestValidateHeaderOptionalFieldWithValueSkipsValidators(t *testing.T) {
+	registry := newValidatorRegistry()
+	registry.exprOpts = RegisterFunctions()
+
+	fieldExpr, _ := registry.getOrCompileExpr(ScopeField, "Value > 0", "single")
+	registry.field["T1"] = map[string][]*CompiledValidator{
+		"AMOUNT": {{ID: "positive_amount", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
+	}
+
+	orchestrator := NewValidationOrchestrator(registry, true)
+
+	optionalSchema := testutil.NewTestSchema("T1", "AMOUNT")
+	headerRec := testutil.NewTestRecord(optionalSchema, 1, map[string]any{"AMOUNT": -10})
+	result := orchestrator.ValidateHeader(headerRec, &DataFileContext{})
+
+	if len(result.FieldErrors) != 0 {
+		t.Fatalf("expected 0 field errors for populated optional header field, got %d", len(result.FieldErrors))
+	}
+}
+
+func TestValidateGroup_RecordValidatorUsesDataFileContext(t *testing.T) {
+	registry := newValidatorRegistry()
+	registry.exprOpts = RegisterFunctions()
+
+	recordExpr, _ := registry.getOrCompileExpr(
+		ScopeRecord,
+		"year(GetString('RPT_MONTH_YEAR')) == fiscalToCalendarYear(DataFileContext.FiscalYear, DataFileContext.FiscalQuarter) and string(quarter(GetString('RPT_MONTH_YEAR'))) == fiscalToCalendarQuarter(DataFileContext.FiscalYear, DataFileContext.FiscalQuarter)",
+		"single",
+	)
+	registry.record["T1"] = []*CompiledValidator{
+		{
+			ID:        "rpt_month_year_matches_header_year_quarter",
+			Scope:     ScopeRecord,
+			ErrorType: ErrorTypeRecordPreCheck,
+			Expr:      recordExpr,
+			Fields:    []string{"RPT_MONTH_YEAR"},
+		},
+	}
+
+	orchestrator := NewValidationOrchestrator(registry, true)
+	recordSchema := testutil.NewTestSchema("T1", "RPT_MONTH_YEAR")
+	dfCtx := &DataFileContext{FiscalYear: 2024, FiscalQuarter: "Q2"}
+
+	validGroup := testutil.NewTestGroup(
+		testutil.NewTestRecord(recordSchema, 1, map[string]any{"RPT_MONTH_YEAR": "202401"}),
+	)
+	validResult := orchestrator.ValidateGroup(validGroup, "TEST:1", dfCtx)
+	if len(validResult.RecordResults[0].RecordErrors) != 0 {
+		t.Fatalf("expected no record errors for matching reporting period, got %d", len(validResult.RecordResults[0].RecordErrors))
+	}
+
+	invalidGroup := testutil.NewTestGroup(
+		testutil.NewTestRecord(recordSchema, 1, map[string]any{"RPT_MONTH_YEAR": "202310"}),
+	)
+	invalidResult := orchestrator.ValidateGroup(invalidGroup, "TEST:1", dfCtx)
+	if len(invalidResult.RecordResults[0].RecordErrors) != 1 {
+		t.Fatalf("expected 1 record error for mismatched reporting period, got %d", len(invalidResult.RecordResults[0].RecordErrors))
+	}
+}
+
 // TestOrchestratorGroupBlockingWithShortCircuit tests that group-level blocking errors
 // cause field and consistency validators to be skipped when short-circuit is enabled.
 func TestOrchestratorGroupBlockingWithShortCircuit(t *testing.T) {
@@ -380,7 +464,7 @@ func TestOrchestratorGroupBlockingWithShortCircuit(t *testing.T) {
 
 	rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": -10})
 	group := testutil.NewTestGroup(rec)
-	result := orchestrator.ValidateGroup(group, "TEST:1")
+	result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
 
 	// Group error should exist
 	if len(result.GroupErrors) != 1 {
@@ -417,7 +501,7 @@ func TestOrchestratorPerRecordGroupValidation(t *testing.T) {
 			testutil.NewTestRecord(t2Schema, 1, map[string]any{"SSN": "111111111", "FAMILY_AFFILIATION": 1}),
 			testutil.NewTestRecord(t2Schema, 2, map[string]any{"SSN": "222222222", "FAMILY_AFFILIATION": 2}),
 		)
-		result := orchestrator.ValidateGroup(group, "TEST:1")
+		result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
 
 		if result.HasErrors() {
 			t.Error("expected no errors when no duplicates")
@@ -429,7 +513,7 @@ func TestOrchestratorPerRecordGroupValidation(t *testing.T) {
 			testutil.NewTestRecord(t2Schema, 1, map[string]any{"SSN": "111111111", "FAMILY_AFFILIATION": 1}),
 			testutil.NewTestRecord(t2Schema, 2, map[string]any{"SSN": "111111111", "FAMILY_AFFILIATION": 1}),
 		)
-		result := orchestrator.ValidateGroup(group, "TEST:1")
+		result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
 
 		if !result.HasErrors() {
 			t.Error("expected errors with duplicates")
@@ -471,7 +555,7 @@ func TestOrchestratorMultipleFieldValidators(t *testing.T) {
 	t.Run("both pass", func(t *testing.T) {
 		rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": 50})
 		group := testutil.NewTestGroup(rec)
-		result := orchestrator.ValidateGroup(group, "TEST:1")
+		result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
 		if len(result.RecordResults[0].FieldErrors) != 0 {
 			t.Errorf("expected 0 errors, got %d", len(result.RecordResults[0].FieldErrors))
 		}
@@ -480,7 +564,7 @@ func TestOrchestratorMultipleFieldValidators(t *testing.T) {
 	t.Run("both fail", func(t *testing.T) {
 		rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": -200})
 		group := testutil.NewTestGroup(rec)
-		result := orchestrator.ValidateGroup(group, "TEST:1")
+		result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
 		if len(result.RecordResults[0].FieldErrors) != 1 {
 			// Only first fails (Value > 0), second passes (Value < 100 is true for -200)
 			t.Errorf("expected 1 field error, got %d", len(result.RecordResults[0].FieldErrors))
@@ -490,7 +574,7 @@ func TestOrchestratorMultipleFieldValidators(t *testing.T) {
 	t.Run("value exceeds max only", func(t *testing.T) {
 		rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": 200})
 		group := testutil.NewTestGroup(rec)
-		result := orchestrator.ValidateGroup(group, "TEST:1")
+		result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
 		if len(result.RecordResults[0].FieldErrors) != 1 {
 			t.Errorf("expected 1 field error (max_check), got %d", len(result.RecordResults[0].FieldErrors))
 		}
@@ -522,7 +606,7 @@ func TestOrchestratorMultiRecordGroup(t *testing.T) {
 	rec2 := testutil.NewTestRecord(t2Schema, 2, map[string]any{"SSN": ""}) // empty - should fail
 
 	group := testutil.NewTestGroup(rec1, rec2)
-	result := orchestrator.ValidateGroup(group, "TEST:1")
+	result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
 
 	// T1 record should pass
 	if result.RecordResults[0].HasErrors() {
@@ -563,7 +647,7 @@ func TestOrchestratorPrecheckAlwaysRuns(t *testing.T) {
 
 	rec := testutil.NewTestRecord(t1Schema, 1, nil)
 	group := testutil.NewTestGroup(rec)
-	result := orchestrator.ValidateGroup(group, "TEST:1")
+	result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
 
 	// Precheck should still run even though group is blocked
 	if len(result.RecordResults[0].RecordErrors) != 1 {
@@ -588,13 +672,34 @@ func TestOrchestratorEmptyGroup(t *testing.T) {
 	orchestrator := NewValidationOrchestrator(registry, true)
 
 	group := testutil.NewTestGroup() // empty group
-	result := orchestrator.ValidateGroup(group, "TEST:1")
+	result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
 
 	if len(result.GroupErrors) != 1 {
 		t.Fatalf("expected 1 group error, got %d", len(result.GroupErrors))
 	}
 	if result.GroupErrors[0].ValidatorID != "min_records" {
 		t.Errorf("expected min_records error, got %s", result.GroupErrors[0].ValidatorID)
+	}
+}
+
+func TestOrchestratorCreateNoRecordsCreatedError(t *testing.T) {
+	orchestrator := NewValidationOrchestrator(newValidatorRegistry(), true)
+
+	result := orchestrator.CreateNoRecordsCreatedError()
+	if result == nil {
+		t.Fatal("CreateNoRecordsCreatedError returned nil")
+	}
+	if result.Valid {
+		t.Error("expected invalid result")
+	}
+	if result.ErrorType != ErrorTypePreCheck {
+		t.Errorf("ErrorType = %q, want %q", result.ErrorType, ErrorTypePreCheck)
+	}
+	if result.ValidatorID != "no_records_created" {
+		t.Errorf("ValidatorID = %q, want %q", result.ValidatorID, "no_records_created")
+	}
+	if got := result.Message(nil); got != "No records created." {
+		t.Errorf("Message() = %q, want %q", got, "No records created.")
 	}
 }
 
@@ -690,7 +795,7 @@ func TestOrchestratorFieldValidatorWithParams(t *testing.T) {
 	t.Run("value in range", func(t *testing.T) {
 		rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": 50})
 		group := testutil.NewTestGroup(rec)
-		result := orchestrator.ValidateGroup(group, "TEST:1")
+		result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
 		if result.HasErrors() {
 			t.Error("expected no errors for value in range")
 		}
@@ -699,7 +804,7 @@ func TestOrchestratorFieldValidatorWithParams(t *testing.T) {
 	t.Run("value out of range", func(t *testing.T) {
 		rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": 200})
 		group := testutil.NewTestGroup(rec)
-		result := orchestrator.ValidateGroup(group, "TEST:1")
+		result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
 		if len(result.RecordResults[0].FieldErrors) != 1 {
 			t.Errorf("expected 1 error for out-of-range value, got %d", len(result.RecordResults[0].FieldErrors))
 		}

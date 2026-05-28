@@ -88,6 +88,7 @@ echo "Done."
 if [[ $app == "tdp-backend-develop" || $space == "tanf-dev" ]]; then
     echo "Applying e2e test data"
     python manage.py populate_stts
+    python manage.py reset_cypress_profile_editing_users --allow-non-debug
     python manage.py loaddata cypress/users cypress/data_files cypress/regions cypress/profile_editing_regions cypress/profile_editing_users cypress/feature_flags
     echo "Done."
 fi

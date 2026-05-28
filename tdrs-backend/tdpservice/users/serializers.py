@@ -14,6 +14,7 @@ from tdpservice.stts.serializers import (
     RegionPrimaryKeyRelatedField,
     STTPrimaryKeyRelatedField,
 )
+from tdpservice.users.api.canary import normalize_idp
 from tdpservice.users.constants import REGIONAL_ROLES
 from tdpservice.users.models import (
     AccountApprovalStatusChoices,
@@ -26,6 +27,14 @@ from tdpservice.users.models import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def get_request_idp(serializer) -> str | None:
+    """Read the normalized auth provider from the request session when available."""
+    request = serializer.context.get("request")
+    if request is None:
+        return None
+    return normalize_idp(request.session.get("auth_idp"))
 
 
 class PermissionSerializer(serializers.ModelSerializer):
@@ -101,6 +110,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer used for retrieving/updating a user's profile."""
 
     email = serializers.CharField(read_only=True, source="username")
+    idp = serializers.SerializerMethodField()
     roles = GroupSerializer(many=True, read_only=True, source="groups")
     stt = STTPrimaryKeyRelatedField(required=False, allow_null=True)
     regions = RegionPrimaryKeyRelatedField(many=True, required=False)
@@ -120,6 +130,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "email",
+            "idp",
             "stt",
             "regions",
             "login_gov_uuid",
@@ -139,6 +150,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         read_only_fields = (
             "id",
             "email",
+            "idp",
             "login_gov_uuid",
             "hhs_id",
             "groups",
@@ -163,6 +175,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def get_pending_requests(self, obj):
         """Get the pending change requests for a user."""
         return obj.get_pending_change_requests().count()
+
+    def get_idp(self, obj):
+        """Expose the user's authenticated identity provider."""
+        return get_request_idp(self)
 
     def validate(self, data):
         """Perform object-level validation."""

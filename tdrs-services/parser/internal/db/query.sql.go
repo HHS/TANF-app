@@ -10,7 +10,7 @@ import (
 )
 
 const getSTTs = `-- name: GetSTTs :many
-SELECT id, type, postal_code, name, region_id, state_id, filenames, stt_code, ssp, sample FROM stts_stt
+SELECT id, type, postal_code, name, region_id, state_id, filenames, stt_code, ssp, sample, timezone FROM stts_stt
 `
 
 func (q *Queries) GetSTTs(ctx context.Context) ([]SttsStt, error) {
@@ -33,6 +33,7 @@ func (q *Queries) GetSTTs(ctx context.Context) ([]SttsStt, error) {
 			&i.SttCode,
 			&i.Ssp,
 			&i.Sample,
+			&i.Timezone,
 		); err != nil {
 			return nil, err
 		}

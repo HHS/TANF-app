@@ -172,6 +172,19 @@ class TestVerifyClaims:
         }
         assert backend.verify_claims(claims) is False
 
+    def test_rejects_hhs_user_via_login_gov(self, backend):
+        """HHS staff (@hhs.gov) must not authenticate via Login.gov."""
+        UserFactory(
+            username="staff@hhs.gov",
+            email="staff@hhs.gov",
+            account_approval_status=AccountApprovalStatusChoices.APPROVED,
+        )
+        claims = {
+            "email": "staff@hhs.gov",
+            "identity_provider": "login-gov",
+        }
+        assert backend.verify_claims(claims) is False
+
     def test_allows_acf_user_via_ams(self, backend):
         """ACF staff authenticating via AMS should be allowed."""
         UserFactory(
@@ -181,6 +194,19 @@ class TestVerifyClaims:
         )
         claims = {
             "email": "staff@acf.hhs.gov",
+            "identity_provider": "ams",
+        }
+        assert backend.verify_claims(claims) is True
+
+    def test_allows_hhs_user_via_ams(self, backend):
+        """HHS staff authenticating via AMS should be allowed."""
+        UserFactory(
+            username="staff@hhs.gov",
+            email="staff@hhs.gov",
+            account_approval_status=AccountApprovalStatusChoices.APPROVED,
+        )
+        claims = {
+            "email": "staff@hhs.gov",
             "identity_provider": "ams",
         }
         assert backend.verify_claims(claims) is True

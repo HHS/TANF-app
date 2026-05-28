@@ -6,7 +6,8 @@ import logging
 from django.db.utils import DatabaseError
 
 from tdpservice.core.utils import log
-from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.models import DataFile, ReparseFileMeta
+from tdpservice.parsers.models import DataFileSummary
 from tdpservice.scheduling import parser_task
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 from tdpservice.search_indexes.utils import (
@@ -23,12 +24,16 @@ from tdpservice.users.models import User
 logger = logging.getLogger(__name__)
 
 
-def handle_datafiles(files, meta_model, log_context):
+def handle_datafiles(files, meta_model, log_context, previous_summary_statuses=None):
     """Delete, re-save, and reparse selected datafiles."""
+    previous_summary_statuses = previous_summary_statuses or {}
     for file in files:
         try:
-            file.reparses.add(meta_model)
-            file.save()
+            ReparseFileMeta.objects.create(
+                data_file=file,
+                reparse_meta=meta_model,
+                previous_summary_status=previous_summary_statuses.get(file.pk),
+            )
             parser_task.parse.delay(file.pk, reparse_id=meta_model.pk)
         except DatabaseError as e:
             log(
@@ -53,6 +58,11 @@ def clean_reparse(selected_file_ids):
     selected_files = [int(file_id) for file_id in selected_file_ids[0].split(",")]
 
     files = DataFile.objects.filter(id__in=selected_files)
+    previous_summary_statuses = dict(
+        DataFileSummary.objects.filter(datafile_id__in=selected_files).values_list(
+            "datafile_id", "status"
+        )
+    )
     num_files = files.count()
 
     fiscal_quarter = None
@@ -126,7 +136,7 @@ def clean_reparse(selected_file_ids):
 
     # Delete and re-save datafiles to handle cascading dependencies
     logger.info(f"Deleting and re-parsing {num_files} files")
-    handle_datafiles(files, meta_model, log_context)
+    handle_datafiles(files, meta_model, log_context, previous_summary_statuses)
 
     log(
         "Database cleansing complete and all files have been re-scheduling for parsing and validation.",

@@ -26,7 +26,8 @@ def test_LoginRedirectAMS_get(secrets_token_hex_mock, requests_get_mock):
     """Test the LoginRedirectAMS class."""
 
     class DummyRequest:
-        session = {"state_nonce_tracker": "dummy_state_nonce_tracker"}
+        def __init__(self):
+            self.session = {"state_nonce_tracker": "dummy_state_nonce_tracker"}
 
     requests_get_mock.return_value.status_code = 200
     requests_get_mock.return_value.json.return_value = {
@@ -37,7 +38,7 @@ def test_LoginRedirectAMS_get(secrets_token_hex_mock, requests_get_mock):
 
     login_redirect_ams = LoginRedirectAMS()
 
-    response = login_redirect_ams.get(DummyRequest)
+    response = login_redirect_ams.get(DummyRequest())
     assert response.url is not None
     assert "dummy_state_nonce" in response.url
     assert "dummy_authorization_endpoint" in response.url
@@ -45,5 +46,5 @@ def test_LoginRedirectAMS_get(secrets_token_hex_mock, requests_get_mock):
     # Test if the AMS server is down
     requests_get_mock.return_value.status_code = 503
     login_redirect_ams = LoginRedirectAMS()
-    response = login_redirect_ams.get("request")
+    response = login_redirect_ams.get(DummyRequest())
     assert response.status_code == 503

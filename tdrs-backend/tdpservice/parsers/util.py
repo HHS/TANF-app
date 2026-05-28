@@ -18,14 +18,16 @@ def create_test_datafile(
     stt,
     section=DataFile.Section.ACTIVE_CASE_DATA,
     program_type=DataFile.ProgramType.TANF,
+    year=2021,
+    quarter="Q1",
     is_program_audit=False,
 ):
     """Create a test DataFile instance with the given file attached."""
     path = str(Path(__file__).parent.joinpath("test/data")) + f"/{filename}"
     datafile = DataFile.create_new_version(
         {
-            "quarter": "Q1",
-            "year": 2021,
+            "quarter": quarter,
+            "year": year,
             "section": section,
             "program_type": program_type,
             "is_program_audit": is_program_audit,

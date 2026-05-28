@@ -33,7 +33,7 @@ class STTApiAlphaView(generics.ListAPIView):
 
     pagination_class = None
     permission_classes = [IsAuthenticated]
-    queryset = STT.objects.order_by("name")
+    queryset = STT.objects.select_related("state").order_by("name")
     serializer_class = STTSerializer
 
     @method_decorator(
@@ -49,5 +49,5 @@ class STTApiView(generics.ListAPIView):
 
     pagination_class = None
     permission_classes = [IsAuthenticated]
-    queryset = STT.objects
+    queryset = STT.objects.select_related("state")
     serializer_class = STTSerializer

@@ -333,6 +333,37 @@ func (router *Router) Stop() error {
 	return nil
 }
 
+// Abort stops all per-run writers without flushing buffered rows.
+func (router *Router) Abort() error {
+	var errs []error
+	var wg sync.WaitGroup
+	var errMu sync.Mutex
+
+	for name, writer := range router.writers {
+		wg.Add(1)
+		go func(name string, writer *TableWriter) {
+			defer wg.Done()
+			if err := writer.Abort(); err != nil {
+				errMu.Lock()
+				errs = append(errs, fmt.Errorf("%s: %w", name, err))
+				errMu.Unlock()
+			}
+		}(name, writer)
+	}
+	wg.Wait()
+
+	if router.errorWriter != nil {
+		if err := router.errorWriter.Abort(); err != nil {
+			errs = append(errs, fmt.Errorf("error_writer: %w", err))
+		}
+	}
+
+	if len(errs) > 0 {
+		return errors.Join(errs...)
+	}
+	return nil
+}
+
 // TableNames returns the database table names for all record writers.
 // Used to scope rollback operations to only the tables relevant to this file.
 func (router *Router) TableNames() []string {

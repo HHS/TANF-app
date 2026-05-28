@@ -41,7 +41,8 @@ const defaultUser = {
 }
 
 const amsUser = {
-  email: 'someone@acf.hhs.gov',
+  email: 'someone@hhs.gov',
+  idp: 'ams',
   roles: [{ name: 'Regional Staff' }],
 }
 

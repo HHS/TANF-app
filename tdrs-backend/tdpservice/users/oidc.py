@@ -13,6 +13,7 @@ from tdpservice.users.models import AccountApprovalStatusChoices
 logger = logging.getLogger(__name__)
 
 User = get_user_model()
+FEDERAL_STAFF_EMAIL_DOMAINS = ("@acf.hhs.gov", "@hhs.gov")
 
 
 def keycloak_username_algo(email: Optional[str], claims: Optional[dict] = None) -> str:
@@ -127,12 +128,15 @@ class KeycloakOIDCBackend(OIDCAuthenticationBackend):
             logger.warning("OIDC claims missing email, rejecting authentication")
             return False
 
-        # ACF email domain check: ACF staff must use AMS, not Login.gov
+        # Federal staff email domains must use AMS, not Login.gov
         identity_provider = claims.get("identity_provider", "")
-        if "@acf.hhs.gov" in email and identity_provider == "login-gov":
+        if (
+            email.endswith(FEDERAL_STAFF_EMAIL_DOMAINS)
+            and identity_provider == "login-gov"
+        ):
             logger.warning(
-                "ACF user %s attempted Login.gov authentication, rejecting. "
-                "ACF staff must use AMS.",
+                "Federal staff user %s attempted Login.gov authentication, rejecting. "
+                "Federal staff must use AMS.",
                 email,
             )
             return False

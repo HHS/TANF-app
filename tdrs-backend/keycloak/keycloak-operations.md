@@ -70,8 +70,9 @@ cd tdrs-backend/keycloak
 2. Pushes the Docker image to Cloud Foundry with rolling strategy
 3. Maps the **internal** route: `keycloak-<ENV>.apps.internal:8080` (server-to-server)
 4. Maps the **public** route: `<hostname>.app.cloud.gov` (browser redirects, admin console)
-5. Creates network policies so backend and celery apps can reach Keycloak on port 8080
-6. Runs the `configure-idps.sh` script as a CF task to configure Login.gov signing key, ACR values, master realm security headers, and Grafana client IdP restriction
+5. Sets `DEPLOY_ENV` so the container selects the correct checked-in realm export before import
+6. Creates network policies so backend and celery apps can reach Keycloak on port 8080
+7. Runs the `configure-idps.sh` script as a CF task to configure Login.gov signing key, ACR values, master realm security headers, and Grafana client IdP restriction
 
 ### Per-Space Deployment Examples
 
@@ -259,9 +260,9 @@ cf restage keycloak
 
 ### Updating the Realm Export
 
-The realm is defined in `tdrs-backend/keycloak/realm-export.json`. Changes to clients, groups, IdP mappers, authentication flows, or token settings should be made in this file.
+The realms are defined in `tdrs-backend/keycloak/realm-configs/`. Changes to clients, groups, IdP mappers, authentication flows, or token settings should be made in the environment-specific file you intend to deploy.
 
-1. Make changes to `realm-export.json`
+1. Make changes to the relevant file in `realm-configs/`
 2. Test locally:
    ```bash
    cd tdrs-backend
@@ -286,11 +287,12 @@ For one-off changes that don't warrant a full redeployment:
 3. Select the `tdp` realm
 4. Make changes through the UI
 
-**Remember to back-port changes to `realm-export.json`** so they persist across redeployments.
+**Remember to back-port durable realm changes to the matching file in `realm-configs/`** so they persist across redeployments.
+If you export a realm from Keycloak, replace the corresponding checked-in file.
 
 ### Running the IdP Configuration Script
 
-The `configure-idps.sh` script handles post-startup configuration that can't be expressed in `realm-export.json` (signing keys, ACR values, client IdP restrictions):
+The `configure-idps.sh` script handles post-startup configuration that cannot safely live in the checked-in realm JSON, such as signing keys and ACR values:
 
 ```bash
 cf run-task keycloak \
@@ -300,9 +302,16 @@ cf run-task keycloak \
 
 The script is idempotent — safe to run multiple times.
 
+Realm selection happens before Keycloak starts:
+
+- `realm-configs/realm-export.dev-local.json` is used for both `local` and `dev`.
+- `realm-configs/realm-export.staging.json` is used for `staging`.
+- `realm-configs/realm-export.prod.json` is used for `prod`.
+- `select-realm-config.sh` copies the selected file into Keycloak's import path using `DEPLOY_ENV`.
+
 ### Updating Token Lifespans
 
-Current settings in `realm-export.json`:
+Current settings in the checked-in realm exports:
 
 | Setting | Value |
 |---------|-------|
@@ -311,7 +320,7 @@ Current settings in `realm-export.json`:
 | SSO session max lifespan | 43200 seconds (12 hours) |
 
 To change, update either:
-- `realm-export.json` and redeploy, **or**
+- the relevant file in `realm-configs/` and redeploy, **or**
 - Admin console → Realm settings → Sessions/Tokens tabs
 
 ---
@@ -371,7 +380,7 @@ In spaces with multiple backend pairs (e.g., dev has raft, qasp, a11y), all back
 
 To add a new application that authenticates via Keycloak:
 
-1. **Define the client in `realm-export.json`:**
+1. **Define the client in the appropriate file under `realm-configs/`:**
    ```json
    {
      "clientId": "my-new-app",

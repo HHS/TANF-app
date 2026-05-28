@@ -247,20 +247,10 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "${KC_TDP_DJANGO_CLIENT_SECRET}",
       "redirectUris": [
-        "${KC_REDIRECT_URI_1:http://localhost:3000/*}",
-        "${KC_REDIRECT_URI_2:http://localhost:8080/*}",
-        "${KC_REDIRECT_URI_3:http://localhost:8989/*}",
-        "http://127.0.0.1:3000/*",
-        "http://127.0.0.1:8080/*",
-        "http://127.0.0.1:8989/*"
+        "https://tanfdata.acf.hhs.gov/*"
       ],
       "webOrigins": [
-        "${KC_WEB_ORIGIN_1:http://localhost:3000}",
-        "${KC_WEB_ORIGIN_2:http://localhost:8080}",
-        "${KC_WEB_ORIGIN_3:http://localhost:8989}",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:8080",
-        "http://127.0.0.1:8989"
+        "https://tanfdata.acf.hhs.gov"
       ],
       "protocol": "openid-connect",
       "publicClient": false,
@@ -285,12 +275,10 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "${KC_TDP_GRAFANA_CLIENT_SECRET}",
       "redirectUris": [
-        "http://localhost:9400/login/generic_oauth",
-        "${KC_GRAFANA_REDIRECT_URI:http://localhost:9400/login/generic_oauth}"
+        "https://grafana.app.cloud.gov/login/generic_oauth"
       ],
       "webOrigins": [
-        "http://localhost:9400",
-        "${KC_GRAFANA_WEB_ORIGIN:http://localhost:9400}"
+        "https://grafana.app.cloud.gov"
       ],
       "protocol": "openid-connect",
       "publicClient": false,
@@ -308,7 +296,7 @@
       ],
       "optionalClientScopes": [],
       "attributes": {
-        "post.logout.redirect.uris": "http://localhost:9400/*##${KC_GRAFANA_POST_LOGOUT_URI:http://localhost:9400/*}"
+        "post.logout.redirect.uris": "https://grafana.app.cloud.gov/*"
       }
     }
   ],
@@ -317,7 +305,9 @@
       "username": "service-account-tdp-django",
       "enabled": true,
       "serviceAccountClientId": "tdp-django",
-      "realmRoles": ["default-roles-tdp"],
+      "realmRoles": [
+        "default-roles-tdp"
+      ],
       "clientRoles": {
         "realm-management": [
           "view-users",
@@ -335,7 +325,9 @@
   "supportedLocales": [],
   "defaultLocale": "en",
   "eventsEnabled": true,
-  "eventsListeners": ["jboss-logging"],
+  "eventsListeners": [
+    "jboss-logging"
+  ],
   "enabledEventTypes": [
     "LOGIN",
     "LOGIN_ERROR",

@@ -22,6 +22,9 @@ parameters:
   build_and_test_frontend:
     type: boolean
     default: false
+  build_and_test_parser:
+    type: boolean
+    default: false
   deploy_infrastructure:
     type: boolean
     default: false
@@ -86,4 +89,3 @@ workflows:
                 - main
                 - master
                 - /^release.*/
-

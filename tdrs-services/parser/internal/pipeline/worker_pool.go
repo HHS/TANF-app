@@ -30,6 +30,7 @@ type validatedBatch struct {
 type WorkerPool struct {
 	parsingOrchestrator *parser.ParsingOrchestrator
 	orchestrator        *validation.ValidationOrchestrator
+	dataFileContext     *validation.DataFileContext
 	filespecKey         string
 	numWorkers          int
 
@@ -54,6 +55,7 @@ type WorkerPoolConfig struct {
 func NewWorkerPool(
 	parsingOrchestrator *parser.ParsingOrchestrator,
 	orchestrator *validation.ValidationOrchestrator,
+	dataFileContext *validation.DataFileContext,
 	filespecKey string,
 	router *writer.Router,
 	datafileID int32,
@@ -62,6 +64,7 @@ func NewWorkerPool(
 	return &WorkerPool{
 		parsingOrchestrator: parsingOrchestrator,
 		orchestrator:        orchestrator,
+		dataFileContext:     dataFileContext,
 		filespecKey:         filespecKey,
 		numWorkers:          config.NumWorkers,
 		router:              router,
@@ -157,7 +160,7 @@ func (wp *WorkerPool) processBatch(batch *parser.DecodedBatch) *validatedBatch {
 
 	groups := make([]*validatedGroup, 0, len(parsed.Groups))
 	for _, group := range parsed.Groups {
-		vr := wp.orchestrator.ValidateGroup(group, wp.filespecKey)
+		vr := wp.orchestrator.ValidateGroup(group, wp.filespecKey, wp.dataFileContext)
 		groups = append(groups, &validatedGroup{
 			Group:  group,
 			Result: vr,

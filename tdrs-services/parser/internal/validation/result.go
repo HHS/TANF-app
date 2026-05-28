@@ -34,14 +34,15 @@ const (
 
 // ValidationResult represents the outcome of a single validator execution.
 type ValidationResult struct {
-	Valid       bool
-	ErrorType   string // The error type for serialization decisions
-	ValidatorID string
-	FieldName   string // Only set for field-scope errors
-	LineNumber  int    // For per-record attribution in group validators
-	RecordType  string // For per-record attribution in group validators
-	Error       error  // Set if expression evaluation failed
-	Validator   *CompiledValidator
+	Valid           bool
+	ErrorType       string // The error type for serialization decisions
+	ValidatorID     string
+	FieldName       string // Only set for field-scope errors
+	LineNumber      int    // For per-record attribution in group validators
+	RecordType      string // For per-record attribution in group validators
+	Error           error  // Set if expression evaluation failed
+	DataFileContext *DataFileContext
+	Validator       *CompiledValidator
 }
 
 // BlocksRecord returns true if this error type blocks record serialization.

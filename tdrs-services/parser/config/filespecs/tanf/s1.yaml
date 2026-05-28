@@ -135,19 +135,45 @@ group_validators:
       max: 17
 
   # T1 must have at least one T2 or T3 record
-  - id: t1_has_t2_or_t3
+  - id: requires_related_record
+    params:
+      record_type: T1
+      related_record_types: [T2, T3]
+    message: "Every T1 record should have at least one corresponding T2 or T3 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
 
   # T1 must have at least one T2 or T3 with FAMILY_AFFILIATION == 1
-  - id: t1_family_affiliation
+  - id: requires_related_record_with_int_value
+    params:
+      record_type: T1
+      related_record_types: [T2, T3]
+      field_name: FAMILY_AFFILIATION
+      expected_value: 1
+    message: "Every T1 record should have at least one corresponding T2 or T3 record with FAMILY_AFFILIATION == 1"
 
   # T2 records require at least one T1 record in the same case
-  - id: t2_requires_t1
+  - id: requires_corresponding_record
+    params:
+      record_type: T2
+      required_record_type: T1
+    message: "Every T2 record should have at least one corresponding T1 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
 
   # T3 records require at least one T1 record in the same case
-  - id: t3_requires_t1
+  - id: requires_corresponding_record
+    params:
+      record_type: T3
+      required_record_type: T1
+    message: "Every T3 record should have at least one corresponding T1 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
 
   # Federally funded recipients
   - id: federally_funded_ssn
+    params:
+      recipient_record_type: T2
+      funding_record_type: T1
+      family_affiliation_field: FAMILY_AFFILIATION
+      family_affiliation_value: 1
+      funding_field: FUNDING_STREAM
+      funding_value: 1
+      ssn_field: SSN
 
   # --- Exact duplicate detection ---
   - id: exact_duplicates

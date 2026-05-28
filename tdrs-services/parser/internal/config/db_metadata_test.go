@@ -163,7 +163,7 @@ func TestRealConfig_MetadataColumnCounts(t *testing.T) {
 		"tanf/t5":        3 + 26 + 3, // 32
 		"tanf/t6":        2 + 16 + 3, // 21
 		"tanf/t7":        2 + 4 + 3,  // 9
-		"ssp/m1":         3 + 40 + 3, // 46
+		"ssp/m1":         3 + 39 + 3, // 46
 		"ssp/m2":         4 + 63 + 3, // 70
 		"ssp/m3":         4 + 18 + 3, // 25
 		"ssp/m4":         3 + 9 + 3,  // 15

@@ -42,7 +42,7 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    "section,status,subject,friendly_program_type,program_type",
+    "section,status,subject,friendly_program_type,program_type,is_reprocessed",
     [
         # tribal
         (
@@ -51,6 +51,15 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
             f"Tribal {DataFile.Section.CLOSED_CASE_DATA} Successfully Submitted Without Errors",
             "Tribal TANF",
             DataFile.ProgramType.TRIBAL,
+            False,
+        ),
+        (
+            DataFile.Section.CLOSED_CASE_DATA,
+            DataFileSummary.Status.ACCEPTED,
+            f"Tribal {DataFile.Section.CLOSED_CASE_DATA} Submission Errors Resolved",
+            "Tribal TANF",
+            DataFile.ProgramType.TRIBAL,
+            True,
         ),
         (
             DataFile.Section.ACTIVE_CASE_DATA,
@@ -58,6 +67,15 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
             f"Tribal {DataFile.Section.ACTIVE_CASE_DATA} Successfully Submitted Without Errors",
             "Tribal TANF",
             DataFile.ProgramType.TRIBAL,
+            False,
+        ),
+        (
+            DataFile.Section.ACTIVE_CASE_DATA,
+            DataFileSummary.Status.ACCEPTED,
+            f"Tribal {DataFile.Section.ACTIVE_CASE_DATA} Submission Errors Resolved",
+            "Tribal TANF",
+            DataFile.ProgramType.TRIBAL,
+            True,
         ),
         (
             DataFile.Section.AGGREGATE_DATA,
@@ -65,6 +83,15 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
             f"Action Required: Tribal {DataFile.Section.AGGREGATE_DATA} Contains Errors",
             "Tribal TANF",
             DataFile.ProgramType.TRIBAL,
+            False,
+        ),
+        (
+            DataFile.Section.AGGREGATE_DATA,
+            DataFileSummary.Status.ACCEPTED_WITH_ERRORS,
+            f"Action Required: Error Report Available for Tribal {DataFile.Section.AGGREGATE_DATA} Submission",
+            "Tribal TANF",
+            DataFile.ProgramType.TRIBAL,
+            True,
         ),
         (
             DataFile.Section.STRATUM_DATA,
@@ -72,6 +99,15 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
             f"Action Required: Tribal {DataFile.Section.STRATUM_DATA} Contains Errors",
             "Tribal TANF",
             DataFile.ProgramType.TRIBAL,
+            False,
+        ),
+        (
+            DataFile.Section.STRATUM_DATA,
+            DataFileSummary.Status.PARTIALLY_ACCEPTED,
+            f"Action Required: Error Report Available for Tribal {DataFile.Section.STRATUM_DATA} Submission",
+            "Tribal TANF",
+            DataFile.ProgramType.TRIBAL,
+            True,
         ),
         (
             DataFile.Section.STRATUM_DATA,
@@ -79,6 +115,15 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
             f"Action Required: Tribal {DataFile.Section.STRATUM_DATA} Contains Errors",
             "Tribal TANF",
             DataFile.ProgramType.TRIBAL,
+            False,
+        ),
+        (
+            DataFile.Section.STRATUM_DATA,
+            DataFileSummary.Status.REJECTED,
+            f"Action Required: Error Report Available for Tribal {DataFile.Section.STRATUM_DATA} Submission",
+            "Tribal TANF",
+            DataFile.ProgramType.TRIBAL,
+            True,
         ),
         # ssp
         (
@@ -87,6 +132,15 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
             f"SSP {DataFile.Section.AGGREGATE_DATA} Successfully Submitted Without Errors",
             "SSP",
             DataFile.ProgramType.SSP,
+            False,
+        ),
+        (
+            DataFile.Section.AGGREGATE_DATA,
+            DataFileSummary.Status.ACCEPTED,
+            f"SSP {DataFile.Section.AGGREGATE_DATA} Submission Errors Resolved",
+            "SSP",
+            DataFile.ProgramType.SSP,
+            True,
         ),
         (
             DataFile.Section.CLOSED_CASE_DATA,
@@ -94,6 +148,15 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
             f"SSP {DataFile.Section.CLOSED_CASE_DATA} Successfully Submitted Without Errors",
             "SSP",
             DataFile.ProgramType.SSP,
+            False,
+        ),
+        (
+            DataFile.Section.CLOSED_CASE_DATA,
+            DataFileSummary.Status.ACCEPTED,
+            f"SSP {DataFile.Section.CLOSED_CASE_DATA} Submission Errors Resolved",
+            "SSP",
+            DataFile.ProgramType.SSP,
+            True,
         ),
         (
             DataFile.Section.ACTIVE_CASE_DATA,
@@ -101,6 +164,15 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
             f"Action Required: SSP {DataFile.Section.ACTIVE_CASE_DATA} Contains Errors",
             "SSP",
             DataFile.ProgramType.SSP,
+            False,
+        ),
+        (
+            DataFile.Section.ACTIVE_CASE_DATA,
+            DataFileSummary.Status.ACCEPTED_WITH_ERRORS,
+            f"Action Required: Error Report Available for SSP {DataFile.Section.ACTIVE_CASE_DATA} Submission",
+            "SSP",
+            DataFile.ProgramType.SSP,
+            True,
         ),
         (
             DataFile.Section.STRATUM_DATA,
@@ -108,6 +180,15 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
             f"Action Required: SSP {DataFile.Section.STRATUM_DATA} Contains Errors",
             "SSP",
             DataFile.ProgramType.SSP,
+            False,
+        ),
+        (
+            DataFile.Section.STRATUM_DATA,
+            DataFileSummary.Status.PARTIALLY_ACCEPTED,
+            f"Action Required: Error Report Available for SSP {DataFile.Section.STRATUM_DATA} Submission",
+            "SSP",
+            DataFile.ProgramType.SSP,
+            True,
         ),
         (
             DataFile.Section.STRATUM_DATA,
@@ -115,6 +196,15 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
             f"Action Required: SSP {DataFile.Section.STRATUM_DATA} Contains Errors",
             "SSP",
             DataFile.ProgramType.SSP,
+            False,
+        ),
+        (
+            DataFile.Section.STRATUM_DATA,
+            DataFileSummary.Status.REJECTED,
+            f"Action Required: Error Report Available for SSP {DataFile.Section.STRATUM_DATA} Submission",
+            "SSP",
+            DataFile.ProgramType.SSP,
+            True,
         ),
         # tanf
         (
@@ -123,6 +213,15 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
             f"{DataFile.Section.ACTIVE_CASE_DATA} Successfully Submitted Without Errors",
             "TANF",
             DataFile.ProgramType.TANF,
+            False,
+        ),
+        (
+            DataFile.Section.ACTIVE_CASE_DATA,
+            DataFileSummary.Status.ACCEPTED,
+            f"{DataFile.Section.ACTIVE_CASE_DATA} Submission Errors Resolved",
+            "TANF",
+            DataFile.ProgramType.TANF,
+            True,
         ),
         (
             DataFile.Section.CLOSED_CASE_DATA,
@@ -130,6 +229,15 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
             f"{DataFile.Section.CLOSED_CASE_DATA} Successfully Submitted Without Errors",
             "TANF",
             DataFile.ProgramType.TANF,
+            False,
+        ),
+        (
+            DataFile.Section.CLOSED_CASE_DATA,
+            DataFileSummary.Status.ACCEPTED,
+            f"{DataFile.Section.CLOSED_CASE_DATA} Submission Errors Resolved",
+            "TANF",
+            DataFile.ProgramType.TANF,
+            True,
         ),
         (
             DataFile.Section.AGGREGATE_DATA,
@@ -137,6 +245,15 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
             f"Action Required: {DataFile.Section.AGGREGATE_DATA} Contains Errors",
             "TANF",
             DataFile.ProgramType.TANF,
+            False,
+        ),
+        (
+            DataFile.Section.AGGREGATE_DATA,
+            DataFileSummary.Status.ACCEPTED_WITH_ERRORS,
+            f"Action Required: Error Report Available for {DataFile.Section.AGGREGATE_DATA} Submission",
+            "TANF",
+            DataFile.ProgramType.TANF,
+            True,
         ),
         (
             DataFile.Section.STRATUM_DATA,
@@ -144,6 +261,15 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
             f"Action Required: {DataFile.Section.STRATUM_DATA} Contains Errors",
             "TANF",
             DataFile.ProgramType.TANF,
+            False,
+        ),
+        (
+            DataFile.Section.STRATUM_DATA,
+            DataFileSummary.Status.PARTIALLY_ACCEPTED,
+            f"Action Required: Error Report Available for {DataFile.Section.STRATUM_DATA} Submission",
+            "TANF",
+            DataFile.ProgramType.TANF,
+            True,
         ),
         (
             DataFile.Section.STRATUM_DATA,
@@ -151,6 +277,15 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
             f"Action Required: {DataFile.Section.STRATUM_DATA} Contains Errors",
             "TANF",
             DataFile.ProgramType.TANF,
+            False,
+        ),
+        (
+            DataFile.Section.STRATUM_DATA,
+            DataFileSummary.Status.REJECTED,
+            f"Action Required: Error Report Available for {DataFile.Section.STRATUM_DATA} Submission",
+            "TANF",
+            DataFile.ProgramType.TANF,
+            True,
         ),
         # fra
         (
@@ -159,6 +294,15 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
             f"{DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS} Successfully Submitted Without Errors",
             "FRA",
             DataFile.ProgramType.FRA,
+            False,
+        ),
+        (
+            DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
+            DataFileSummary.Status.ACCEPTED,
+            f"{DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS} Submission Errors Resolved",
+            "FRA",
+            DataFile.ProgramType.FRA,
+            True,
         ),
         (
             DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
@@ -166,11 +310,27 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
             f"Action Required: {DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS} Contains Errors",
             "FRA",
             DataFile.ProgramType.FRA,
+            False,
+        ),
+        (
+            DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
+            DataFileSummary.Status.REJECTED,
+            f"Action Required: Error Report Available for {DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS} Submission",
+            "FRA",
+            DataFile.ProgramType.FRA,
+            True,
         ),
     ],
 )
 def test_send_data_submitted_email(
-    user, stt, section, status, subject, friendly_program_type, program_type
+    user,
+    stt,
+    section,
+    status,
+    subject,
+    friendly_program_type,
+    program_type,
+    is_reprocessed,
 ):
     """Test that the send_data_submitted_email function runs."""
     df = DataFile(
@@ -189,7 +349,7 @@ def test_send_data_submitted_email(
 
     recipients = ["test@not-real.com"]
 
-    send_data_submitted_email(dfs, recipients)
+    send_data_submitted_email(dfs, recipients, is_reprocessed)
 
     has_errors = status != DataFileSummary.Status.ACCEPTED
     has_errors_msg = (
@@ -211,32 +371,60 @@ _PIA_FILE_TYPE = "TANF Program Integrity Audit"
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    "status,expected_subject,expected_text",
+    "status,expected_subject,expected_text,is_reprocessed",
     [
         (
             DataFileSummary.Status.ACCEPTED,
             f"{_PIA_FILE_TYPE}: {_PIA_Q1_LABEL} Successfully Submitted Without Errors",
             f"{_PIA_FILE_TYPE} has been submitted and processed without errors.",
+            False,
+        ),
+        (
+            DataFileSummary.Status.ACCEPTED,
+            f"{_PIA_FILE_TYPE}: {_PIA_Q1_LABEL} Submission Errors Resolved",
+            f"{_PIA_FILE_TYPE} has been submitted and processed without errors.",
+            True,
         ),
         (
             DataFileSummary.Status.ACCEPTED_WITH_ERRORS,
             f"Action Required: {_PIA_FILE_TYPE}: {_PIA_Q1_LABEL} Contains Errors",
             f"{_PIA_FILE_TYPE} has been submitted and processed with errors.",
+            False,
+        ),
+        (
+            DataFileSummary.Status.ACCEPTED_WITH_ERRORS,
+            f"Action Required: Error Report Available for {_PIA_FILE_TYPE}: {_PIA_Q1_LABEL} Submission",
+            f"{_PIA_FILE_TYPE} has been submitted and processed with errors.",
+            True,
         ),
         (
             DataFileSummary.Status.PARTIALLY_ACCEPTED,
             f"Action Required: {_PIA_FILE_TYPE}: {_PIA_Q1_LABEL} Contains Errors",
             f"{_PIA_FILE_TYPE} has been submitted and processed with errors.",
+            False,
+        ),
+        (
+            DataFileSummary.Status.PARTIALLY_ACCEPTED,
+            f"Action Required: Error Report Available for {_PIA_FILE_TYPE}: {_PIA_Q1_LABEL} Submission",
+            f"{_PIA_FILE_TYPE} has been submitted and processed with errors.",
+            True,
         ),
         (
             DataFileSummary.Status.REJECTED,
             f"Action Required: {_PIA_FILE_TYPE}: {_PIA_Q1_LABEL} Contains Errors",
             f"{_PIA_FILE_TYPE} has been submitted and processed with errors.",
+            False,
+        ),
+        (
+            DataFileSummary.Status.REJECTED,
+            f"Action Required: Error Report Available for {_PIA_FILE_TYPE}: {_PIA_Q1_LABEL} Submission",
+            f"{_PIA_FILE_TYPE} has been submitted and processed with errors.",
+            True,
         ),
     ],
 )
 def test_send_data_submitted_email_pia(
-    user, stt, status, expected_subject, expected_text
+    user, stt, status, expected_subject, expected_text, is_reprocessed
 ):
     """Test that PIA submissions use distinct subjects, text, and quarter-based templates."""
     df = DataFile(
@@ -251,7 +439,7 @@ def test_send_data_submitted_email_pia(
 
     dfs = DataFileSummary(datafile=df, status=status)
 
-    send_data_submitted_email(dfs, ["test@not-real.com"])
+    send_data_submitted_email(dfs, ["test@not-real.com"], is_reprocessed)
 
     assert len(mail.outbox) == 1
     assert mail.outbox[0].subject == expected_subject

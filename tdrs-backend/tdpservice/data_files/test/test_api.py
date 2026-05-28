@@ -11,6 +11,7 @@ from rest_framework.test import APIClient
 from tdpservice.data_files.enums import SubmissionState
 from tdpservice.core.models import FeatureFlag
 from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.submission_lifecycle import InvalidTransition
 from tdpservice.parsers import util
 from tdpservice.parsers.factory import ParserFactory
@@ -307,8 +308,24 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
         assert response.status_code == status.HTTP_200_OK
         self.assert_data_file_content_matches(response, data_file_id)
 
-    def test_create_data_file_file_entry(self, api_client, data_file_data, user):
+    def test_create_data_file_file_entry(
+        self, api_client, data_file_data, user, mocker
+    ):
         """Test ability to create data file metadata registry."""
+        def clean_scan(_file, _file_name, _uploaded_by, data_file=None):
+            assert data_file.state == SubmissionState.VIRUS_SCAN_STARTED
+            assert not data_file.file
+            return True
+
+        mocker.patch(
+            "tdpservice.data_files.views.settings.CLAMAV_NEEDED",
+            new=True,
+        )
+        mocker.patch(
+            "tdpservice.data_files.views.ClamAVClient.scan_file",
+            side_effect=clean_scan,
+        )
+
         response = self.post_data_file(api_client, data_file_data)
         self.assert_data_file_created(response)
         self.assert_data_file_exists(data_file_data, 1, user)
@@ -543,16 +560,16 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         self, api_client, data_file_data, mocker
     ):
         """Test upload flow raises if the helper is forced into an illegal transition."""
-        actual_data_file_get = DataFile.objects.get
+        actual_save = DataFileSerializer.save
 
-        def fake_get(*args, **kwargs):
-            data_file = actual_data_file_get(*args, **kwargs)
+        def fake_save(serializer, *args, **kwargs):
+            data_file = actual_save(serializer, *args, **kwargs)
             data_file.state = SubmissionState.PARSE_STARTED
             return data_file
 
         mocker.patch(
-            "tdpservice.data_files.views.DataFile.objects.get",
-            side_effect=fake_get,
+            "tdpservice.data_files.serializers.DataFileSerializer.save",
+            new=fake_save,
         )
 
         with pytest.raises(
@@ -605,6 +622,87 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
                 "detail": "This file was submitted for a reporting year not supported by this file type."
             }
             assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    @pytest.mark.django_db
+    def test_av_infected_file_returns_400_with_failed_scan_state(
+        self, api_client, data_file_data, user, infected_data_file, mocker
+    ):
+        """Test that an infected file is rejected with failed scan state."""
+        data_file_data["file"] = infected_data_file
+        mocker.patch(
+            "tdpservice.data_files.views.settings.CLAMAV_NEEDED",
+            new=True,
+        )
+
+        def infected_scan(_file, _file_name, _uploaded_by, data_file=None):
+            assert data_file.state == SubmissionState.VIRUS_SCAN_STARTED
+            assert not data_file.file
+            return False
+
+        mocker.patch(
+            "tdpservice.data_files.views.ClamAVClient.scan_file",
+            side_effect=infected_scan,
+        )
+
+        response = self.post_data_file(api_client, data_file_data)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "security inspection" in response.data["detail"]
+        data_file = DataFile.objects.get(
+            slug=data_file_data["slug"],
+            user=user,
+        )
+        assert data_file.state == SubmissionState.VIRUS_SCAN_FAILED
+        assert not data_file.file
+
+    @pytest.mark.django_db
+    def test_av_unavailable_returns_400_with_failed_scan_state(
+        self, api_client, data_file_data, user, mocker
+    ):
+        """Test that ClamAV unavailability rejects with failed scan state."""
+        from tdpservice.security.clients import ClamAVClient
+
+        mocker.patch(
+            "tdpservice.data_files.views.settings.CLAMAV_NEEDED",
+            new=True,
+        )
+
+        def unavailable_scan(_file, _file_name, _uploaded_by, data_file=None):
+            assert data_file.state == SubmissionState.VIRUS_SCAN_STARTED
+            assert not data_file.file
+            raise ClamAVClient.ServiceUnavailable()
+
+        mocker.patch(
+            "tdpservice.data_files.views.ClamAVClient.scan_file",
+            side_effect=unavailable_scan,
+        )
+
+        response = self.post_data_file(api_client, data_file_data)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "security inspection" in response.data["detail"]
+        data_file = DataFile.objects.get(
+            slug=data_file_data["slug"],
+            user=user,
+        )
+        assert data_file.state == SubmissionState.VIRUS_SCAN_FAILED
+        assert not data_file.file
+
+    @pytest.mark.django_db
+    def test_missing_file_still_returns_serializer_validation_error_when_av_enabled(
+        self, api_client, data_file_data, mocker
+    ):
+        """Test that AV pre-scan does not intercept the serializer's missing-file validation."""
+        data_file_data.pop("file")
+        mocker.patch(
+            "tdpservice.data_files.views.settings.CLAMAV_NEEDED",
+            new=True,
+        )
+
+        response = self.post_data_file(api_client, data_file_data)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data["file"] == ["No file was submitted."]
 
 
 class TestDataFileAPIAsInactiveUser(DataFileAPITestBase):

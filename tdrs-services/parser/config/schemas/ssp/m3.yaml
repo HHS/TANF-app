@@ -16,6 +16,9 @@ record_validators:
     params:
       min: 60
   - id: case_number_not_empty
+  - id: rpt_month_year_is_valid
+  - id: rpt_month_year_matches_header_year_quarter
+
   # Cross-field validators (VALUE_CONSISTENCY)
   # Race fields when FAMILY_AFFILIATION is 1-2
   - id: ifthenalso_range_to_range
@@ -175,7 +178,10 @@ segments:
           - id: length
             params:
               n: 8
-          - id: valid_date
+          - id: valid_year
+          - id: valid_month
+          - id: valid_day
+          - id: is_numeric
 
       - name: SSN
         friendly_name: Social Security Number
@@ -402,7 +408,10 @@ segments:
           - id: length
             params:
               n: 8
-          - id: valid_date
+          - id: valid_year
+          - id: valid_month
+          - id: valid_day
+          - id: is_numeric
 
       - name: SSN
         friendly_name: Social Security Number

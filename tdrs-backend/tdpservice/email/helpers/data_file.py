@@ -7,6 +7,7 @@ from django.conf import settings
 from tdpservice.data_files.models import DataFile
 from tdpservice.email.email import automated_email, log
 from tdpservice.email.email_enums import AdminEmail, FraDataFileEmail, TanfDataFileEmail
+from tdpservice.parsers.models import DataFileSummary
 from tdpservice.users.models import User
 
 
@@ -106,25 +107,9 @@ def get_fra_aggregates_context_count(datafile_summary):
     }
 
 
-def send_data_submitted_email(
-    datafile_summary,
-    recipients,
-):
-    """Send an email to a user when their account approval status is updated."""
-    from tdpservice.parsers.models import DataFileSummary
-
+def get_base_context(datafile_summary):
+    """Build the context object shared by all submission emails."""
     datafile = datafile_summary.datafile
-
-    logger_context = {
-        "user_id": datafile.user.id,
-        "object_id": datafile.id,
-        "object_repr": f"Uploaded data file for quarter: {datafile.fiscal_year}",
-        "content_type": DataFile,
-    }
-
-    template_path = None
-    subject = None
-    text_message = None
 
     prog_type = datafile.program_type
     section_name = get_program_section_str(prog_type, datafile.section)
@@ -164,6 +149,96 @@ def send_data_submitted_email(
         "url": settings.FRONTEND_BASE_URL,
     }
 
+    return context
+
+
+def get_tanf_template_options(is_reprocessed):
+    """Return the templates to use for TANF emails based on the reparsing status."""
+    if is_reprocessed:
+        return {
+            DataFileSummary.Status.ACCEPTED: TanfDataFileEmail.REPARSE_ERRORS_RESOLVED.value,
+            DataFileSummary.Status.ACCEPTED_WITH_ERRORS: TanfDataFileEmail.REPARSE_ACTION_REQUIRED.value,
+            DataFileSummary.Status.PARTIALLY_ACCEPTED: TanfDataFileEmail.REPARSE_ACTION_REQUIRED.value,
+            DataFileSummary.Status.REJECTED: TanfDataFileEmail.REPARSE_ACTION_REQUIRED.value,
+        }
+
+    return {
+        DataFileSummary.Status.ACCEPTED: TanfDataFileEmail.ACCEPTED.value,
+        DataFileSummary.Status.ACCEPTED_WITH_ERRORS: TanfDataFileEmail.ACCEPTED_WITH_ERRORS.value,
+        DataFileSummary.Status.PARTIALLY_ACCEPTED: TanfDataFileEmail.PARTIALLY_ACCEPTED.value,
+        DataFileSummary.Status.REJECTED: TanfDataFileEmail.REJECTED.value,
+    }
+
+
+def get_fra_template_options(is_reprocessed):
+    """Return the templates to use for FRA emails based on the reparsing status."""
+    if is_reprocessed:
+        return {
+            DataFileSummary.Status.ACCEPTED: FraDataFileEmail.REPARSE_ERRORS_RESOLVED.value,
+            DataFileSummary.Status.ACCEPTED_WITH_ERRORS: FraDataFileEmail.REPARSE_ACTION_REQUIRED.value,
+            DataFileSummary.Status.PARTIALLY_ACCEPTED: FraDataFileEmail.REPARSE_ACTION_REQUIRED.value,
+            DataFileSummary.Status.REJECTED: FraDataFileEmail.REPARSE_ACTION_REQUIRED.value,
+        }
+
+    return {
+        DataFileSummary.Status.ACCEPTED: FraDataFileEmail.ACCEPTED.value,
+        DataFileSummary.Status.ACCEPTED_WITH_ERRORS: FraDataFileEmail.ACCEPTED_WITH_ERRORS.value,
+        DataFileSummary.Status.PARTIALLY_ACCEPTED: FraDataFileEmail.PARTIALLY_ACCEPTED.value,
+        DataFileSummary.Status.REJECTED: FraDataFileEmail.REJECTED.value,
+    }
+
+
+def get_pia_email_subject(status, file_type, quarter_label, is_reprocessed):
+    """Return the email subject to use for Program Integrity Audit emails."""
+    if status == DataFileSummary.Status.ACCEPTED:
+        if is_reprocessed:
+            return f"{file_type}: {quarter_label} Submission Errors Resolved"
+        else:
+            return f"{file_type}: {quarter_label} Successfully Submitted Without Errors"
+    else:
+        if is_reprocessed:
+            return f"Action Required: Error Report Available for {file_type}: {quarter_label} Submission"
+        else:
+            return f"Action Required: {file_type}: {quarter_label} Contains Errors"
+
+
+def get_tanf_fra_email_subject(status, section_name, is_reprocessed):
+    """Return the email subject to use for TANF/FRA submission emails."""
+    if status == DataFileSummary.Status.ACCEPTED:
+        if is_reprocessed:
+            return f"{section_name} Submission Errors Resolved"
+        return f"{section_name} Successfully Submitted Without Errors"
+    else:
+        if is_reprocessed:
+            return (
+                f"Action Required: Error Report Available for {section_name} Submission"
+            )
+        return f"Action Required: {section_name} Contains Errors"
+
+
+def send_data_submitted_email(datafile_summary, recipients, is_reprocessed=False):
+    """Send an email to a user when their account approval status is updated."""
+    datafile = datafile_summary.datafile
+    prog_type = datafile.program_type
+
+    logger_context = {
+        "user_id": datafile.user.id,
+        "object_id": datafile.id,
+        "object_repr": f"Uploaded data file for quarter: {datafile.fiscal_year}",
+        "content_type": DataFile,
+    }
+
+    template_path = None
+    subject = None
+    text_message = None
+
+    context = get_base_context(datafile_summary)
+
+    file_type = context["file_type"]
+    section_name = context["section_name"]
+    is_program_audit = context["is_program_audit"]
+    is_aggregate = context["is_aggregate"]
+
     if datafile_summary.status == DataFileSummary.Status.PENDING:
         return
 
@@ -178,26 +253,16 @@ def send_data_submitted_email(
         context.update({"quarter_label": quarter_label})
         context.update(get_tanf_aggregates_context_count(datafile_summary))
 
-        if datafile_summary.status == DataFileSummary.Status.ACCEPTED:
-            subject = (
-                f"{file_type}: {quarter_label} Successfully Submitted Without Errors"
-            )
-        else:
-            subject = f"Action Required: {file_type}: {quarter_label} Contains Errors"
+        subject = get_pia_email_subject(
+            datafile_summary.status, file_type, quarter_label, is_reprocessed
+        )
 
-        template_options = {
-            DataFileSummary.Status.ACCEPTED: TanfDataFileEmail.ACCEPTED.value,
-            DataFileSummary.Status.ACCEPTED_WITH_ERRORS: TanfDataFileEmail.ACCEPTED_WITH_ERRORS.value,
-            DataFileSummary.Status.PARTIALLY_ACCEPTED: TanfDataFileEmail.PARTIALLY_ACCEPTED.value,
-            DataFileSummary.Status.REJECTED: TanfDataFileEmail.REJECTED.value,
-        }
-
+        template_options = get_tanf_template_options(is_reprocessed)
         template_path = template_options[datafile_summary.status]
     else:
-        if datafile_summary.status == DataFileSummary.Status.ACCEPTED:
-            subject = f"{section_name} Successfully Submitted Without Errors"
-        else:
-            subject = f"Action Required: {section_name} Contains Errors"
+        subject = get_tanf_fra_email_subject(
+            datafile_summary.status, section_name, is_reprocessed
+        )
 
         match prog_type:
             case (
@@ -212,25 +277,13 @@ def send_data_submitted_email(
                 else:
                     context.update(get_tanf_aggregates_context_count(datafile_summary))
 
-                template_options = {
-                    DataFileSummary.Status.ACCEPTED: TanfDataFileEmail.ACCEPTED.value,
-                    DataFileSummary.Status.ACCEPTED_WITH_ERRORS: TanfDataFileEmail.ACCEPTED_WITH_ERRORS.value,
-                    DataFileSummary.Status.PARTIALLY_ACCEPTED: TanfDataFileEmail.PARTIALLY_ACCEPTED.value,
-                    DataFileSummary.Status.REJECTED: TanfDataFileEmail.REJECTED.value,
-                }
-
+                template_options = get_tanf_template_options(is_reprocessed)
                 template_path = template_options[datafile_summary.status]
 
             case DataFile.ProgramType.FRA:
                 context.update(get_fra_aggregates_context_count(datafile_summary))
 
-                template_options = {
-                    DataFileSummary.Status.ACCEPTED: FraDataFileEmail.ACCEPTED.value,
-                    DataFileSummary.Status.ACCEPTED_WITH_ERRORS: FraDataFileEmail.ACCEPTED_WITH_ERRORS.value,
-                    DataFileSummary.Status.PARTIALLY_ACCEPTED: FraDataFileEmail.PARTIALLY_ACCEPTED.value,
-                    DataFileSummary.Status.REJECTED: FraDataFileEmail.REJECTED.value,
-                }
-
+                template_options = get_fra_template_options(is_reprocessed)
                 template_path = template_options[datafile_summary.status]
 
     context.update({"subject": subject})

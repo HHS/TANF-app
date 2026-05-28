@@ -180,6 +180,45 @@ func TestConvertError_NilValidatorMessage(t *testing.T) {
 	}
 }
 
+func TestSerializeError_RecordValidatorMessageIncludesRecordLength(t *testing.T) {
+	cs := makeTestSchema("T7", []schema.FieldDef{
+		{Name: "RPT_MONTH_YEAR", Type: "integer"},
+	})
+	rec := makeTestRecord(cs, 2, map[string]any{
+		"RPT_MONTH_YEAR": 202010,
+	})
+	rec.DecodedSize = 156
+
+	msgTmpl, err := template.New("record_length_min").Parse(
+		"{{.RecordType}}: record must be at least {{.Params.min}} characters, got {{.RecordLength}}",
+	)
+	if err != nil {
+		t.Fatalf("failed to parse template: %v", err)
+	}
+
+	vr := &validation.ValidationResult{
+		Valid:       false,
+		ErrorType:   validation.ErrorTypeRecordPreCheck,
+		ValidatorID: "record_length_min",
+		Validator: &validation.CompiledValidator{
+			ID:        "record_length_min",
+			ErrorType: validation.ErrorTypeRecordPreCheck,
+			Message:   msgTmpl,
+			Params:    map[string]any{"min": 247},
+		},
+	}
+
+	row := SerializeError(vr, rec, nil, 1, nil)
+
+	msg, ok := row[6].(string)
+	if !ok {
+		t.Fatalf("expected string message, got %T", row[6])
+	}
+	if msg != "T7: record must be at least 247 characters, got 156" {
+		t.Errorf("expected rendered record length message, got %q", msg)
+	}
+}
+
 func TestMapErrorType(t *testing.T) {
 	tests := []struct {
 		input    string

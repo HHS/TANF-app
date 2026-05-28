@@ -46,13 +46,16 @@ ALLOWED_TRANSITIONS: Dict[SubmissionState, Iterable[SubmissionState]] = {
         SubmissionState.CANCELED,
     },
     SubmissionState.PARSE_FAILED: {
+        SubmissionState.PARSE_STARTED,
         SubmissionState.CANCELED,
     },
     SubmissionState.PARSED_WITH_ERRORS: {
+        SubmissionState.PARSE_STARTED,
         SubmissionState.COMPLETED,
         SubmissionState.CANCELED,
     },
     SubmissionState.PARSE_COMPLETED: {
+        SubmissionState.PARSE_STARTED,
         SubmissionState.COMPLETED,
         SubmissionState.CANCELED,
     },

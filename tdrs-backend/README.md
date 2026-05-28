@@ -4,7 +4,7 @@ Backend API Service for TDP. Deployed to Cloud.gov at https://tdp-backend.app.cl
 
 # Prerequisites
 
-- [Docker](https://docs.docker.com/docker-for-mac/install/)  
+- [Docker](https://docs.docker.com/docker-for-mac/install/)
 - [Login.gov Account](https://login.gov/)
 - [Cloud.gov Account](https://cloud.gov/)
 - [Cloud Foundry CLI](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html)
@@ -19,7 +19,7 @@ Backend API Service for TDP. Deployed to Cloud.gov at https://tdp-backend.app.cl
 # Testing the Local Backend Service:
 
   **Login is dependent on the [tdrs-frontend](../tdrs-frontend/README.md) service. You will need a local instance of that application running.**
-  
+
 This project uses a Pipfile for dependency management.
 
 ### Local Development Options
@@ -33,13 +33,13 @@ Note: first step is to install Taskfile
 $ cp .env.example .env
 ```
 
-2.) Replace secrets in `.env` with actual values. To obtain the correct values, 
+2.) Replace secrets in `.env` with actual values. To obtain the correct values,
 please pull from [cloud.gov](https://cloud.gov) or contact the Product Manager.
 
-3.) For Django Admin access, replace the value for `DJANGO_SU_NAME` in `.env` 
+3.) For Django Admin access, replace the value for `DJANGO_SU_NAME` in `.env`
 with the email you use to login to [login.gov](https://login.gov)
 
-4.) Start the backend via docker-compose: 
+4.) Start the backend via docker-compose:
 
 ```bash
 # Merge in local overrides for docker-compose by using -f flag and specifying both
@@ -47,7 +47,7 @@ with the email you use to login to [login.gov](https://login.gov)
 $ task backend-up
 ```
 
-This command will start the following containers: 
+This command will start the following containers:
 
 ```bash
 CONTAINER ID        IMAGE                        COMMAND                  CREATED             STATUS                            PORTS                    NAMES
@@ -59,15 +59,15 @@ a64c18db30ed        localstack/localstack:0.12.9 "docker-entrypoint.sh"   2 hour
 
 5.) The backend service will now be available via the following URL: `http://localhost:8080`
 
-6.) To `exec` into the PostgreSQL database in the container. 
+6.) To `exec` into the PostgreSQL database in the container.
 
 ```bash
 $ task psql
 ```
 
-7.) For configuration of a superuser for admin tasks please refer to the [user_role_management.md](../docs/user_role_management.md) guide. 
+7.) For configuration of a superuser for admin tasks please refer to the [user_role_management.md](../docs/user_role_management.md) guide.
 
-8.) Backend project tear down: 
+8.) Backend project tear down:
 
 ```bash
  $ task backend-down
@@ -91,14 +91,14 @@ $ task clean
 When run locally with `docker-compose.local.yml` the following order of inheritance will be in place:
 * Variables defined in `tdrs-backend/.env` file
 * Variables defined directly in `docker-compose.yml`
-* Defaults supplied in `tdrs-backend/tdpservice/settings/common.py` (Only **non secret** environment variables, do not commit defaults for any secrets!) 
+* Defaults supplied in `tdrs-backend/tdpservice/settings/common.py` (Only **non secret** environment variables, do not commit defaults for any secrets!)
 
 #### CircleCI
 When run within CI context the follow order of inheritance will define environment variables:
 * For **secrets** only - Variables defined in CircleCI Project Settings (`JWT_KEY`, `JWT_CERT_TEST`, etc)
   * These must be manually passed in via docker-compose under the `environment` directive, ie. `MY_VAR=${MY_VAR}`
 * Variables defined directly in `docker-compose.yml`
-* Defaults supplied in `tdrs-backend/tdpservice/settings/common.py` (Only **non secret** environment variables, do not commit defaults for any secrets!) 
+* Defaults supplied in `tdrs-backend/tdpservice/settings/common.py` (Only **non secret** environment variables, do not commit defaults for any secrets!)
 
 ----
 ### Interfacing with AWS S3
@@ -128,15 +128,23 @@ s3_client.generate_presigned_url(**params)
 $ task backend-pytest
 ```
 
-2. Run local linting tests by executing the following command:
+2. Run the live Go parser integration suite separately when you need the worker to observe committed pytest fixtures in the shared Docker database.
+
+```bash
+$ task backend-pytest-go-integration
+```
+
+This suite is isolated from the default `pytest` run and depends on the `go-parser` service started by `task backend-up`.
+
+3. Run local linting tests by executing the following command:
 
 ```bash
 $ task backend-lint
 ```
 
-The [flake8](https://flake8.pycqa.org/en/latest/) linter is configured to check the formatting of the source against this [setup.cfg](./setup.cfg#L20-L34) file. 
+The [flake8](https://flake8.pycqa.org/en/latest/) linter is configured to check the formatting of the source against this [setup.cfg](./setup.cfg#L20-L34) file.
 
-3. Run local penetration tests by executing the following shell script:
+4. Run local penetration tests by executing the following shell script:
 
 ```bash
 $ ./zap-scanner.sh
@@ -186,10 +194,10 @@ Targeted space <SPACE-1>.
  ```bash
  $ cf set-env tdp-backend JWT_KEY "$(cat key.pem)"
  ```
- 
+
 - **For the list of required environment variables please defer to the `.env.example` file
 
-4.) After this step you will need to bind the application to a Postgres RDS service if it has not been bound already: 
+4.) After this step you will need to bind the application to a Postgres RDS service if it has not been bound already:
 ```bash
 $ cf bind-service tdp-backend tdp-db
 ```

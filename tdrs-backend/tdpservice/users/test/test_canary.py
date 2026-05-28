@@ -75,9 +75,9 @@ class TestSetAuthFlow:
         # Simulate Django session
         request.session = {}
 
-        set_auth_flow(request, "keycloak", "dotgov")
+        set_auth_flow(request, "keycloak", "login-gov")
         assert get_auth_flow(request) == "keycloak"
-        assert request.session["auth_idp"] == "dotgov"
+        assert request.session["auth_idp"] == "login-gov"
 
     def test_set_legacy_flow(self):
         """set_auth_flow should record the legacy flow and AMS IdP on the session."""
@@ -152,7 +152,7 @@ class TestCanaryLoginViews:
             mock_legacy.as_view.return_value = lambda req, *a, **kw: _mock_response(302)
             client.get("/login/dotgov")
             assert client.session.get("auth_flow") == "legacy"
-            assert client.session.get("auth_idp") == "dotgov"
+            assert client.session.get("auth_idp") == "login-gov"
 
     @override_settings(KEYCLOAK_AUTH_PERCENTAGE=100)
     def test_session_marker_set_for_keycloak(self):

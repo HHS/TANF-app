@@ -190,7 +190,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
 
     def parsing_state(self, obj):
         """Return the submission state of the data file."""
-        return obj.state
+        return obj.get_state_display()
 
     parsing_state.short_description = "Parsing State"
 
