@@ -427,11 +427,11 @@ def post_parse(data_file_id, reparse_id=0, parse_error=None):
         record_model_resolver=parser_models.record_model_resolver,
         roll_log=False,
     )
-    if not settings.GO_PARSER_SHADOW_MODE:
+    if not settings.GO_PARSER_SHADOW_MODE and reparse_id:
         file_meta = ReparseFileMeta.objects.get(
             data_file_id=data_file_id, reparse_meta_id=reparse_id
         )
-        _finalize_reparse(data_file_id, reparse_id, file_meta, dfs)
+        _finalize_reparse(data_file_id, reparse_id, file_meta, dfs, True)
 
 
 @shared_task

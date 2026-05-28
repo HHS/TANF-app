@@ -474,6 +474,41 @@ def test_post_parse_can_finalize_production_summary(monkeypatch, stt):
 
 
 @pytest.mark.django_db
+@override_settings(GO_PARSER_SHADOW_MODE=False)
+def test_post_parse_can_finalize_production_reparse(monkeypatch, stt):
+    """Update reparse metadata after Go parser production output finalizes."""
+    datafile = DataFileFactory(
+        stt=stt,
+        version=5,
+        state=SubmissionState.VIRUS_SCAN_COMPLETED,
+        section=DataFile.Section.AGGREGATE_DATA,
+    )
+    summary = DataFileSummary.objects.create(
+        datafile=datafile,
+        status=DataFileSummary.Status.PENDING,
+    )
+    meta_model = ReparseMeta.objects.create(db_backup_location="s3://backup")
+    file_meta = ReparseFileMeta.objects.create(
+        data_file=datafile,
+        reparse_meta=meta_model,
+    )
+    monkeypatch.setattr(
+        parser_task.ReparseMeta, "set_total_num_records_post", lambda *a, **k: None
+    )
+
+    parser_task.post_parse(datafile.id, reparse_id=meta_model.pk)
+
+    summary.refresh_from_db()
+    file_meta.refresh_from_db()
+
+    assert summary.status == DataFileSummary.Status.ACCEPTED
+    assert file_meta.finished is True
+    assert file_meta.success is True
+    assert file_meta.num_records_created == summary.total_number_of_records_created
+    assert file_meta.finished_at is not None
+
+
+@pytest.mark.django_db
 def test_parse_success_sends_email(monkeypatch, data_analyst):
     """Send notification email on successful parse."""
     datafile = DataFileFactory(
