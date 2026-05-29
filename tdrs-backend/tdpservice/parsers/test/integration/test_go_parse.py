@@ -52,7 +52,7 @@ from tdpservice.search_indexes.models.tanf import (
 logger = logging.getLogger(__name__)
 
 GO_PARSE_TASK_NAME = "tdpservice.scheduling.parser_task.go_parse"
-GO_PARSE_TIMEOUT_SECONDS = 60
+GO_PARSE_TIMEOUT_SECONDS = 300
 _GO_PARSER_DATAFILE_IDS = None
 
 
