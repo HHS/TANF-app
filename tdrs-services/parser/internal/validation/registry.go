@@ -32,8 +32,8 @@ type ValidatorRegistry struct {
 	predefined map[string]map[string]*validation.ValidatorDef
 
 	// Compiled validators by scope
-	field  map[string]map[string][]*CompiledValidator // recordType -> fieldName -> validators
-	record map[string][]*CompiledValidator            // recordType -> validators
+	field  map[string]map[string][]*CompiledValidator // schema key -> fieldName -> validators
+	record map[string][]*CompiledValidator            // schema key -> validators
 	group  map[string][]*CompiledValidator            // filespec key -> validators
 
 	exprOpts []expr.Option
@@ -141,11 +141,11 @@ func applyDefaultErrorType(vdef *validation.ValidatorDef, scope string) {
 
 // loadSchemaValidators compiles field and record validators from a schema.
 func (r *ValidatorRegistry) loadSchemaValidators(path string, cs *schema.CompiledSchema) error {
-	recordType := cs.RecordType
+	schemaKey := validatorSchemaKey(cs)
 
-	// Initialize field map for this record type
-	if r.field[recordType] == nil {
-		r.field[recordType] = make(map[string][]*CompiledValidator)
+	// Initialize field map for this schema.
+	if r.field[schemaKey] == nil {
+		r.field[schemaKey] = make(map[string][]*CompiledValidator)
 	}
 
 	// Load record-scope validators
@@ -154,7 +154,7 @@ func (r *ValidatorRegistry) loadSchemaValidators(path string, cs *schema.Compile
 		if err != nil {
 			return fmt.Errorf("schema %s record validator %s: %w", path, vdef.ID, err)
 		}
-		r.record[recordType] = append(r.record[recordType], cv)
+		r.record[schemaKey] = append(r.record[schemaKey], cv)
 	}
 
 	// Load field-scope validators from shared fields
@@ -164,7 +164,7 @@ func (r *ValidatorRegistry) loadSchemaValidators(path string, cs *schema.Compile
 			if err != nil {
 				return fmt.Errorf("schema %s field %s validator %s: %w", path, field.Name, vdef.ID, err)
 			}
-			r.field[recordType][field.Name] = append(r.field[recordType][field.Name], cv)
+			r.field[schemaKey][field.Name] = append(r.field[schemaKey][field.Name], cv)
 		}
 	}
 
@@ -176,12 +176,22 @@ func (r *ValidatorRegistry) loadSchemaValidators(path string, cs *schema.Compile
 				if err != nil {
 					return fmt.Errorf("schema %s field %s validator %s: %w", path, field.Name, vdef.ID, err)
 				}
-				r.field[recordType][field.Name] = append(r.field[recordType][field.Name], cv)
+				r.field[schemaKey][field.Name] = append(r.field[schemaKey][field.Name], cv)
 			}
 		}
 	}
 
 	return nil
+}
+
+func validatorSchemaKey(cs *schema.CompiledSchema) string {
+	if cs != nil && cs.Path != "" {
+		return cs.Path
+	}
+	if cs != nil {
+		return cs.RecordType
+	}
+	return ""
 }
 
 // loadFileSpecValidators compiles group validators from a filespec.

@@ -10,6 +10,10 @@ section: 2
 document: "Tribal TANF Closed Case Data"
 format: positional
 
+record_validators:
+  # REC_OASDI_INSURANCE when age > 18
+  - id: t5_age_oasdi
+
 # Fields shared across all segments (included in every output row)
 shared:
   - name: RecordType
