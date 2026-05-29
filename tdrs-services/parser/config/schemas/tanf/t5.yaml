@@ -266,7 +266,7 @@ segments:
               max: 9
 
       - name: REC_OASDI_INSURANCE
-        friendly_name: Received Disability Benefits OASDI Program
+        friendly_name: "Received Disability Benefits: OASDI Program"
         item: "19A"
         start: 44
         end: 45

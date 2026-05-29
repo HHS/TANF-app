@@ -126,6 +126,62 @@ func TestConvertError_BasicRow(t *testing.T) {
 	}
 }
 
+func TestRenderErrorMessage_FieldMeta(t *testing.T) {
+	message := "Since person is older than 18, then {{with index .FieldMeta \"REC_OASDI_INSURANCE\"}}{{.Item}} ({{.FriendlyName}}){{else}}REC_OASDI_INSURANCE{{end}} must be 1 or 2"
+	msgTmpl, err := template.New("t5_age_oasdi").Parse(message)
+	if err != nil {
+		t.Fatalf("failed to parse message template: %v", err)
+	}
+
+	tests := []struct {
+		name     string
+		item     string
+		expected string
+	}{
+		{
+			name: "TANF T5 item number",
+			item: "19A",
+			expected: "Since person is older than 18, then 19A " +
+				"(Received Disability Benefits: OASDI Program) must be 1 or 2",
+		},
+		{
+			name: "SSP M5 item number",
+			item: "18A",
+			expected: "Since person is older than 18, then 18A " +
+				"(Received Disability Benefits: OASDI Program) must be 1 or 2",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cs := makeTestSchema("T5", []schema.FieldDef{
+				{Name: "DATE_OF_BIRTH", FriendlyName: "Date of Birth", Item: "15"},
+				{Name: "REC_OASDI_INSURANCE", FriendlyName: "Received Disability Benefits: OASDI Program", Item: tt.item},
+			})
+			rec := makeTestRecord(cs, 1, map[string]any{
+				"DATE_OF_BIRTH":       "20060901",
+				"REC_OASDI_INSURANCE": 0,
+			})
+
+			vr := &validation.ValidationResult{
+				Valid:       false,
+				ErrorType:   validation.ErrorTypeValueConsistency,
+				ValidatorID: "t5_age_oasdi",
+				Validator: &validation.CompiledValidator{
+					ID:        "t5_age_oasdi",
+					ErrorType: validation.ErrorTypeValueConsistency,
+					Message:   msgTmpl,
+					Fields:    []string{"DATE_OF_BIRTH", "REC_OASDI_INSURANCE"},
+				},
+			}
+
+			if got := renderErrorMessage(vr, rec); got != tt.expected {
+				t.Errorf("expected %q, got %q", tt.expected, got)
+			}
+		})
+	}
+}
+
 func TestConvertError_NilContentTypeID(t *testing.T) {
 	cs := makeTestSchema("T1", []schema.FieldDef{
 		{Name: "CASE_NUMBER"},
