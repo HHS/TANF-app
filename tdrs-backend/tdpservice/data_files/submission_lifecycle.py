@@ -26,7 +26,7 @@ class ReparsePreparationError(ValueError):
     """Raised when a DataFile cannot be safely prepared for reparse."""
 
 
-REPARSE_READY_STATES = {
+REPARSE_REQUESTABLE_STATES = {
     SubmissionState.VIRUS_SCAN_COMPLETED,
     SubmissionState.PARSE_FAILED,
     SubmissionState.PARSED_WITH_ERRORS,
@@ -48,6 +48,11 @@ ALLOWED_TRANSITIONS: Dict[SubmissionState, Iterable[SubmissionState]] = {
         SubmissionState.CANCELED,
     },
     SubmissionState.VIRUS_SCAN_COMPLETED: {
+        SubmissionState.REPARSE_REQUESTED,
+        SubmissionState.PARSE_STARTED,
+        SubmissionState.CANCELED,
+    },
+    SubmissionState.REPARSE_REQUESTED: {
         SubmissionState.PARSE_STARTED,
         SubmissionState.CANCELED,
     },
@@ -58,15 +63,18 @@ ALLOWED_TRANSITIONS: Dict[SubmissionState, Iterable[SubmissionState]] = {
         SubmissionState.CANCELED,
     },
     SubmissionState.PARSE_FAILED: {
+        SubmissionState.REPARSE_REQUESTED,
         SubmissionState.PARSE_STARTED,
         SubmissionState.CANCELED,
     },
     SubmissionState.PARSED_WITH_ERRORS: {
+        SubmissionState.REPARSE_REQUESTED,
         SubmissionState.PARSE_STARTED,
         SubmissionState.COMPLETED,
         SubmissionState.CANCELED,
     },
     SubmissionState.PARSE_COMPLETED: {
+        SubmissionState.REPARSE_REQUESTED,
         SubmissionState.PARSE_STARTED,
         SubmissionState.COMPLETED,
         SubmissionState.CANCELED,
@@ -143,44 +151,23 @@ def transition_datafile(
 
 def prepare_datafile_for_reparse(
     data_file,
-    note="manual admin legacy reparse preparation",
+    note="admin reparse requested",
     logger_hook: Callable | None = None,
 ):
-    """Ensure a DataFile is in a state that can be queued for reparse.
-
-    Legacy submitted files may still be in the initial uploaded state. If the
-    stored file exists, advance them through the AV lifecycle so the parser can
-    move them to parse_started using the normal transition rules.
-    """
+    """Transition a safe DataFile into the requested reparse state."""
     current_state = coerce_submission_state(data_file.state)
 
-    if current_state in REPARSE_READY_STATES:
+    if current_state == SubmissionState.REPARSE_REQUESTED:
         return data_file, False
 
-    if current_state != SubmissionState.UPLOADED:
+    if current_state not in REPARSE_REQUESTABLE_STATES:
         raise ReparsePreparationError(
             f"Cannot reparse DataFile {data_file.id} in state {current_state.value}."
         )
 
-    if not data_file.file or not data_file.file.name:
-        raise ReparsePreparationError(
-            f"Cannot reparse DataFile {data_file.id}: no stored file is attached."
-        )
-
-    if not data_file.file.storage.exists(data_file.file.name):
-        raise ReparsePreparationError(
-            f"Cannot reparse DataFile {data_file.id}: stored file was not found."
-        )
-
     transition_datafile(
         data_file,
-        SubmissionState.VIRUS_SCAN_STARTED,
-        note=note,
-        logger_hook=logger_hook,
-    )
-    transition_datafile(
-        data_file,
-        SubmissionState.VIRUS_SCAN_COMPLETED,
+        SubmissionState.REPARSE_REQUESTED,
         note=note,
         logger_hook=logger_hook,
     )

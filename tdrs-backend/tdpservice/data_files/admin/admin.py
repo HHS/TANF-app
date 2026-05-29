@@ -162,19 +162,20 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     def reparse(self, request, queryset):
         """Reparse the selected data files."""
         file_ids = []
-        legacy_prepared_count = 0
+        selected_count = queryset.count()
+        reparse_requested_count = 0
         skipped = []
 
         for data_file in queryset:
             try:
-                _, legacy_prepared = prepare_datafile_for_reparse(data_file)
+                _, reparse_requested = prepare_datafile_for_reparse(data_file)
             except ReparsePreparationError as exc:
                 skipped.append(f"{data_file.id}: {exc}")
                 continue
 
             file_ids.append(data_file.id)
-            if legacy_prepared:
-                legacy_prepared_count += 1
+            if reparse_requested:
+                reparse_requested_count += 1
 
         if file_ids:
             reparse_files.delay(file_ids)
@@ -196,16 +197,25 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
                 messages.WARNING,
             )
 
-        if legacy_prepared_count:
+        self.message_user(
+            request,
+            (
+                f"{selected_count} file(s) selected. {len(skipped)} file(s) "
+                "could not be moved to reparse requested state."
+            ),
+            messages.INFO if not skipped else messages.WARNING,
+        )
+
+        if reparse_requested_count:
             self.message_user(
                 request,
                 ngettext(
-                    "%d legacy uploaded file was prepared for reparsing.",
-                    "%d legacy uploaded files were prepared for reparsing.",
-                    legacy_prepared_count,
+                    "%d file was moved to reparse requested state.",
+                    "%d files were moved to reparse requested state.",
+                    reparse_requested_count,
                 )
-                % legacy_prepared_count,
-                messages.WARNING,
+                % reparse_requested_count,
+                messages.INFO,
             )
 
         if skipped:

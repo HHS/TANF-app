@@ -54,20 +54,19 @@ def test_DataFileAdmin_parsing_state_uses_choice_label():
 
 
 @pytest.mark.django_db
-def test_DataFileAdmin_reparse_prepares_legacy_uploaded_files(
+def test_DataFileAdmin_reparse_requests_reparse_for_safe_files(
     monkeypatch,
     admin_user,
 ):
-    """Test admin reparse prepares legacy uploaded files before queueing."""
-    legacy_file = DataFileFactory(state=SubmissionState.UPLOADED)
+    """Test admin reparse moves safe files to reparse_requested before queueing."""
     ready_file = DataFileFactory(state=SubmissionState.PARSE_COMPLETED)
+    uploaded_file = DataFileFactory(state=SubmissionState.UPLOADED)
     unsafe_file = DataFileFactory(state=SubmissionState.VIRUS_SCAN_FAILED)
     queued_ids = []
     messages = []
     data_file_admin = DataFileAdmin(DataFile, AdminSite())
     request = RequestFactory().post("/admin/data_files/datafile/")
     request.user = admin_user
-    monkeypatch.setattr(legacy_file.file.storage, "exists", lambda name: True)
     monkeypatch.setattr(data_file_admin_module.reparse_files, "delay", queued_ids.extend)
     monkeypatch.setattr(
         data_file_admin,
@@ -78,34 +77,40 @@ def test_DataFileAdmin_reparse_prepares_legacy_uploaded_files(
     data_file_admin.reparse(
         request,
         DataFile.objects.filter(
-            id__in=[legacy_file.id, ready_file.id, unsafe_file.id]
+            id__in=[ready_file.id, uploaded_file.id, unsafe_file.id]
         ).order_by("id"),
     )
 
-    legacy_file.refresh_from_db()
-    assert legacy_file.state == SubmissionState.VIRUS_SCAN_COMPLETED
-    assert queued_ids == [legacy_file.id, ready_file.id]
-    assert any("2 files successfully submitted" in message for message, _ in messages)
-    assert any("1 legacy uploaded file" in message for message, _ in messages)
+    ready_file.refresh_from_db()
+    uploaded_file.refresh_from_db()
+    unsafe_file.refresh_from_db()
+    assert ready_file.state == SubmissionState.REPARSE_REQUESTED
+    assert uploaded_file.state == SubmissionState.UPLOADED
+    assert unsafe_file.state == SubmissionState.VIRUS_SCAN_FAILED
+    assert queued_ids == [ready_file.id]
+    assert any("1 file successfully submitted" in message for message, _ in messages)
     assert any(
-        f"Skipped 1 file(s): {unsafe_file.id}" in message for message, _ in messages
+        "3 file(s) selected. 2 file(s) could not be moved" in message
+        for message, _ in messages
+    )
+    assert any("1 file was moved to reparse requested" in message for message, _ in messages)
+    assert any(
+        f"Skipped 2 file(s): {uploaded_file.id}" in message for message, _ in messages
     )
 
 
 @pytest.mark.django_db
-def test_DataFileAdmin_reparse_skips_uploaded_files_without_storage(
+def test_DataFileAdmin_reparse_skips_when_no_files_can_request_reparse(
     monkeypatch,
     admin_user,
 ):
-    """Test admin reparse skips legacy uploaded files without stored content."""
-    legacy_file = DataFileFactory(state=SubmissionState.UPLOADED)
+    """Test admin reparse reports selected files that cannot move to reparse."""
+    uploaded_file = DataFileFactory(state=SubmissionState.UPLOADED)
     queued_ids = []
     messages = []
     data_file_admin = DataFileAdmin(DataFile, AdminSite())
     request = RequestFactory().post("/admin/data_files/datafile/")
     request.user = admin_user
-    legacy_file.file = ""
-    legacy_file.save(update_fields=["file"])
     monkeypatch.setattr(data_file_admin_module.reparse_files, "delay", queued_ids.extend)
     monkeypatch.setattr(
         data_file_admin,
@@ -113,13 +118,17 @@ def test_DataFileAdmin_reparse_skips_uploaded_files_without_storage(
         lambda request, message, level=None: messages.append((message, level)),
     )
 
-    data_file_admin.reparse(request, DataFile.objects.filter(id=legacy_file.id))
+    data_file_admin.reparse(request, DataFile.objects.filter(id=uploaded_file.id))
 
-    legacy_file.refresh_from_db()
-    assert legacy_file.state == SubmissionState.UPLOADED
+    uploaded_file.refresh_from_db()
+    assert uploaded_file.state == SubmissionState.UPLOADED
     assert queued_ids == []
     assert any("No selected files were eligible" in message for message, _ in messages)
-    assert any("no stored file is attached" in message for message, _ in messages)
+    assert any(
+        "1 file(s) selected. 1 file(s) could not be moved" in message
+        for message, _ in messages
+    )
+    assert any("state uploaded" in message for message, _ in messages)
 
 
 @pytest.mark.django_db
