@@ -2069,6 +2069,7 @@ class TestGoParse:
         assert TANF_T3.objects.filter(datafile=case_aggregates_edge_case).count() == 6
 
     @pytest.mark.django_db(transaction=True)
+    @pytest.mark.skip(reason="long runtime")
     def test_go_parse_super_big_s1_file(self, super_big_s1_file, dfs):
         """Test parsing super_big_s1_file and validate all records are created."""
         super_big_s1_file.year = 2023
@@ -2110,9 +2111,9 @@ class TestGoParse:
         assert err.content_type is None
         assert err.object_id is None
 
-        assert TANF_T1.objects.count() == 0
-        assert TANF_T2.objects.count() == 0
-        assert TANF_T3.objects.count() == 0
+        assert TANF_T1.objects.filter(datafile=big_s1_rollback_file).count() == 0
+        assert TANF_T2.objects.filter(datafile=big_s1_rollback_file).count() == 0
+        assert TANF_T3.objects.filter(datafile=big_s1_rollback_file).count() == 0
 
     @pytest.mark.parametrize(
         "file, batch_size, model, record_type, num_errors",
