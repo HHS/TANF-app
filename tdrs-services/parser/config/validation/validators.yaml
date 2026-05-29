@@ -385,7 +385,7 @@ record_validators:
   - id: t5_age_oasdi
     expr: "if calculateAge(GetString('DATE_OF_BIRTH'), GetString('RPT_MONTH_YEAR')) > 18 { GetInt('REC_OASDI_INSURANCE') in [1, 2] } else { true }"
     message: "Since person is older than 18, then {{with index .FieldMeta \"REC_OASDI_INSURANCE\"}}{{.Item}} ({{.FriendlyName}}){{else}}REC_OASDI_INSURANCE{{end}} must be 1 or 2"
-    fields: [DATE_OF_BIRTH, REC_OASDI_INSURANCE]
+    fields: [DATE_OF_BIRTH, RPT_MONTH_YEAR, REC_OASDI_INSURANCE]
 
   # =============================================================================
   # Sum-equals validator (parameterized)
