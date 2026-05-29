@@ -1058,12 +1058,15 @@ func TestCalculateAge(t *testing.T) {
 		name     string
 		dob      string
 		rptMonth string
-		expected int
+		expected float64
 	}{
-		{"29 years old (days/365.25 truncation)", "19940101", "202401", 29},
-		{"30 years old", "19940101", "202402", 30},
+		{"30 years old", "19940101", "202401", 30.0},
+		{"30 years and 1 month old", "19940101", "202402", 30.1},
 		{"exact birthday month", "19900601", "202006", 30},
-		{"before birthday month", "19900601", "202005", 29},
+		{"before birthday month", "19900601", "202005", 29.9},
+		{"older than 18 on first day of reporting month", "20060901", "202410", 18.1},
+		{"turns 18 after first day of reporting month", "20061002", "202410", 18.0},
+		{"turns 18 on first day of reporting month", "20061001", "202410", 18.0},
 		{"invalid dob length", "199401", "202401", -1},
 		{"invalid rptMonth length", "19940101", "20240101", -1},
 		{"invalid dob format", "99999999", "202401", -1},
@@ -1075,7 +1078,7 @@ func TestCalculateAge(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := calculateAge(tt.dob, tt.rptMonth)
 			if got != tt.expected {
-				t.Errorf("calculateAge(%q, %q) = %d, want %d", tt.dob, tt.rptMonth, got, tt.expected)
+				t.Errorf("calculateAge(%q, %q) = %.1f, want %.1f", tt.dob, tt.rptMonth, got, tt.expected)
 			}
 		})
 	}

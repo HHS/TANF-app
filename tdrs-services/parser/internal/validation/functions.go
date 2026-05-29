@@ -2,6 +2,7 @@ package validation
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -26,7 +27,7 @@ func RegisterFunctions() []expr.Option {
 		expr.Function("day", wrap1(extractDay), new(func(any) int)),
 		expr.Function("quarter", wrap1(extractQuarter), new(func(any) int)),
 		expr.Function("isValidDate", wrap1(isValidDate), new(func(any) bool)),
-		expr.Function("calculateAge", wrap2(calculateAge), new(func(string, string) int)),
+		expr.Function("calculateAge", wrap2(calculateAge), new(func(string, string) float64)),
 
 		// String functions
 		expr.Function("isNumeric", wrap1(isNumeric), new(func(string) bool)),
@@ -242,9 +243,9 @@ func isValidDate(v any) bool {
 // calculateAge calculates age in years from a date of birth and a reference date.
 // dob should be in YYYYMMDD format.
 // rptMonthYear should be in YYYYMM format.
-// Returns age in whole years, or -1 if dates are invalid.
-// This matches the Python logic: (rptMonthYear - dob).days / 365.25
-func calculateAge(dob, rptMonthYear string) int {
+// Returns age rounded to one decimal place, or -1 if dates are invalid.
+// This matches the AGE_FIRST SQL view logic: round((rptMonthYear - dob).days / 365.25, 1).
+func calculateAge(dob, rptMonthYear string) float64 {
 	if len(dob) != 8 || len(rptMonthYear) != 6 {
 		return -1
 	}
@@ -260,9 +261,12 @@ func calculateAge(dob, rptMonthYear string) int {
 		return -1
 	}
 
-	// Calculate age using the same approach as Python: days / 365.25
+	// Calculate age using the same approach as AGE_FIRST: days / 365.25, rounded to 1 decimal.
 	days := refTime.Sub(dobTime).Hours() / 24
-	age := int(days / 365.25)
+	age := math.Round((days/365.25)*10) / 10
+	if age < 0 {
+		return -1
+	}
 
 	return age
 }
