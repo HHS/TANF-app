@@ -128,6 +128,7 @@ Note: `OIDC_OP_AUTHORIZATION_ENDPOINT` and `OIDC_OP_LOGOUT_ENDPOINT` use `KEYCLO
 |---|---|---|
 | `tdp-django` | Confidential (service account) | Backend OIDC authentication and admin API access |
 | `tdp-grafana` | Confidential | Grafana SSO integration |
+| `tdp-cli` | **Public** (no secret, PKCE + Device Authorization Grant) | External API clients - Postman, CLI tools, CI/CD, security auditors |
 
 Realm configurations are stored as full exports in `realm-configs/`:
 
@@ -209,6 +210,99 @@ Sync only works if the Keycloak user already exists (i.e., user has logged in vi
 - `@acf.hhs.gov` email users **must** use AMS, not Login.gov (enforced in `verify_claims()`)
 - Deactivated users are rejected at login
 - OIDC tokens stored in httpOnly session cookies
+
+## External API Clients
+
+External tools (Postman, CLI, CI/CD, auditors) authenticate against the Django API using Keycloak-issued JWT bearer tokens. Tokens are obtained via standard OAuth2 grants against the **public** `tdp-cli` Keycloak client (no client secret to distribute).
+
+Django validates incoming bearer tokens with `KeycloakBearerTokenAuthentication` (registered in DRF's `DEFAULT_AUTHENTICATION_CLASSES`), which verifies the JWT signature against `OIDC_OP_JWKS_ENDPOINT`, requires the `tdp-cli` client (`azp`) and Django API audience (`aud`), and resolves the user via the same claim-based logic used by browser logins. Authorization (permissions, STT scoping, approval status) is identical to a browser session.
+
+### Postman (Authorization Code + PKCE)
+
+In a Postman request → **Authorization** tab → Type **OAuth 2.0** → **Configure New Token**:
+
+| Field | Value |
+|---|---|
+| Grant Type | **Authorization Code (With PKCE)** |
+| Callback URL | `https://oauth.pstmn.io/v1/callback` |
+| Auth URL | `${KEYCLOAK_BROWSER_URL}/realms/tdp/protocol/openid-connect/auth` |
+| Access Token URL | `${KEYCLOAK_BROWSER_URL}/realms/tdp/protocol/openid-connect/token` |
+| Client ID | `tdp-cli` |
+| Client Secret | *(leave empty)* |
+| Code Challenge Method | **SHA-256** |
+| Scope | `openid email profile tdp-user-attributes` |
+| Client Authentication | **Send client credentials in body** |
+
+Click **Get New Access Token** → authenticate via Login.gov / AMS in the popup → token returned. Use it on requests as:
+
+```
+Authorization: Bearer <access_token>
+```
+
+### CLI (Device Authorization Grant)
+
+For headless CLI tools (no browser on the host), use the device flow. Standard OAuth2 libraries support this out of the box (same grant `gh auth login`, `aws sso login`, and `gcloud auth login` use).
+
+**1. Initiate device authorization**
+
+```bash
+curl -X POST "${KEYCLOAK_BROWSER_URL}/realms/tdp/protocol/openid-connect/auth/device" \
+  -d "client_id=tdp-cli" \
+  -d "scope=openid email profile tdp-user-attributes"
+```
+
+Response includes `device_code`, `user_code`, `verification_uri_complete`, `interval`, and `expires_in`.
+
+**2. Display the verification URL** to the user (e.g. print `verification_uri_complete`). They open it in any browser, authenticate via Login.gov or AMS, and approve the device.
+
+**3. Poll the token endpoint** every `interval` seconds until the user completes the flow:
+
+```bash
+curl -X POST "${KEYCLOAK_BROWSER_URL}/realms/tdp/protocol/openid-connect/token" \
+  -d "grant_type=urn:ietf:params:oauth:grant-type:device_code" \
+  -d "device_code=<from step 1>" \
+  -d "client_id=tdp-cli"
+```
+
+While the user hasn't approved yet, you'll get `400 authorization_pending` (keep polling). When they approve, you get the access token.
+
+### Calling the Django API
+
+```bash
+curl -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+  http://localhost:8080/v1/users/
+```
+
+Same authorization rules as a browser session:
+  - the user behind the token must be approved, active, and respect ACF email / Login.gov mismatch rules.
+
+### Audit logging
+
+Every bearer-token-authenticated request emits a structured log line:
+
+```
+INFO Bearer token auth client=tdp-cli user=<email> path=/v1/users/
+```
+
+The `client_id` is the token's `azp` claim (which Keycloak client minted the token). The `tdp-api-audience` default client scope adds the Django API audience (`tdp-django`) to `tdp-cli` access tokens so Django can reject tokens intended for other clients. In Cloud.gov these flow into Loki and are queryable in Grafana.
+
+### Rate limiting
+
+`KeycloakClientRateThrottle` rate-limits per Keycloak client_id (the `azp` claim) — not per user. Default: `300/min`, configurable via the `KEYCLOAK_CLIENT_RATE` env var (DRF rate string, e.g. `60/min`, `1000/hour`). Browser sessions and other auth paths are unaffected. Counters live in the dedicated Redis-backed `throttle` cache (DB 3) so they're shared across web workers.
+
+### Local testing
+
+The `tdp-cli` client is in `realm-export.json`, so it's imported on first Keycloak start. To pick up realm changes locally after editing the file, the Keycloak image must be rebuilt and the keycloak-pg volume cleared:
+
+```bash
+task backend-down
+docker volume rm tdrs-backend_keycloak_pg_data
+docker compose build --no-cache keycloak
+task backend-up
+```
+
+For testing without going through the full Login.gov / AMS broker flow, you can manually create a Keycloak user with a password (Keycloak admin → Users → Add user → Credentials → Set password, *Temporary OFF*) whose email matches an existing approved Django user
+  - bearer auth's claim resolution falls back to email lookup, so the request resolves to the real Django user with all its STT scoping.
 
 ## Deployment (cloud.gov)
 
