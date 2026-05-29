@@ -2,8 +2,13 @@
 
 from __future__ import absolute_import
 
+from dataclasses import dataclass
+from typing import Callable
+
+from django.apps import apps
 from django.conf import settings
 from django.core.files import File
+from django.db.models import Case, Count, IntegerField, When
 from django.db.utils import DatabaseError
 from django.utils import timezone
 
@@ -12,7 +17,7 @@ from celery import current_app, shared_task
 from tdpservice.core.utils import log
 from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.error_reports import ErrorReportFactory
-from tdpservice.data_files.models import DataFile, ReparseFileMeta
+from tdpservice.data_files.models import DataFile, ReparseFileMeta, ShadowDataFile
 from tdpservice.data_files.submission_lifecycle import transition_datafile
 from tdpservice.email.helpers.data_file import send_data_submitted_email
 from tdpservice.log_handler import change_log_filename
@@ -31,6 +36,8 @@ from tdpservice.parsers.models import (
     DataFileSummary,
     ParserError,
     ParserErrorCategoryChoices,
+    ShadowDataFileSummary,
+    ShadowParserError,
 )
 from tdpservice.parsers.util import DecoderUnknownException, log_parser_exception
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
@@ -39,15 +46,27 @@ from tdpservice.users.models import AccountApprovalStatusChoices, User
 logger = settings.PARSER_LOGGER
 
 GO_PARSER_TASK_NAME = "tdpservice.scheduling.parser_task.go_parse"
+GO_PARSER_POST_PARSE_TASK_NAME = "tdpservice.scheduling.parser_task.post_parse"
 GO_PARSER_QUEUE = getattr(settings, "GO_PARSER_QUEUE", "go-parser")
 
 
-def queue_go_parse(data_file_id):
+@dataclass(frozen=True)
+class ParserModelSet:
+    """Models and lookup hooks for a parser output table family."""
+
+    data_file_model: type
+    summary_model: type
+    parser_error_model: type
+    record_model_resolver: Callable[[type], type]
+    label: str
+
+
+def queue_go_parse(data_file_id, reparse_id=None):
     """Queue a shadow parse task for the Go parser."""
     try:
         current_app.send_task(
             GO_PARSER_TASK_NAME,
-            args=[data_file_id],
+            args=[data_file_id, reparse_id or 0],
             queue=GO_PARSER_QUEUE,
             ignore_result=True,
         )
@@ -69,7 +88,7 @@ def queue_parse(data_file_id, reparse_id=None):
     """Queue production Python parse and companion Go shadow parse tasks."""
     parse.delay(data_file_id, reparse_id=reparse_id)
     if settings.GO_PARSER_SHADOW_MODE:
-        queue_go_parse(data_file_id)
+        queue_go_parse(data_file_id, reparse_id=reparse_id)
 
 
 def set_reparse_file_meta_model_state(reparse_id, file_meta, is_success):
@@ -81,17 +100,139 @@ def set_reparse_file_meta_model_state(reparse_id, file_meta, is_success):
         file_meta.save()
 
 
-def update_dfs(dfs, data_file):
-    """Update DataFileSummary fields."""
-    dfs.status = dfs.get_status()
+def _shadow_record_model(production_model):
+    """Return the Django model for the Go parser shadow copy of a record table."""
+    shadow_table_name = f"shadow_{production_model._meta.db_table}"
+    for model in apps.get_app_config("search_indexes").get_models():
+        if model._meta.db_table == shadow_table_name:
+            return model
+    raise LookupError(
+        f"No shadow model found for table {production_model._meta.db_table}"
+    )
+
+
+def _production_parser_models():
+    """Return parser models for production parser output."""
+    return ParserModelSet(
+        data_file_model=DataFile,
+        summary_model=DataFileSummary,
+        parser_error_model=ParserError,
+        record_model_resolver=lambda production_model: production_model,
+        label="production",
+    )
+
+
+def _shadow_parser_models():
+    """Return parser models for Go parser shadow output."""
+    return ParserModelSet(
+        data_file_model=ShadowDataFile,
+        summary_model=ShadowDataFileSummary,
+        parser_error_model=ShadowParserError,
+        record_model_resolver=_shadow_record_model,
+        label="shadow",
+    )
+
+
+def _uses_shadow_table(model_or_instance):
+    """Return whether a model or instance belongs to a shadow table family."""
+    return model_or_instance._meta.db_table.startswith("shadow_")
+
+
+def _parser_models_for_instance(model_or_instance):
+    """Return the model set matching the table family of a model or instance."""
+    if _uses_shadow_table(model_or_instance):
+        return _shadow_parser_models()
+    return _production_parser_models()
+
+
+def _post_parse_model_sets():
+    """Return model sets in the order Go parser output is expected."""
+    if settings.GO_PARSER_SHADOW_MODE:
+        return (_shadow_parser_models(), _production_parser_models())
+    return (_production_parser_models(), _shadow_parser_models())
+
+
+def _get_post_parse_data_file(data_file_id):
+    """Return the DataFile row and table family used by Go parser output."""
+    for parser_models in _post_parse_model_sets():
+        data_file = parser_models.data_file_model.objects.filter(
+            id=data_file_id
+        ).first()
+        if data_file is not None:
+            return data_file, parser_models
+
+    raise DataFile.DoesNotExist(f"No parser data file found for id={data_file_id}")
+
+
+def _get_summary_status(dfs, data_file, parser_error_model=ParserError):
+    """Return DataFileSummary-style status using the selected parser error model."""
+    if dfs.status != DataFileSummary.Status.PENDING:
+        return dfs.status
+
+    counts = parser_error_model.objects.filter(
+        file=data_file, deprecated=False
+    ).aggregate(
+        total=Count("id"),
+        precheck=Count(
+            Case(
+                When(error_type=ParserErrorCategoryChoices.PRE_CHECK, then=1),
+                output_field=IntegerField(),
+            )
+        ),
+        record_precheck=Count(
+            Case(
+                When(error_type=ParserErrorCategoryChoices.RECORD_PRE_CHECK, then=1),
+                output_field=IntegerField(),
+            )
+        ),
+        case_consistency=Count(
+            Case(
+                When(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY, then=1),
+                output_field=IntegerField(),
+            )
+        ),
+    )
+
+    if counts["precheck"] > 0:
+        return DataFileSummary.Status.REJECTED
+    if counts["total"] == 0:
+        return DataFileSummary.Status.ACCEPTED
+    if counts["case_consistency"] > 0 or counts["record_precheck"] > 0:
+        return DataFileSummary.Status.PARTIALLY_ACCEPTED
+    return DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+
+
+def update_dfs(
+    dfs,
+    data_file,
+    parser_error_model=None,
+    record_model_resolver=None,
+):
+    """Update DataFileSummary fields using the selected parser output models."""
+    parser_models = _parser_models_for_instance(data_file)
+    parser_error_model = parser_error_model or parser_models.parser_error_model
+    record_model_resolver = record_model_resolver or parser_models.record_model_resolver
+
+    dfs.status = _get_summary_status(dfs, data_file, parser_error_model)
 
     if data_file.program_type == DataFile.ProgramType.FRA:
-        dfs.case_aggregates = fra_total_errors(data_file)
+        dfs.case_aggregates = fra_total_errors(
+            data_file, parser_error_model=parser_error_model
+        )
     else:
         if "Case Data" in data_file.section:
-            dfs.case_aggregates = case_aggregates_by_month(data_file, dfs.status)
+            dfs.case_aggregates = case_aggregates_by_month(
+                data_file,
+                dfs.status,
+                parser_error_model=parser_error_model,
+                record_model_resolver=record_model_resolver,
+            )
         else:
-            dfs.case_aggregates = total_errors_by_month(data_file, dfs.status)
+            dfs.case_aggregates = total_errors_by_month(
+                data_file,
+                dfs.status,
+                parser_error_model=parser_error_model,
+            )
     dfs.save()
 
 
@@ -162,17 +303,40 @@ def _reject_dfs(dfs):
         dfs.save()
 
 
-def _finalize_parse(data_file, dfs):
+def _finalize_parse(
+    data_file,
+    dfs,
+    parser_error_model=None,
+    record_model_resolver=None,
+    roll_log=True,
+):
     """Generate parse artifacts and refresh DataFileSummary aggregates."""
-    logger.info(f"DataFile parsing finished for file -> {repr(data_file)}.")
+    parser_models = _parser_models_for_instance(data_file)
+    parser_error_model = parser_error_model or parser_models.parser_error_model
+    record_model_resolver = record_model_resolver or parser_models.record_model_resolver
+
+    logger.info(
+        "%s DataFile parsing finished for file -> %r.",
+        parser_models.label.capitalize(),
+        data_file,
+    )
     if dfs is None:
         return
 
-    error_report_generator = ErrorReportFactory.get_error_report_generator(data_file)
+    error_report_generator = ErrorReportFactory.get_error_report_generator(
+        data_file,
+        parser_error_model=parser_error_model,
+    )
     error_report = error_report_generator.generate()
     set_error_report(dfs, error_report)
-    logger.handlers[2].doRollover(data_file)
-    update_dfs(dfs, data_file)
+    if roll_log:
+        logger.handlers[2].doRollover(data_file)
+    update_dfs(
+        dfs,
+        data_file,
+        parser_error_model=parser_error_model,
+        record_model_resolver=record_model_resolver,
+    )
 
 
 def _finalize_reparse(data_file_id, reparse_id, file_meta, dfs, reparse_success):
@@ -232,6 +396,42 @@ def go_parse(data_file_id):
         f"go_parse for data_file_id={data_file_id} is routed to the Go parser worker "
         "and should not execute in the Python worker"
     )
+
+
+@shared_task(name=GO_PARSER_POST_PARSE_TASK_NAME)
+def post_parse(data_file_id, reparse_id=0, parse_error=None):
+    """Finalize Go parser output after every parse attempt."""
+    data_file, parser_models = _get_post_parse_data_file(data_file_id)
+    dfs, _ = parser_models.summary_model.objects.get_or_create(
+        datafile=data_file,
+        defaults={"status": DataFileSummary.Status.PENDING},
+    )
+
+    if parse_error:
+        dfs.status = DataFileSummary.Status.REJECTED
+        dfs.save()
+        data_file.state = SubmissionState.PARSE_FAILED
+        data_file.save(update_fields=["state"])
+        logger.error(
+            "Go parser %s post-parse received parse_error for data_file_id=%s: %s",
+            parser_models.label,
+            data_file_id,
+            parse_error,
+        )
+        return
+
+    _finalize_parse(
+        data_file,
+        dfs,
+        parser_error_model=parser_models.parser_error_model,
+        record_model_resolver=parser_models.record_model_resolver,
+        roll_log=False,
+    )
+    if not settings.GO_PARSER_SHADOW_MODE and reparse_id:
+        file_meta = ReparseFileMeta.objects.get(
+            data_file_id=data_file_id, reparse_meta_id=reparse_id
+        )
+        _finalize_reparse(data_file_id, reparse_id, file_meta, dfs, True)
 
 
 @shared_task

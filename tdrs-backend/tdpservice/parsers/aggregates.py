@@ -11,7 +11,13 @@ from tdpservice.parsers.util import (
 )
 
 
-def case_aggregates_by_month(df, dfs_status):
+def case_aggregates_by_month(
+    df,
+    dfs_status,
+    *,
+    parser_error_model=ParserError,
+    record_model_resolver=lambda model: model,
+):
     """Return case aggregates by month."""
     program_type = str(df.program_type)
 
@@ -22,7 +28,7 @@ def case_aggregates_by_month(df, dfs_status):
     schemas = ProgramManager.get_schemas(program_type, df.section, df.is_program_audit)
 
     aggregate_data = {"months": [], "rejected": 0}
-    all_errors = ParserError.objects.filter(file=df, deprecated=False)
+    all_errors = parser_error_model.objects.filter(file=df, deprecated=False)
 
     rpt_month_years = []
     for month in month_list:
@@ -45,8 +51,11 @@ def case_aggregates_by_month(df, dfs_status):
         case_numbers_by_month = {rmy: set() for rmy in rpt_month_years}
         for schema in schemas.values():
             schema = schema[0]
+            record_model = record_model_resolver(schema.model)
             records = (
-                schema.model.objects.filter(datafile=df, RPT_MONTH_YEAR__in=rpt_month_years)
+                record_model.objects.filter(
+                    datafile=df, RPT_MONTH_YEAR__in=rpt_month_years
+                )
                 .values_list("CASE_NUMBER", "RPT_MONTH_YEAR")
                 .distinct()
             )
@@ -61,7 +70,9 @@ def case_aggregates_by_month(df, dfs_status):
         all_case_numbers = set().union(*case_numbers_by_month.values())
         error_cases_by_month = {rmy: set() for rmy in rpt_month_years}
         error_records = (
-            all_errors.filter(case_number__in=all_case_numbers, rpt_month_year__in=rpt_month_years)
+            all_errors.filter(
+                case_number__in=all_case_numbers, rpt_month_year__in=rpt_month_years
+            )
             .values_list("case_number", "rpt_month_year")
             .distinct()
         )
@@ -72,7 +83,9 @@ def case_aggregates_by_month(df, dfs_status):
         for month, rmy in zip(month_list, rpt_month_years):
             total = len(case_numbers_by_month[rmy])
             # Intersect to exclude rejected records that generated cat1/cat4 errors since they aren't serialized
-            cases_with_errors = len(error_cases_by_month[rmy] & case_numbers_by_month[rmy])
+            cases_with_errors = len(
+                error_cases_by_month[rmy] & case_numbers_by_month[rmy]
+            )
             accepted = total - cases_with_errors
 
             aggregate_data["months"].append(
@@ -99,14 +112,14 @@ def case_aggregates_by_month(df, dfs_status):
     return aggregate_data
 
 
-def total_errors_by_month(df, dfs_status):
+def total_errors_by_month(df, dfs_status, *, parser_error_model=ParserError):
     """Return total errors for each month in the reporting period."""
     calendar_year, calendar_qtr = fiscal_to_calendar(df.year, df.quarter)
     month_list = transform_to_months(calendar_qtr)
 
     total_errors_data = {"months": []}
 
-    errors = ParserError.objects.all().filter(file=df, deprecated=False)
+    errors = parser_error_model.objects.all().filter(file=df, deprecated=False)
 
     for month in month_list:
         if dfs_status == "Rejected":
@@ -124,7 +137,7 @@ def total_errors_by_month(df, dfs_status):
     return total_errors_data
 
 
-def fra_total_errors(df):
+def fra_total_errors(df, *, parser_error_model=ParserError):
     """Return total errors for the file."""
-    errors = ParserError.objects.all().filter(file=df, deprecated=False)
+    errors = parser_error_model.objects.all().filter(file=df, deprecated=False)
     return {"total_errors": errors.count()}

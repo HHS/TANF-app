@@ -44,5 +44,13 @@ class DataFileSummaryAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     list_display = ["status", "case_aggregates", "datafile"]
 
 
+class ShadowDataFileSummaryAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
+    """ModelAdmin class for DataFileSummary objects generated in parsing."""
+
+    model = models.ShadowDataFileSummary
+    list_display = ["status", "case_aggregates", "datafile"]
+
+
 admin.site.register(models.ParserError, ParserErrorAdmin)
 admin.site.register(models.DataFileSummary, DataFileSummaryAdmin)
+admin.site.register(models.ShadowDataFileSummary, ShadowDataFileSummaryAdmin)

@@ -31,6 +31,8 @@ type CLI struct {
 	ServerCeleryRedisURL    string `kong:"name='server.celery.redis-url',help='Redis URL for Celery broker'"`
 	ServerCeleryQueue       string `kong:"name='server.celery.queue',env='GO_PARSER_QUEUE',help='Redis queue name for Celery tasks'"`
 	ServerCeleryNumWorkers  int    `kong:"name='server.celery.num-workers',help='Number of concurrent celery task workers'"`
+	ServerPostParseTaskName string `kong:"name='server.celery.post-parse-task-name',env='GO_PARSER_POST_PARSE_TASK_NAME',help='Python Celery post-parse task name'"`
+	ServerPostParseQueue    string `kong:"name='server.celery.post-parse-queue',env='GO_PARSER_POST_PARSE_QUEUE',help='Python Celery queue for post-parse tasks'"`
 	ServerGRPCListenAddress string `kong:"name='server.grpc.listen-address',help='gRPC listen address'"`
 	ServerHTTPListenAddress string `kong:"name='server.http.listen-address',help='HTTP listen address'"`
 	ServerLocalFilePath     string `kong:"name='server.local.file-path',help='File path for local processing'"`
@@ -128,6 +130,12 @@ func (c *CLI) ApplyTo(cfg *Config, ctx *kong.Context) {
 	}
 	if set["server.celery.num-workers"] {
 		cfg.Server.Celery.NumWorkers = c.ServerCeleryNumWorkers
+	}
+	if set["server.celery.post-parse-task-name"] {
+		cfg.Server.Celery.PostParseTaskName = c.ServerPostParseTaskName
+	}
+	if set["server.celery.post-parse-queue"] {
+		cfg.Server.Celery.PostParseQueue = c.ServerPostParseQueue
 	}
 	if set["server.grpc.listen-address"] {
 		cfg.Server.GRPC.ListenAddress = c.ServerGRPCListenAddress
