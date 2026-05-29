@@ -3,9 +3,11 @@ from datetime import datetime, timedelta, timezone
 
 from django.conf import settings
 from django.contrib.admin.sites import AdminSite
+from django.test import RequestFactory
 
 import pytest
 
+from tdpservice.data_files.admin import admin as data_file_admin_module
 from tdpservice.data_files.admin.admin import DataFileAdmin
 from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.models import DataFile
@@ -49,6 +51,75 @@ def test_DataFileAdmin_parsing_state_uses_choice_label():
     data_file_admin = DataFileAdmin(DataFile, AdminSite())
 
     assert data_file_admin.parsing_state(data_file) == "Parse failed"
+
+
+@pytest.mark.django_db
+def test_DataFileAdmin_reparse_prepares_legacy_uploaded_files(
+    monkeypatch,
+    admin_user,
+):
+    """Test admin reparse prepares legacy uploaded files before queueing."""
+    legacy_file = DataFileFactory(state=SubmissionState.UPLOADED)
+    ready_file = DataFileFactory(state=SubmissionState.PARSE_COMPLETED)
+    unsafe_file = DataFileFactory(state=SubmissionState.VIRUS_SCAN_FAILED)
+    queued_ids = []
+    messages = []
+    data_file_admin = DataFileAdmin(DataFile, AdminSite())
+    request = RequestFactory().post("/admin/data_files/datafile/")
+    request.user = admin_user
+    monkeypatch.setattr(legacy_file.file.storage, "exists", lambda name: True)
+    monkeypatch.setattr(data_file_admin_module.reparse_files, "delay", queued_ids.extend)
+    monkeypatch.setattr(
+        data_file_admin,
+        "message_user",
+        lambda request, message, level=None: messages.append((message, level)),
+    )
+
+    data_file_admin.reparse(
+        request,
+        DataFile.objects.filter(
+            id__in=[legacy_file.id, ready_file.id, unsafe_file.id]
+        ).order_by("id"),
+    )
+
+    legacy_file.refresh_from_db()
+    assert legacy_file.state == SubmissionState.VIRUS_SCAN_COMPLETED
+    assert queued_ids == [legacy_file.id, ready_file.id]
+    assert any("2 files successfully submitted" in message for message, _ in messages)
+    assert any("1 legacy uploaded file" in message for message, _ in messages)
+    assert any(
+        f"Skipped 1 file(s): {unsafe_file.id}" in message for message, _ in messages
+    )
+
+
+@pytest.mark.django_db
+def test_DataFileAdmin_reparse_skips_uploaded_files_without_storage(
+    monkeypatch,
+    admin_user,
+):
+    """Test admin reparse skips legacy uploaded files without stored content."""
+    legacy_file = DataFileFactory(state=SubmissionState.UPLOADED)
+    queued_ids = []
+    messages = []
+    data_file_admin = DataFileAdmin(DataFile, AdminSite())
+    request = RequestFactory().post("/admin/data_files/datafile/")
+    request.user = admin_user
+    legacy_file.file = ""
+    legacy_file.save(update_fields=["file"])
+    monkeypatch.setattr(data_file_admin_module.reparse_files, "delay", queued_ids.extend)
+    monkeypatch.setattr(
+        data_file_admin,
+        "message_user",
+        lambda request, message, level=None: messages.append((message, level)),
+    )
+
+    data_file_admin.reparse(request, DataFile.objects.filter(id=legacy_file.id))
+
+    legacy_file.refresh_from_db()
+    assert legacy_file.state == SubmissionState.UPLOADED
+    assert queued_ids == []
+    assert any("No selected files were eligible" in message for message, _ in messages)
+    assert any("no stored file is attached" in message for message, _ in messages)
 
 
 @pytest.mark.django_db

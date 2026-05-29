@@ -5,7 +5,9 @@ import pytest
 from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.submission_lifecycle import (
     InvalidTransition,
+    ReparsePreparationError,
     allowed_next_states,
+    prepare_datafile_for_reparse,
     transition_datafile,
     validate_transition,
 )
@@ -158,3 +160,89 @@ def test_parse_outcome_states_can_reparse(state):
 
     assert transition.previous_state == state
     assert transition.next_state == SubmissionState.PARSE_STARTED
+
+
+@pytest.mark.django_db
+def test_prepare_datafile_for_reparse_prepares_legacy_uploaded_file(monkeypatch):
+    """Test legacy uploaded files with stored content are moved to reparse-ready."""
+    data_file = DataFileFactory(state=SubmissionState.UPLOADED)
+    payloads = []
+    monkeypatch.setattr(data_file.file.storage, "exists", lambda name: True)
+
+    prepared_file, legacy_prepared = prepare_datafile_for_reparse(
+        data_file,
+        logger_hook=payloads.append,
+    )
+    prepared_file.refresh_from_db()
+
+    assert prepared_file.state == SubmissionState.VIRUS_SCAN_COMPLETED
+    assert legacy_prepared is True
+    assert [payload["next_state"] for payload in payloads] == [
+        SubmissionState.VIRUS_SCAN_STARTED.value,
+        SubmissionState.VIRUS_SCAN_COMPLETED.value,
+    ]
+
+
+@pytest.mark.parametrize(
+    "state",
+    [
+        SubmissionState.VIRUS_SCAN_COMPLETED,
+        SubmissionState.PARSE_FAILED,
+        SubmissionState.PARSED_WITH_ERRORS,
+        SubmissionState.PARSE_COMPLETED,
+    ],
+)
+@pytest.mark.django_db
+def test_prepare_datafile_for_reparse_accepts_ready_states(state):
+    """Test already reparse-ready states do not need preparation."""
+    data_file = DataFileFactory(state=state)
+
+    prepared_file, legacy_prepared = prepare_datafile_for_reparse(data_file)
+
+    assert prepared_file == data_file
+    assert legacy_prepared is False
+    data_file.refresh_from_db()
+    assert data_file.state == state
+
+
+@pytest.mark.django_db
+def test_prepare_datafile_for_reparse_rejects_uploaded_file_without_storage():
+    """Test legacy uploaded files are rejected when no stored object exists."""
+    data_file = DataFileFactory(state=SubmissionState.UPLOADED)
+    data_file.file = ""
+    data_file.save(update_fields=["file"])
+
+    with pytest.raises(ReparsePreparationError, match="no stored file is attached"):
+        prepare_datafile_for_reparse(data_file)
+
+
+@pytest.mark.django_db
+def test_prepare_datafile_for_reparse_rejects_uploaded_file_missing_object(
+    monkeypatch,
+):
+    """Test legacy uploaded files are rejected when storage cannot find the file."""
+    data_file = DataFileFactory(state=SubmissionState.UPLOADED)
+    monkeypatch.setattr(data_file.file.storage, "exists", lambda name: False)
+
+    with pytest.raises(ReparsePreparationError, match="stored file was not found"):
+        prepare_datafile_for_reparse(data_file)
+
+
+@pytest.mark.parametrize(
+    "state",
+    [
+        SubmissionState.VIRUS_SCAN_STARTED,
+        SubmissionState.VIRUS_SCAN_FAILED,
+        SubmissionState.PARSE_STARTED,
+        SubmissionState.COMPLETED,
+        SubmissionState.CANCELED,
+        SubmissionState.STUCK,
+    ],
+)
+@pytest.mark.django_db
+def test_prepare_datafile_for_reparse_rejects_unsafe_states(state):
+    """Test unsafe states are not prepared or queued for reparse."""
+    data_file = DataFileFactory(state=state)
+
+    with pytest.raises(ReparsePreparationError, match=f"state {state.value}"):
+        prepare_datafile_for_reparse(data_file)

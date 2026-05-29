@@ -15,6 +15,10 @@ from tdpservice.core.utils import ReadOnlyAdminMixin
 from tdpservice.data_files.admin.filters import LatestReparseEvent, VersionFilter
 from tdpservice.data_files.models import DataFile, LegacyFileTransfer
 from tdpservice.data_files.s3_client import S3Client
+from tdpservice.data_files.submission_lifecycle import (
+    ReparsePreparationError,
+    prepare_datafile_for_reparse,
+)
 from tdpservice.data_files.tasks import reparse_files
 from tdpservice.data_files.util import (
     create_legacy_s3_log_file_path,
@@ -157,19 +161,64 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
 
     def reparse(self, request, queryset):
         """Reparse the selected data files."""
-        files = queryset.values_list("id", flat=True)
-        reparse_files.delay(list(files))
+        file_ids = []
+        legacy_prepared_count = 0
+        skipped = []
 
-        self.message_user(
-            request,
-            ngettext(
-                "%d file successfully submitted for reparsing.",
-                "%d files successfully submitted for reparsing.",
-                files.count(),
+        for data_file in queryset:
+            try:
+                _, legacy_prepared = prepare_datafile_for_reparse(data_file)
+            except ReparsePreparationError as exc:
+                skipped.append(f"{data_file.id}: {exc}")
+                continue
+
+            file_ids.append(data_file.id)
+            if legacy_prepared:
+                legacy_prepared_count += 1
+
+        if file_ids:
+            reparse_files.delay(file_ids)
+
+            self.message_user(
+                request,
+                ngettext(
+                    "%d file successfully submitted for reparsing.",
+                    "%d files successfully submitted for reparsing.",
+                    len(file_ids),
+                )
+                % len(file_ids),
+                messages.SUCCESS,
             )
-            % files.count(),
-            messages.SUCCESS,
-        )
+        else:
+            self.message_user(
+                request,
+                "No selected files were eligible for reparsing.",
+                messages.WARNING,
+            )
+
+        if legacy_prepared_count:
+            self.message_user(
+                request,
+                ngettext(
+                    "%d legacy uploaded file was prepared for reparsing.",
+                    "%d legacy uploaded files were prepared for reparsing.",
+                    legacy_prepared_count,
+                )
+                % legacy_prepared_count,
+                messages.WARNING,
+            )
+
+        if skipped:
+            skipped_preview = "; ".join(skipped[:10])
+            remaining = len(skipped) - 10
+            if remaining > 0:
+                skipped_preview += f"; and {remaining} more"
+            self.message_user(
+                request,
+                f"Skipped {len(skipped)} file(s): {skipped_preview}",
+                messages.WARNING,
+            )
+
         return redirect("/admin/search_indexes/reparsemeta/")
 
     def get_actions(self, request):
