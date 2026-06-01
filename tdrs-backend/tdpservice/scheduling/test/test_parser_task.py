@@ -3,13 +3,25 @@
 import io
 from types import SimpleNamespace
 
-import pytest
+from django.contrib.admin.models import LogEntry
 from django.db.utils import DatabaseError
+from django.test import override_settings
+
+import pytest
 
 from tdpservice.data_files.enums import SubmissionState
-from tdpservice.data_files.models import DataFile, ReparseFileMeta
+from tdpservice.data_files.models import (
+    DataFile,
+    ReparseFileMeta,
+    create_or_update_shadow_data_file,
+)
 from tdpservice.data_files.test.factories import DataFileFactory
-from tdpservice.parsers.models import DataFileSummary
+from tdpservice.parsers.models import (
+    DataFileSummary,
+    ParserError,
+    ShadowDataFileSummary,
+    ShadowParserError,
+)
 from tdpservice.parsers.util import DecoderUnknownException
 from tdpservice.scheduling import parser_task
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
@@ -69,7 +81,7 @@ def setup_parse_mocks(monkeypatch, dfs=None):
     monkeypatch.setattr(parser_task.logger, "handlers", handlers, raising=False)
     monkeypatch.setattr(parser_task, "change_log_filename", lambda *a, **k: None)
 
-    def fake_update_dfs(dfs, data_file):
+    def fake_update_dfs(dfs, data_file, **kwargs):
         dfs.save()
 
     monkeypatch.setattr(parser_task, "update_dfs", fake_update_dfs)
@@ -86,9 +98,142 @@ def setup_parse_mocks(monkeypatch, dfs=None):
     monkeypatch.setattr(
         parser_task.ErrorReportFactory,
         "get_error_report_generator",
-        staticmethod(lambda data_file: DummyReport()),
+        staticmethod(lambda data_file, parser_error_model=None: DummyReport()),
     )
     return handlers
+
+
+def test_queue_go_parse_sends_shadow_task(monkeypatch):
+    """Queue Go parser task with the expected Celery task name and payload."""
+    calls = []
+
+    def fake_send_task(name, args=None, queue=None, ignore_result=False):
+        calls.append(
+            {
+                "name": name,
+                "args": args,
+                "queue": queue,
+                "ignore_result": ignore_result,
+            }
+        )
+
+    monkeypatch.setattr(
+        parser_task,
+        "current_app",
+        SimpleNamespace(send_task=fake_send_task),
+    )
+
+    parser_task.queue_go_parse(42)
+
+    assert calls == [
+        {
+            "name": parser_task.GO_PARSER_TASK_NAME,
+            "args": [42, 0],
+            "queue": parser_task.GO_PARSER_QUEUE,
+            "ignore_result": True,
+        }
+    ]
+
+
+def test_queue_go_parse_sends_reparse_id(monkeypatch):
+    """Queue Go parser reparses with the reparse metadata id."""
+    calls = []
+
+    monkeypatch.setattr(
+        parser_task,
+        "current_app",
+        SimpleNamespace(
+            send_task=lambda name, args=None, queue=None, ignore_result=False: calls.append(
+                args
+            )
+        ),
+    )
+
+    parser_task.queue_go_parse(42, reparse_id=7)
+
+    assert calls == [[42, 7]]
+
+
+@pytest.mark.django_db
+def test_queue_go_parse_logs_submit_failure_to_admin(monkeypatch, stt):
+    """Write Go parser queue submission failures to Django admin logs."""
+    datafile = DataFileFactory(stt=stt, version=1)
+
+    def fake_send_task(*args, **kwargs):
+        raise RuntimeError("redis down")
+
+    monkeypatch.setattr(
+        parser_task,
+        "current_app",
+        SimpleNamespace(send_task=fake_send_task),
+    )
+
+    parser_task.queue_go_parse(datafile.id)
+
+    entry = LogEntry.objects.latest("pk")
+    assert str(entry.user_id) == datafile.user_id
+    assert entry.object_id == str(datafile.pk)
+    assert entry.change_message == (
+        f"Failed to submit Go parser shadow task for datafile {datafile.id}."
+    )
+
+
+def test_queue_parse_queues_python_and_go(monkeypatch):
+    """Queue production Python parse and companion Go shadow parse."""
+    calls = []
+
+    monkeypatch.setattr(
+        parser_task,
+        "parse",
+        SimpleNamespace(
+            delay=lambda data_file_id, reparse_id=None: calls.append(
+                ("python", data_file_id, reparse_id)
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        parser_task,
+        "queue_go_parse",
+        lambda data_file_id, reparse_id=None: calls.append(
+            ("go", data_file_id, reparse_id)
+        ),
+    )
+
+    parser_task.queue_parse(42, reparse_id=7)
+
+    assert calls == [
+        ("python", 42, 7),
+        ("go", 42, 7),
+    ]
+
+
+@override_settings(GO_PARSER_SHADOW_MODE=False)
+def test_queue_parse_skips_go_when_shadow_mode_off(monkeypatch):
+    """Queue only the production Python parser when Go shadow mode is disabled."""
+    calls = []
+
+    monkeypatch.setattr(
+        parser_task,
+        "parse",
+        SimpleNamespace(
+            delay=lambda data_file_id, reparse_id=None: calls.append(
+                ("python", data_file_id, reparse_id)
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        parser_task,
+        "queue_go_parse",
+        lambda data_file_id, reparse_id=None: calls.append(
+            ("go", data_file_id, reparse_id)
+        ),
+    )
+
+    parser_task.queue_parse(42, reparse_id=7)
+
+    assert calls == [
+        ("python", 42, 7),
+    ]
 
 
 @pytest.mark.django_db
@@ -104,7 +249,9 @@ def test_update_dfs_uses_fra_aggregates(monkeypatch, stt):
         datafile=datafile, status=DataFileSummary.Status.ACCEPTED
     )
 
-    monkeypatch.setattr(parser_task, "fra_total_errors", lambda df: {"fra": 1})
+    monkeypatch.setattr(
+        parser_task, "fra_total_errors", lambda df, **kwargs: {"fra": 1}
+    )
 
     parser_task.update_dfs(dfs, datafile)
 
@@ -125,11 +272,13 @@ def test_update_dfs_uses_case_aggregates(monkeypatch, stt):
         datafile=datafile, status=DataFileSummary.Status.ACCEPTED
     )
 
-    monkeypatch.setattr(parser_task, "case_aggregates_by_month", lambda *a: {"case": 2})
+    monkeypatch.setattr(
+        parser_task, "case_aggregates_by_month", lambda *a, **kwargs: {"case": 2}
+    )
     monkeypatch.setattr(
         parser_task,
         "total_errors_by_month",
-        lambda *a: pytest.fail("total_errors_by_month should not be used"),
+        lambda *a, **kwargs: pytest.fail("total_errors_by_month should not be used"),
     )
 
     parser_task.update_dfs(dfs, datafile)
@@ -154,9 +303,11 @@ def test_update_dfs_uses_total_errors(monkeypatch, stt):
     monkeypatch.setattr(
         parser_task,
         "case_aggregates_by_month",
-        lambda *a: pytest.fail("case_aggregates_by_month should not be used"),
+        lambda *a, **kwargs: pytest.fail("case_aggregates_by_month should not be used"),
     )
-    monkeypatch.setattr(parser_task, "total_errors_by_month", lambda *a: {"total": 3})
+    monkeypatch.setattr(
+        parser_task, "total_errors_by_month", lambda *a, **kwargs: {"total": 3}
+    )
 
     parser_task.update_dfs(dfs, datafile)
 
@@ -185,6 +336,176 @@ def test_set_error_report_sets_filename():
 
     assert dfs.saved is True
     assert dfs.error_report.name == "sample.txt_error_report"
+
+
+@pytest.mark.django_db
+def test_post_parse_finalizes_shadow_summary_only(monkeypatch, stt):
+    """Finalize Go parser output using only shadow parser tables."""
+    datafile = DataFileFactory(
+        stt=stt,
+        version=4,
+        state=SubmissionState.VIRUS_SCAN_COMPLETED,
+        section=DataFile.Section.AGGREGATE_DATA,
+    )
+    shadow_datafile = create_or_update_shadow_data_file(datafile)
+    shadow_summary = ShadowDataFileSummary.objects.create(
+        datafile=shadow_datafile,
+        status=DataFileSummary.Status.PENDING,
+    )
+    production_summary = DataFileSummary.objects.create(
+        datafile=datafile,
+        status=DataFileSummary.Status.PENDING,
+    )
+    ShadowParserError.objects.create(
+        file=shadow_datafile,
+        row_number=1,
+        column_number="1",
+        item_number="1",
+        field_name="FIELD",
+        rpt_month_year=201910,
+        case_number="CASE",
+        error_message="FIELD is invalid",
+        error_type=parser_task.ParserErrorCategoryChoices.FIELD_VALUE,
+        fields_json={"friendly_name": {"FIELD": "Field"}},
+    )
+
+    sent = {"called": False}
+    monkeypatch.setattr(
+        parser_task,
+        "send_data_submitted_email",
+        lambda *args, **kwargs: sent.update(called=True),
+    )
+
+    parser_task.post_parse(datafile.id)
+
+    shadow_summary.refresh_from_db()
+    production_summary.refresh_from_db()
+    datafile.refresh_from_db()
+
+    assert shadow_summary.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+    assert shadow_summary.case_aggregates == {
+        "months": [
+            {"month": "Oct", "total_errors": 1},
+            {"month": "Nov", "total_errors": 0},
+            {"month": "Dec", "total_errors": 0},
+        ]
+    }
+    assert "data_file.txt_error_report" in shadow_summary.error_report.name
+    assert production_summary.status == DataFileSummary.Status.PENDING
+    assert datafile.state == SubmissionState.VIRUS_SCAN_COMPLETED
+    assert sent["called"] is False
+
+
+@pytest.mark.django_db
+def test_post_parse_parse_error_rejects_shadow_summary(stt):
+    """Technical parse failures reject only the shadow summary."""
+    datafile = DataFileFactory(
+        stt=stt,
+        version=4,
+        state=SubmissionState.VIRUS_SCAN_COMPLETED,
+    )
+    shadow_datafile = create_or_update_shadow_data_file(datafile)
+    shadow_summary = ShadowDataFileSummary.objects.create(
+        datafile=shadow_datafile,
+        status=DataFileSummary.Status.PENDING,
+    )
+
+    parser_task.post_parse(datafile.id, parse_error="pipeline failed")
+
+    shadow_summary.refresh_from_db()
+    shadow_datafile.refresh_from_db()
+    datafile.refresh_from_db()
+
+    assert shadow_summary.status == DataFileSummary.Status.REJECTED
+    assert shadow_datafile.state == SubmissionState.PARSE_FAILED
+    assert datafile.state == SubmissionState.VIRUS_SCAN_COMPLETED
+
+
+@pytest.mark.django_db
+@override_settings(GO_PARSER_SHADOW_MODE=False)
+def test_post_parse_can_finalize_production_summary(monkeypatch, stt):
+    """Finalize Go parser production output when shadow mode is disabled."""
+    datafile = DataFileFactory(
+        stt=stt,
+        version=4,
+        state=SubmissionState.VIRUS_SCAN_COMPLETED,
+        section=DataFile.Section.AGGREGATE_DATA,
+    )
+    summary = DataFileSummary.objects.create(
+        datafile=datafile,
+        status=DataFileSummary.Status.PENDING,
+    )
+    ParserError.objects.create(
+        file=datafile,
+        row_number=1,
+        column_number="1",
+        item_number="1",
+        field_name="FIELD",
+        rpt_month_year=201910,
+        case_number="CASE",
+        error_message="FIELD is invalid",
+        error_type=parser_task.ParserErrorCategoryChoices.FIELD_VALUE,
+        fields_json={"friendly_name": {"FIELD": "Field"}},
+    )
+
+    sent = {"called": False}
+    monkeypatch.setattr(
+        parser_task,
+        "send_data_submitted_email",
+        lambda *args, **kwargs: sent.update(called=True),
+    )
+
+    parser_task.post_parse(datafile.id)
+
+    summary.refresh_from_db()
+    datafile.refresh_from_db()
+
+    assert summary.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+    assert summary.case_aggregates == {
+        "months": [
+            {"month": "Oct", "total_errors": 1},
+            {"month": "Nov", "total_errors": 0},
+            {"month": "Dec", "total_errors": 0},
+        ]
+    }
+    assert "data_file.txt_error_report" in summary.error_report.name
+    assert datafile.state == SubmissionState.VIRUS_SCAN_COMPLETED
+    assert sent["called"] is False
+
+
+@pytest.mark.django_db
+@override_settings(GO_PARSER_SHADOW_MODE=False)
+def test_post_parse_can_finalize_production_reparse(monkeypatch, stt):
+    """Update reparse metadata after Go parser production output finalizes."""
+    datafile = DataFileFactory(
+        stt=stt,
+        version=5,
+        state=SubmissionState.VIRUS_SCAN_COMPLETED,
+        section=DataFile.Section.AGGREGATE_DATA,
+    )
+    summary = DataFileSummary.objects.create(
+        datafile=datafile,
+        status=DataFileSummary.Status.PENDING,
+    )
+    meta_model = ReparseMeta.objects.create(db_backup_location="s3://backup")
+    file_meta = ReparseFileMeta.objects.create(
+        data_file=datafile,
+        reparse_meta=meta_model,
+    )
+    monkeypatch.setattr(
+        parser_task.ReparseMeta, "set_total_num_records_post", lambda *a, **k: None
+    )
+
+    parser_task.post_parse(datafile.id, reparse_id=meta_model.pk)
+
+    summary.refresh_from_db()
+    file_meta.refresh_from_db()
+
+    assert summary.status == DataFileSummary.Status.ACCEPTED
+    assert file_meta.finished is True
+    assert file_meta.success is True
+    assert file_meta.num_records_created == summary.total_number_of_records_created
+    assert file_meta.finished_at is not None
 
 
 @pytest.mark.django_db
@@ -250,7 +571,7 @@ def test_parse_success_reparse_updates_file_meta(monkeypatch, data_analyst):
         parser_task.ReparseMeta, "set_total_num_records_post", lambda *a, **k: None
     )
 
-    def fake_update_dfs(dfs, data_file):
+    def fake_update_dfs(dfs, data_file, **kwargs):
         dfs.status = DataFileSummary.Status.ACCEPTED
         dfs.save()
 
@@ -305,7 +626,9 @@ def test_parse_success_reparse_suppresses_email_for_accepted_to_accepted(
     monkeypatch.setattr(
         parser_task,
         "update_dfs",
-        lambda dfs, data_file: setattr(dfs, "status", DataFileSummary.Status.ACCEPTED),
+        lambda dfs, data_file, **kwargs: setattr(
+            dfs, "status", DataFileSummary.Status.ACCEPTED
+        ),
     )
     monkeypatch.setattr(
         parser_task.ParserError.objects,
@@ -357,7 +680,7 @@ def test_parse_success_reparse_still_sends_email_for_unchanged_nonaccepted_statu
     monkeypatch.setattr(
         parser_task,
         "update_dfs",
-        lambda dfs, data_file: setattr(
+        lambda dfs, data_file, **kwargs: setattr(
             dfs, "status", DataFileSummary.Status.ACCEPTED_WITH_ERRORS
         ),
     )
@@ -508,7 +831,7 @@ def test_parse_transitions_to_parse_completed(monkeypatch, data_analyst):
         datafile=datafile, status=DataFileSummary.Status.PENDING
     )
 
-    def fake_update_dfs(dfs, data_file):
+    def fake_update_dfs(dfs, data_file, **kwargs):
         dfs.status = DataFileSummary.Status.ACCEPTED
         dfs.save()
 
@@ -536,7 +859,7 @@ def test_parse_transitions_to_parsed_with_errors(monkeypatch, data_analyst):
         datafile=datafile, status=DataFileSummary.Status.PENDING
     )
 
-    def fake_update_dfs(dfs, data_file):
+    def fake_update_dfs(dfs, data_file, **kwargs):
         dfs.status = DataFileSummary.Status.ACCEPTED_WITH_ERRORS
         dfs.save()
 
@@ -587,9 +910,7 @@ def test_reparse_transitions_to_parse_started(monkeypatch, stt):
         datafile=datafile, status=DataFileSummary.Status.PENDING
     )
     meta_model = ReparseMeta.objects.create(db_backup_location="s3://backup")
-    ReparseFileMeta.objects.create(
-        data_file=datafile, reparse_meta=meta_model
-    )
+    ReparseFileMeta.objects.create(data_file=datafile, reparse_meta=meta_model)
     setup_parse_mocks(monkeypatch, dfs=dfs)
     monkeypatch.setattr(
         parser_task.ParserFactory, "get_instance", lambda **kwargs: DummyParser()

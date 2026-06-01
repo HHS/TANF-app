@@ -5,6 +5,8 @@ import (
 	"iter"
 	"log"
 	"slices"
+
+	"go-parser/internal/config/filespec"
 )
 
 // Sortable provides shared sorting logic for embedding in decoder implementations.
@@ -24,7 +26,7 @@ func (s *Sortable) IsSorted() bool { return s.sorted }
 func (s *Sortable) DoSort(
 	rows iter.Seq2[Row, error],
 	detector *RecordTypeDetector,
-	keyExtractor KeyExtractor,
+	keyFields []filespec.KeyFieldDef,
 	groupedSchemas []string,
 ) error {
 	groupedSet := make(map[string]bool, len(groupedSchemas))
@@ -68,7 +70,7 @@ func (s *Sortable) DoSort(
 		}
 
 		// Extract sort key
-		key, err := keyExtractor.ExtractKey(row)
+		key, err := row.ExtractKey(keyFields)
 		if err != nil {
 			// Key extraction failed — collect for error reporting
 			s.unkeyedRows = append(s.unkeyedRows, row)

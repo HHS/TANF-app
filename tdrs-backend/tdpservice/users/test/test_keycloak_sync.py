@@ -176,6 +176,17 @@ def test_django_to_kc_group_mapping_complete():
 # --- Signal handler tests ---
 
 
+@patch("tdpservice.users.keycloak_sync._get_client")
+@pytest.mark.django_db
+def test_post_save_signal_noop_by_default_in_tests(mock_get_client):
+    """Test default pytest settings disable live Keycloak sync."""
+    user = UserFactory.create()
+    user.first_name = "Updated"
+    user.save()
+
+    mock_get_client.assert_not_called()
+
+
 @override_settings(KEYCLOAK_SYNC_ENABLED=True)
 @patch("tdpservice.users.keycloak_sync._get_client")
 @pytest.mark.django_db

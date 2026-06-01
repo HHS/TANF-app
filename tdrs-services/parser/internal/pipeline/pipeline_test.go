@@ -18,8 +18,10 @@ type stubSink struct{}
 func (s *stubSink) Flush(_ context.Context, _ string, _ []string, _ [][]any) (int64, error) {
 	return 0, nil
 }
-func (s *stubSink) RollbackDatafile(_ context.Context, _ int32, _ []string) error { return nil }
-func (s *stubSink) Close() error                                      { return nil }
+func (s *stubSink) RollbackDatafile(_ context.Context, _ int32, _ []string, _ string) error {
+	return nil
+}
+func (s *stubSink) Close() error { return nil }
 
 // Verify writer.Sink interface is satisfied by stubSink at compile time.
 var _ writer.Sink = (*stubSink)(nil)
@@ -27,12 +29,12 @@ var _ writer.Sink = (*stubSink)(nil)
 // stubDecoder implements decoder.Decoder minimally for testing.
 type stubDecoder struct{}
 
-func (d *stubDecoder) Format() filespec.Format            { return filespec.FormatPositional }
-func (d *stubDecoder) ReadFirst() (decoder.Row, error)    { return nil, nil }
+func (d *stubDecoder) Format() filespec.Format         { return filespec.FormatPositional }
+func (d *stubDecoder) ReadFirst() (decoder.Row, error) { return nil, nil }
 func (d *stubDecoder) Rows() iter.Seq2[decoder.Row, error] {
 	return func(yield func(decoder.Row, error) bool) {}
 }
-func (d *stubDecoder) Sort(_ *decoder.RecordTypeDetector, _ decoder.KeyExtractor, _ []string) error {
+func (d *stubDecoder) Sort(_ *decoder.RecordTypeDetector, _ []filespec.KeyFieldDef, _ []string) error {
 	return nil
 }
 func (d *stubDecoder) Close() error { return nil }

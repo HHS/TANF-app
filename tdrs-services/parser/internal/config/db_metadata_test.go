@@ -53,6 +53,40 @@ func TestRecordSchemaToTable(t *testing.T) {
 	}
 }
 
+func TestApplyTablePrefix(t *testing.T) {
+	tests := []struct {
+		name        string
+		tableName   string
+		tablePrefix string
+		want        string
+	}{
+		{"default shadow", "parser_error", DefaultTablePrefix, "shadow_parser_error"},
+		{"empty prefix", "parser_error", "", "parser_error"},
+		{"already prefixed", "shadow_parser_error", DefaultTablePrefix, "shadow_parser_error"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := ApplyTablePrefix(tt.tableName, tt.tablePrefix)
+			if got != tt.want {
+				t.Errorf("ApplyTablePrefix(%q, %q) = %q, want %q", tt.tableName, tt.tablePrefix, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestDataFileTableName(t *testing.T) {
+	got := DataFileTableName(DefaultTablePrefix)
+	if got != "shadow_data_files_datafile" {
+		t.Errorf("DataFileTableName = %q, want shadow_data_files_datafile", got)
+	}
+
+	got = DataFileTableName("")
+	if got != "data_files_datafile" {
+		t.Errorf("DataFileTableName with empty prefix = %q, want data_files_datafile", got)
+	}
+}
+
 // ---------------------------------------------------------------------------
 // schemaPathToModelName — covers all programs including special cases
 // ---------------------------------------------------------------------------
@@ -90,28 +124,28 @@ func TestRealConfig_MetadataTableNames(t *testing.T) {
 
 	// Every record schema (non-header, non-trailer) must have metadata with correct table name
 	expectedTables := map[string]string{
-		"tanf/t1":        "search_indexes_tanf_t1",
-		"tanf/t2":        "search_indexes_tanf_t2",
-		"tanf/t3":        "search_indexes_tanf_t3",
-		"tanf/t4":        "search_indexes_tanf_t4",
-		"tanf/t5":        "search_indexes_tanf_t5",
-		"tanf/t6":        "search_indexes_tanf_t6",
-		"tanf/t7":        "search_indexes_tanf_t7",
-		"ssp/m1":         "search_indexes_ssp_m1",
-		"ssp/m2":         "search_indexes_ssp_m2",
-		"ssp/m3":         "search_indexes_ssp_m3",
-		"ssp/m4":         "search_indexes_ssp_m4",
-		"ssp/m5":         "search_indexes_ssp_m5",
-		"ssp/m6":         "search_indexes_ssp_m6",
-		"ssp/m7":         "search_indexes_ssp_m7",
-		"tribal_tanf/t1": "search_indexes_tribal_tanf_t1",
-		"tribal_tanf/t2": "search_indexes_tribal_tanf_t2",
-		"tribal_tanf/t3": "search_indexes_tribal_tanf_t3",
-		"tribal_tanf/t4": "search_indexes_tribal_tanf_t4",
-		"tribal_tanf/t5": "search_indexes_tribal_tanf_t5",
-		"tribal_tanf/t6": "search_indexes_tribal_tanf_t6",
-		"tribal_tanf/t7": "search_indexes_tribal_tanf_t7",
-		"fra/te1":        "search_indexes_tanf_exiter1",
+		"tanf/t1":        "shadow_search_indexes_tanf_t1",
+		"tanf/t2":        "shadow_search_indexes_tanf_t2",
+		"tanf/t3":        "shadow_search_indexes_tanf_t3",
+		"tanf/t4":        "shadow_search_indexes_tanf_t4",
+		"tanf/t5":        "shadow_search_indexes_tanf_t5",
+		"tanf/t6":        "shadow_search_indexes_tanf_t6",
+		"tanf/t7":        "shadow_search_indexes_tanf_t7",
+		"ssp/m1":         "shadow_search_indexes_ssp_m1",
+		"ssp/m2":         "shadow_search_indexes_ssp_m2",
+		"ssp/m3":         "shadow_search_indexes_ssp_m3",
+		"ssp/m4":         "shadow_search_indexes_ssp_m4",
+		"ssp/m5":         "shadow_search_indexes_ssp_m5",
+		"ssp/m6":         "shadow_search_indexes_ssp_m6",
+		"ssp/m7":         "shadow_search_indexes_ssp_m7",
+		"tribal_tanf/t1": "shadow_search_indexes_tribal_tanf_t1",
+		"tribal_tanf/t2": "shadow_search_indexes_tribal_tanf_t2",
+		"tribal_tanf/t3": "shadow_search_indexes_tribal_tanf_t3",
+		"tribal_tanf/t4": "shadow_search_indexes_tribal_tanf_t4",
+		"tribal_tanf/t5": "shadow_search_indexes_tribal_tanf_t5",
+		"tribal_tanf/t6": "shadow_search_indexes_tribal_tanf_t6",
+		"tribal_tanf/t7": "shadow_search_indexes_tribal_tanf_t7",
+		"fra/te1":        "shadow_search_indexes_tanf_exiter1",
 	}
 
 	for path, wantTable := range expectedTables {
@@ -123,6 +157,28 @@ func TestRealConfig_MetadataTableNames(t *testing.T) {
 		if meta.TableName != wantTable {
 			t.Errorf("schema %s: TableName = %q, want %q", path, meta.TableName, wantTable)
 		}
+	}
+}
+
+func TestRealConfig_MetadataTableNamesProductionMode(t *testing.T) {
+	dir := configDir(t)
+	cfg := &Config{
+		Global:        GlobalConfig{ConfigDir: dir},
+		SchemaFiles:   []string{"schemas/**/*.yaml"},
+		FilespecFiles: []string{"filespecs/**/*.yaml"},
+		Database:      DatabaseConfig{ShadowMode: false, TablePrefix: DefaultTablePrefix},
+	}
+	reg, err := NewRegistry(cfg)
+	if err != nil {
+		t.Fatalf("NewRegistry with real config failed: %v", err)
+	}
+
+	meta := reg.GetSchemaMetadata("tanf/t1")
+	if meta == nil {
+		t.Fatal("no metadata for tanf/t1")
+	}
+	if meta.TableName != "search_indexes_tanf_t1" {
+		t.Errorf("TableName = %q, want production search_indexes_tanf_t1", meta.TableName)
 	}
 }
 
@@ -165,7 +221,7 @@ func TestRealConfig_MetadataColumnCounts(t *testing.T) {
 		"tanf/t7":        2 + 4 + 3,  // 9
 		"ssp/m1":         3 + 39 + 3, // 46
 		"ssp/m2":         4 + 63 + 3, // 70
-		"ssp/m3":         4 + 18 + 3, // 25
+		"ssp/m3":         3 + 18 + 3, // 24
 		"ssp/m4":         3 + 9 + 3,  // 15
 		"ssp/m5":         3 + 24 + 3, // 30
 		"ssp/m6":         2 + 11 + 3, // 16
@@ -274,7 +330,7 @@ func TestBuildDbSchemaMetadata_ColumnOrder(t *testing.T) {
 	}).Compile()
 	cs.Path = "ssp/m1"
 
-	meta := buildDbSchemaMetadata(cs)
+	meta := buildDbSchemaMetadata(cs, DefaultTablePrefix)
 
 	// Verify exact ordering: shared, then segment, then standard
 	expected := []string{
@@ -301,7 +357,7 @@ func TestBuildDbSchemaMetadata_NoSegments(t *testing.T) {
 	}).Compile()
 	cs.Path = "tanf/t1"
 
-	meta := buildDbSchemaMetadata(cs)
+	meta := buildDbSchemaMetadata(cs, DefaultTablePrefix)
 
 	expectedColumns := []string{"RecordType", "id", "datafile_id", "line_number"}
 	if len(meta.Columns) != len(expectedColumns) {
@@ -326,7 +382,7 @@ func TestBuildDbSchemaMetadata_MultipleSegmentsUsesFirst(t *testing.T) {
 	}).Compile()
 	cs.Path = "tanf/t3"
 
-	meta := buildDbSchemaMetadata(cs)
+	meta := buildDbSchemaMetadata(cs, DefaultTablePrefix)
 
 	// 2 shared + 2 segment (first only) + 3 standard = 7
 	if len(meta.Columns) != 7 {
@@ -353,7 +409,7 @@ func TestBuildDbSchemaMetadata_EmptySchema(t *testing.T) {
 	}).Compile()
 	cs.Path = "tanf/t1"
 
-	meta := buildDbSchemaMetadata(cs)
+	meta := buildDbSchemaMetadata(cs, DefaultTablePrefix)
 
 	if len(meta.Columns) != 3 {
 		t.Fatalf("expected 3 standard columns, got %d: %v", len(meta.Columns), meta.Columns)
@@ -381,8 +437,8 @@ func TestSetContentTypeIDs_PartialMatch(t *testing.T) {
 	reg.buildAllMetadata()
 
 	contentTypes := map[string]int32{
-		"tanf_t1": 10,
-		"ssp_m1":  20,
+		"shadowtanf_t1": 10,
+		"shadowssp_m1":  20,
 		// tanf_t2 intentionally missing
 	}
 	reg.SetContentTypeIDs(contentTypes)
@@ -403,6 +459,28 @@ func TestSetContentTypeIDs_PartialMatch(t *testing.T) {
 	}
 	if meta.ContentTypeID != nil {
 		t.Errorf("tanf/t2 content type = %d, want nil", *meta.ContentTypeID)
+	}
+}
+
+func TestSetContentTypeIDs_ProductionModeUsesProductionModels(t *testing.T) {
+	schemas := map[string]*schema.CompiledSchema{
+		"tanf/t1": (&schema.SchemaDef{RecordType: "T1", Shared: []schema.FieldDef{{Name: "RecordType"}}}).Compile(),
+	}
+	schemas["tanf/t1"].Path = "tanf/t1"
+
+	reg := NewTestRegistry(schemas)
+	reg.tablePrefix = ""
+	reg.buildAllMetadata()
+
+	contentTypes := map[string]int32{
+		"shadowtanf_t1": 10,
+		"tanf_t1":       11,
+	}
+	reg.SetContentTypeIDs(contentTypes)
+
+	meta := reg.GetSchemaMetadata("tanf/t1")
+	if meta == nil || meta.ContentTypeID == nil || *meta.ContentTypeID != 11 {
+		t.Error("tanf/t1 production content type should be 11")
 	}
 }
 

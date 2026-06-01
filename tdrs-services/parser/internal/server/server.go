@@ -2,8 +2,10 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
@@ -11,6 +13,7 @@ import (
 	"go-parser/internal/db"
 	"go-parser/internal/decoder"
 	"go-parser/internal/pipeline"
+	"go-parser/internal/sentinel"
 	"go-parser/internal/storage/reader"
 	"go-parser/internal/storage/writer"
 	"go-parser/internal/validation"
@@ -59,6 +62,7 @@ func (b *Base) ConnectDB(ctx context.Context) (*pgxpool.Pool, error) {
 // and runs the parsing pipeline. It centralizes the shared orchestration logic
 // used by all server modes.
 func (b *Base) RunPipeline(ctx context.Context, source reader.FileSource, sink writer.Sink, dfCtx pipeline.DataFileContext) (*pipeline.ParsingResult, error) {
+	startTime := time.Now()
 	file, err := source.Open(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open file: %w", err)
@@ -73,10 +77,31 @@ func (b *Base) RunPipeline(ctx context.Context, source reader.FileSource, sink w
 
 	dec, err := decoder.CreateDecoder(file, spec)
 	if err != nil {
+		if errors.Is(err, sentinel.ErrDecoderUnknown) {
+			return b.handleDecoderUnknown(ctx, sink, dfCtx, startTime)
+		}
 		return nil, fmt.Errorf("failed to create decoder: %w", err)
 	}
 	defer dec.Close()
 
 	pipeln := pipeline.NewPipeline(sink, b.Registry, b.Validators, pipeline.NewConfig(b.Config))
 	return pipeln.Process(ctx, dec, dfCtx)
+}
+
+func (b *Base) handleDecoderUnknown(ctx context.Context, sink writer.Sink, dfCtx pipeline.DataFileContext, startTime time.Time) (*pipeline.ParsingResult, error) {
+	parserErr := writer.SerializeParserError(
+		1,
+		sentinel.DecoderUnknownMessage,
+		validation.ErrorTypePreCheck,
+		dfCtx.DatafileID,
+	)
+	if _, err := sink.Flush(ctx, "parser_error", writer.ParserErrorColumns(), [][]any{parserErr}); err != nil {
+		return nil, fmt.Errorf("write decoder unknown parser error: %w", err)
+	}
+	return &pipeline.ParsingResult{
+		RecordCounts: map[string]int64{"parser_error": 1},
+		ErrorCount:   1,
+		ErrorStats:   &pipeline.ErrorStats{RecordPreCheck: 1},
+		Duration:     time.Since(startTime),
+	}, nil
 }

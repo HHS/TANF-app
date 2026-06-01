@@ -18,19 +18,19 @@ class ErrorReportFactory:
     """Factory class for error report generators."""
 
     @staticmethod
-    def get_error_report_generator(datafile):
+    def get_error_report_generator(datafile, parser_error_model=ParserError):
         """Get error report generator."""
         active = DataFile.Section.ACTIVE_CASE_DATA
         closed = DataFile.Section.CLOSED_CASE_DATA
         if active in datafile.section or closed in datafile.section:
-            return ActiveClosedErrorReport(datafile)
+            return ActiveClosedErrorReport(datafile, parser_error_model)
         elif (
             DataFile.Section.AGGREGATE_DATA in datafile.section
             or DataFile.Section.STRATUM_DATA in datafile.section
         ):
-            return AggregateStratumErrorReport(datafile)
+            return AggregateStratumErrorReport(datafile, parser_error_model)
         elif datafile.section == DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS:
-            return FRADataErrorReport(datafile)
+            return FRADataErrorReport(datafile, parser_error_model)
         else:
             raise ValueError(f"Unsupported section: {datafile.section}")
 
@@ -38,10 +38,12 @@ class ErrorReportFactory:
 class ErrorReportBase(ABC):
     """Base class for error report generators."""
 
-    def __init__(self, datafile):
+    def __init__(self, datafile, parser_error_model=ParserError):
         super().__init__()
         self.datafile = datafile
-        self.parser_errors = ParserError.objects.filter(file=datafile, deprecated=False)
+        self.parser_errors = parser_error_model.objects.filter(
+            file=datafile, deprecated=False
+        )
         self.output = BytesIO()
         self.workbook = xlsxwriter.Workbook(self.output)
         self.row_generator = self.get_row_generator()
@@ -92,8 +94,8 @@ class ErrorReportBase(ABC):
 class FRADataErrorReport(ErrorReportBase):
     """FRA Error Report generator."""
 
-    def __init__(self, datafile):
-        super().__init__(datafile)
+    def __init__(self, datafile, parser_error_model=ParserError):
+        super().__init__(datafile, parser_error_model)
 
     def generate(self):
         """Generate and return FRA error report."""
@@ -145,8 +147,8 @@ class FRADataErrorReport(ErrorReportBase):
 class TanfDataErrorReportBase(ErrorReportBase):
     """TANF Data Report Error Report generator."""
 
-    def __init__(self, datafile):
-        super().__init__(datafile)
+    def __init__(self, datafile, parser_error_model=ParserError):
+        super().__init__(datafile, parser_error_model)
         self.prioritized_errors = self.get_prioritized_queryset()
 
     @abstractmethod
@@ -305,8 +307,8 @@ class TanfDataErrorReportBase(ErrorReportBase):
 class ActiveClosedErrorReport(TanfDataErrorReportBase):
     """TANF Data Report Error Report generator for Active and Closed files."""
 
-    def __init__(self, datafile):
-        super().__init__(datafile)
+    def __init__(self, datafile, parser_error_model=ParserError):
+        super().__init__(datafile, parser_error_model)
         self.prioritized_errors = self.get_prioritized_queryset()
 
     def get_prioritized_queryset(self):
@@ -390,8 +392,8 @@ class ActiveClosedErrorReport(TanfDataErrorReportBase):
 class AggregateStratumErrorReport(TanfDataErrorReportBase):
     """TANF Data Report Error Report generator for Aggregate and Stratum files."""
 
-    def __init__(self, datafile):
-        super().__init__(datafile)
+    def __init__(self, datafile, parser_error_model=ParserError):
+        super().__init__(datafile, parser_error_model)
         self.prioritized_errors = self.get_prioritized_queryset()
 
     def get_prioritized_queryset(self):

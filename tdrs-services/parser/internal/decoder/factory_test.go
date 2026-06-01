@@ -1,10 +1,12 @@
 package decoder
 
 import (
+	"errors"
 	"os"
 	"testing"
 
 	"go-parser/internal/config/filespec"
+	"go-parser/internal/sentinel"
 )
 
 func TestCreateDecoder_Positional(t *testing.T) {
@@ -101,6 +103,39 @@ func TestCreateDecoder_UnknownFormat(t *testing.T) {
 	_, err = CreateDecoder(tmpFile, spec)
 	if err == nil {
 		t.Fatal("expected error for unknown format")
+	}
+	if !errors.Is(err, sentinel.ErrDecoderUnknown) {
+		t.Fatalf("expected ErrDecoderUnknown, got %v", err)
+	}
+}
+
+func TestCreateColumnarDecoder_UnknownContentTypeReturnsSentinel(t *testing.T) {
+	tmpFile, err := os.CreateTemp("", "goparser-pdf-*.xlsx")
+	if err != nil {
+		t.Fatalf("Failed to create temp file: %v", err)
+	}
+	defer os.Remove(tmpFile.Name())
+
+	if _, err := tmpFile.WriteString("%PDF-1.4\n"); err != nil {
+		t.Fatalf("Failed to write temp file: %v", err)
+	}
+	if _, err := tmpFile.Seek(0, 0); err != nil {
+		t.Fatalf("Failed to seek: %v", err)
+	}
+
+	spec := &filespec.FileSpec{
+		Format: filespec.FormatColumnar,
+		RecordTypeDetection: filespec.RecordTypeDetection{
+			Schema: "test",
+		},
+	}
+
+	_, err = CreateDecoder(tmpFile, spec)
+	if err == nil {
+		t.Fatal("expected error for unknown content type")
+	}
+	if !errors.Is(err, sentinel.ErrDecoderUnknown) {
+		t.Fatalf("expected ErrDecoderUnknown, got %v", err)
 	}
 }
 

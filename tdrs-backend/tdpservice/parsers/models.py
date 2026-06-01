@@ -10,6 +10,7 @@ from django.db import models
 from django.db.models import Case, Count, IntegerField, When
 
 from tdpservice.backends import DataFilesS3Storage
+from tdpservice.common.shadow_models import create_shadow_model
 from tdpservice.data_files.models import DataFile
 from tdpservice.data_files.parser_error_choices import ParserErrorCategoryChoices
 
@@ -29,8 +30,9 @@ def get_s3_upload_path(instance, filename):
     if df.s3_versioning_id:
         file_name_info += f"_{df.s3_versioning_id}"
 
-    if df.reparses.count() > 0:
-        reparse = df.reparses.order_by("-created_at").first()
+    reparses = getattr(df, "reparses", None)
+    if reparses is not None and reparses.count() > 0:
+        reparse = reparses.order_by("-created_at").first()
         file_name_info += f"_reparse-{reparse.pk}"
 
     return os.path.join(file_path, f"{file_name_info}.xlsx")
@@ -207,3 +209,40 @@ class DataFileSummary(models.Model):
             return DataFileSummary.Status.PARTIALLY_ACCEPTED
         else:
             return DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+
+
+ShadowParserError = create_shadow_model(
+    "ShadowParserError",
+    ParserError,
+    "shadow_parser_error",
+    app_label="parsers",
+    module=__name__,
+    foreign_key_overrides={
+        "file": models.ForeignKey(
+            "data_files.ShadowDataFile",
+            on_delete=models.CASCADE,
+            related_name="shadow_parser_errors",
+            null=True,
+        ),
+        "content_type": models.ForeignKey(
+            "contenttypes.ContentType",
+            on_delete=models.CASCADE,
+            null=True,
+        ),
+    },
+)
+
+ShadowDataFileSummary = create_shadow_model(
+    "ShadowDataFileSummary",
+    DataFileSummary,
+    "shadow_parsers_datafilesummary",
+    app_label="parsers",
+    module=__name__,
+    foreign_key_overrides={
+        "datafile": models.OneToOneField(
+            "data_files.ShadowDataFile",
+            on_delete=models.CASCADE,
+            related_name="shadow_summary",
+        ),
+    },
+)

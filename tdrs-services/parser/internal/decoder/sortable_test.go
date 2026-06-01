@@ -15,11 +15,11 @@ type testDecoder struct {
 	rows []Row
 }
 
-func (d *testDecoder) Format() filespec.Format        { return filespec.FormatPositional }
-func (d *testDecoder) ReadFirst() (Row, error)         { return nil, nil }
-func (d *testDecoder) Close() error                    { return nil }
-func (d *testDecoder) Sort(det *RecordTypeDetector, ke KeyExtractor, gs []string) error {
-	return d.Sortable.DoSort(d.unsortedRows(), det, ke, gs)
+func (d *testDecoder) Format() filespec.Format { return filespec.FormatPositional }
+func (d *testDecoder) ReadFirst() (Row, error) { return nil, nil }
+func (d *testDecoder) Close() error            { return nil }
+func (d *testDecoder) Sort(det *RecordTypeDetector, keyFields []filespec.KeyFieldDef, gs []string) error {
+	return d.Sortable.DoSort(d.unsortedRows(), det, keyFields, gs)
 }
 func (d *testDecoder) Rows() iter.Seq2[Row, error] {
 	if d.IsSorted() {
@@ -47,6 +47,13 @@ func makeTestRow(lineNum int, data string) *PositionalRow {
 		rt = data[:2]
 	}
 	return NewPositionalRow(lineNum, rt, len(data), data)
+}
+
+func testPositionalKeyFields() []filespec.KeyFieldDef {
+	return []filespec.KeyFieldDef{
+		{Name: "rpt_month_year", PositionDef: filespec.PositionDef{Start: 2, End: 8}},
+		{Name: "case_number", PositionDef: filespec.PositionDef{Start: 8, End: 19}},
+	}
 }
 
 func buildTestDetector() *RecordTypeDetector {
@@ -80,10 +87,7 @@ func buildTestDetector() *RecordTypeDetector {
 
 func TestSortable_SortsByKey(t *testing.T) {
 	detector := buildTestDetector()
-	keyExtractor := &PositionalKeyExtractor{
-		RptMonthYear: filespec.PositionDef{Start: 2, End: 8},
-		CaseNumber:   filespec.PositionDef{Start: 8, End: 19},
-	}
+	keyFields := testPositionalKeyFields()
 	groupedSchemas := []string{"tanf/t1", "tanf/t2", "tanf/t3"}
 
 	dec := &testDecoder{
@@ -95,7 +99,7 @@ func TestSortable_SortsByKey(t *testing.T) {
 		},
 	}
 
-	err := dec.Sort(detector, keyExtractor, groupedSchemas)
+	err := dec.Sort(detector, keyFields, groupedSchemas)
 	if err != nil {
 		t.Fatalf("Sort failed: %v", err)
 	}
@@ -123,10 +127,7 @@ func TestSortable_SortsByKey(t *testing.T) {
 
 func TestSortable_SeparatesTrailerAndUnkeyed(t *testing.T) {
 	detector := buildTestDetector()
-	keyExtractor := &PositionalKeyExtractor{
-		RptMonthYear: filespec.PositionDef{Start: 2, End: 8},
-		CaseNumber:   filespec.PositionDef{Start: 8, End: 19},
-	}
+	keyFields := testPositionalKeyFields()
 	groupedSchemas := []string{"tanf/t1", "tanf/t2", "tanf/t3"}
 
 	dec := &testDecoder{
@@ -138,7 +139,7 @@ func TestSortable_SeparatesTrailerAndUnkeyed(t *testing.T) {
 		},
 	}
 
-	err := dec.Sort(detector, keyExtractor, groupedSchemas)
+	err := dec.Sort(detector, keyFields, groupedSchemas)
 	if err != nil {
 		t.Fatalf("Sort failed: %v", err)
 	}
@@ -200,10 +201,7 @@ func TestSortable_UnsortedWhenNotSorted(t *testing.T) {
 
 func TestSortable_StableSort(t *testing.T) {
 	detector := buildTestDetector()
-	keyExtractor := &PositionalKeyExtractor{
-		RptMonthYear: filespec.PositionDef{Start: 2, End: 8},
-		CaseNumber:   filespec.PositionDef{Start: 8, End: 19},
-	}
+	keyFields := testPositionalKeyFields()
 	groupedSchemas := []string{"tanf/t1", "tanf/t2", "tanf/t3"}
 
 	// Multiple records for same case — must preserve T1, T2, T3 order
@@ -215,7 +213,7 @@ func TestSortable_StableSort(t *testing.T) {
 		},
 	}
 
-	err := dec.Sort(detector, keyExtractor, groupedSchemas)
+	err := dec.Sort(detector, keyFields, groupedSchemas)
 	if err != nil {
 		t.Fatalf("Sort failed: %v", err)
 	}

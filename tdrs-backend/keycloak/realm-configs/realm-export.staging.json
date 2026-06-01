@@ -237,6 +237,28 @@
           }
         }
       ]
+    },
+    {
+      "name": "tdp-api-audience",
+      "description": "Adds the Django API audience to access tokens for external API clients.",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "false",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "name": "tdp-django audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "tdp-django",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ]
     }
   ],
   "clients": [
@@ -300,6 +322,45 @@
       "attributes": {
         "post.logout.redirect.uris": "https://grafana.app.cloud.gov/*"
       }
+    },
+    {
+      "clientId": "tdp-cli",
+      "name": "TDP CLI / Postman",
+      "description": "Public client for external API tools (Postman, CLI, CI). Authorization Code + PKCE and Device Authorization Grant; no client secret.",
+      "enabled": true,
+      "clientAuthenticatorType": "none",
+      "redirectUris": [
+        "http://localhost/*",
+        "http://127.0.0.1/*",
+        "https://oauth.pstmn.io/v1/callback",
+        "${KC_CLI_REDIRECT_URI:http://localhost/*}"
+      ],
+      "webOrigins": [
+        "http://localhost",
+        "http://127.0.0.1",
+        "${KC_CLI_WEB_ORIGIN:http://localhost}"
+      ],
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": false,
+      "fullScopeAllowed": true,
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "oauth2.device.authorization.grant.enabled": "true",
+        "post.logout.redirect.uris": "+"
+      },
+      "defaultClientScopes": [
+        "openid",
+        "email",
+        "profile",
+        "tdp-user-attributes",
+        "tdp-api-audience"
+      ],
+      "optionalClientScopes": []
     }
   ],
   "users": [
@@ -369,7 +430,7 @@
       "displayName": "Login.gov",
       "providerId": "oidc",
       "enabled": true,
-      "hideOnLogin": true,
+      "hideOnLogin": false,
       "trustEmail": true,
       "storeToken": false,
       "addReadTokenRoleOnCreate": false,

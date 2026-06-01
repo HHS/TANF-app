@@ -45,10 +45,6 @@ func RegisterFunctions() []expr.Option {
 		// Group validators (take group explicitly)
 		expr.Function("getRecordsOfType", wrap2(getRecordsOfType),
 			new(func(*parser.ParsedGroup, string) []*parser.ParsedRecord)),
-		expr.Function("hasAnyRecordType", wrap2(hasAnyRecordType),
-			new(func(map[string]int, []any) bool)),
-		expr.Function("anyRecordOfTypesHasInt", wrap4(anyRecordOfTypesHasInt),
-			new(func(*parser.ParsedGroup, []any, string, int) bool)),
 		expr.Function("hasAnyRecordOfTypeWithInt", wrap4(hasAnyRecordOfTypeWithInt),
 			new(func(*parser.ParsedGroup, string, string, int) bool)),
 
@@ -325,27 +321,6 @@ func getRecordsOfType(group *parser.ParsedGroup, recordType string) []*parser.Pa
 		}
 	}
 	return result
-}
-
-// hasAnyRecordType returns true when any requested record type is present in the group.
-func hasAnyRecordType(recordCounts map[string]int, recordTypes []any) bool {
-	for _, recordType := range toStringSlice(recordTypes) {
-		if recordCounts[recordType] > 0 {
-			return true
-		}
-	}
-	return false
-}
-
-// anyRecordOfTypesHasInt returns true when any record of the given types has
-// the requested integer field value.
-func anyRecordOfTypesHasInt(group *parser.ParsedGroup, recordTypes []any, fieldName string, expectedValue int) bool {
-	for _, recordType := range toStringSlice(recordTypes) {
-		if hasAnyRecordOfTypeWithInt(group, recordType, fieldName, expectedValue) {
-			return true
-		}
-	}
-	return false
 }
 
 // hasAnyRecordOfTypeWithInt returns true when any record of the given type has
