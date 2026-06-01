@@ -436,7 +436,7 @@
       "linkOnly": false,
       "firstBrokerLoginFlowAlias": "tdp-first-broker-login",
       "config": {
-        "clientId": "${LOGIN_GOV_CLIENT_ID:urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-dev}",
+        "clientId": "${LOGIN_GOV_CLIENT_ID:urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-prod}",
         "clientSecret": "unused-private-key-jwt-auth",
         "clientAuthMethod": "private_key_jwt",
         "authorizationUrl": "${LOGIN_GOV_AUTH_URL:https://idp.int.identitysandbox.gov/openid_connect/authorize}",
