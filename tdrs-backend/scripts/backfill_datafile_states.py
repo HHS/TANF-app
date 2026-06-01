@@ -58,6 +58,68 @@ def _parse_apply(args):
     return False
 
 
+def _resolve_target_state(df):
+    """Return ``(target_state, reason, skip_message)`` for a DataFile.
+
+    ``target_state`` is None when the row should be skipped; ``skip_message``
+    explains why (or is empty when the row is actionable).
+    """
+    summary = getattr(df, "summary", None)
+
+    if summary:
+        if summary.status == DataFileSummary.Status.PENDING:
+            return None, "", f"SKIP {df.id}: summary is Pending"
+
+        target_state = STATUS_TO_STATE.get(summary.status)
+        reason = f"summary status is {summary.status}"
+        if target_state is None:
+            return None, reason, f"SKIP {df.id}: no target state for {reason}"
+        return target_state, reason, ""
+
+    if not df.file or not df.file.name:
+        return None, "", f"SKIP {df.id}: no summary and no stored file attached"
+
+    if not df.file.storage.exists(df.file.name):
+        return (
+            None,
+            "",
+            f"SKIP {df.id}: no summary and stored file not found: {df.file.name}",
+        )
+
+    return SubmissionState.VIRUS_SCAN_COMPLETED, "no summary, stored file exists", ""
+
+
+def _walk_to_target_state(locked, target_state):
+    """Walk ``locked`` through legal lifecycle transitions to ``target_state``."""
+    note = "one-time legacy state backfill"
+    if target_state in {
+        SubmissionState.PARSE_COMPLETED,
+        SubmissionState.PARSED_WITH_ERRORS,
+        SubmissionState.PARSE_FAILED,
+    }:
+        transition_datafile(locked, SubmissionState.VIRUS_SCAN_STARTED, note=note)
+        transition_datafile(locked, SubmissionState.VIRUS_SCAN_COMPLETED, note=note)
+        transition_datafile(locked, SubmissionState.PARSE_STARTED, note=note)
+    elif target_state == SubmissionState.VIRUS_SCAN_COMPLETED:
+        transition_datafile(locked, SubmissionState.VIRUS_SCAN_STARTED, note=note)
+
+    transition_datafile(locked, target_state, note=note)
+
+
+def _apply_target_state(df_id, target_state, counts):
+    """Re-lock ``df_id`` and transition it to ``target_state`` if still safe."""
+    with transaction.atomic():
+        locked = DataFile.objects.select_for_update().get(id=df_id)
+
+        if locked.state != SubmissionState.UPLOADED:
+            counts["skipped"] += 1
+            print(f"SKIP {locked.id}: state changed to {locked.state}")
+            return
+
+        _walk_to_target_state(locked, target_state)
+        counts["updated"] += 1
+
+
 def run(*args):
     """Backfill legacy DataFile submission states based on summary status."""
     # Dry-run:  ./manage.py runscript backfill_datafile_states
@@ -69,93 +131,24 @@ def run(*args):
     if ONLY_UPLOADED:
         qs = qs.filter(state=SubmissionState.UPLOADED)
 
-    counts = {
-        "would_update": 0,
-        "updated": 0,
-        "skipped": 0,
-    }
+    counts = {"would_update": 0, "updated": 0, "skipped": 0}
 
     for df in qs.iterator():
-        target_state = None
-        reason = ""
-
-        summary = getattr(df, "summary", None)
-
-        if summary:
-            if summary.status == DataFileSummary.Status.PENDING:
-                counts["skipped"] += 1
-                print(f"SKIP {df.id}: summary is Pending")
-                continue
-
-            target_state = STATUS_TO_STATE.get(summary.status)
-            reason = f"summary status is {summary.status}"
-
-        else:
-            if not df.file or not df.file.name:
-                counts["skipped"] += 1
-                print(f"SKIP {df.id}: no summary and no stored file attached")
-                continue
-
-            if not df.file.storage.exists(df.file.name):
-                counts["skipped"] += 1
-                print(f"SKIP {df.id}: no summary and stored file not found: {df.file.name}")
-                continue
-
-            target_state = SubmissionState.VIRUS_SCAN_COMPLETED
-            reason = "no summary, stored file exists"
-
+        target_state, reason, skip_message = _resolve_target_state(df)
         if target_state is None:
             counts["skipped"] += 1
-            print(f"SKIP {df.id}: no target state for {reason}")
+            print(skip_message)
             continue
 
-        print(f"{'UPDATE' if apply else 'WOULD UPDATE'} {df.id}: {df.state} -> {target_state.value} ({reason})")
+        print(
+            f"{'UPDATE' if apply else 'WOULD UPDATE'} {df.id}: "
+            f"{df.state} -> {target_state.value} ({reason})"
+        )
 
         if not apply:
             counts["would_update"] += 1
             continue
 
-        with transaction.atomic():
-            locked = DataFile.objects.select_for_update().get(id=df.id)
-
-            if locked.state != SubmissionState.UPLOADED:
-                counts["skipped"] += 1
-                print(f"SKIP {locked.id}: state changed to {locked.state}")
-                continue
-
-            if target_state in {
-                SubmissionState.PARSE_COMPLETED,
-                SubmissionState.PARSED_WITH_ERRORS,
-                SubmissionState.PARSE_FAILED,
-            }:
-                transition_datafile(
-                    locked,
-                    SubmissionState.VIRUS_SCAN_STARTED,
-                    note="one-time legacy state backfill",
-                )
-                transition_datafile(
-                    locked,
-                    SubmissionState.VIRUS_SCAN_COMPLETED,
-                    note="one-time legacy state backfill",
-                )
-                transition_datafile(
-                    locked,
-                    SubmissionState.PARSE_STARTED,
-                    note="one-time legacy state backfill",
-                )
-
-            elif target_state == SubmissionState.VIRUS_SCAN_COMPLETED:
-                transition_datafile(
-                    locked,
-                    SubmissionState.VIRUS_SCAN_STARTED,
-                    note="one-time legacy state backfill",
-                )
-
-            transition_datafile(
-                locked,
-                target_state,
-                note="one-time legacy state backfill",
-            )
-            counts["updated"] += 1
+        _apply_target_state(df.id, target_state, counts)
 
     print(counts)

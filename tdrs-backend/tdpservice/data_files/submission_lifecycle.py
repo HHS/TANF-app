@@ -173,3 +173,36 @@ def prepare_datafile_for_reparse(
     )
 
     return data_file, True
+
+
+def revert_reparse_request(data_file, original_state, note=""):
+    """Revert a DataFile out of REPARSE_REQUESTED back to its prior state.
+
+    Recovery helper for the case where a reparse was queued but the worker
+    setup (sequential check, backup, etc.) failed before parser tasks were
+    actually scheduled. The normal state machine does not allow stepping
+    backwards from REPARSE_REQUESTED, so this bypasses ``transition_datafile``
+    intentionally. Returns True if a revert occurred, False otherwise (e.g.,
+    the file has already progressed past REPARSE_REQUESTED).
+    """
+    current_state = coerce_submission_state(data_file.state)
+    if current_state != SubmissionState.REPARSE_REQUESTED:
+        logger.info(
+            "Skipping reparse revert; DataFile is no longer in REPARSE_REQUESTED.",
+            extra={"data_file_id": data_file.id, "current_state": current_state.value},
+        )
+        return False
+
+    target_state = coerce_submission_state(original_state)
+    data_file.state = target_state
+    data_file.save(update_fields=["state"])
+    logger.warning(
+        "DataFile reparse request reverted after worker setup failure.",
+        extra={
+            "data_file_id": data_file.id,
+            "previous_state": current_state.value,
+            "next_state": target_state.value,
+            "note": note,
+        },
+    )
+    return True

@@ -24,6 +24,22 @@ from tdpservice.users.models import User
 logger = logging.getLogger(__name__)
 
 
+class ReparseDestructiveCleanupStarted(Exception):
+    """Raised when a reparse failure occurs after destructive cleanup begins.
+
+    Once ``delete_associated_models`` has run, the associated summaries and
+    parser errors are gone and the database is in the documented
+    "INCONSISTENT! Restore the DB from the backup" state. Callers must NOT
+    treat the failure as recoverable (e.g. by reverting DataFile.state back
+    to its pre-reparse value) because doing so would lie about the data: the
+    file would look like its prior parsed state with no underlying records.
+    """
+
+    def __init__(self, original_exception):
+        self.original_exception = original_exception
+        super().__init__(str(original_exception))
+
+
 def handle_datafiles(files, meta_model, log_context, previous_summary_statuses=None):
     """Delete, re-save, and reparse selected datafiles."""
     previous_summary_statuses = previous_summary_statuses or {}
@@ -126,17 +142,26 @@ def clean_reparse(selected_file_ids):
     meta_model.total_num_records_initial = count_total_num_records(log_context)
     meta_model.save()
 
-    delete_associated_models(meta_model, file_ids, log_context)
+    # Boundary: everything below this point performs destructive DB cleanup
+    # (deleting summaries/errors, re-saving datafiles, scheduling parser
+    # tasks). Any exception here must be re-raised as
+    # ``ReparseDestructiveCleanupStarted`` so callers know they cannot safely
+    # revert DataFile.state — the supporting rows are already gone and the
+    # "restore from backup" recovery path applies.
+    try:
+        delete_associated_models(meta_model, file_ids, log_context)
 
-    meta_model.timeout_at = meta_model.created_at + calculated_timeout_at
-    meta_model.save()
-    logger.info(
-        f"Deleted a total of {meta_model.num_records_deleted} records across {num_files} files."
-    )
+        meta_model.timeout_at = meta_model.created_at + calculated_timeout_at
+        meta_model.save()
+        logger.info(
+            f"Deleted a total of {meta_model.num_records_deleted} records across {num_files} files."
+        )
 
-    # Delete and re-save datafiles to handle cascading dependencies
-    logger.info(f"Deleting and re-parsing {num_files} files")
-    handle_datafiles(files, meta_model, log_context, previous_summary_statuses)
+        # Delete and re-save datafiles to handle cascading dependencies
+        logger.info(f"Deleting and re-parsing {num_files} files")
+        handle_datafiles(files, meta_model, log_context, previous_summary_statuses)
+    except Exception as exc:
+        raise ReparseDestructiveCleanupStarted(exc) from exc
 
     log(
         "Database cleansing complete and all files have been re-scheduling for parsing and validation.",

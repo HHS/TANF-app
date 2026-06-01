@@ -5,34 +5,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("data_files", "0027_shadowdatafile"),
+        ("data_files", "0026_reparsefilemeta_previous_summary_status"),
     ]
 
     operations = [
         migrations.AlterField(
             model_name="datafile",
-            name="state",
-            field=models.CharField(
-                choices=[
-                    ("uploaded", "Uploaded"),
-                    ("virus_scan_started", "Virus scan started"),
-                    ("virus_scan_failed", "Virus scan failed"),
-                    ("virus_scan_completed", "Virus scan completed"),
-                    ("reparse_requested", "Reparse requested"),
-                    ("parse_started", "Parse started"),
-                    ("parse_failed", "Parse failed"),
-                    ("parsed_with_errors", "Parsed with errors"),
-                    ("parse_completed", "Parse completed"),
-                    ("stuck", "Stuck"),
-                    ("completed", "Completed"),
-                    ("canceled", "Canceled"),
-                ],
-                default="uploaded",
-                max_length=32,
-            ),
-        ),
-        migrations.AlterField(
-            model_name="shadowdatafile",
             name="state",
             field=models.CharField(
                 choices=[
