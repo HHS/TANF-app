@@ -49,7 +49,7 @@ from tdpservice.search_indexes.models.tribal import (
 logger = logging.getLogger(__name__)
 
 GO_PARSE_TASK_NAME = "tdpservice.scheduling.parser_task.go_parse"
-GO_PARSE_TIMEOUT_SECONDS = 60
+GO_PARSE_TIMEOUT_SECONDS = 300
 _GO_PARSER_DATAFILE_IDS = None
 
 os.environ["GO_PARSER_SHADOW_MODE"] = "False"
@@ -78,7 +78,7 @@ def parse_datafile(dfs, datafile, timeout_seconds=GO_PARSE_TIMEOUT_SECONDS):
 
     async_result = celery_app.send_task(
         GO_PARSE_TASK_NAME,
-        args=[datafile.pk],
+        args=[datafile.pk, 0],
         queue=settings.CELERY_GO_PARSER_QUEUE,
     )
 
@@ -86,7 +86,8 @@ def parse_datafile(dfs, datafile, timeout_seconds=GO_PARSE_TIMEOUT_SECONDS):
         task_result = async_result.get(timeout=timeout_seconds, propagate=True)
     except CeleryTimeoutError as exc:
         raise RuntimeError(
-            f"Timed out waiting for Go parser task for datafile {datafile.pk}."
+            f"Timed out waiting for Go parser task {async_result.id} "
+            f"for datafile {datafile.pk} on queue {settings.CELERY_GO_PARSER_QUEUE}."
         ) from exc
 
     if task_result != "success":
@@ -102,7 +103,6 @@ def parse_datafile(dfs, datafile, timeout_seconds=GO_PARSE_TIMEOUT_SECONDS):
 
 
 @pytest.mark.go_parser_integration
-@pytest.mark.usefixtures("go_parser_datafile_cleanup")
 class TestGoParse:
     """Tests for parse and validation flows."""
 
@@ -188,8 +188,8 @@ class TestGoParse:
     @pytest.mark.django_db(transaction=True)
     def test_go_small_correct_file_no_records_created(self, parsed_small_correct_file):
         """Test that small_correct_file does not create records when rejected."""
-        _datafile, _dfs = parsed_small_correct_file
-        assert TANF_T1.objects.count() == 0
+        datafile, _dfs = parsed_small_correct_file
+        assert TANF_T1.objects.filter(datafile=datafile).count() == 0
 
     @pytest.mark.django_db(transaction=True)
     @pytest.mark.parametrize(
@@ -1283,17 +1283,29 @@ class TestGoParse:
             ],
         }
 
-        assert Tribal_TANF_T1.objects.all().count() == 1
-        assert Tribal_TANF_T2.objects.all().count() == 1
-        assert Tribal_TANF_T3.objects.all().count() == 2
+        assert (
+            Tribal_TANF_T1.objects.filter(datafile=tribal_section_1_file).count() == 1
+        )
+        assert (
+            Tribal_TANF_T2.objects.filter(datafile=tribal_section_1_file).count() == 1
+        )
+        assert (
+            Tribal_TANF_T3.objects.filter(datafile=tribal_section_1_file).count() == 2
+        )
         assert not ParserError.objects.filter(
             file=tribal_section_1_file,
             error_message__contains="Submitted program type",
         ).exists()
 
-        t1_objs = Tribal_TANF_T1.objects.all().order_by("CASH_AMOUNT")
-        t2_objs = Tribal_TANF_T2.objects.all().order_by("MONTHS_FED_TIME_LIMIT")
-        t3_objs = Tribal_TANF_T3.objects.all().order_by("EDUCATION_LEVEL")
+        t1_objs = Tribal_TANF_T1.objects.filter(
+            datafile=tribal_section_1_file
+        ).order_by("CASH_AMOUNT")
+        t2_objs = Tribal_TANF_T2.objects.filter(
+            datafile=tribal_section_1_file
+        ).order_by("MONTHS_FED_TIME_LIMIT")
+        t3_objs = Tribal_TANF_T3.objects.filter(
+            datafile=tribal_section_1_file
+        ).order_by("EDUCATION_LEVEL")
 
         t1 = t1_objs.first()
         t2 = t2_objs.first()
@@ -1310,7 +1322,12 @@ class TestGoParse:
         """Test parsing inconsistent Tribal TANF Section 1 submission."""
         parse_datafile(dfs, tribal_section_1_inconsistency_file)
 
-        assert Tribal_TANF_T1.objects.all().count() == 0
+        assert (
+            Tribal_TANF_T1.objects.filter(
+                datafile=tribal_section_1_inconsistency_file
+            ).count()
+            == 0
+        )
 
         parser_errors = ParserError.objects.filter(
             file=tribal_section_1_inconsistency_file
@@ -1362,11 +1379,19 @@ class TestGoParse:
 
         assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
 
-        assert Tribal_TANF_T4.objects.all().count() == 6
-        assert Tribal_TANF_T5.objects.all().count() == 13
+        assert (
+            Tribal_TANF_T4.objects.filter(datafile=tribal_section_2_file).count() == 6
+        )
+        assert (
+            Tribal_TANF_T5.objects.filter(datafile=tribal_section_2_file).count() == 13
+        )
 
-        t4_objs = Tribal_TANF_T4.objects.all().order_by("CLOSURE_REASON")
-        t5_objs = Tribal_TANF_T5.objects.all().order_by("COUNTABLE_MONTH_FED_TIME")
+        t4_objs = Tribal_TANF_T4.objects.filter(
+            datafile=tribal_section_2_file
+        ).order_by("CLOSURE_REASON")
+        t5_objs = Tribal_TANF_T5.objects.filter(
+            datafile=tribal_section_2_file
+        ).order_by("COUNTABLE_MONTH_FED_TIME")
 
         t4 = t4_objs.first()
         t5 = t5_objs.last()
@@ -1397,9 +1422,13 @@ class TestGoParse:
 
         assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
 
-        assert Tribal_TANF_T6.objects.all().count() == 3
+        assert (
+            Tribal_TANF_T6.objects.filter(datafile=tribal_section_3_file).count() == 3
+        )
 
-        t6_objs = Tribal_TANF_T6.objects.all().order_by("NUM_APPLICATIONS")
+        t6_objs = Tribal_TANF_T6.objects.filter(
+            datafile=tribal_section_3_file
+        ).order_by("NUM_APPLICATIONS")
 
         t6 = t6_objs.first()
 
@@ -1428,9 +1457,13 @@ class TestGoParse:
             ]
         }
 
-        assert Tribal_TANF_T7.objects.all().count() == 18
+        assert (
+            Tribal_TANF_T7.objects.filter(datafile=tribal_section_4_file).count() == 18
+        )
 
-        t7_objs = Tribal_TANF_T7.objects.all().order_by("FAMILIES_MONTH")
+        t7_objs = Tribal_TANF_T7.objects.filter(
+            datafile=tribal_section_4_file
+        ).order_by("FAMILIES_MONTH")
 
         first = t7_objs.first()
         sixth = t7_objs[5]
@@ -1711,7 +1744,10 @@ class TestGoParse:
             "representing the Calendar Year and Quarter formatted as YYYYQ"
         )
 
-        Tribal_TANF_T7.objects.count() == 0
+        assert (
+            Tribal_TANF_T7.objects.filter(datafile=tribal_section_4_bad_quarter).count()
+            == 0
+        )
 
     @pytest.mark.django_db(transaction=True)()
     def test_go_parse_t3_cat2_invalid_citizenship(
@@ -1840,6 +1876,7 @@ class TestGoParse:
         datafile = request.getfixturevalue(file)
         datafile.year = 2024
         datafile.quarter = "Q1"
+        datafile.version = datafile.pk
         datafile.save()
 
         dfs.datafile = datafile
@@ -1847,7 +1884,7 @@ class TestGoParse:
 
         parse_datafile(dfs, datafile)
 
-        assert TANF_Exiter1.objects.all().count() == 0
+        assert TANF_Exiter1.objects.filter(datafile=datafile).count() == 0
 
         errors = ParserError.objects.filter(file=datafile).order_by("id")
         assert len(errors) == 1
@@ -1869,13 +1906,14 @@ class TestGoParse:
         datafile = request.getfixturevalue(file)
         datafile.year = 2024
         datafile.quarter = "Q1"
+        datafile.version = datafile.pk
 
         dfs.datafile = datafile
         dfs.save()
 
         parse_datafile(dfs, datafile)
 
-        assert TANF_Exiter1.objects.all().count() == 0
+        assert TANF_Exiter1.objects.filter(datafile=datafile).count() == 0
 
         errors = ParserError.objects.filter(file=datafile).order_by("id")
         assert len(errors) == 1
@@ -1897,6 +1935,7 @@ class TestGoParse:
         datafile = request.getfixturevalue(file)
         datafile.year = 2024
         datafile.quarter = "Q2"
+        datafile.version = datafile.pk
         datafile.save()
 
         dfs.datafile = datafile
@@ -1905,7 +1944,7 @@ class TestGoParse:
         parse_datafile(dfs, datafile)
         errors = ParserError.objects.filter(file=datafile).order_by("id")
 
-        assert TANF_Exiter1.objects.all().count() == 5
+        assert TANF_Exiter1.objects.filter(datafile=datafile).count() == 5
 
         errors = ParserError.objects.filter(file=datafile).order_by("id")
         assert errors.count() == 8
@@ -1929,6 +1968,7 @@ class TestGoParse:
         datafile = request.getfixturevalue(file)
         datafile.year = 2025
         datafile.quarter = "Q3"
+        datafile.version = datafile.pk
         datafile.save()
 
         dfs.datafile = datafile
@@ -1943,7 +1983,7 @@ class TestGoParse:
         # We get one extra duplicate that the Python parser doesn't detect! The Python parser hasn't been catching that
         # line 13 is a duplicate of line 3
         assert errors.count() == 24
-        assert TANF_Exiter1.objects.all().count() == 8
+        assert TANF_Exiter1.objects.filter(datafile=datafile).count() == 8
         # assert dfs.total_number_of_records_in_file == 28
         # assert dfs.total_number_of_records_created == 10
         assert dfs.get_status() == DataFileSummary.Status.PARTIALLY_ACCEPTED
@@ -1955,6 +1995,7 @@ class TestGoParse:
         datafile = fra_formula_fields_test_xlsx
         datafile.year = 2025
         datafile.quarter = "Q3"
+        datafile.version = datafile.pk
         datafile.save()
 
         dfs.datafile = datafile
@@ -1964,7 +2005,7 @@ class TestGoParse:
 
         errors = ParserError.objects.filter(file=datafile).order_by("id")
         assert errors.count() == 0
-        assert TANF_Exiter1.objects.all().count() == 8
+        assert TANF_Exiter1.objects.filter(datafile=datafile).count() == 8
         # See above TODO
         # assert dfs.total_number_of_records_in_file == 8
         # assert dfs.total_number_of_records_created == 8
@@ -1976,6 +2017,7 @@ class TestGoParse:
         datafile = fra_decoder_unknown
         datafile.year = 2025
         datafile.quarter = "Q3"
+        datafile.version = datafile.pk
         datafile.save()
 
         dfs.datafile = datafile
@@ -2074,6 +2116,7 @@ class TestGoParse:
         """Test parsing super_big_s1_file and validate all records are created."""
         super_big_s1_file.year = 2023
         super_big_s1_file.quarter = "Q2"
+        super_big_s1_file.version = super_big_s1_file.pk
         super_big_s1_file.save()
 
         dfs.datafile = super_big_s1_file
@@ -2084,15 +2127,25 @@ class TestGoParse:
         expected_t2_record_count = 112622
         expected_t3_record_count = 172552
 
-        assert TANF_T1.objects.count() == expected_t1_record_count
-        assert TANF_T2.objects.count() == expected_t2_record_count
-        assert TANF_T3.objects.count() == expected_t3_record_count
+        assert (
+            TANF_T1.objects.filter(datafile=super_big_s1_file).count()
+            == expected_t1_record_count
+        )
+        assert (
+            TANF_T2.objects.filter(datafile=super_big_s1_file).count()
+            == expected_t2_record_count
+        )
+        assert (
+            TANF_T3.objects.filter(datafile=super_big_s1_file).count()
+            == expected_t3_record_count
+        )
 
     @pytest.mark.django_db(transaction=True)
     def test_go_parse_big_s1_file_with_rollback(self, big_s1_rollback_file, dfs):
         """Test parsing big_s1_rollback_file with rollback on error."""
         big_s1_rollback_file.year = 2023
         big_s1_rollback_file.quarter = "Q2"
+        big_s1_rollback_file.version = big_s1_rollback_file.pk
         big_s1_rollback_file.save()
 
         dfs.datafile = big_s1_rollback_file
@@ -2142,6 +2195,8 @@ class TestGoParse:
     ):
         """Test cases for datafiles that have exact duplicate records."""
         datafile = request.getfixturevalue(file)
+        datafile.version = datafile.pk
+        datafile.save()
         dfs.datafile = datafile
 
         parse_datafile(dfs, datafile)
@@ -2161,7 +2216,7 @@ class TestGoParse:
             == f"Duplicate record detected with record type {record_type} at line 3."
         )
 
-        model.objects.count() == 0
+        assert model.objects.filter(datafile=datafile).count() == 0
 
     @pytest.mark.parametrize(
         "file, batch_size, model, record_type, num_errors, err_msg",
@@ -2238,6 +2293,8 @@ class TestGoParse:
     ):
         """Test cases for datafiles that have partial duplicate records."""
         datafile = request.getfixturevalue(file)
+        datafile.version = datafile.pk
+        datafile.save()
         expected_error_msg = err_msg
 
         dfs.datafile = datafile
@@ -2257,7 +2314,7 @@ class TestGoParse:
             in dup_error.error_message
         )
 
-        model.objects.count() == 0
+        assert model.objects.filter(datafile=datafile).count() == 0
 
     @pytest.mark.django_db(transaction=True)
     def test_go_parse_cat_4_edge_case_file(self, cat4_edge_case_file, dfs):
@@ -2274,12 +2331,12 @@ class TestGoParse:
         parser_errors = (
             ParserError.objects.filter(file=cat4_edge_case_file)
             .filter(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
-            .order_by("row_number")
+            .order_by("row_number", "id")
         )
 
-        assert TANF_T1.objects.all().count() == 2
-        assert TANF_T2.objects.all().count() == 2
-        assert TANF_T3.objects.all().count() == 4
+        assert TANF_T1.objects.filter(datafile=cat4_edge_case_file).count() == 2
+        assert TANF_T2.objects.filter(datafile=cat4_edge_case_file).count() == 2
+        assert TANF_T3.objects.filter(datafile=cat4_edge_case_file).count() == 4
 
         # TODO
         # assert dfs.total_number_of_records_in_file == 17

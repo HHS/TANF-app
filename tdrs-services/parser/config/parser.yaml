@@ -27,6 +27,8 @@ server:
     redis_url: "${REDIS_URL}"
     queue: "go-parser"
     num_workers: 1
+    post_parse_task_name: "tdpservice.scheduling.parser_task.post_parse"
+    post_parse_queue: "celery"
   grpc:
     listen_address: ":50051"
   http:

@@ -133,8 +133,42 @@ tasks:
     vars:
       PYTEST_ARGS: '{{.PYTEST_ARGS | default ""}}'
     cmds:
-      - task: backend-up
-      - docker compose -f docker-compose.yml exec web sh -c "DJANGO_SETTINGS_MODULE=tdpservice.settings.go_parser_integration DJANGO_CONFIGURATION=GoParserIntegration pytest -c pytest-go-parser.ini --basetemp=/home/tdpapp/ tdpservice/parsers/test/integration {{.PYTEST_ARGS}}"
+      - task: create-network
+      - |
+        set -e
+        db_name="tdrs_go_integration_$(date +%s)_$$"
+        queue="go-parser-integration-$(date +%s)-$$"
+        post_parse_queue="${queue}-post-parse"
+        container="tdrs-backend-go-parser-integration-$(date +%s)-$$"
+
+        cleanup() {
+          docker rm -f "${container}" >/dev/null 2>&1 || true
+          docker compose -f docker-compose.yml exec -T redis-server \
+            redis-cli DEL "${queue}" "${post_parse_queue}" >/dev/null 2>&1 || true
+          docker compose -f docker-compose.yml exec -T postgres \
+            psql -U tdpuser -d postgres -v ON_ERROR_STOP=1 \
+            -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '${db_name}';" \
+            -c "DROP DATABASE IF EXISTS \"${db_name}\";" >/dev/null 2>&1 || true
+        }
+        trap cleanup EXIT
+
+        docker compose -f docker-compose.yml up -d postgres redis-server localstack web
+        docker compose -f docker-compose.yml exec -T postgres sh -c 'until pg_isready -U tdpuser -d postgres; do sleep 1; done'
+        docker compose -f docker-compose.yml exec -T postgres \
+          psql -U tdpuser -d postgres -v ON_ERROR_STOP=1 \
+          -c "CREATE DATABASE \"${db_name}\" OWNER tdpuser;"
+        docker compose -f docker-compose.yml exec web sh -c "DB_NAME=${db_name} DJANGO_SETTINGS_MODULE=tdpservice.settings.go_parser_integration DJANGO_CONFIGURATION=GoParserIntegration python manage.py migrate --noinput"
+
+        docker compose -f docker-compose.yml build go-parser
+        docker compose -f docker-compose.yml run --rm --detach \
+          --name "${container}" \
+          -e DATABASE_URL="postgres://tdpuser:something_secure@postgres:5432/${db_name}?sslmode=disable" \
+          -e GO_PARSER_SHADOW_MODE=false \
+          -e GO_PARSER_QUEUE="${queue}" \
+          -e GO_PARSER_POST_PARSE_QUEUE="${post_parse_queue}" \
+          go-parser
+
+        docker compose -f docker-compose.yml exec web sh -c "DB_NAME=${db_name} CELERY_GO_PARSER_QUEUE=${queue} DJANGO_SETTINGS_MODULE=tdpservice.settings.go_parser_integration DJANGO_CONFIGURATION=GoParserIntegration pytest -c pytest-go-parser.ini --basetemp=/home/tdpapp/ tdpservice/parsers/test/integration {{.PYTEST_ARGS}}"
 
   backend-pytest-cov:
     desc: 'Generate coverage.json file in the backend container. E.g: task backend-pytest-cov PYTEST_ARGS="tdpservice/test/ -s -vv"'

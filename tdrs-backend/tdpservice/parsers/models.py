@@ -30,8 +30,9 @@ def get_s3_upload_path(instance, filename):
     if df.s3_versioning_id:
         file_name_info += f"_{df.s3_versioning_id}"
 
-    if df.reparses.count() > 0:
-        reparse = df.reparses.order_by("-created_at").first()
+    reparses = getattr(df, "reparses", None)
+    if reparses is not None and reparses.count() > 0:
+        reparse = reparses.order_by("-created_at").first()
         file_name_info += f"_reparse-{reparse.pk}"
 
     return os.path.join(file_path, f"{file_name_info}.xlsx")
