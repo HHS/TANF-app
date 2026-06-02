@@ -16,14 +16,14 @@ default_permissions  = "tdp-workspace"
 [permissions.tdp-workspace.filesystem]
 glob_scan_max_depth = 12
 
-[permissions.tdp-workspace.filesystem.":project_roots"]
+[permissions.tdp-workspace.filesystem.":workspace_roots"]
 "." = "write"
-"**/.env" = "none"
-"**/.env.*" = "none"
-"**/*.tfvars" = "none"
-"**/*.pem" = "none"
-"**/*.rsa" = "none"
-"**/*.key" = "none"
+"**/.env" = "deny"
+"**/.env.*" = "deny"
+"**/*.tfvars" = "deny"
+"**/*.pem" = "deny"
+"**/*.rsa" = "deny"
+"**/*.key" = "deny"
 
 # ---------------------------------------------------------------------------
 # Shell environment
