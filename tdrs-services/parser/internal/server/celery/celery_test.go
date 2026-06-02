@@ -75,14 +75,15 @@ func TestRecordTotalsForResult(t *testing.T) {
 			"shadow_search_indexes_tanf_t2": 7,
 			"parser_error":                  3,
 		},
-		ErrorCount: 3,
+		DetailRecordCount: 15,
+		ErrorCount:        3,
 	}
 
 	created, total := recordTotalsForResult(result)
 	if created != 12 {
 		t.Errorf("created = %d, want 12", created)
 	}
-	if total != 12 {
+	if total != 15 {
 		t.Errorf("total = %d, want 15", total)
 	}
 }

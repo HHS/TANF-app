@@ -760,7 +760,7 @@ class Common(Configuration):
     CYPRESS_TOKEN = os.getenv("CYPRESS_TOKEN", None)
     FIXTURE_DIRS = [os.path.join(BASE_DIR, "fixtures")]
 
-    GENERATE_TRAILER_ERRORS = os.getenv("GENERATE_TRAILER_ERRORS", False)
+    GENERATE_TRAILER_ERRORS = os.getenv("GENERATE_TRAILER_ERRORS", True)
     IGNORE_DUPLICATE_ERROR_PRECEDENCE = os.getenv(
         "IGNORE_DUPLICATE_ERROR_PRECEDENCE", False
     )
