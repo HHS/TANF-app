@@ -238,9 +238,13 @@ def update_dfs(
 
 def set_error_report(dfs, error_report):
     """Update DataFileSummary error_report."""
-    dfs.error_report = File(
-        error_report, name=f"{dfs.datafile.original_filename}_error_report"
-    )
+    is_shadow = isinstance(dfs, ShadowDataFileSummary)
+    file_name = f"{dfs.datafile.original_filename}"
+    if is_shadow:
+        file_name += "_shadow"
+
+    file_name += "_error_report"
+    dfs.error_report = File(error_report, name=file_name)
     dfs.save()
 
 
