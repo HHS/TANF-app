@@ -26,6 +26,10 @@ var (
 	t2Schema = func() *schema.CompiledSchema {
 		cs := testutil.NewTestSchema("T2", "SSN", "FAMILY_AFFILIATION")
 		cs.Shared[0].Required = true
+		cs.Shared[0].Item = "9"
+		cs.Shared[0].FriendlyName = "Social Security Number"
+		cs.Shared[1].Item = "10"
+		cs.Shared[1].FriendlyName = "Family Affiliation"
 		return cs
 	}()
 	t3Schema = testutil.NewTestSchema("T3", "FAMILY_AFFILIATION")
@@ -781,6 +785,11 @@ func TestGroupValidatorParameterizedExpression(t *testing.T) {
 		t.Fatalf("failed to compile expression: %v", err)
 	}
 
+	countPerRecordResults := func(t *testing.T, output any) int {
+		t.Helper()
+		return len(toPerRecordResults(output, &CompiledValidator{ID: "test_group_validator"}))
+	}
+
 	t.Run("no T1 records - should pass", func(t *testing.T) {
 		group := testutil.NewTestGroup(
 			testutil.NewTestRecord(t2Schema, 1, map[string]any{"FAMILY_AFFILIATION": 2}),
@@ -797,8 +806,8 @@ func TestGroupValidatorParameterizedExpression(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to run: %v", err)
 		}
-		if records := toRecordSlice(result); len(records) != 0 {
-			t.Errorf("expected no records when no T1, got %d", len(records))
+		if count := countPerRecordResults(t, result); count != 0 {
+			t.Errorf("expected no records when no T1, got %d", count)
 		}
 	})
 
@@ -819,8 +828,8 @@ func TestGroupValidatorParameterizedExpression(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to run: %v", err)
 		}
-		if records := toRecordSlice(result); len(records) != 0 {
-			t.Errorf("expected no records when T2 has FA=1, got %d", len(records))
+		if count := countPerRecordResults(t, result); count != 0 {
+			t.Errorf("expected no records when T2 has FA=1, got %d", count)
 		}
 	})
 
@@ -841,8 +850,8 @@ func TestGroupValidatorParameterizedExpression(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to run: %v", err)
 		}
-		if records := toRecordSlice(result); len(records) != 0 {
-			t.Errorf("expected no records when T3 has FA=1, got %d", len(records))
+		if count := countPerRecordResults(t, result); count != 0 {
+			t.Errorf("expected no records when T3 has FA=1, got %d", count)
 		}
 	})
 
@@ -863,8 +872,8 @@ func TestGroupValidatorParameterizedExpression(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to run: %v", err)
 		}
-		if records := toRecordSlice(result); len(records) != 1 {
-			t.Errorf("expected 1 record when no T2/T3 has FA=1, got %d", len(records))
+		if count := countPerRecordResults(t, result); count != 1 {
+			t.Errorf("expected 1 record when no T2/T3 has FA=1, got %d", count)
 		}
 	})
 
@@ -884,8 +893,8 @@ func TestGroupValidatorParameterizedExpression(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to run: %v", err)
 		}
-		if records := toRecordSlice(result); len(records) != 1 {
-			t.Errorf("expected 1 record when T1 has no T2/T3, got %d", len(records))
+		if count := countPerRecordResults(t, result); count != 1 {
+			t.Errorf("expected 1 record when T1 has no T2/T3, got %d", count)
 		}
 	})
 
@@ -908,8 +917,8 @@ func TestGroupValidatorParameterizedExpression(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to run: %v", err)
 		}
-		if records := toRecordSlice(result); len(records) != 0 {
-			t.Errorf("expected no records when at least one T2 has FA=1, got %d", len(records))
+		if count := countPerRecordResults(t, result); count != 0 {
+			t.Errorf("expected no records when at least one T2 has FA=1, got %d", count)
 		}
 	})
 }
@@ -1308,8 +1317,11 @@ func TestGetExactDuplicates(t *testing.T) {
 		if len(dups) != 1 {
 			t.Errorf("expected 1 duplicate, got %d", len(dups))
 		}
-		if dups[0].GetLineNumber() != 2 {
-			t.Errorf("expected duplicate to be line 2, got %d", dups[0].GetLineNumber())
+		if dups[0].Record.GetLineNumber() != 2 {
+			t.Errorf("expected duplicate to be line 2, got %d", dups[0].Record.GetLineNumber())
+		}
+		if dups[0].ExistingLineNumber != 1 {
+			t.Errorf("expected existing line 1, got %d", dups[0].ExistingLineNumber)
 		}
 	})
 
@@ -1369,6 +1381,15 @@ func TestGetPartialDuplicates(t *testing.T) {
 		if len(dups) != 1 {
 			t.Errorf("expected 1 partial duplicate, got %d", len(dups))
 		}
+		if dups[0].Record.GetLineNumber() != 2 {
+			t.Errorf("expected duplicate record to be line 2, got %d", dups[0].Record.GetLineNumber())
+		}
+		if dups[0].ExistingLineNumber != 1 {
+			t.Errorf("expected existing line 1, got %d", dups[0].ExistingLineNumber)
+		}
+		if dups[0].DuplicatedFields != "Item 9 (Social Security Number)." {
+			t.Errorf("unexpected duplicated fields: %q", dups[0].DuplicatedFields)
+		}
 	})
 
 	t.Run("exact duplicate is excluded from partial duplicates", func(t *testing.T) {
@@ -1409,7 +1430,28 @@ func TestGetPartialDuplicatesExcluding(t *testing.T) {
 		if len(dups) != 1 {
 			t.Errorf("expected 1 partial duplicate, got %d", len(dups))
 		}
+		if dups[0].Record.GetLineNumber() != 2 {
+			t.Errorf("expected duplicate record to be line 2, got %d", dups[0].Record.GetLineNumber())
+		}
+		if dups[0].ExistingLineNumber != 1 {
+			t.Errorf("expected existing line 1, got %d", dups[0].ExistingLineNumber)
+		}
 	})
+}
+
+func TestFormatDuplicatedFields(t *testing.T) {
+	rec := testutil.NewTestRecord(t2Schema, 1, nil)
+
+	got := formatDuplicatedFields(rec, []string{"SSN", "FAMILY_AFFILIATION"})
+	want := "Item 9 (Social Security Number), and Item 10 (Family Affiliation)."
+	if got != want {
+		t.Errorf("formatDuplicatedFields() = %q, want %q", got, want)
+	}
+
+	got = formatDuplicatedFields(rec, []string{"UNKNOWN_FIELD"})
+	if got != "UNKNOWN_FIELD." {
+		t.Errorf("formatDuplicatedFields() fallback = %q, want UNKNOWN_FIELD.", got)
+	}
 }
 
 func TestBuildCompositeKey(t *testing.T) {
