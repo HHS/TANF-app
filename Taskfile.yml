@@ -133,7 +133,8 @@ tasks:
     vars:
       PYTEST_ARGS: '{{.PYTEST_ARGS | default ""}}'
     cmds:
-      - task: backend-up
+      - task: create-network
+      - GO_PARSER_SHADOW_MODE=false docker compose -f docker-compose.yml up -d
       - docker compose -f docker-compose.yml exec web sh -c "DJANGO_SETTINGS_MODULE=tdpservice.settings.go_parser_integration DJANGO_CONFIGURATION=GoParserIntegration pytest -c pytest-go-parser.ini --basetemp=/home/tdpapp/ tdpservice/parsers/test/integration {{.PYTEST_ARGS}}"
 
   backend-pytest-cov:

@@ -22,6 +22,18 @@ class InvalidTransition(ValueError):
     """Raised when an invalid submission state transition is attempted."""
 
 
+class ReparsePreparationError(ValueError):
+    """Raised when a DataFile cannot be safely prepared for reparse."""
+
+
+REPARSE_REQUESTABLE_STATES = {
+    SubmissionState.VIRUS_SCAN_COMPLETED,
+    SubmissionState.PARSE_FAILED,
+    SubmissionState.PARSED_WITH_ERRORS,
+    SubmissionState.PARSE_COMPLETED,
+}
+
+
 ALLOWED_TRANSITIONS: Dict[SubmissionState, Iterable[SubmissionState]] = {
     SubmissionState.UPLOADED: {
         SubmissionState.VIRUS_SCAN_STARTED,
@@ -36,6 +48,11 @@ ALLOWED_TRANSITIONS: Dict[SubmissionState, Iterable[SubmissionState]] = {
         SubmissionState.CANCELED,
     },
     SubmissionState.VIRUS_SCAN_COMPLETED: {
+        SubmissionState.REPARSE_REQUESTED,
+        SubmissionState.PARSE_STARTED,
+        SubmissionState.CANCELED,
+    },
+    SubmissionState.REPARSE_REQUESTED: {
         SubmissionState.PARSE_STARTED,
         SubmissionState.CANCELED,
     },
@@ -46,15 +63,18 @@ ALLOWED_TRANSITIONS: Dict[SubmissionState, Iterable[SubmissionState]] = {
         SubmissionState.CANCELED,
     },
     SubmissionState.PARSE_FAILED: {
+        SubmissionState.REPARSE_REQUESTED,
         SubmissionState.PARSE_STARTED,
         SubmissionState.CANCELED,
     },
     SubmissionState.PARSED_WITH_ERRORS: {
+        SubmissionState.REPARSE_REQUESTED,
         SubmissionState.PARSE_STARTED,
         SubmissionState.COMPLETED,
         SubmissionState.CANCELED,
     },
     SubmissionState.PARSE_COMPLETED: {
+        SubmissionState.REPARSE_REQUESTED,
         SubmissionState.PARSE_STARTED,
         SubmissionState.COMPLETED,
         SubmissionState.CANCELED,
@@ -127,3 +147,62 @@ def transition_datafile(
         logger.info("DataFile submission state transition", extra=log_payload)
 
     return data_file
+
+
+def prepare_datafile_for_reparse(
+    data_file,
+    note="admin reparse requested",
+    logger_hook: Callable | None = None,
+):
+    """Transition a safe DataFile into the requested reparse state."""
+    current_state = coerce_submission_state(data_file.state)
+
+    if current_state == SubmissionState.REPARSE_REQUESTED:
+        return data_file, False
+
+    if current_state not in REPARSE_REQUESTABLE_STATES:
+        raise ReparsePreparationError(
+            f"Cannot reparse DataFile {data_file.id} in state {current_state.value}."
+        )
+
+    transition_datafile(
+        data_file,
+        SubmissionState.REPARSE_REQUESTED,
+        note=note,
+        logger_hook=logger_hook,
+    )
+
+    return data_file, True
+
+
+def revert_reparse_request(data_file, original_state, note=""):
+    """Revert a DataFile out of REPARSE_REQUESTED back to its prior state.
+
+    Recovery helper for the case where a reparse was queued but the worker
+    setup (sequential check, backup, etc.) failed before parser tasks were
+    actually scheduled. The normal state machine does not allow stepping
+    backwards from REPARSE_REQUESTED, so this bypasses ``transition_datafile``
+    intentionally. Returns True if a revert occurred, False otherwise (e.g.,
+    the file has already progressed past REPARSE_REQUESTED).
+    """
+    current_state = coerce_submission_state(data_file.state)
+    if current_state != SubmissionState.REPARSE_REQUESTED:
+        logger.info(
+            "Skipping reparse revert; DataFile is no longer in REPARSE_REQUESTED.",
+            extra={"data_file_id": data_file.id, "current_state": current_state.value},
+        )
+        return False
+
+    target_state = coerce_submission_state(original_state)
+    data_file.state = target_state
+    data_file.save(update_fields=["state"])
+    logger.warning(
+        "DataFile reparse request reverted after worker setup failure.",
+        extra={
+            "data_file_id": data_file.id,
+            "previous_state": current_state.value,
+            "next_state": target_state.value,
+            "note": note,
+        },
+    )
+    return True
