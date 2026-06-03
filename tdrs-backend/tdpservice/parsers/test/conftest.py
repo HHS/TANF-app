@@ -1162,9 +1162,83 @@ def section2_no_records():
         file__name="section2_no_records.txt",
         file__section="Closed Case Data",
         program_type=DataFile.ProgramType.TANF,
-        file__data=(b"HEADER20244C06   TAN1ED\n" b"TRAILER0000001         "),
+        file__data=(b"HEADER20244C06   TAN1ED\n" b"TRAILER0000000         "),
     )
     return parsing_file
+
+
+@pytest.fixture
+def tanf_section1_no_records():
+    """Fixture for a valid active TANF file with no records."""
+    return ParsingFileFactory(
+        year=2025,
+        quarter="Q1",
+        section="Active Case Data",
+        file__name="tanf_section1_no_records.txt",
+        file__section="Active Case Data",
+        program_type=DataFile.ProgramType.TANF,
+        file__data=(b"HEADER20244A06   TAN1ED\n" b"TRAILER0000000         "),
+    )
+
+
+@pytest.fixture
+def tanf_section3_no_records():
+    """Fixture for a valid aggregate TANF file with no records."""
+    return ParsingFileFactory(
+        year=2025,
+        quarter="Q1",
+        section="Aggregate Data",
+        file__name="tanf_section3_no_records.txt",
+        file__section="Aggregate Data",
+        program_type=DataFile.ProgramType.TANF,
+        file__data=(b"HEADER20244G06   TAN1ED\n" b"TRAILER0000000         "),
+    )
+
+
+@pytest.fixture
+def tanf_section4_no_records():
+    """Fixture for a valid stratum TANF file with no records."""
+    return ParsingFileFactory(
+        year=2025,
+        quarter="Q1",
+        section="Stratum Data",
+        file__name="tanf_section4_no_records.txt",
+        file__section="Stratum Data",
+        program_type=DataFile.ProgramType.TANF,
+        file__data=(b"HEADER20244S06   TAN1ED\n" b"TRAILER0000000         "),
+    )
+
+
+@pytest.fixture
+def tanf_section1_no_records_bad_trailer_count():
+    """Fixture for an active TANF zero-record file with a bad trailer count."""
+    return ParsingFileFactory(
+        year=2025,
+        quarter="Q1",
+        section="Active Case Data",
+        file__name="tanf_section1_no_records_bad_trailer_count.txt",
+        file__section="Active Case Data",
+        program_type=DataFile.ProgramType.TANF,
+        file__data=(b"HEADER20244A06   TAN1ED\n" b"TRAILER0000001         "),
+    )
+
+
+@pytest.fixture
+def tanf_section1_unknown_record_bad_trailer_count():
+    """Fixture for an active TANF file with one rejected detail row and bad count."""
+    return ParsingFileFactory(
+        year=2025,
+        quarter="Q1",
+        section="Active Case Data",
+        file__name="tanf_section1_unknown_record_bad_trailer_count.txt",
+        file__section="Active Case Data",
+        program_type=DataFile.ProgramType.TANF,
+        file__data=(
+            b"HEADER20244A06   TAN1ED\n"
+            b"ThisLineShouldError\n"
+            b"TRAILER0000000         "
+        ),
+    )
 
 
 @pytest.fixture

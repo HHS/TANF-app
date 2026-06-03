@@ -170,6 +170,26 @@ tasks:
 
         docker compose -f docker-compose.yml exec web sh -c "DB_NAME=${db_name} CELERY_GO_PARSER_QUEUE=${queue} DJANGO_SETTINGS_MODULE=tdpservice.settings.go_parser_integration DJANGO_CONFIGURATION=GoParserIntegration pytest -c pytest-go-parser.ini --basetemp=/home/tdpapp/ tdpservice/parsers/test/integration {{.PYTEST_ARGS}}"
 
+  backend-pytest-go-integration-active:
+    desc: 'Run Go parser integration tests against the active local DB and go-parser service. Faster, but not isolated. E.g: task backend-pytest-go-integration-active PYTEST_ARGS="-k section1 -vv"'
+    dir: tdrs-backend
+    vars:
+      PYTEST_ARGS: '{{.PYTEST_ARGS | default ""}}'
+      GO_PARSER_QUEUE: '{{.GO_PARSER_QUEUE | default "go-parser"}}'
+    cmds:
+      - task: create-network
+      - |
+        set -e
+        queue="{{.GO_PARSER_QUEUE}}"
+
+        GO_PARSER_QUEUE="${queue}" GO_PARSER_SHADOW_MODE=false \
+          docker compose -f docker-compose.yml up -d postgres redis-server localstack celery web go-parser
+        docker compose -f docker-compose.yml exec -T postgres sh -c 'until pg_isready -U tdpuser -d tdrs_test; do sleep 1; done'
+        docker compose -f docker-compose.yml exec -T redis-server \
+          redis-cli DEL "${queue}" >/dev/null
+
+        docker compose -f docker-compose.yml exec web sh -c "CELERY_GO_PARSER_QUEUE=${queue} DJANGO_SETTINGS_MODULE=tdpservice.settings.go_parser_integration DJANGO_CONFIGURATION=GoParserIntegration pytest -c pytest-go-parser.ini --basetemp=/home/tdpapp/ tdpservice/parsers/test/integration {{.PYTEST_ARGS}}"
+
   backend-pytest-cov:
     desc: 'Generate coverage.json file in the backend container. E.g: task backend-pytest-cov PYTEST_ARGS="tdpservice/test/ -s -vv"'
     dir: tdrs-backend
