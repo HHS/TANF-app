@@ -11,12 +11,14 @@ import pytest
 from celery import current_app as celery_app
 from celery.exceptions import TimeoutError as CeleryTimeoutError
 
+from tdpservice.data_files.models import DataFile
 from tdpservice.parsers import aggregates
 from tdpservice.parsers.models import (
     DataFileSummary,
     ParserError,
     ParserErrorCategoryChoices,
 )
+from tdpservice.parsers.test.factories import ParsingFileFactory
 from tdpservice.search_indexes.models.fra import TANF_Exiter1
 from tdpservice.search_indexes.models.ssp import (
     SSP_M1,
@@ -141,6 +143,109 @@ class TestGoParse:
 
     #     parser_errors = ParserError.objects.filter(file=bad_trailer_file_2)
     #     return bad_trailer_file_2, dfs, parser_errors
+
+    @pytest.mark.django_db(transaction=True)
+    @pytest.mark.parametrize(
+        "program_type,section_name,header",
+        [
+            (
+                DataFile.ProgramType.TANF,
+                DataFile.Section.ACTIVE_CASE_DATA,
+                "HEADER20244A06   TAN1ED",
+            ),
+            (
+                DataFile.ProgramType.TANF,
+                DataFile.Section.AGGREGATE_DATA,
+                "HEADER20244G06   TAN1ED",
+            ),
+            (
+                DataFile.ProgramType.TANF,
+                DataFile.Section.STRATUM_DATA,
+                "HEADER20244S06   TAN1ED",
+            ),
+            (
+                DataFile.ProgramType.SSP,
+                DataFile.Section.ACTIVE_CASE_DATA,
+                "HEADER20244A06   SSP1ED",
+            ),
+            (
+                DataFile.ProgramType.SSP,
+                DataFile.Section.AGGREGATE_DATA,
+                "HEADER20244G06   SSP1ED",
+            ),
+            (
+                DataFile.ProgramType.SSP,
+                DataFile.Section.STRATUM_DATA,
+                "HEADER20244S06   SSP1ED",
+            ),
+            (
+                DataFile.ProgramType.TRIBAL,
+                DataFile.Section.ACTIVE_CASE_DATA,
+                "HEADER20244A00123TAN1ED",
+            ),
+            (
+                DataFile.ProgramType.TRIBAL,
+                DataFile.Section.AGGREGATE_DATA,
+                "HEADER20244G00123TAN1ED",
+            ),
+            (
+                DataFile.ProgramType.TRIBAL,
+                DataFile.Section.STRATUM_DATA,
+                "HEADER20244S00123TAN1ED",
+            ),
+        ],
+    )
+    def test_go_parse_zero_record_header_trailer_only_files(
+        self, dfs, program_type, section_name, header
+    ):
+        """Test Go parser accepts valid zero-record TANF, SSP, and Tribal files."""
+        datafile = ParsingFileFactory(
+            year=2025,
+            quarter="Q1",
+            section=section_name,
+            program_type=program_type,
+            file__name=f"{program_type}-{section_name}-zero-records.txt",
+            file__section=section_name,
+            file__data=(f"{header}\nTRAILER0000000         ".encode()),
+        )
+
+        parse_datafile(dfs, datafile)
+
+        assert ParserError.objects.filter(file=datafile).count() == 0
+        assert dfs.total_number_of_records_in_file == 0
+        assert dfs.total_number_of_records_created == 0
+        assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
+
+    @pytest.mark.django_db(transaction=True)
+    def test_go_parse_zero_record_bad_trailer_count_rejected(self, dfs):
+        """Test Go parser rejects zero-record files when trailer count is not zero."""
+        datafile = ParsingFileFactory(
+            year=2025,
+            quarter="Q1",
+            section=DataFile.Section.ACTIVE_CASE_DATA,
+            program_type=DataFile.ProgramType.TANF,
+            file__name="tanf-active-zero-records-bad-trailer-count.txt",
+            file__section=DataFile.Section.ACTIVE_CASE_DATA,
+            file__data=(b"HEADER20244A06   TAN1ED\n" b"TRAILER0000001         "),
+        )
+
+        parse_datafile(dfs, datafile)
+
+        assert dfs.get_status() == DataFileSummary.Status.REJECTED
+        trailer_count_error = (
+            "The number of records in the TRAILER row count: 1, does not match "
+            "the number of records detected in the file: 0."
+        )
+        assert ParserError.objects.filter(
+            file=datafile,
+            error_message=trailer_count_error,
+            error_type=ParserErrorCategoryChoices.PRE_CHECK,
+        ).exists()
+        assert ParserError.objects.filter(
+            file=datafile,
+            error_message="No records created.",
+            error_type=ParserErrorCategoryChoices.PRE_CHECK,
+        ).exists()
 
     @pytest.mark.django_db(transaction=True)
     def test_go_small_correct_file_case_consistency_error(
@@ -574,12 +679,12 @@ class TestGoParse:
         dfs.status = dfs.get_status()
 
         # Go parser doesnt generate Trailer errors which is why the status is different
-        assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+        assert dfs.status == DataFileSummary.Status.PARTIALLY_ACCEPTED
         dfs.case_aggregates = aggregates.case_aggregates_by_month(
             dfs.datafile, dfs.status
         )
 
-        assert dfs.case_aggregates["rejected"] == 0
+        assert dfs.case_aggregates["rejected"] == 1
         for month in dfs.case_aggregates["months"]:
             if month["month"] == "Oct":
                 assert month["accepted_without_errors"] == 0
@@ -589,8 +694,7 @@ class TestGoParse:
                 assert month["accepted_with_errors"] == 0
 
         parser_errors = ParserError.objects.filter(file=small_ssp_section1_datafile)
-        # No trailer errors so we only have 8 errors expected
-        assert parser_errors.filter(file=small_ssp_section1_datafile).count() == 8
+        assert parser_errors.filter(file=small_ssp_section1_datafile).count() == 9
         assert (
             SSP_M1.objects.filter(datafile=small_ssp_section1_datafile).count()
             == expected_m1_record_count
@@ -651,7 +755,7 @@ class TestGoParse:
         # We have a few more errors because the go parser separates the the OR'd
         # category1.validate_fieldYearMonth_with_headerYearQuarter(). and
         # category1.validateRptMonthYear() into separate checks.
-        assert parser_errors.count() == 31738
+        assert parser_errors.count() == 31739
 
         assert (
             SSP_M1.objects.filter(datafile=ssp_section1_datafile).count()
@@ -827,7 +931,7 @@ class TestGoParse:
         )
         # Again we get more errors here because the Go parser splits the RPT_MONTH_YEAR Cat1 validator
         # into two validators
-        assert parser_errors.count() == 8
+        assert parser_errors.count() == 9
 
         row_2_error = parser_errors.get(
             row_number=2,
@@ -1621,13 +1725,21 @@ class TestGoParse:
 
         errors = ParserError.objects.filter(file=no_records_file)
 
-        assert errors.count() == 1
+        assert errors.count() == 2
 
-        error = errors.first()
-        assert error.error_message == "No records created."
-        assert error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-        assert error.content_type is None
-        assert error.object_id is None
+        trailer_count_error = (
+            "The number of records in the TRAILER row count: 1, does not match "
+            "the number of records detected in the file: 0."
+        )
+        count_error = errors.get(error_message=trailer_count_error)
+        assert count_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+        assert count_error.content_type is None
+        assert count_error.object_id is None
+
+        no_records_error = errors.get(error_message="No records created.")
+        assert no_records_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+        assert no_records_error.content_type is None
+        assert no_records_error.object_id is None
 
     @pytest.mark.django_db(transaction=True)
     def test_go_parse_aggregates_rejected_datafile(
@@ -2094,7 +2206,7 @@ class TestGoParse:
                     "accepted_with_errors": 1,
                 },
             ],
-            "rejected": 1,  # Rejected is 1 for go parser since it doesn't worry about trailer errors
+            "rejected": 2,
         }
 
         assert TANF_T1.objects.filter(datafile=case_aggregates_edge_case).count() == 3

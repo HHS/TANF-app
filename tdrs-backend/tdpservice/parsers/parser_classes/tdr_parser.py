@@ -38,6 +38,9 @@ class TanfDataReportParser(BaseParser):
         self.header_schema = schema_defs.header
         self.trailer_count = 0
         self.trailer_schema = schema_defs.trailer
+        self.trailer = None
+        self.trailer_is_valid = False
+        self.trailer_row_number = 0
 
     def parse_and_validate(self):
         """Parse and validate the datafile."""
@@ -69,6 +72,7 @@ class TanfDataReportParser(BaseParser):
 
             self.header_count += int(row.value_at_is(HEADER_POSITION, "HEADER"))
             self.trailer_count += int(row.value_at_is(TRAILER_POSITION, "TRAILER"))
+            is_file_level_record = self.is_file_level_record(row)
 
             is_last_line = offset == file_length
             self.evaluate_trailer(is_last_line)
@@ -101,6 +105,8 @@ class TanfDataReportParser(BaseParser):
             if prev_sum != self.header_count + self.trailer_count:
                 prev_sum = self.header_count + self.trailer_count
                 continue
+
+            self.detail_rows_seen += int(not is_file_level_record)
 
             manager_result = self.schema_manager.parse_and_validate(row)
             records = manager_result.records
@@ -180,6 +186,8 @@ class TanfDataReportParser(BaseParser):
         self._delete_partial_dups()
         self._delete_serialized_cases()
 
+        self.validate_trailer_record_count()
+        self.valid_zero_record_submission = self.is_valid_zero_record_submission()
         self.create_no_records_created_pre_check_error()
 
         if not all_created:
@@ -337,8 +345,15 @@ class TanfDataReportParser(BaseParser):
             return self.case_consistency_validator.validate() > 0
         return False
 
+    def is_file_level_record(self, row):
+        """Return whether the row is a header or trailer record."""
+        return row.value_at_is(HEADER_POSITION, "HEADER") or row.value_at_is(
+            TRAILER_POSITION, "TRAILER"
+        )
+
     def evaluate_trailer(self, is_last_line):
         """Validate datafile trailer and generate associated errors if any."""
+        is_trailer_row = self.current_row.value_at_is(TRAILER_POSITION, "TRAILER")
         if self.trailer_count > 1 and not self.multiple_trailer_errors:
             generator_args = ErrorGeneratorArgs(
                 record=None,
@@ -356,7 +371,7 @@ class TanfDataReportParser(BaseParser):
                 [err_obj],
             )
             self._generate_trailer_errors(errors)
-        if self.trailer_count == 1 or is_last_line:
+        if is_trailer_row or is_last_line:
             trailer_schema = self.trailer_schema
             trailer_schema.prepare(self.datafile)
             (
@@ -364,6 +379,10 @@ class TanfDataReportParser(BaseParser):
                 trailer_is_valid,
                 trailer_errors,
             ) = trailer_schema.parse_and_validate(self.current_row)
+            if is_trailer_row:
+                self.trailer = record
+                self.trailer_is_valid = trailer_is_valid and len(trailer_errors) == 0
+                self.trailer_row_number = self.current_row_num
             self._generate_trailer_errors(trailer_errors)
 
     def _generate_trailer_errors(self, trailer_errors):
@@ -371,6 +390,53 @@ class TanfDataReportParser(BaseParser):
         if settings.GENERATE_TRAILER_ERRORS:
             self.unsaved_parser_errors.update({"trailer": trailer_errors})
             self.num_errors += len(trailer_errors)
+
+    def validate_trailer_record_count(self):
+        """Generate a precheck error for invalid zero-detail trailer counts."""
+        if (
+            self.trailer_count != 1
+            or self.detail_rows_seen != 0
+            or not self.trailer_is_valid
+            or self.trailer is None
+            or self.trailer.get("record_count") == self.detail_rows_seen
+        ):
+            return
+
+        generate_error = self.error_generator_factory.get_generator(
+            ErrorGeneratorType.MSG_ONLY_PRECHECK, self.trailer_row_number
+        )
+        generator_args = ErrorGeneratorArgs(
+            record=None,
+            schema=None,
+            error_message=(
+                f"The number of records in the TRAILER row count: {self.trailer.get('record_count')}, does not "
+                f"match the number of records detected in the file: {self.detail_rows_seen}."
+            ),
+            fields=[],
+        )
+        err_obj = generate_error(generator_args=generator_args)
+        self.unsaved_parser_errors.setdefault("trailer_record_count", []).append(
+            err_obj
+        )
+        self.num_errors += 1
+
+    def is_valid_zero_record_submission(self):
+        """Return whether this file is a structurally valid zero-record submission."""
+        zero_record_sections = [
+            DataFile.Section.ACTIVE_CASE_DATA,
+            DataFile.Section.CLOSED_CASE_DATA,
+            DataFile.Section.AGGREGATE_DATA,
+            DataFile.Section.STRATUM_DATA,
+        ]
+        return (
+            self.datafile.section in zero_record_sections
+            and self.header_count == 1
+            and self.trailer_count == 1
+            and self.trailer_is_valid
+            and self.trailer is not None
+            and self.trailer.get("record_count") == 0
+            and self.detail_rows_seen == 0
+        )
 
     def _generate_funded_ssn_errors(self, t2_schema, t2_records, t1_schema):
         """Inner function to validate and generate errors."""
