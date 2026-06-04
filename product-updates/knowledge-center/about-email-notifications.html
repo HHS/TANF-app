@@ -45,12 +45,23 @@ function showDiv2(id) {
   // 1. Explicitly hide both potential IDs
   document.getElementById('containserrors').style.display = "none";
   document.getElementById('noerrors').style.display = "none";
+  document.getElementById('resolved').style.display = "none";
 
   // 2. Show the one that was passed to the function
   document.getElementById(id).style.display = "block";
 }
 </script>
+<script>
+function showDiv3(id) {
+  // 1. Explicitly hide both potential IDs
+  document.getElementById('fraerrors').style.display = "none";
+  document.getElementById('franoerrors').style.display = "none";
+    document.getElementById('frarejected').style.display = "none";
 
+  // 2. Show the one that was passed to the function
+  document.getElementById(id).style.display = "block";
+}
+</script>
 
 
 
@@ -234,8 +245,9 @@ function showDiv2(id) {
                         <div style="min-height: 22px;"></div>
         <a href="#getting-started">User Account Emails</a><br>
         <a href="#tanf-ssp">TANF/SSP Emails</a><br>
-        <!-- <a href="#fra">FRA Emails</a><br> -->
+        <a href="#fra">FRA Emails</a><br>
         <a href="#feedback">Feedback Report Emails</a><br>
+        
 
 
                 <div style="min-height: 22px;"></div>
@@ -510,6 +522,21 @@ function showDiv2(id) {
       </label>
     </div>
 
+        <div class="usa-radio">
+      <input
+        class="usa-radio__input usa-radio__input--tile"
+        id="radio-resolved"
+        type="radio"
+        name="email-preview-group"
+        value="resolved"
+        onclick="showDiv2('resolved')"
+      />
+      <label class="usa-radio__label" for="radio-resolved">
+        Data Reprocessed & Errors Resolved
+      </label>
+    </div>
+
+
     
   </fieldset>
 </form>
@@ -652,18 +679,322 @@ function showDiv2(id) {
     </div>
   </div>
 
+  <div id="resolved" class="email-window" style="display: none;">
+  <div class="email-header">
+    <div class="window-dots">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+
+  <div class="email-meta">
+    <div><span class="label">From:</span>no-reply@tanfdata.acf.hhs.gov</div>
+    <div><span class="label">Subject:</span>TANF Data Reprocessed & Errors Resolved</div>
+  </div>
+
+
+  <div class="email-body">
+                      <img src="https://i.imgur.com/ydabPh2.png" alt="TANF Data Portal" height="auto" width="200">
+
+    <h3 style="font-size: 2rem">TANF Data Reprocessed & Errors Resolved</h3>
+    <div class="email-content">
+    <p>Hello, <br><br>
+         Good news! Your <strong>TANF</strong> data file(s) submitted for <strong>Indiana</strong> on <strong>March 19, 2026, 10:02 p.m.</strong> in <strong>Fiscal Year 2025 - Q1 (Oct - Dec)</strong> were reprocessed and all previously detected errors have been cleared. Your file(s) have been<strong>Accepted Without Errors</strong>.  
+    </p>
+    
+  
+           <p>Updated Submission files:</p>
+           <div style="overflow-x: scroll !important">
+<table class="usa-table"> 
+<thead>
+  <tr>
+    <th>Section</th>
+    <th>Submitted By</th>
+    <th>Status</th>
+    <th>Cases Without Errors</th>
+    <th>Cases With Errors</th>
+    <th>Records Unable to Process</th>
+    <th>Error Report</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>Active Case Data</td>
+    <td>Jett Reno</td>
+    <td>Accepted</td>
+    <td>742</td>
+    <td>0</td>
+    <td>0</td>
+    <td>No Errors</td>
+  </tr>
+
+</tbody>
+</table>
+</div>
+
+   <p>You can view your submission via the Submission History tab of the Data Files page if you need to review it. <span class="fake-link">Read more about using Submission History</span></p> 
+
+   <div class="usa-button">
+      Sign in to TDP
+    </div>
+
+     <p>Please contact TDP Admin team at <span class="fake-link">TANFData@acf.hhs.gov</span> if you need further assistance. <br><br> Thank you, <br><br> TDP Team</p>
+
+</div>
+    
+    </div>
+  </div>
+
    <div style="min-height: 22px;"></div>
 
-                        <!-- <hr class="releaseHr">
+                        <hr class="releaseHr">
 
 
                 <div style="min-height: 22px;"></div>
         <h2 id="fra">FRA Emails</h2>
         <div style="min-height: 22px;"></div>
 
+              <form class="usa-form">
+  <fieldset class="usa-fieldset">
+    <legend class="usa-legend">Select an email to preview:</legend>
+    
+    <div class="usa-radio">
+      <input
+        class="usa-radio__input usa-radio__input--tile"
+        id="radio-franoerrors"
+        type="radio"
+        name="email-preview-group"
+        value="franoerrors"
+        onclick="showDiv3('franoerrors')"
+        checked="checked"
+      />
+      <label class="usa-radio__label" for="radio-franoerrors">
+        Data Processed Without Errors
+      </label>
+    </div>
+
+    <div class="usa-radio">
+      <input
+        class="usa-radio__input usa-radio__input--tile"
+        id="radio-fraerrors"
+        type="radio"
+        name="email-preview-group"
+        value="fraerrors"
+        onclick="showDiv3('fraerrors')"
+      />
+      <label class="usa-radio__label" for="radio-fraerrors">
+        Data Processed With Errors
+      </label>
+    </div>
+
+        <div class="usa-radio">
+      <input
+        class="usa-radio__input usa-radio__input--tile"
+        id="radio-frarejected"
+        type="radio"
+        name="email-preview-group"
+        value="frarejected"
+        onclick="showDiv3('frarejected')"
+      />
+      <label class="usa-radio__label" for="radio-frarejected">
+        Data Rejected
+      </label>
+    </div>
 
 
-           <div style="min-height: 22px;"></div> -->
+    
+  </fieldset>
+</form>
+
+        <div style="min-height: 22px;"></div>
+
+<div id="franoerrors" class="email-window" style="">
+  <div class="email-header">
+    <div class="window-dots">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+
+  <div class="email-meta">
+    <div><span class="label">From:</span>no-reply@tanfdata.acf.hhs.gov</div>
+    <div><span class="label">Subject:</span>Work Outcomes of TANF Exiters Successfully Submitted</div>
+  </div>
+
+
+  <div class="email-body">
+                      <img src="https://i.imgur.com/ydabPh2.png" alt="TANF Data Portal" height="auto" width="200">
+
+    <h3 style="font-size: 2rem">Work Outcomes of TANF Exiters Successfully Submitted</h3>
+    <div class="email-content">
+    <p>Hello, <br><br>
+         Your <strong>Work Outcomes of TANF Exiters</strong> data file(s) submitted for <strong>Indiana</strong> on <strong>March 19, 2026, 10:02 p.m.</strong> in <strong>Fiscal Year 2025 - Q1 (Oct - Dec)</strong> have been processed and <strong>accepted</strong>. 
+    </p>
+    
+  
+           <p>Submitted files:</p>
+           <div style="overflow-x: scroll !important">
+<table class="usa-table"> 
+<thead>
+  <tr>
+    <th>File Type</th>
+    <th>Submitted By</th>
+    <th>Status</th>
+    <th>Error Report</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>Work Outcomes of TANF Exiters</td>
+    <td>Jett Reno</td>
+    <td>Accepted</td>
+    <td>N/A</td>
+  </tr>
+
+</tbody>
+</table>
+</div>
+
+   <p>Your file(s) can now ber accessed via the Submission History tab of the FRA Data Files page. <span class="fake-link">Read more about using Submission History</span></p> 
+
+   <div class="usa-button">
+      Sign in to TDP
+    </div>
+
+     <p>Please contact TDP Admin team at <span class="fake-link">TANFData@acf.hhs.gov</span> if you need further assistance. <br><br> Thank you, <br><br> TDP Team</p>
+
+</div>
+    
+    </div>
+  </div>
+
+  <div id="fraerrors" class="email-window" style="display: none;">
+  <div class="email-header">
+    <div class="window-dots">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+
+  <div class="email-meta">
+    <div><span class="label">From:</span>no-reply@tanfdata.acf.hhs.gov</div>
+    <div><span class="label">Subject:</span> Action Required: Work Outcomes of TANF Exiters Contains Errors </div>
+  </div>
+
+
+  <div class="email-body">
+                      <img src="https://i.imgur.com/ydabPh2.png" alt="TANF Data Portal" height="auto" width="200">
+
+    <h3 style="font-size: 2rem">Action Required: Work Outcomes of TANF Exiters Contains Errors</h3>
+    <div class="email-content">
+    <p>Hello, <br><br>
+         Your <strong>Work Outcomes of TANF Exiters</strong> data file(s) submitted for <strong>Indiana</strong> on <strong>March 19, 2026, 10:02 p.m.</strong> in <strong>Fiscal Year 2025 - Q1 (Oct - Dec)</strong> were <strong>unable to fully process</strong> This means that some of the records in the file were accepted and some of the records were rejected because they contained errors. Review the error report for more details, and <strong>resubmit your data files</strong> once the errors have been corrected.
+    </p>
+    
+  
+           <p>Submitted files:</p>
+           <div style="overflow-x: scroll !important">
+<table class="usa-table"> 
+<thead>
+  <tr>
+    <th>File Type</th>
+    <th>Submitted By</th>
+    <th>Status</th>
+    <th>Error Report</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>Work Outcomes of TANF Exiters</td>
+    <td>Jett Reno</td>
+    <td>Partially Accepted With Errors</td>
+    <td>Error Report Available</td>
+  </tr>
+
+</tbody>
+</table>
+</div>
+
+   <p>Your file(s) can now ber accessed via the Submission History tab of the FRA Data Files page. <span class="fake-link">Read more about using Submission History</span></p> 
+
+   <div class="usa-button">
+      Sign in to TDP
+    </div>
+
+     <p>Please contact TDP Admin team at <span class="fake-link">TANFData@acf.hhs.gov</span> if you need further assistance. <br><br> Thank you, <br><br> TDP Team</p>
+
+</div>
+    
+    </div>
+  </div>
+
+    <div id="frarejected" class="email-window" style="display: none;">
+  <div class="email-header">
+    <div class="window-dots">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+
+  <div class="email-meta">
+    <div><span class="label">From:</span>no-reply@tanfdata.acf.hhs.gov</div>
+    <div><span class="label">Subject:</span> Action Required: Work Outcomes of TANF Exiters Contains Errors </div>
+  </div>
+
+
+  <div class="email-body">
+                      <img src="https://i.imgur.com/ydabPh2.png" alt="TANF Data Portal" height="auto" width="200">
+
+    <h3 style="font-size: 2rem">Action Required: Work Outcomes of TANF Exiters Contains Errors</h3>
+    <div class="email-content">
+    <p>Hello, <br><br>
+         Your <strong>Work Outcomes of TANF Exiters</strong> data file(s) submitted for <strong>Indiana</strong> on <strong>March 19, 2026, 10:02 p.m.</strong> in <strong>Fiscal Year 2025 - Q1 (Oct - Dec)</strong> were <strong>rejected</strong> and <strong>likely contain errors relating to file structure/record layout.</strong>  Review the error report for more details, and <strong>resubmit your data files</strong> once the errors have been corrected.
+    </p>
+    
+  
+           <p>Submitted files:</p>
+           <div style="overflow-x: scroll !important">
+<table class="usa-table"> 
+<thead>
+  <tr>
+    <th>File Type</th>
+    <th>Submitted By</th>
+    <th>Status</th>
+    <th>Error Report</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>Work Outcomes of TANF Exiters</td>
+    <td>Jett Reno</td>
+    <td>Rejected</td>
+    <td>Error Report Available</td>
+  </tr>
+
+</tbody>
+</table>
+</div>
+
+   <p>Your file(s) can now ber accessed via the Submission History tab of the FRA Data Files page. <span class="fake-link">Read more about using Submission History</span></p> 
+
+   <div class="usa-button">
+      Sign in to TDP
+    </div>
+
+     <p>Please contact TDP Admin team at <span class="fake-link">TANFData@acf.hhs.gov</span> if you need further assistance. <br><br> Thank you, <br><br> TDP Team</p>
+
+</div>
+    
+    </div>
+  </div>
+
+
+
+           <div style="min-height: 22px;"></div>
 
                         <hr class="releaseHr">
 
@@ -692,7 +1023,7 @@ function showDiv2(id) {
     <h3 style="font-size: 2rem">TANF/SSP Feedback Report Available: Colorado FY 2025</h3>
     <div class="email-content">
     <p>Hello, <br><br>
-         A new <strong>TANF/SSP</strong> Feedback Report is available for<strong> Colorado</strong>for Fiscal Year <strong>2025</strong> (reflecting data submitted through <strong>02/02/2026</strong>). 
+         A new <strong>TANF/SSP</strong> Feedback Report is available for<strong> Colorado </strong>for Fiscal Year <strong>2025</strong> (reflecting data submitted through <strong>02/02/2026</strong>). 
     </p>
     <p>The report was uploaded on <strong>02/11/2026</strong>. Please review the feedback and, if needed, resubmit complete and accurate data.</p>
     

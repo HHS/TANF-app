@@ -20,6 +20,9 @@ type XLSXDecoder struct {
 	lineNum int
 
 	recordType string
+
+	firstRead bool
+	firstRow  Row
 }
 
 // NewXLSXDecoder creates a decoder for XLSX files.
@@ -64,54 +67,96 @@ func (d *XLSXDecoder) Close() error {
 	return nil
 }
 
-// ReadFirst returns nil for columnar files.
-// CSV/columnar files don't have a header record in the data stream.
+// ReadFirst returns the first physical row and buffers it for Rows.
+// XLSX/columnar files don't have a header record, but FRA uses this row for
+// file-level sanity checks before normal record processing.
 func (d *XLSXDecoder) ReadFirst() (Row, error) {
-	return nil, nil
+	if d.firstRead {
+		return d.firstRow, nil
+	}
+	d.firstRead = true
+
+	row, err := d.readNextRow(false)
+	if err != nil {
+		return nil, err
+	}
+	d.firstRow = row
+	return row, nil
 }
 
 // Sort reads all rows, sorts them by key, and makes subsequent Rows() calls return sorted output.
-func (d *XLSXDecoder) Sort(detector *RecordTypeDetector, keyExtractor KeyExtractor, groupedSchemas []string) error {
-	return d.Sortable.DoSort(d.unsortedRows(), detector, keyExtractor, groupedSchemas)
+func (d *XLSXDecoder) Sort(detector *RecordTypeDetector, keyFields []filespec.KeyFieldDef, groupedSchemas []string) error {
+	return d.Sortable.DoSort(d.rowsWithBufferedFirst(), detector, keyFields, groupedSchemas)
 }
 
 func (d *XLSXDecoder) Rows() iter.Seq2[Row, error] {
 	if d.IsSorted() {
 		return d.SortedRows()
 	}
-	return d.unsortedRows()
+	return d.rowsWithBufferedFirst()
+}
+
+func (d *XLSXDecoder) rowsWithBufferedFirst() iter.Seq2[Row, error] {
+	return func(yield func(Row, error) bool) {
+		if d.firstRow != nil {
+			row := d.firstRow
+			d.firstRow = nil
+			if !yield(row, nil) {
+				return
+			}
+		}
+
+		for row, err := range d.unsortedRows() {
+			if !yield(row, err) {
+				return
+			}
+		}
+	}
 }
 
 func (d *XLSXDecoder) unsortedRows() iter.Seq2[Row, error] {
 	return func(yield func(Row, error) bool) {
-		for d.rows.Next() {
-			d.lineNum++
-
-			cols, err := d.rows.Columns()
+		for {
+			row, err := d.readNextRow(true)
 			if err != nil {
 				yield(nil, err)
 				return
 			}
-
-			// Skip empty rows
-			if len(cols) == 0 || allEmpty(cols) || strings.HasPrefix(cols[0], "#") {
-				continue
+			if row == nil {
+				return
 			}
-
-			// Convert to []any
-			// TODO: This could probably be []string since the package always converts cells to strings. Need to test further.
-			columns := make([]any, len(cols))
-			for i, v := range cols {
-				columns[i] = v
-			}
-
-			row := NewColumnarRow(d.lineNum, d.recordType, len(columns), columns)
 
 			if !yield(row, nil) {
 				return
 			}
 		}
 	}
+}
+
+func (d *XLSXDecoder) readNextRow(skipSkippable bool) (Row, error) {
+	for d.rows.Next() {
+		d.lineNum++
+
+		cols, err := d.rows.Columns()
+		if err != nil {
+			return nil, err
+		}
+
+		if skipSkippable && (len(cols) == 0 || allEmpty(cols) || strings.HasPrefix(cols[0], "#")) {
+			continue
+		}
+
+		// Convert to []any
+		// TODO: This could probably be []string since the package always converts cells to strings. Need to test further.
+		columns := make([]any, len(cols))
+		for i, v := range cols {
+			columns[i] = v
+		}
+
+		return NewColumnarRow(d.lineNum, d.recordType, len(columns), columns), nil
+	}
+
+	return nil, nil
 }
 
 func allEmpty(cols []string) bool {

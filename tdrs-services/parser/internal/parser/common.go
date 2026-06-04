@@ -11,6 +11,9 @@ import (
 // HeaderSchemaPath is the registry path for the header schema.
 const HeaderSchemaPath = "common/header"
 
+// TrailerSchemaPath is the registry path for the trailer schema.
+const TrailerSchemaPath = "common/trailer"
+
 // ParseHeader parses a header row and returns a ParseContext with the full parsed record.
 // Returns nil if the row is nil (e.g., for columnar files that don't have headers).
 // The header is parsed using the same logic as any other record type.
@@ -47,6 +50,21 @@ func ParseHeader(row decoder.Row, headerSchema *schema.CompiledSchema) (*ParseCo
 	return ctx, nil
 }
 
+// ParseTrailer parses a trailer row and returns the parsed record.
+// The trailer is parsed with the same single-record path as the header.
+func ParseTrailer(row decoder.Row, trailerSchema *schema.CompiledSchema) (*ParsedRecord, error) {
+	if row == nil || row.RecordType() != "TRAILER" {
+		return nil, fmt.Errorf("Your file does not end with a TRAILER record.")
+	}
+
+	record, err := parseRecord(row, trailerSchema)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to parse trailer: %w", err)
+	}
+
+	return record, nil
+}
+
 // parseRecord parses a single row into a ParsedRecord using the given schema.
 // This is the same logic used by the worker pool for parsing data records.
 // Note: The returned record is acquired from the schema's object pool.
@@ -70,9 +88,7 @@ func parseRecord(row decoder.Row, sch *schema.CompiledSchema) (*ParsedRecord, er
 		if err != nil {
 			continue
 		}
-		if value != nil {
-			record.SetField(field, value)
-		}
+		record.SetField(field, value)
 	}
 
 	return record, nil

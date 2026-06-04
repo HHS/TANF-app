@@ -32,6 +32,8 @@ type Router struct {
 	contentTypeIDs map[string]*int32
 
 	errorWriter *TableWriter
+
+	errorTableName string
 }
 
 // Error table columns (same for all file types)
@@ -64,6 +66,9 @@ type RouterConfig struct {
 
 	// IncludeErrors controls whether errors are written. Default true.
 	IncludeErrors bool
+
+	// TablePrefix is applied to Go parser-owned output tables.
+	TablePrefix string
 }
 
 // NewRouter creates a manager based on the FileSpec.
@@ -87,6 +92,7 @@ func NewRouter(
 		writers:        make(map[string]*TableWriter),
 		serializers:    make(map[string]RowSerializer),
 		contentTypeIDs: make(map[string]*int32),
+		errorTableName: config.ParserErrorTableName(cfg.TablePrefix),
 	}
 
 	// Create a writer for each data record type in the FileSpec
@@ -158,16 +164,21 @@ func NewRouter(
 	// Create error writer with higher threshold for error volume
 	if cfg.IncludeErrors {
 		router.errorWriter = NewTableWriter(
-			"parser_error",
+			router.errorTableName,
 			parserErrorColumns,
 			cfg.ErrorFlushThreshold,
 		)
-		log.Printf("Created error writer for parser_error (%d columns)", len(parserErrorColumns))
+		log.Printf("Created error writer for %s (%d columns)", router.errorTableName, len(parserErrorColumns))
 	} else {
 		log.Printf("Error writing disabled (include_errors=false)")
 	}
 
 	return router
+}
+
+// ErrorTableName returns the database table used for parser errors.
+func (router *Router) ErrorTableName() string {
+	return router.errorTableName
 }
 
 // Start launches all writer goroutines.
@@ -279,7 +290,6 @@ func (router *Router) SendRecordRowsByPath(ctx context.Context, schemaPath strin
 		// No writer for this schema (e.g., header/trailer) - skip silently
 		return nil
 	}
-
 	for _, row := range rows {
 		if err := writer.SendRow(ctx, row); err != nil {
 			return err

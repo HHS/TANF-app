@@ -2,6 +2,8 @@ package pipeline
 
 import (
 	"context"
+	"slices"
+	"sync"
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgtype"
@@ -494,6 +496,7 @@ func buildTestRouter(t *testing.T, ctx context.Context) (*writer.Router, *record
 
 // recordingSink captures all flushed rows for assertion.
 type recordingSink struct {
+	mu      sync.Mutex
 	flushed map[string][][]any
 }
 
@@ -504,15 +507,24 @@ func newRecordingSink() *recordingSink {
 func (s *recordingSink) Flush(_ context.Context, tableName string, _ []string, rows [][]any) (int64, error) {
 	copied := make([][]any, len(rows))
 	copy(copied, rows)
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.flushed[tableName] = append(s.flushed[tableName], copied...)
 	return int64(len(rows)), nil
 }
 
-func (s *recordingSink) RollbackDatafile(_ context.Context, _ int32, _ []string) error { return nil }
-func (s *recordingSink) Close() error                                      { return nil }
+func (s *recordingSink) RollbackDatafile(_ context.Context, _ int32, _ []string, _ string) error {
+	return nil
+}
+func (s *recordingSink) Close() error { return nil }
 
 func (s *recordingSink) errorRows() [][]any {
-	return s.flushed["parser_error"]
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if rows := s.flushed["shadow_parser_error"]; len(rows) > 0 {
+		return slices.Clone(rows)
+	}
+	return slices.Clone(s.flushed["parser_error"])
 }
 
 func TestRouteValidatedBatch_NoErrors_NoWriters(t *testing.T) {

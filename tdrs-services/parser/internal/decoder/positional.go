@@ -83,8 +83,8 @@ func (d *PostitionalDecoder) Close() error {
 }
 
 // Sort reads all rows, sorts them by key, and makes subsequent Rows() calls return sorted output.
-func (d *PostitionalDecoder) Sort(detector *RecordTypeDetector, keyExtractor KeyExtractor, groupedSchemas []string) error {
-	return d.Sortable.DoSort(d.unsortedRows(), detector, keyExtractor, groupedSchemas)
+func (d *PostitionalDecoder) Sort(detector *RecordTypeDetector, keyFields []filespec.KeyFieldDef, groupedSchemas []string) error {
+	return d.Sortable.DoSort(d.unsortedRows(), detector, keyFields, groupedSchemas)
 }
 
 func (d *PostitionalDecoder) Rows() iter.Seq2[Row, error] {
@@ -104,6 +104,9 @@ func (d *PostitionalDecoder) unsortedRows() iter.Seq2[Row, error] {
 				yield(nil, err)
 				return
 			}
+			if len(line) == 0 && err == io.EOF {
+				return
+			}
 
 			// Remove trailing newline and carriage return characters
 			line = replacer.Replace(line)
@@ -113,10 +116,6 @@ func (d *PostitionalDecoder) unsortedRows() iter.Seq2[Row, error] {
 			// Handle blank lines, comments, etc...
 			if (len(line) == 0 && err != io.EOF) || strings.HasPrefix(line, "#") {
 				continue
-			}
-
-			if err == io.EOF {
-				return
 			}
 
 			decodedLength := len(line)
@@ -130,6 +129,9 @@ func (d *PostitionalDecoder) unsortedRows() iter.Seq2[Row, error] {
 			// Yield the row to the caller
 			if !yield(row, nil) {
 				return // Caller wants to stop iteration
+			}
+			if err == io.EOF {
+				return
 			}
 		}
 	}

@@ -28,7 +28,7 @@ type Decoder interface {
 	// After calling Sort, subsequent calls to Rows() return sorted rows followed
 	// by unkeyed rows. Header/trailer rows are separated out.
 	// Must be called after ReadFirst() and before Rows().
-	Sort(detector *RecordTypeDetector, keyExtractor KeyExtractor, groupedSchemas []string) error
+	Sort(detector *RecordTypeDetector, keyFields []filespec.KeyFieldDef, groupedSchemas []string) error
 
 	// Close releases any resources held by the decoder.
 	Close() error

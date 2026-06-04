@@ -11,6 +11,90 @@ section: 1
 document: "Tribal TANF Active Case Data"
 format: positional
 
+record_validators:
+  - id: record_length_min
+    params:
+      min: 117
+  - id: case_number_not_empty
+  - id: rpt_month_year_is_valid
+  - id: rpt_month_year_matches_header_year_quarter
+
+  # Record validators with VALUE_CONSISTENCY error type (cross-field validation)
+  # Amount requires positive validators
+  - id: amount_requires_positive
+    params:
+      amount_field: CASH_AMOUNT
+      required_field: NBR_MONTHS
+  - id: amount_requires_positive
+    params:
+      amount_field: CC_AMOUNT
+      required_field: CHILDREN_COVERED
+  - id: amount_requires_positive
+    params:
+      amount_field: CC_AMOUNT
+      required_field: CC_NBR_MONTHS
+  - id: amount_requires_positive
+    params:
+      amount_field: TRANSP_AMOUNT
+      required_field: TRANSP_NBR_MONTHS
+  - id: amount_requires_positive
+    params:
+      amount_field: TRANSITION_SERVICES_AMOUNT
+      required_field: TRANSITION_NBR_MONTHS
+  - id: amount_requires_positive
+    params:
+      amount_field: OTHER_AMOUNT
+      required_field: OTHER_NBR_MONTHS
+  # Sanction reduction amount validators
+  - id: amount_requires_value_in
+    params:
+      amount_field: SANC_REDUCTION_AMT
+      required_field: WORK_REQ_SANCTION
+      values: [1, 2]
+  - id: amount_requires_value_in
+    params:
+      amount_field: SANC_REDUCTION_AMT
+      required_field: FAMILY_SANC_ADULT
+      values: [1, 2]
+  - id: amount_requires_value_in
+    params:
+      amount_field: SANC_REDUCTION_AMT
+      required_field: SANC_TEEN_PARENT
+      values: [1, 2]
+  - id: amount_requires_value_in
+    params:
+      amount_field: SANC_REDUCTION_AMT
+      required_field: NON_COOPERATION_CSE
+      values: [1, 2]
+  - id: amount_requires_value_in
+    params:
+      amount_field: SANC_REDUCTION_AMT
+      required_field: FAILURE_TO_COMPLY
+      values: [1, 2]
+  - id: amount_requires_value_in
+    params:
+      amount_field: SANC_REDUCTION_AMT
+      required_field: OTHER_SANCTION
+      values: [1, 2]
+  # Other total reductions validators
+  - id: amount_requires_value_in
+    params:
+      amount_field: OTHER_TOTAL_REDUCTIONS
+      required_field: FAMILY_CAP
+      values: [1, 2]
+  - id: amount_requires_value_in
+    params:
+      amount_field: OTHER_TOTAL_REDUCTIONS
+      required_field: REDUCTIONS_ON_RECEIPTS
+      values: [1, 2]
+  - id: amount_requires_value_in
+    params:
+      amount_field: OTHER_TOTAL_REDUCTIONS
+      required_field: OTHER_NON_SANCTION
+      values: [1, 2]
+  # Sum validator
+  - id: t1_sum_assistance_positive
+
 # Fields shared across all segments (included in every output row)
 shared:
   - name: RecordType
@@ -47,6 +131,8 @@ segments:
         end: 22
         type: string
         required: false
+        field_validators:
+          - id: is_numeric
         transform:
           name: zero_pad
           params:
@@ -59,6 +145,11 @@ segments:
         end: 24
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
 
       - name: ZIP_CODE
         friendly_name: ZIP Code
@@ -67,6 +158,8 @@ segments:
         end: 29
         type: string
         required: true
+        field_validators:
+          - id: is_numeric
 
       - name: FUNDING_STREAM
         friendly_name: Funding Stream
@@ -75,6 +168,10 @@ segments:
         end: 30
         type: integer
         required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: DISPOSITION
         friendly_name: Disposition
@@ -83,6 +180,10 @@ segments:
         end: 31
         type: integer
         required: true
+        field_validators:
+          - id: equals
+            params:
+              value: 1
 
       - name: NEW_APPLICANT
         friendly_name: New Applicant
@@ -91,6 +192,10 @@ segments:
         end: 32
         type: integer
         required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: NBR_FAMILY_MEMBERS
         friendly_name: Number of Family Members
@@ -99,6 +204,11 @@ segments:
         end: 34
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 99
 
       - name: FAMILY_TYPE
         friendly_name: Type of Family for Work Participation
@@ -107,6 +217,10 @@ segments:
         end: 35
         type: integer
         required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2, 3]
 
       - name: RECEIVES_SUB_HOUSING
         friendly_name: Receives Subsidized Housing
@@ -115,6 +229,11 @@ segments:
         end: 36
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 1
+              max: 3
 
       - name: RECEIVES_MED_ASSISTANCE
         friendly_name: Receives Medical Assistance
@@ -123,6 +242,10 @@ segments:
         end: 37
         type: integer
         required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: RECEIVES_FOOD_STAMPS
         friendly_name: Receives Food Stamps
@@ -131,6 +254,10 @@ segments:
         end: 38
         type: integer
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: [0, 1, 2]
 
       - name: AMT_FOOD_STAMP_ASSISTANCE
         friendly_name: Food Stamp Assistance
@@ -139,6 +266,11 @@ segments:
         end: 42
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: RECEIVES_SUB_CC
         friendly_name: Receives Subsidized Child Care
@@ -147,6 +279,10 @@ segments:
         end: 43
         type: integer
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: [0, 1, 2, 3]
 
       - name: AMT_SUB_CC
         friendly_name: Subsidized Child Care
@@ -155,6 +291,11 @@ segments:
         end: 47
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: CHILD_SUPPORT_AMT
         friendly_name: Amount of Child Support
@@ -163,6 +304,11 @@ segments:
         end: 51
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: FAMILY_CASH_RESOURCES
         friendly_name: Amount of the Family's Cash Resources
@@ -171,6 +317,11 @@ segments:
         end: 55
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: CASH_AMOUNT
         friendly_name: Cash
@@ -179,6 +330,11 @@ segments:
         end: 59
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: NBR_MONTHS
         friendly_name: Number of Months
@@ -187,6 +343,11 @@ segments:
         end: 62
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 999
 
       - name: CC_AMOUNT
         friendly_name: TANF Child Care
@@ -195,6 +356,11 @@ segments:
         end: 66
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: CHILDREN_COVERED
         friendly_name: TANF Child Care Number of Children Covered
@@ -203,6 +369,11 @@ segments:
         end: 68
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 99
 
       - name: CC_NBR_MONTHS
         friendly_name: TANF Child Care Number of Months
@@ -211,6 +382,11 @@ segments:
         end: 71
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 999
 
       - name: TRANSP_AMOUNT
         friendly_name: Transportation
@@ -219,6 +395,11 @@ segments:
         end: 75
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: TRANSP_NBR_MONTHS
         friendly_name: Transportation Number of Months
@@ -227,6 +408,11 @@ segments:
         end: 78
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 999
 
       - name: TRANSITION_SERVICES_AMOUNT
         friendly_name: Transitional Services
@@ -235,6 +421,11 @@ segments:
         end: 82
         type: integer
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: TRANSITION_NBR_MONTHS
         friendly_name: Transitional Services Number of Months
@@ -243,6 +434,11 @@ segments:
         end: 85
         type: integer
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 999
 
       - name: OTHER_AMOUNT
         friendly_name: Other
@@ -251,6 +447,11 @@ segments:
         end: 89
         type: integer
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: OTHER_NBR_MONTHS
         friendly_name: Other Number of Months
@@ -259,6 +460,11 @@ segments:
         end: 92
         type: integer
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 999
 
       - name: SANC_REDUCTION_AMT
         friendly_name: Total Dollar Amount of Reductions due to Sanctions
@@ -267,6 +473,11 @@ segments:
         end: 96
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: WORK_REQ_SANCTION
         friendly_name: Work Requirements Sanction
@@ -275,6 +486,10 @@ segments:
         end: 97
         type: integer
         required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: FAMILY_SANC_ADULT
         friendly_name: Family Sanction for Adult with No High School Diploma
@@ -283,6 +498,10 @@ segments:
         end: 98
         type: integer
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: [0, 1, 2]
 
       - name: SANC_TEEN_PARENT
         friendly_name: Sanction for Teen Parent not Attending School
@@ -291,6 +510,10 @@ segments:
         end: 99
         type: integer
         required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: NON_COOPERATION_CSE
         friendly_name: Non-Cooperation with Child Support
@@ -299,6 +522,10 @@ segments:
         end: 100
         type: integer
         required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: FAILURE_TO_COMPLY
         friendly_name: Failure to comply with Individual Responsibility Plan
@@ -307,6 +534,10 @@ segments:
         end: 101
         type: integer
         required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: OTHER_SANCTION
         friendly_name: Other Sanction
@@ -315,6 +546,10 @@ segments:
         end: 102
         type: integer
         required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: RECOUPMENT_PRIOR_OVRPMT
         friendly_name: Recoupment of Prior Overpayment
@@ -323,6 +558,11 @@ segments:
         end: 106
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: OTHER_TOTAL_REDUCTIONS
         friendly_name: Total Dollar Amount of Reductions due to Other Reasons
@@ -331,6 +571,11 @@ segments:
         end: 110
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: FAMILY_CAP
         friendly_name: Family Cap
@@ -339,6 +584,10 @@ segments:
         end: 111
         type: integer
         required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: REDUCTIONS_ON_RECEIPTS
         friendly_name: Reduction Based on Length of Receipt of Assistance
@@ -347,6 +596,10 @@ segments:
         end: 112
         type: integer
         required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: OTHER_NON_SANCTION
         friendly_name: Other, Non-sanction
@@ -355,6 +608,10 @@ segments:
         end: 113
         type: integer
         required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: WAIVER_EVAL_CONTROL_GRPS
         friendly_name: Waiver Evaluation Control Groups
@@ -363,6 +620,11 @@ segments:
         end: 114
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9
 
       - name: FAMILY_EXEMPT_TIME_LIMITS
         friendly_name: Exempt from Tribal Time-Limit Provisions
@@ -371,6 +633,11 @@ segments:
         end: 116
         type: integer
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9
 
       - name: FAMILY_NEW_CHILD
         friendly_name: A New Child-Only Family
@@ -379,3 +646,7 @@ segments:
         end: 117
         type: integer
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: [0, 1, 2]

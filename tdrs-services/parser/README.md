@@ -86,7 +86,11 @@ The config file supports `${VAR}` interpolation. Common variables:
 | Variable             | Used In                   | Purpose                         |
 | -------------------- | ------------------------- | ------------------------------- |
 | `DATABASE_URL`       | `database.url`            | PostgreSQL connection string    |
+| `GO_PARSER_SHADOW_MODE` | `database.shadow_mode` | `true` writes to shadow tables; `false` writes to production tables |
+| `DATABASE_TABLE_PREFIX` | `database.table_prefix` | Prefix for Go parser-owned output tables (default `shadow_`) |
 | `REDIS_URL`          | `server.celery.redis_url` | Redis broker for Celery mode    |
+| `GO_PARSER_POST_PARSE_TASK_NAME` | `server.celery.post_parse_task_name` | Python Celery task to enqueue after each parse attempt |
+| `GO_PARSER_POST_PARSE_QUEUE` | `server.celery.post_parse_queue` | Python Celery queue for post-parse finalization |
 | `S3_BUCKET`          | `storage.s3.bucket`       | S3 bucket for file storage      |
 | `S3_ENDPOINT`        | `storage.s3.endpoint`     | Custom S3 endpoint (LocalStack) |
 | `AWS_DEFAULT_REGION` | `storage.s3.region`       | AWS region                      |
@@ -170,7 +174,7 @@ go run ./cmd/parser \
 
 ### Celery Mode
 
-Celery mode connects to Redis and consumes parse tasks dispatched by Django. This is the production deployment mode.
+Celery mode connects to Redis and consumes parse tasks dispatched by Django. After each parse attempt, it enqueues Django's shadow-table `post_parse` task on the Python Celery queue.
 
 ```sh
 DATABASE_URL=postgres://user:pass@localhost:5432/tdrs \
@@ -278,7 +282,7 @@ gotestsum -- -count=1 ./internal/validation/...
 
 ## SQLC (Database Code Generation)
 
-The Go parser uses [SQLC](https://sqlc.dev) to generate type-safe Go code from SQL. The schema in `schema.sql` mirrors the Django model definitions.
+The Go parser uses [SQLC](https://sqlc.dev) to generate type-safe Go code from SQL. The schema in `schema.sql` mirrors the Django model definitions, with Go-owned output tables prefixed as `shadow_*` so Python/Django parser output remains isolated.
 
 ```sh
 # Regenerate Go code from schema.sql and query.sql
@@ -314,6 +318,8 @@ Live Go parser integration coverage runs through the backend pytest suite:
 ```sh
 task backend-pytest-go-integration
 ```
+
+For integration tests in CI, CircleCI reuses the existing backend docker-compose stack, including PostgreSQL and the Django migration flow, before running the Go parser integration suite with `DATABASE_URL` pointed at that migrated test database. By default, Go parser records, parser errors, datafile metadata, and summaries are written to `shadow_*` tables in that same database. Set `GO_PARSER_SHADOW_MODE=false` to target production tables instead.
 
 ---
 

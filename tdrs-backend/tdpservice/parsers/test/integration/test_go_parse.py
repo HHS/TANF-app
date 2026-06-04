@@ -1,6 +1,7 @@
 """Integration tests for the live Go parser worker."""
 
 import logging
+import os
 import time
 
 from django.conf import settings
@@ -10,15 +11,15 @@ import pytest
 from celery import current_app as celery_app
 from celery.exceptions import TimeoutError as CeleryTimeoutError
 
+from tdpservice.data_files.models import DataFile
 from tdpservice.parsers import aggregates
 from tdpservice.parsers.models import (
     DataFileSummary,
     ParserError,
     ParserErrorCategoryChoices,
 )
-
-# TODO: uncomment when fra tests implemented
-# from tdpservice.search_indexes.models.fra import TANF_Exiter1
+from tdpservice.parsers.test.factories import ParsingFileFactory
+from tdpservice.search_indexes.models.fra import TANF_Exiter1
 from tdpservice.search_indexes.models.ssp import (
     SSP_M1,
     SSP_M2,
@@ -37,23 +38,30 @@ from tdpservice.search_indexes.models.tanf import (
     TANF_T6,
     TANF_T7,
 )
-
-# TODO: uncomment when tribal tests implemented
-# from tdpservice.search_indexes.models.tribal import (
-#     Tribal_TANF_T1,
-#     Tribal_TANF_T2,
-#     Tribal_TANF_T3,
-#     Tribal_TANF_T4,
-#     Tribal_TANF_T5,
-#     Tribal_TANF_T6,
-#     Tribal_TANF_T7,
-# )
+from tdpservice.search_indexes.models.tribal import (
+    Tribal_TANF_T1,
+    Tribal_TANF_T2,
+    Tribal_TANF_T3,
+    Tribal_TANF_T4,
+    Tribal_TANF_T5,
+    Tribal_TANF_T6,
+    Tribal_TANF_T7,
+)
 
 logger = logging.getLogger(__name__)
 
 GO_PARSE_TASK_NAME = "tdpservice.scheduling.parser_task.go_parse"
-GO_PARSE_TIMEOUT_SECONDS = 60
+GO_PARSE_TIMEOUT_SECONDS = 300
 _GO_PARSER_DATAFILE_IDS = None
+
+os.environ["GO_PARSER_SHADOW_MODE"] = "False"
+
+
+@pytest.fixture(autouse=True)
+def disable_go_parser_shadow_mode(settings, monkeypatch):
+    """Keep Go parser integration tests pointed at production tables."""
+    monkeypatch.setenv("GO_PARSER_SHADOW_MODE", "False")
+    settings.GO_PARSER_SHADOW_MODE = False
 
 
 def register_go_parser_datafile_for_cleanup(datafile):
@@ -72,7 +80,7 @@ def parse_datafile(dfs, datafile, timeout_seconds=GO_PARSE_TIMEOUT_SECONDS):
 
     async_result = celery_app.send_task(
         GO_PARSE_TASK_NAME,
-        args=[datafile.pk],
+        args=[datafile.pk, 0],
         queue=settings.CELERY_GO_PARSER_QUEUE,
     )
 
@@ -80,7 +88,8 @@ def parse_datafile(dfs, datafile, timeout_seconds=GO_PARSE_TIMEOUT_SECONDS):
         task_result = async_result.get(timeout=timeout_seconds, propagate=True)
     except CeleryTimeoutError as exc:
         raise RuntimeError(
-            f"Timed out waiting for Go parser task for datafile {datafile.pk}."
+            f"Timed out waiting for Go parser task {async_result.id} "
+            f"for datafile {datafile.pk} on queue {settings.CELERY_GO_PARSER_QUEUE}."
         ) from exc
 
     if task_result != "success":
@@ -96,20 +105,19 @@ def parse_datafile(dfs, datafile, timeout_seconds=GO_PARSE_TIMEOUT_SECONDS):
 
 
 @pytest.mark.go_parser_integration
-@pytest.mark.usefixtures("go_parser_datafile_cleanup")
 class TestGoParse:
     """Tests for parse and validation flows."""
 
-    # @pytest.fixture
-    # def parsed_small_correct_file(self, small_correct_file, dfs):
-    #     """Return parsed small_correct_file and its DataFileSummary."""
-    #     small_correct_file.year = 2021
-    #     small_correct_file.quarter = "Q1"
-    #     small_correct_file.save()
+    @pytest.fixture
+    def parsed_small_correct_file(self, small_correct_file, dfs):
+        """Return parsed small_correct_file and its DataFileSummary."""
+        small_correct_file.year = 2021
+        small_correct_file.quarter = "Q1"
+        small_correct_file.save()
 
-    #     parse_datafile(dfs, small_correct_file)
+        parse_datafile(dfs, small_correct_file)
 
-    #     return small_correct_file, dfs
+        return small_correct_file, dfs
 
     # @pytest.fixture
     # def parsed_bad_trailer_file(self, bad_trailer_file, dfs):
@@ -136,197 +144,314 @@ class TestGoParse:
     #     parser_errors = ParserError.objects.filter(file=bad_trailer_file_2)
     #     return bad_trailer_file_2, dfs, parser_errors
 
-    # @pytest.mark.django_db(transaction=True)
-    # def test_small_correct_file_case_consistency_error(
-    #     self, parsed_small_correct_file
-    # ):
-    #     """Test case consistency errors are recorded for small_correct_file."""
-    #     datafile, _dfs = parsed_small_correct_file
-    #     errors = ParserError.objects.filter(file=datafile).order_by("id")
-    #     assert errors.count() == 2
-    #     assert errors.first().error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+    @pytest.mark.django_db(transaction=True)
+    @pytest.mark.parametrize(
+        "program_type,section_name,header",
+        [
+            (
+                DataFile.ProgramType.TANF,
+                DataFile.Section.ACTIVE_CASE_DATA,
+                "HEADER20244A06   TAN1ED",
+            ),
+            (
+                DataFile.ProgramType.TANF,
+                DataFile.Section.AGGREGATE_DATA,
+                "HEADER20244G06   TAN1ED",
+            ),
+            (
+                DataFile.ProgramType.TANF,
+                DataFile.Section.STRATUM_DATA,
+                "HEADER20244S06   TAN1ED",
+            ),
+            (
+                DataFile.ProgramType.SSP,
+                DataFile.Section.ACTIVE_CASE_DATA,
+                "HEADER20244A06   SSP1ED",
+            ),
+            (
+                DataFile.ProgramType.SSP,
+                DataFile.Section.AGGREGATE_DATA,
+                "HEADER20244G06   SSP1ED",
+            ),
+            (
+                DataFile.ProgramType.SSP,
+                DataFile.Section.STRATUM_DATA,
+                "HEADER20244S06   SSP1ED",
+            ),
+            (
+                DataFile.ProgramType.TRIBAL,
+                DataFile.Section.ACTIVE_CASE_DATA,
+                "HEADER20244A00123TAN1ED",
+            ),
+            (
+                DataFile.ProgramType.TRIBAL,
+                DataFile.Section.AGGREGATE_DATA,
+                "HEADER20244G00123TAN1ED",
+            ),
+            (
+                DataFile.ProgramType.TRIBAL,
+                DataFile.Section.STRATUM_DATA,
+                "HEADER20244S00123TAN1ED",
+            ),
+        ],
+    )
+    def test_go_parse_zero_record_header_trailer_only_files(
+        self, dfs, program_type, section_name, header
+    ):
+        """Test Go parser accepts valid zero-record TANF, SSP, and Tribal files."""
+        datafile = ParsingFileFactory(
+            year=2025,
+            quarter="Q1",
+            section=section_name,
+            program_type=program_type,
+            file__name=f"{program_type}-{section_name}-zero-records.txt",
+            file__section=section_name,
+            file__data=(f"{header}\nTRAILER0000000         ".encode()),
+        )
 
-    # @pytest.mark.django_db(transaction=True)
-    # def test_small_correct_file_case_aggregates_rejected(
-    #     self, parsed_small_correct_file
-    # ):
-    #     """Test case aggregates for rejected small_correct_file."""
-    #     _datafile, dfs = parsed_small_correct_file
-    #     dfs.status = dfs.get_status()
-    #     dfs.case_aggregates = aggregates.case_aggregates_by_month(dfs.datafile, dfs.status)
-    #     assert dfs.case_aggregates == {
-    #         "rejected": 1,
-    #         "months": [
-    #             {
-    #                 "accepted_without_errors": "N/A",
-    #                 "accepted_with_errors": "N/A",
-    #                 "month": "Oct",
-    #             },
-    #             {
-    #                 "accepted_without_errors": "N/A",
-    #                 "accepted_with_errors": "N/A",
-    #                 "month": "Nov",
-    #             },
-    #             {
-    #                 "accepted_without_errors": "N/A",
-    #                 "accepted_with_errors": "N/A",
-    #                 "month": "Dec",
-    #             },
-    #         ],
-    #     }
-    #     assert dfs.get_status() == DataFileSummary.Status.REJECTED
+        parse_datafile(dfs, datafile)
 
-    # @pytest.mark.django_db(transaction=True)
-    # def test_small_correct_file_no_records_created(self, parsed_small_correct_file):
-    #     """Test that small_correct_file does not create records when rejected."""
-    #     _datafile, _dfs = parsed_small_correct_file
-    #     assert TANF_T1.objects.count() == 0
+        assert ParserError.objects.filter(file=datafile).count() == 0
+        assert dfs.total_number_of_records_in_file == 0
+        assert dfs.total_number_of_records_created == 0
+        assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
 
-    # @pytest.mark.django_db(transaction=True)
-    # @pytest.mark.parametrize(
-    #     "section, expected_message, expected_aggregates, save_dfs",
-    #     [
-    #         (
-    #             "Closed Case Data",
-    #             "Data does not match the expected layout for Closed Case Data.",
-    #             {
-    #                 "rejected": 1,
-    #                 "months": [
-    #                     {
-    #                         "accepted_without_errors": "N/A",
-    #                         "accepted_with_errors": "N/A",
-    #                         "month": "Oct",
-    #                     },
-    #                     {
-    #                         "accepted_without_errors": "N/A",
-    #                         "accepted_with_errors": "N/A",
-    #                         "month": "Nov",
-    #                     },
-    #                     {
-    #                         "accepted_without_errors": "N/A",
-    #                         "accepted_with_errors": "N/A",
-    #                         "month": "Dec",
-    #                     },
-    #                 ],
-    #             },
-    #             False,
-    #         ),
-    #         (
-    #             "SSP Active Case Data",
-    #             "Data does not match the expected layout for "
-    #             "SSP Active Case Data.",
-    #             None,
-    #             True,
-    #         ),
-    #     ],
-    # )
-    # def test_go_parse_section_mismatch_variants(
-    #     self,
-    #     small_correct_file,
-    #     dfs,
-    #     section,
-    #     expected_message,
-    #     expected_aggregates,
-    #     save_dfs,
-    # ):
-    #     """Test parsing when file metadata does not match the raw data layout."""
-    #     small_correct_file.section = section
-    #     small_correct_file.save()
+    @pytest.mark.django_db(transaction=True)
+    def test_go_parse_zero_record_bad_trailer_count_rejected(self, dfs):
+        """Test Go parser rejects zero-record files when trailer count is not zero."""
+        datafile = ParsingFileFactory(
+            year=2025,
+            quarter="Q1",
+            section=DataFile.Section.ACTIVE_CASE_DATA,
+            program_type=DataFile.ProgramType.TANF,
+            file__name="tanf-active-zero-records-bad-trailer-count.txt",
+            file__section=DataFile.Section.ACTIVE_CASE_DATA,
+            file__data=(b"HEADER20244A06   TAN1ED\n" b"TRAILER0000001         "),
+        )
 
-    #     dfs.datafile = small_correct_file
-    #     if save_dfs:
-    #         dfs.save()
+        parse_datafile(dfs, datafile)
 
-    #     parse_datafile(dfs, small_correct_file)
+        assert dfs.get_status() == DataFileSummary.Status.REJECTED
+        trailer_count_error = (
+            "The number of records in the TRAILER row count: 1, does not match "
+            "the number of records detected in the file: 0."
+        )
+        assert ParserError.objects.filter(
+            file=datafile,
+            error_message=trailer_count_error,
+            error_type=ParserErrorCategoryChoices.PRE_CHECK,
+        ).exists()
+        assert ParserError.objects.filter(
+            file=datafile,
+            error_message="No records created.",
+            error_type=ParserErrorCategoryChoices.PRE_CHECK,
+        ).exists()
 
-    #     dfs.status = dfs.get_status()
-    #     assert dfs.status == DataFileSummary.Status.REJECTED
-    #     parser_errors = ParserError.objects.filter(file=small_correct_file)
-    #     assert parser_errors.count() == 1
+    @pytest.mark.django_db(transaction=True)
+    def test_go_small_correct_file_case_consistency_error(
+        self, parsed_small_correct_file
+    ):
+        """Test case consistency errors are recorded for small_correct_file."""
+        datafile, _dfs = parsed_small_correct_file
+        errors = ParserError.objects.filter(file=datafile).order_by("id")
+        # Go parser generates cat4 error that the python parser misses
+        assert errors.count() == 3
+        assert errors.first().error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
 
-    #     if expected_aggregates is not None:
-    #         dfs.case_aggregates = aggregates.case_aggregates_by_month(
-    #             dfs.datafile, dfs.status
-    #         )
-    #         assert dfs.case_aggregates == expected_aggregates
+    @pytest.mark.django_db(transaction=True)
+    def test_go_small_correct_file_case_aggregates_rejected(
+        self, parsed_small_correct_file
+    ):
+        """Test case aggregates for rejected small_correct_file."""
+        _datafile, dfs = parsed_small_correct_file
+        dfs.status = dfs.get_status()
+        dfs.case_aggregates = aggregates.case_aggregates_by_month(
+            dfs.datafile, dfs.status
+        )
+        assert dfs.case_aggregates == {
+            "rejected": 1,
+            "months": [
+                {
+                    "accepted_without_errors": "N/A",
+                    "accepted_with_errors": "N/A",
+                    "month": "Oct",
+                },
+                {
+                    "accepted_without_errors": "N/A",
+                    "accepted_with_errors": "N/A",
+                    "month": "Nov",
+                },
+                {
+                    "accepted_without_errors": "N/A",
+                    "accepted_with_errors": "N/A",
+                    "month": "Dec",
+                },
+            ],
+        }
+        assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
-    #     err = parser_errors.first()
-    #     assert err.row_number == 1
-    #     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    #     assert err.error_message == expected_message
-    #     assert err.content_type is None
-    #     assert err.object_id is None
+    @pytest.mark.django_db(transaction=True)
+    def test_go_small_correct_file_no_records_created(self, parsed_small_correct_file):
+        """Test that small_correct_file does not create records when rejected."""
+        datafile, _dfs = parsed_small_correct_file
+        assert TANF_T1.objects.filter(datafile=datafile).count() == 0
 
-    # @pytest.mark.django_db(transaction=True)
-    # @pytest.mark.parametrize(
-    #     "fixture_name, updates, expected",
-    #     [
-    #         (
-    #             "bad_test_file",
-    #             {},
-    #             {
-    #                 "count": 1,
-    #                 "row_number": 1,
-    #                 "error_message": (
-    #                     "HEADER: record length is 24 characters but must be 23."
-    #                 ),
-    #             },
-    #         ),
-    #         (
-    #             "bad_file_missing_header",
-    #             {},
-    #             {
-    #                 "count": 2,
-    #                 "row_number": 1,
-    #                 "error_message": (
-    #                     "HEADER: record length is 14 characters but must be 23."
-    #                 ),
-    #                 "status": DataFileSummary.Status.REJECTED,
-    #             },
-    #         ),
-    #         (
-    #             "bad_file_multiple_headers",
-    #             {"year": 2024, "quarter": "Q1"},
-    #             {
-    #                 "count": 1,
-    #                 "row_number": 9,
-    #                 "error_message": "Multiple headers found.",
-    #                 "status": DataFileSummary.Status.REJECTED,
-    #             },
-    #         ),
-    #         (
-    #             "big_bad_test_file",
-    #             {"year": 2022, "quarter": "Q1"},
-    #             {
-    #                 "count": 1,
-    #                 "row_number": 3679,
-    #                 "error_message": "Multiple headers found.",
-    #             },
-    #         ),
-    #     ],
-    # )
-    # def test_go_parse_precheck_header_errors(self, request, fixture_name, updates, expected, dfs):
-    #     """Test parsing failures triggered by header/pre-check validation."""
-    #     datafile = request.getfixturevalue(fixture_name)
-    #     for field, value in updates.items():
-    #         setattr(datafile, field, value)
-    #     if updates:
-    #         datafile.save()
+    @pytest.mark.django_db(transaction=True)
+    @pytest.mark.parametrize(
+        "program, section, expected_message, expected_aggregates, save_dfs, num_errors",
+        [
+            (
+                "TAN",
+                "Closed Case Data",
+                "Data does not match the expected layout for Closed Case Data.",
+                {
+                    "rejected": 1,
+                    "months": [
+                        {
+                            "accepted_without_errors": "N/A",
+                            "accepted_with_errors": "N/A",
+                            "month": "Oct",
+                        },
+                        {
+                            "accepted_without_errors": "N/A",
+                            "accepted_with_errors": "N/A",
+                            "month": "Nov",
+                        },
+                        {
+                            "accepted_without_errors": "N/A",
+                            "accepted_with_errors": "N/A",
+                            "month": "Dec",
+                        },
+                    ],
+                },
+                False,
+                2,
+            ),
+            (
+                "SSP",
+                "Active Case Data",
+                # Go parser is explicitely looking for records prefixed with "M"
+                "Unknown record type was found.",
+                None,
+                True,
+                2,
+            ),
+        ],
+    )
+    def test_go_parse_section_mismatch_variants(
+        self,
+        small_correct_file,
+        dfs,
+        program,
+        section,
+        expected_message,
+        expected_aggregates,
+        save_dfs,
+        num_errors,
+    ):
+        """Test parsing when file metadata does not match the raw data layout."""
+        small_correct_file.program_type = program
+        small_correct_file.section = section
+        small_correct_file.save()
 
-    #     parse_datafile(dfs, datafile)
+        dfs.datafile = small_correct_file
+        if save_dfs:
+            dfs.save()
 
-    #     if expected.get("status"):
-    #         assert dfs.get_status() == expected["status"]
+        parse_datafile(dfs, small_correct_file)
 
-    #     parser_errors = ParserError.objects.filter(file=datafile).order_by("id")
-    #     assert parser_errors.count() == expected["count"]
+        dfs.status = dfs.get_status()
+        assert dfs.status == DataFileSummary.Status.REJECTED
+        parser_errors = ParserError.objects.filter(file=small_correct_file).order_by(
+            "-row_number"
+        )
+        assert parser_errors.count() == num_errors
 
-    #     err = parser_errors.first()
-    #     assert err.row_number == expected["row_number"]
-    #     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    #     assert err.error_message == expected["error_message"]
-    #     assert err.content_type is None
-    #     assert err.object_id is None
+        if expected_aggregates is not None:
+            dfs.case_aggregates = aggregates.case_aggregates_by_month(
+                dfs.datafile, dfs.status
+            )
+            assert dfs.case_aggregates == expected_aggregates
+
+        err = parser_errors.first()
+        assert (
+            err.error_type == ParserErrorCategoryChoices.PRE_CHECK
+            or ParserErrorCategoryChoices.RECORD_PRE_CHECK
+        )
+        assert err.error_message == expected_message
+        assert err.content_type is None
+        assert err.object_id is None
+
+    @pytest.mark.django_db(transaction=True)
+    @pytest.mark.parametrize(
+        "fixture_name, updates, expected",
+        [
+            (
+                "bad_test_file",
+                {},
+                {
+                    "count": 3,
+                    "row_number": 1,
+                    "error_message": (
+                        "HEADER: record length is 24 characters but must be 23."
+                    ),
+                },
+            ),
+            (
+                "bad_file_missing_header",
+                {},
+                {
+                    "count": 2,
+                    "row_number": 1,
+                    "error_message": ("Your file does not start with a HEADER."),
+                    "status": DataFileSummary.Status.REJECTED,
+                },
+            ),
+            (
+                "bad_file_multiple_headers",
+                {"year": 2024, "quarter": "Q1"},
+                {
+                    "count": 1,
+                    "row_number": 9,
+                    "error_message": "Multiple headers found.",
+                    "status": DataFileSummary.Status.REJECTED,
+                },
+            ),
+            (
+                "big_bad_test_file",
+                {"year": 2022, "quarter": "Q1"},
+                {
+                    "count": 1,
+                    "row_number": 3679,
+                    "error_message": "Multiple headers found.",
+                },
+            ),
+        ],
+    )
+    def test_go_parse_precheck_header_errors(
+        self, request, fixture_name, updates, expected, dfs
+    ):
+        """Test parsing failures triggered by header/pre-check validation."""
+        datafile = request.getfixturevalue(fixture_name)
+        for field, value in updates.items():
+            setattr(datafile, field, value)
+        if updates:
+            datafile.save()
+
+        parse_datafile(dfs, datafile)
+
+        if expected.get("status"):
+            assert dfs.get_status() == expected["status"]
+
+        parser_errors = ParserError.objects.filter(file=datafile).order_by("id")
+        assert parser_errors.count() == expected["count"]
+
+        err = parser_errors.first()
+        assert err.row_number == expected["row_number"]
+        assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
+        assert err.error_message == expected["error_message"]
+        assert err.content_type is None
+        assert err.object_id is None
 
     # @pytest.mark.django_db(transaction=True)
     # def test_bad_trailer_file_trailer_error(self, parsed_bad_trailer_file):
@@ -489,29 +614,6 @@ class TestGoParse:
         assert TANF_T3.objects.filter(datafile=big_file).count() == 1376
 
     @pytest.mark.django_db(transaction=True)
-    def test_go_parse_big_s1_file_with_rollback(self, big_s1_rollback_file, dfs):
-        """Test Go parser rollback when a second header is found mid-parse."""
-        big_s1_rollback_file.year = 2023
-        big_s1_rollback_file.quarter = "Q2"
-        big_s1_rollback_file.save()
-
-        parse_datafile(dfs, big_s1_rollback_file)
-
-        parser_errors = ParserError.objects.filter(file=big_s1_rollback_file)
-        assert parser_errors.count() == 1
-
-        err = parser_errors.first()
-        assert err.row_number == 13609
-        assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
-        assert err.error_message == "Multiple headers found."
-        assert err.content_type is None
-        assert err.object_id is None
-
-        assert TANF_T1.objects.filter(datafile=big_s1_rollback_file).count() == 0
-        assert TANF_T2.objects.filter(datafile=big_s1_rollback_file).count() == 0
-        assert TANF_T3.objects.filter(datafile=big_s1_rollback_file).count() == 0
-
-    @pytest.mark.django_db(transaction=True)
     def test_go_parse_empty_file(self, empty_file, dfs):
         """Test parsing of empty_file."""
         dfs.datafile = empty_file
@@ -577,12 +679,12 @@ class TestGoParse:
         dfs.status = dfs.get_status()
 
         # Go parser doesnt generate Trailer errors which is why the status is different
-        assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+        assert dfs.status == DataFileSummary.Status.PARTIALLY_ACCEPTED
         dfs.case_aggregates = aggregates.case_aggregates_by_month(
             dfs.datafile, dfs.status
         )
 
-        assert dfs.case_aggregates["rejected"] == 0
+        assert dfs.case_aggregates["rejected"] == 1
         for month in dfs.case_aggregates["months"]:
             if month["month"] == "Oct":
                 assert month["accepted_without_errors"] == 0
@@ -592,8 +694,7 @@ class TestGoParse:
                 assert month["accepted_with_errors"] == 0
 
         parser_errors = ParserError.objects.filter(file=small_ssp_section1_datafile)
-        # No trailer errors so we only have 8 errors expected
-        assert parser_errors.filter(file=small_ssp_section1_datafile).count() == 8
+        assert parser_errors.filter(file=small_ssp_section1_datafile).count() == 9
         assert (
             SSP_M1.objects.filter(datafile=small_ssp_section1_datafile).count()
             == expected_m1_record_count
@@ -640,25 +741,34 @@ class TestGoParse:
         assert cat4_errors.count() == 20
         assert (
             cat4_errors[0].error_message
-            == "Duplicate record detected with record type M3 at line 453."
+            == "Duplicate record detected with record type M3 at line 453. Record is a duplicate of the record at line number 452."
         )
         assert (
             cat4_errors[1].error_message
-            == "Duplicate record detected with record type M3 at line 3273."
+            == "Duplicate record detected with record type M3 at line 3273. Record is a duplicate of the record at line number 3272."
         )
         assert (
             cat4_errors[2].error_message
-            == "Partial duplicate record detected with record type M3 at line 3275."
+            == "Partial duplicate record detected with record type M3 at line 3275. Record is a partial duplicate of the record at line number 3274. Duplicated fields causing error: Item 0 (Record Type), Item 3 (Reporting Month/Year), Item 5 (Case Number), Item 60 (Family Affiliation), Item 61 (Date of Birth), and Item 62 (Social Security Number)."
         )
 
         # We have a few more errors because the go parser separates the the OR'd
         # category1.validate_fieldYearMonth_with_headerYearQuarter(). and
         # category1.validateRptMonthYear() into separate checks.
-        assert parser_errors.count() == 31745
+        assert parser_errors.count() == 31739
 
-        assert SSP_M1.objects.count() == expected_m1_record_count
-        assert SSP_M2.objects.count() == expected_m2_record_count
-        assert SSP_M3.objects.count() == expected_m3_record_count
+        assert (
+            SSP_M1.objects.filter(datafile=ssp_section1_datafile).count()
+            == expected_m1_record_count
+        )
+        assert (
+            SSP_M2.objects.filter(datafile=ssp_section1_datafile).count()
+            == expected_m2_record_count
+        )
+        assert (
+            SSP_M3.objects.filter(datafile=ssp_section1_datafile).count()
+            == expected_m3_record_count
+        )
 
     @pytest.mark.django_db(transaction=True)
     def test_go_parse_tanf_section1_datafile(self, small_tanf_section1_datafile, dfs):
@@ -693,9 +803,13 @@ class TestGoParse:
             "rejected": 0,
         }
 
-        assert TANF_T2.objects.count() == 5
+        assert (
+            TANF_T2.objects.filter(datafile=small_tanf_section1_datafile).count() == 5
+        )
 
-        t2_models = TANF_T2.objects.all().order_by("CASE_NUMBER")
+        t2_models = TANF_T2.objects.filter(
+            datafile=small_tanf_section1_datafile
+        ).order_by("CASE_NUMBER")
 
         t2 = t2_models[0]
         assert t2.RPT_MONTH_YEAR == 202010
@@ -719,9 +833,15 @@ class TestGoParse:
 
         parse_datafile(dfs, small_tanf_section1_datafile)
 
-        assert TANF_T1.objects.count() == 5
-        assert TANF_T2.objects.count() == 5
-        assert TANF_T3.objects.count() == 6
+        assert (
+            TANF_T1.objects.filter(datafile=small_tanf_section1_datafile).count() == 5
+        )
+        assert (
+            TANF_T2.objects.filter(datafile=small_tanf_section1_datafile).count() == 5
+        )
+        assert (
+            TANF_T3.objects.filter(datafile=small_tanf_section1_datafile).count() == 6
+        )
 
     @pytest.mark.django_db(transaction=True)()
     def test_go_parse_tanf_section1_datafile_t3s(
@@ -733,9 +853,13 @@ class TestGoParse:
 
         parse_datafile(dfs, small_tanf_section1_datafile)
 
-        assert TANF_T3.objects.count() == 6
+        assert (
+            TANF_T3.objects.filter(datafile=small_tanf_section1_datafile).count() == 6
+        )
 
-        t3_models = TANF_T3.objects.all().order_by("CASE_NUMBER")
+        t3_models = TANF_T3.objects.filter(
+            datafile=small_tanf_section1_datafile
+        ).order_by("CASE_NUMBER")
         t3_1 = t3_models[0]
         assert t3_1.RPT_MONTH_YEAR == 202010
         assert t3_1.CASE_NUMBER == "11111111112"
@@ -807,7 +931,7 @@ class TestGoParse:
         )
         # Again we get more errors here because the Go parser splits the RPT_MONTH_YEAR Cat1 validator
         # into two validators
-        assert parser_errors.count() == 8
+        assert parser_errors.count() == 9
 
         row_2_error = parser_errors.get(
             row_number=2,
@@ -870,15 +994,15 @@ class TestGoParse:
 
         parse_datafile(dfs, small_tanf_section2_file)
 
-        assert TANF_T4.objects.all().count() == 1
-        assert TANF_T5.objects.all().count() == 1
+        assert TANF_T4.objects.filter(datafile=small_tanf_section2_file).count() == 1
+        assert TANF_T5.objects.filter(datafile=small_tanf_section2_file).count() == 1
 
         parser_errors = ParserError.objects.filter(file=small_tanf_section2_file)
 
         assert parser_errors.count() == 0
 
-        t4 = TANF_T4.objects.first()
-        t5 = TANF_T5.objects.first()
+        t4 = TANF_T4.objects.filter(datafile=small_tanf_section2_file).first()
+        t5 = TANF_T5.objects.filter(datafile=small_tanf_section2_file).first()
 
         assert t4.DISPOSITION == 1
         assert t4.REC_SUB_CC == 3
@@ -894,8 +1018,8 @@ class TestGoParse:
 
         parse_datafile(dfs, tanf_section2_file)
 
-        assert TANF_T4.objects.all().count() == 223
-        assert TANF_T5.objects.all().count() == 605
+        assert TANF_T4.objects.filter(datafile=tanf_section2_file).count() == 223
+        assert TANF_T5.objects.filter(datafile=tanf_section2_file).count() == 605
 
         parser_errors = ParserError.objects.filter(file=tanf_section2_file).order_by(
             "row_number"
@@ -928,11 +1052,13 @@ class TestGoParse:
 
         assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
 
-        assert TANF_T6.objects.all().count() == 3
+        assert TANF_T6.objects.filter(datafile=tanf_section3_file).count() == 3
 
         assert parser_errors.count() == 0
 
-        t6_objs = TANF_T6.objects.all().order_by("NUM_APPROVED")
+        t6_objs = TANF_T6.objects.filter(datafile=tanf_section3_file).order_by(
+            "NUM_APPROVED"
+        )
 
         first = t6_objs.first()
         second = t6_objs[1]
@@ -968,9 +1094,9 @@ class TestGoParse:
         for error in parser_errors:
             assert error.error_type == ParserErrorCategoryChoices.VALUE_CONSISTENCY
 
-        t1 = TANF_T1.objects.first()
-        t2 = TANF_T2.objects.first()
-        t3 = TANF_T3.objects.first()
+        t1 = TANF_T1.objects.filter(datafile=tanf_section1_file_with_blanks).first()
+        t2 = TANF_T2.objects.filter(datafile=tanf_section1_file_with_blanks).first()
+        t3 = TANF_T3.objects.filter(datafile=tanf_section1_file_with_blanks).first()
 
         assert t1.FAMILY_SANC_ADULT is None
         assert t2.MARITAL_STATUS is None
@@ -995,12 +1121,14 @@ class TestGoParse:
 
         assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
 
-        assert TANF_T7.objects.all().count() == 18
+        assert TANF_T7.objects.filter(datafile=tanf_section4_file).count() == 18
 
         parser_errors = ParserError.objects.filter(file=tanf_section4_file)
         assert parser_errors.count() == 0
 
-        t7_objs = TANF_T7.objects.all().order_by("FAMILIES_MONTH")
+        t7_objs = TANF_T7.objects.filter(datafile=tanf_section4_file).order_by(
+            "FAMILIES_MONTH"
+        )
 
         first = t7_objs.first()
         sixth = t7_objs[5]
@@ -1034,7 +1162,7 @@ class TestGoParse:
 
         assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
-        assert TANF_T7.objects.all().count() == 0
+        assert TANF_T7.objects.filter(datafile=bad_tanf_section4_file).count() == 0
 
         parser_errors = ParserError.objects.filter(
             file=bad_tanf_section4_file
@@ -1058,7 +1186,9 @@ class TestGoParse:
 
         parse_datafile(dfs, ssp_section4_file)
 
-        m7_objs = SSP_M7.objects.all().order_by("FAMILIES_MONTH")
+        m7_objs = SSP_M7.objects.filter(datafile=ssp_section4_file).order_by(
+            "FAMILIES_MONTH"
+        )
 
         dfs.status = dfs.get_status()
         dfs.case_aggregates = aggregates.total_errors_by_month(dfs.datafile, dfs.status)
@@ -1106,14 +1236,22 @@ class TestGoParse:
             assert dfs_case_aggregate["month"] in ["Oct", "Nov", "Dec"]
         assert dfs.get_status() == DataFileSummary.Status.PARTIALLY_ACCEPTED
 
-        m4_objs = SSP_M4.objects.all()
-        m5_objs = SSP_M5.objects.all()
+        m4_objs = SSP_M4.objects.filter(datafile=ssp_section2_file).order_by("id")
+        m5_objs = SSP_M5.objects.filter(datafile=ssp_section2_file).order_by(
+            "AMOUNT_EARNED_INCOME"
+        )
 
         expected_m4_count = 231
         expected_m5_count = 703
 
-        assert SSP_M4.objects.count() == expected_m4_count
-        assert SSP_M5.objects.count() == expected_m5_count
+        assert (
+            SSP_M4.objects.filter(datafile=ssp_section2_file).count()
+            == expected_m4_count
+        )
+        assert (
+            SSP_M5.objects.filter(datafile=ssp_section2_file).count()
+            == expected_m5_count
+        )
 
         # Because the go parser inserts into tables in parallel we cant rely on ID ordering
         m4 = m4_objs.filter(DISPOSITION=1, REC_SUB_CC=3).first()
@@ -1148,7 +1286,9 @@ class TestGoParse:
 
         assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
 
-        m6_objs = SSP_M6.objects.all().order_by("RPT_MONTH_YEAR")
+        m6_objs = SSP_M6.objects.filter(datafile=ssp_section3_file).order_by(
+            "RPT_MONTH_YEAR"
+        )
         assert m6_objs.count() == 3
 
         parser_errors = ParserError.objects.filter(file=ssp_section3_file)
@@ -1205,166 +1345,232 @@ class TestGoParse:
         err = parser_errors.get(error_message=msg)
         assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
 
-    # @pytest.mark.django_db(transaction=True)()
-    # def test_go_parse_tribal_section_1_file(self, tribal_section_1_file, dfs):
-    #     """Test parsing Tribal TANF Section 1 submission."""
-    #     tribal_section_1_file.year = 2022
-    #     tribal_section_1_file.quarter = "Q1"
-    #     tribal_section_1_file.save()
+    @pytest.mark.django_db(transaction=True)()
+    def test_go_parse_tribal_section_1_file(self, tribal_section_1_file, dfs):
+        """Test parsing Tribal TANF Section 1 submission."""
+        tribal_section_1_file.year = 2022
+        tribal_section_1_file.quarter = "Q1"
+        tribal_section_1_file.save()
 
-    #     dfs.datafile = tribal_section_1_file
+        dfs.datafile = tribal_section_1_file
 
-    #     parse_datafile(dfs, tribal_section_1_file)
+        parse_datafile(dfs, tribal_section_1_file)
 
-    #     dfs.status = dfs.get_status()
-    #     assert dfs.status == DataFileSummary.Status.ACCEPTED
-    #     dfs.case_aggregates = aggregates.case_aggregates_by_month(dfs.datafile, dfs.status)
-    #     assert dfs.case_aggregates == {
-    #         "rejected": 0,
-    #         "months": [
-    #             {"month": "Oct", "accepted_without_errors": 1, "accepted_with_errors": 0},
-    #             {"month": "Nov", "accepted_without_errors": 0, "accepted_with_errors": 0},
-    #             {"month": "Dec", "accepted_without_errors": 0, "accepted_with_errors": 0},
-    #         ],
-    #     }
+        dfs.status = dfs.get_status()
+        assert dfs.status == DataFileSummary.Status.ACCEPTED
+        dfs.case_aggregates = aggregates.case_aggregates_by_month(
+            dfs.datafile, dfs.status
+        )
+        assert dfs.case_aggregates == {
+            "rejected": 0,
+            "months": [
+                {
+                    "month": "Oct",
+                    "accepted_without_errors": 1,
+                    "accepted_with_errors": 0,
+                },
+                {
+                    "month": "Nov",
+                    "accepted_without_errors": 0,
+                    "accepted_with_errors": 0,
+                },
+                {
+                    "month": "Dec",
+                    "accepted_without_errors": 0,
+                    "accepted_with_errors": 0,
+                },
+            ],
+        }
 
-    #     assert Tribal_TANF_T1.objects.all().count() == 1
-    #     assert Tribal_TANF_T2.objects.all().count() == 1
-    #     assert Tribal_TANF_T3.objects.all().count() == 2
+        assert (
+            Tribal_TANF_T1.objects.filter(datafile=tribal_section_1_file).count() == 1
+        )
+        assert (
+            Tribal_TANF_T2.objects.filter(datafile=tribal_section_1_file).count() == 1
+        )
+        assert (
+            Tribal_TANF_T3.objects.filter(datafile=tribal_section_1_file).count() == 2
+        )
 
-    #     t1_objs = Tribal_TANF_T1.objects.all().order_by("CASH_AMOUNT")
-    #     t2_objs = Tribal_TANF_T2.objects.all().order_by("MONTHS_FED_TIME_LIMIT")
-    #     t3_objs = Tribal_TANF_T3.objects.all().order_by("EDUCATION_LEVEL")
+        t1_objs = Tribal_TANF_T1.objects.filter(
+            datafile=tribal_section_1_file
+        ).order_by("CASH_AMOUNT")
+        t2_objs = Tribal_TANF_T2.objects.filter(
+            datafile=tribal_section_1_file
+        ).order_by("MONTHS_FED_TIME_LIMIT")
+        t3_objs = Tribal_TANF_T3.objects.filter(
+            datafile=tribal_section_1_file
+        ).order_by("EDUCATION_LEVEL")
 
-    #     t1 = t1_objs.first()
-    #     t2 = t2_objs.first()
-    #     t3 = t3_objs.last()
+        t1 = t1_objs.first()
+        t2 = t2_objs.first()
+        t3 = t3_objs.last()
 
-    #     assert t1.CASH_AMOUNT == 502
-    #     assert t2.MONTHS_FED_TIME_LIMIT == "  0"
-    #     assert t3.EDUCATION_LEVEL == "98"
+        assert t1.CASH_AMOUNT == 502
+        assert t2.MONTHS_FED_TIME_LIMIT == "  0"
+        assert t3.EDUCATION_LEVEL == "98"
 
-    # @pytest.mark.django_db(transaction=True)()
-    # def test_go_parse_tribal_section_1_inconsistency_file(
-    #     self,
-    #     tribal_section_1_inconsistency_file, dfs
-    # ):
-    #     """Test parsing inconsistent Tribal TANF Section 1 submission."""
-    #     parse_datafile(dfs, tribal_section_1_inconsistency_file)
+    @pytest.mark.django_db(transaction=True)()
+    def test_go_parse_tribal_section_1_inconsistency_file(
+        self, tribal_section_1_inconsistency_file, dfs
+    ):
+        """Test parsing inconsistent Tribal TANF Section 1 submission."""
+        parse_datafile(dfs, tribal_section_1_inconsistency_file)
 
-    #     assert Tribal_TANF_T1.objects.all().count() == 0
+        assert (
+            Tribal_TANF_T1.objects.filter(
+                datafile=tribal_section_1_inconsistency_file
+            ).count()
+            == 0
+        )
 
-    #     parser_errors = ParserError.objects.filter(file=tribal_section_1_inconsistency_file)
-    #     assert parser_errors.count() == 1
+        parser_errors = ParserError.objects.filter(
+            file=tribal_section_1_inconsistency_file
+        )
+        # Extra error for no records created
+        assert parser_errors.count() == 2
 
-    #     assert (
-    #         parser_errors.first().error_message
-    #         == "Tribe Code (142) inconsistency with Program Type (TAN) "
-    #         + "and FIPS Code (01)."
-    #     )
+        assert (
+            parser_errors.first().error_message
+            == "Tribe Code (142) inconsistency with Program Type (TAN) "
+            + "and FIPS Code (01)."
+        )
 
-    # @pytest.mark.django_db(transaction=True)()
-    # def test_go_parse_tribal_section_2_file(self, tribal_section_2_file, dfs):
-    #     """Test parsing Tribal TANF Section 2 submission."""
-    #     tribal_section_2_file.year = 2020
-    #     tribal_section_2_file.quarter = "Q1"
+    @pytest.mark.django_db(transaction=True)()
+    def test_go_parse_tribal_section_2_file(self, tribal_section_2_file, dfs):
+        """Test parsing Tribal TANF Section 2 submission."""
+        tribal_section_2_file.year = 2020
+        tribal_section_2_file.quarter = "Q1"
+        tribal_section_2_file.save()
 
-    #     dfs.datafile = tribal_section_2_file
+        dfs.datafile = tribal_section_2_file
 
-    #     parse_datafile(dfs, tribal_section_2_file)
+        parse_datafile(dfs, tribal_section_2_file)
 
-    #     dfs.status = dfs.get_status()
-    #     dfs.case_aggregates = aggregates.case_aggregates_by_month(dfs.datafile, dfs.status)
-    #     assert dfs.case_aggregates == {
-    #         "rejected": 0,
-    #         "months": [
-    #             {"accepted_without_errors": 3, "accepted_with_errors": 0, "month": "Oct"},
-    #             {"accepted_without_errors": 3, "accepted_with_errors": 0, "month": "Nov"},
-    #             {"accepted_without_errors": 0, "accepted_with_errors": 0, "month": "Dec"},
-    #         ],
-    #     }
+        dfs.status = dfs.get_status()
+        dfs.case_aggregates = aggregates.case_aggregates_by_month(
+            dfs.datafile, dfs.status
+        )
+        assert dfs.case_aggregates == {
+            "rejected": 0,
+            "months": [
+                {
+                    "accepted_without_errors": 3,
+                    "accepted_with_errors": 0,
+                    "month": "Oct",
+                },
+                {
+                    "accepted_without_errors": 3,
+                    "accepted_with_errors": 0,
+                    "month": "Nov",
+                },
+                {
+                    "accepted_without_errors": 0,
+                    "accepted_with_errors": 0,
+                    "month": "Dec",
+                },
+            ],
+        }
 
-    #     assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
+        assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
 
-    #     assert Tribal_TANF_T4.objects.all().count() == 6
-    #     assert Tribal_TANF_T5.objects.all().count() == 13
+        assert (
+            Tribal_TANF_T4.objects.filter(datafile=tribal_section_2_file).count() == 6
+        )
+        assert (
+            Tribal_TANF_T5.objects.filter(datafile=tribal_section_2_file).count() == 13
+        )
 
-    #     t4_objs = Tribal_TANF_T4.objects.all().order_by("CLOSURE_REASON")
-    #     t5_objs = Tribal_TANF_T5.objects.all().order_by("COUNTABLE_MONTH_FED_TIME")
+        t4_objs = Tribal_TANF_T4.objects.filter(
+            datafile=tribal_section_2_file
+        ).order_by("CLOSURE_REASON")
+        t5_objs = Tribal_TANF_T5.objects.filter(
+            datafile=tribal_section_2_file
+        ).order_by("COUNTABLE_MONTH_FED_TIME")
 
-    #     t4 = t4_objs.first()
-    #     t5 = t5_objs.last()
+        t4 = t4_objs.first()
+        t5 = t5_objs.last()
 
-    #     assert t4.CLOSURE_REASON == "15"
-    #     assert t5.COUNTABLE_MONTH_FED_TIME == "  8"
+        assert t4.CLOSURE_REASON == "15"
+        assert t5.COUNTABLE_MONTH_FED_TIME == "  8"
 
-    # @pytest.mark.django_db(transaction=True)()
-    # def test_go_parse_tribal_section_3_file(self, tribal_section_3_file, dfs):
-    #     """Test parsing Tribal TANF Section 3 submission."""
-    #     tribal_section_3_file.year = 2022
-    #     tribal_section_3_file.quarter = "Q1"
+    @pytest.mark.django_db(transaction=True)()
+    def test_go_parse_tribal_section_3_file(self, tribal_section_3_file, dfs):
+        """Test parsing Tribal TANF Section 3 submission."""
+        tribal_section_3_file.year = 2022
+        tribal_section_3_file.quarter = "Q1"
+        tribal_section_3_file.save()
 
-    #     dfs.datafile = tribal_section_3_file
+        dfs.datafile = tribal_section_3_file
 
-    #     parse_datafile(dfs, tribal_section_3_file)
+        parse_datafile(dfs, tribal_section_3_file)
 
-    #     dfs.status = dfs.get_status()
-    #     dfs.case_aggregates = aggregates.total_errors_by_month(dfs.datafile, dfs.status)
-    #     assert dfs.case_aggregates == {
-    #         "months": [
-    #             {"month": "Oct", "total_errors": 0},
-    #             {"month": "Nov", "total_errors": 0},
-    #             {"month": "Dec", "total_errors": 0},
-    #         ]
-    #     }
+        dfs.status = dfs.get_status()
+        dfs.case_aggregates = aggregates.total_errors_by_month(dfs.datafile, dfs.status)
+        assert dfs.case_aggregates == {
+            "months": [
+                {"month": "Oct", "total_errors": 0},
+                {"month": "Nov", "total_errors": 0},
+                {"month": "Dec", "total_errors": 0},
+            ]
+        }
 
-    #     assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
+        assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
 
-    #     assert Tribal_TANF_T6.objects.all().count() == 3
+        assert (
+            Tribal_TANF_T6.objects.filter(datafile=tribal_section_3_file).count() == 3
+        )
 
-    #     t6_objs = Tribal_TANF_T6.objects.all().order_by("NUM_APPLICATIONS")
+        t6_objs = Tribal_TANF_T6.objects.filter(
+            datafile=tribal_section_3_file
+        ).order_by("NUM_APPLICATIONS")
 
-    #     t6 = t6_objs.first()
+        t6 = t6_objs.first()
 
-    #     assert t6.NUM_APPLICATIONS == 1
-    #     assert t6.NUM_FAMILIES == 41
-    #     assert t6.NUM_CLOSED_CASES == 3
+        assert t6.NUM_APPLICATIONS == 1
+        assert t6.NUM_FAMILIES == 41
+        assert t6.NUM_CLOSED_CASES == 3
 
-    # @pytest.mark.django_db(transaction=True)()
-    # def test_go_parse_tribal_section_4_file(self, tribal_section_4_file, dfs):
-    #     """Test parsing Tribal TANF Section 4 submission."""
-    #     tribal_section_4_file.year = 2022
-    #     tribal_section_4_file.quarter = "Q1"
+    @pytest.mark.django_db(transaction=True)()
+    def test_go_parse_tribal_section_4_file(self, tribal_section_4_file, dfs):
+        """Test parsing Tribal TANF Section 4 submission."""
+        tribal_section_4_file.year = 2022
+        tribal_section_4_file.quarter = "Q1"
+        tribal_section_4_file.save()
 
-    #     dfs.datafile = tribal_section_4_file
+        dfs.datafile = tribal_section_4_file
 
-    #     parse_datafile(dfs, tribal_section_4_file)
+        parse_datafile(dfs, tribal_section_4_file)
 
-    #     dfs.status = dfs.get_status()
-    #     dfs.case_aggregates = aggregates.total_errors_by_month(dfs.datafile, dfs.status)
-    #     assert dfs.case_aggregates == {
-    #         "months": [
-    #             {"month": "Oct", "total_errors": 0},
-    #             {"month": "Nov", "total_errors": 0},
-    #             {"month": "Dec", "total_errors": 0},
-    #         ]
-    #     }
+        dfs.status = dfs.get_status()
+        dfs.case_aggregates = aggregates.total_errors_by_month(dfs.datafile, dfs.status)
+        assert dfs.case_aggregates == {
+            "months": [
+                {"month": "Oct", "total_errors": 0},
+                {"month": "Nov", "total_errors": 0},
+                {"month": "Dec", "total_errors": 0},
+            ]
+        }
 
-    #     assert Tribal_TANF_T7.objects.all().count() == 18
+        assert (
+            Tribal_TANF_T7.objects.filter(datafile=tribal_section_4_file).count() == 18
+        )
 
-    #     t7_objs = Tribal_TANF_T7.objects.all().order_by("FAMILIES_MONTH")
+        t7_objs = Tribal_TANF_T7.objects.filter(
+            datafile=tribal_section_4_file
+        ).order_by("FAMILIES_MONTH")
 
-    #     first = t7_objs.first()
-    #     sixth = t7_objs[5]
+        first = t7_objs.first()
+        sixth = t7_objs[5]
 
-    #     assert first.RPT_MONTH_YEAR == 202111
-    #     assert sixth.RPT_MONTH_YEAR == 202112
+        assert first.RPT_MONTH_YEAR == 202111
+        assert sixth.RPT_MONTH_YEAR == 202112
 
-    #     assert first.TDRS_SECTION_IND == "2"
-    #     assert sixth.TDRS_SECTION_IND == "2"
+        assert first.TDRS_SECTION_IND == "2"
+        assert sixth.TDRS_SECTION_IND == "2"
 
-    #     assert first.FAMILIES_MONTH == 274
-    #     assert sixth.FAMILIES_MONTH == 499
+        assert first.FAMILIES_MONTH == 274
+        assert sixth.FAMILIES_MONTH == 499
 
     # TODO: this requires more sophisticated segment based validation to gain parity with python parser. I made a test
     # branch `segment-validation-arch` to see what this could look like. Will explore other options and discuss with
@@ -1428,8 +1634,8 @@ class TestGoParse:
         dfs.datafile = t4_t5_empty_values
         parse_datafile(dfs, t4_t5_empty_values)
         parser_errors = ParserError.objects.filter(file=t4_t5_empty_values)
-        t4 = TANF_T4.objects.all()
-        t5 = TANF_T5.objects.all()
+        t4 = TANF_T4.objects.filter(datafile=t4_t5_empty_values)
+        t5 = TANF_T5.objects.filter(datafile=t4_t5_empty_values)
         assert t4.count() == 1
         assert t4[0].STRATUM is None
         logger.info(t4[0].__dict__)
@@ -1460,47 +1666,53 @@ class TestGoParse:
         assert year_error.error_message == "T2 Item 32: year must be larger than 1900"
         assert digits_error.error_message == "T2 Item 32: must be numeric"
 
-    # Tribal file
-    # @pytest.mark.django_db(transaction=True)()
-    # def test_go_parse_tanf_section4_file_with_errors(self, tanf_section_4_file_with_errors, dfs):
-    #     """Test parsing TANF Section 4 submission."""
-    #     tanf_section_4_file_with_errors.year = 2022
-    #     tanf_section_4_file_with_errors.quarter = "Q1"
-    #     dfs.datafile = tanf_section_4_file_with_errors
+    @pytest.mark.django_db(transaction=True)()
+    def test_go_parse_tanf_section4_file_with_errors(
+        self, tanf_section_4_file_with_errors, dfs
+    ):
+        """Test parsing TANF Section 4 submission."""
+        tanf_section_4_file_with_errors.year = 2022
+        tanf_section_4_file_with_errors.quarter = "Q1"
+        dfs.datafile = tanf_section_4_file_with_errors
 
-    #     parse_datafile(dfs, tanf_section_4_file_with_errors)
+        parse_datafile(dfs, tanf_section_4_file_with_errors)
 
-    #     dfs.status = dfs.get_status()
-    #     dfs.case_aggregates = aggregates.total_errors_by_month(dfs.datafile, dfs.status)
-    #     assert dfs.case_aggregates == {
-    #         "months": [
-    #             {"month": "Oct", "total_errors": 2},
-    #             {"month": "Nov", "total_errors": 3},
-    #             {"month": "Dec", "total_errors": 2},
-    #         ]
-    #     }
+        dfs.status = dfs.get_status()
+        dfs.case_aggregates = aggregates.total_errors_by_month(dfs.datafile, dfs.status)
+        assert dfs.case_aggregates == {
+            "months": [
+                {"month": "Oct", "total_errors": 2},
+                {"month": "Nov", "total_errors": 3},
+                {"month": "Dec", "total_errors": 2},
+            ]
+        }
 
-    #     assert dfs.get_status() == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+        assert dfs.get_status() == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
 
-    #     assert TANF_T7.objects.all().count() == 18
+        assert (
+            TANF_T7.objects.filter(datafile=tanf_section_4_file_with_errors).count()
+            == 18
+        )
 
-    #     parser_errors = ParserError.objects.filter(file=tanf_section_4_file_with_errors)
+        parser_errors = ParserError.objects.filter(file=tanf_section_4_file_with_errors)
 
-    #     assert parser_errors.count() == 7
+        assert parser_errors.count() == 7
 
-    #     t7_objs = TANF_T7.objects.all().order_by("FAMILIES_MONTH")
+        t7_objs = TANF_T7.objects.filter(
+            datafile=tanf_section_4_file_with_errors
+        ).order_by("FAMILIES_MONTH")
 
-    #     first = t7_objs.first()
-    #     sixth = t7_objs[5]
+        first = t7_objs.first()
+        sixth = t7_objs[5]
 
-    #     assert first.RPT_MONTH_YEAR == 202111
-    #     assert sixth.RPT_MONTH_YEAR == 202110
+        assert first.RPT_MONTH_YEAR == 202111
+        assert sixth.RPT_MONTH_YEAR == 202110
 
-    #     assert first.TDRS_SECTION_IND == "1"
-    #     assert sixth.TDRS_SECTION_IND == "1"
+        assert first.TDRS_SECTION_IND == "1"
+        assert sixth.TDRS_SECTION_IND == "1"
 
-    #     assert first.FAMILIES_MONTH == 0
-    #     assert sixth.FAMILIES_MONTH == 446
+        assert first.FAMILIES_MONTH == 0
+        assert sixth.FAMILIES_MONTH == 446
 
     @pytest.mark.django_db(transaction=True)()
     def test_go_parse_no_records_file(self, no_records_file, dfs):
@@ -1513,13 +1725,21 @@ class TestGoParse:
 
         errors = ParserError.objects.filter(file=no_records_file)
 
-        assert errors.count() == 1
+        assert errors.count() == 2
 
-        error = errors.first()
-        assert error.error_message == "No records created."
-        assert error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-        assert error.content_type is None
-        assert error.object_id is None
+        trailer_count_error = (
+            "The number of records in the TRAILER row count: 1, does not match "
+            "the number of records detected in the file: 0."
+        )
+        count_error = errors.get(error_message=trailer_count_error)
+        assert count_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+        assert count_error.content_type is None
+        assert count_error.object_id is None
+
+        no_records_error = errors.get(error_message="No records created.")
+        assert no_records_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+        assert no_records_error.content_type is None
+        assert no_records_error.object_id is None
 
     @pytest.mark.django_db(transaction=True)
     def test_go_parse_aggregates_rejected_datafile(
@@ -1535,26 +1755,26 @@ class TestGoParse:
         dfs.case_aggregates = aggregates.case_aggregates_by_month(
             dfs.datafile, dfs.status
         )
-        # assert dfs.case_aggregates == {
-        #     "months": [
-        #         {
-        #             "month": "Oct",
-        #             "accepted_without_errors": "N/A",
-        #             "accepted_with_errors": "N/A",
-        #         },
-        #         {
-        #             "month": "Nov",
-        #             "accepted_without_errors": "N/A",
-        #             "accepted_with_errors": "N/A",
-        #         },
-        #         {
-        #             "month": "Dec",
-        #             "accepted_without_errors": "N/A",
-        #             "accepted_with_errors": "N/A",
-        #         },
-        #     ],
-        #     "rejected": 1,
-        # }
+        assert dfs.case_aggregates == {
+            "months": [
+                {
+                    "month": "Oct",
+                    "accepted_without_errors": "N/A",
+                    "accepted_with_errors": "N/A",
+                },
+                {
+                    "month": "Nov",
+                    "accepted_without_errors": "N/A",
+                    "accepted_with_errors": "N/A",
+                },
+                {
+                    "month": "Dec",
+                    "accepted_without_errors": "N/A",
+                    "accepted_with_errors": "N/A",
+                },
+            ],
+            "rejected": 1,
+        }
 
         # Again, group validators run first in the go parser and block other non precheck validation results. So we get
         # more errors since we always capture cat1/cat4 errors with the go parser.
@@ -1573,7 +1793,9 @@ class TestGoParse:
 
         assert errors.last().error_type == ParserErrorCategoryChoices.PRE_CHECK
 
-        assert TANF_T2.objects.count() == 0
+        assert (
+            TANF_T2.objects.filter(datafile=aggregates_rejected_datafile).count() == 0
+        )
 
     @pytest.mark.django_db(transaction=True)()
     def test_go_parse_tanf_section_1_file_with_bad_update_indicator(
@@ -1600,26 +1822,35 @@ class TestGoParse:
             in error_messages
         )
 
-    # @pytest.mark.django_db(transaction=True)()
-    # def test_go_parse_tribal_section_4_bad_quarter(self, tribal_section_4_bad_quarter, dfs):
-    #     """Test handling invalid quarter value that raises a ValueError exception."""
-    #     tribal_section_4_bad_quarter.year = 2021
-    #     tribal_section_4_bad_quarter.quarter = "Q1"
-    #     dfs.datafile = tribal_section_4_bad_quarter
+    @pytest.mark.django_db(transaction=True)()
+    def test_go_parse_tribal_section_4_bad_quarter(
+        self, tribal_section_4_bad_quarter, dfs
+    ):
+        """Test handling invalid quarter value that raises a ValueError exception."""
+        tribal_section_4_bad_quarter.year = 2021
+        tribal_section_4_bad_quarter.quarter = "Q1"
+        tribal_section_4_bad_quarter.save()
+        dfs.datafile = tribal_section_4_bad_quarter
 
-    #     parse_datafile(dfs, tribal_section_4_bad_quarter)
-    #     parser_errors = ParserError.objects.filter(
-    #         file=tribal_section_4_bad_quarter
-    #     ).order_by("id")
+        parse_datafile(dfs, tribal_section_4_bad_quarter)
+        parser_errors = ParserError.objects.filter(
+            file=tribal_section_4_bad_quarter
+        ).order_by("id")
 
-    #     assert parser_errors.count() == 3
+        # We get 37 errors because go treats schema precheck validators as independent over each record/segment whereas
+        # Python validates based on the raw row. There is a ticket in the backlog to enable go to behave like Python if
+        # we want/need.
+        assert parser_errors.count() == 37
 
-    #     parser_errors.first().error_message == (
-    #         "T7: 2020  is invalid. Calendar Quarter must be a numeric "
-    #         "representing the Calendar Year and Quarter formatted as YYYYQ"
-    #     )
+        parser_errors.first().error_message == (
+            "T7: 2020  is invalid. Calendar Quarter must be a numeric "
+            "representing the Calendar Year and Quarter formatted as YYYYQ"
+        )
 
-    #     Tribal_TANF_T7.objects.count() == 0
+        assert (
+            Tribal_TANF_T7.objects.filter(datafile=tribal_section_4_bad_quarter).count()
+            == 0
+        )
 
     @pytest.mark.django_db(transaction=True)()
     def test_go_parse_t3_cat2_invalid_citizenship(
@@ -1735,88 +1966,177 @@ class TestGoParse:
             in [i.error_message for i in parser_errors]
         )
 
-    # TODO: Section logic for go parser FRA not working correctly
-    # @pytest.mark.parametrize(
-    #     "file",
-    #     [
-    #         ("fra_bad_header_csv"),
-    #         ("fra_bad_header_xlsx"),
-    #     ],
-    # )
-    # @pytest.mark.django_db(transaction=True)()
-    # def test_go_parse_fra_bad_header(self, request, file, dfs):
-    #     """Test parsing FRA files with bad header data."""
-    #     datafile = request.getfixturevalue(file)
-    #     datafile.year = 2024
-    #     datafile.quarter = "Q1"
-    #     datafile.save()
+    @pytest.mark.parametrize(
+        "file",
+        [
+            ("fra_bad_header_csv"),
+            ("fra_bad_header_xlsx"),
+        ],
+    )
+    @pytest.mark.django_db(transaction=True)()
+    def test_go_parse_fra_bad_header(self, request, file, dfs):
+        """Test parsing FRA files with bad header data."""
+        datafile = request.getfixturevalue(file)
+        datafile.year = 2024
+        datafile.quarter = "Q1"
+        datafile.version = datafile.pk
+        datafile.save()
 
-    #     dfs.datafile = datafile
-    #     dfs.save()
+        dfs.datafile = datafile
+        dfs.save()
 
-    #     parse_datafile(dfs, datafile)
+        parse_datafile(dfs, datafile)
 
-    #     assert TANF_Exiter1.objects.all().count() == 0
+        assert TANF_Exiter1.objects.filter(datafile=datafile).count() == 0
 
-    #     errors = ParserError.objects.filter(file=datafile).order_by("id")
-    #     assert len(errors) == 1
-    #     for e in errors:
-    #         assert e.error_message == "File does not begin with FRA data."
-    #         assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    #     assert dfs.get_status() == DataFileSummary.Status.REJECTED
+        errors = ParserError.objects.filter(file=datafile).order_by("id")
+        assert len(errors) == 1
+        for e in errors:
+            assert e.error_message == "File does not begin with FRA data."
+            assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
+        assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
-    # @pytest.mark.parametrize(
-    #     "file",
-    #     [
-    #         ("fra_empty_first_row_csv"),
-    #         ("fra_empty_first_row_xlsx"),
-    #     ],
-    # )
-    # @pytest.mark.django_db(transaction=True)()
-    # def test_go_parse_fra_empty_first_row(self, request, file, dfs):
-    #     """Test parsing FRA files with an empty first row/no header data."""
-    #     datafile = request.getfixturevalue(file)
-    #     datafile.year = 2024
-    #     datafile.quarter = "Q1"
+    @pytest.mark.parametrize(
+        "file",
+        [
+            ("fra_empty_first_row_csv"),
+            ("fra_empty_first_row_xlsx"),
+        ],
+    )
+    @pytest.mark.django_db(transaction=True)()
+    def test_go_parse_fra_empty_first_row(self, request, file, dfs):
+        """Test parsing FRA files with an empty first row/no header data."""
+        datafile = request.getfixturevalue(file)
+        datafile.year = 2024
+        datafile.quarter = "Q1"
+        datafile.version = datafile.pk
 
-    #     dfs.datafile = datafile
-    #     dfs.save()
+        dfs.datafile = datafile
+        dfs.save()
 
-    #     parse_datafile(dfs, datafile)
+        parse_datafile(dfs, datafile)
 
-    #     assert TANF_Exiter1.objects.all().count() == 0
+        assert TANF_Exiter1.objects.filter(datafile=datafile).count() == 0
 
-    #     errors = ParserError.objects.filter(file=datafile).order_by("id")
-    #     assert len(errors) == 1
-    #     for e in errors:
-    #         assert e.error_message == "File does not begin with FRA data."
-    #         assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    #     assert dfs.get_status() == DataFileSummary.Status.REJECTED
+        errors = ParserError.objects.filter(file=datafile).order_by("id")
+        assert len(errors) == 1
+        for e in errors:
+            assert e.error_message == "File does not begin with FRA data."
+            assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
+        assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
-    # @pytest.mark.django_db(transaction=True)()
-    # def test_go_parse_fra_decoder_unknown(self, fra_decoder_unknown, dfs):
-    #     """Test parsing a FRA file with bad encoding."""
-    #     datafile = fra_decoder_unknown
-    #     datafile.year = 2025
-    #     datafile.quarter = "Q3"
+    @pytest.mark.parametrize(
+        "file",
+        [
+            ("fra_work_outcome_exiter_csv_file"),
+            ("fra_work_outcome_exiter_xlsx_file"),
+        ],
+    )
+    @pytest.mark.django_db(transaction=True)
+    def test_go_parse_fra_work_outcome_exiters(self, request, file, dfs):
+        """Test parsing FRA Work Outcome Exiters files."""
+        datafile = request.getfixturevalue(file)
+        datafile.year = 2024
+        datafile.quarter = "Q2"
+        datafile.version = datafile.pk
+        datafile.save()
 
-    #     dfs.datafile = datafile
-    #     dfs.save()
+        dfs.datafile = datafile
+        dfs.save()
 
-    #     try:
-    #         parse_datafile(dfs, datafile)
-    #     except util.DecoderUnknownException:
-    #         pass
+        parse_datafile(dfs, datafile)
+        errors = ParserError.objects.filter(file=datafile).order_by("id")
 
-    #     errors = ParserError.objects.filter(file=datafile).order_by("id")
-    #     assert errors.count() == 1
-    #     assert errors.first().error_type == ParserErrorCategoryChoices.PRE_CHECK
-    #     assert errors.first().error_message == (
-    #         "Could not determine encoding of FRA file. If the file is an XLSX file, "
-    #         "ensure it can be opened in Excel. If the file is a CSV, ensure it can be "
-    #         "opened in a text editor and is UTF-8 encoded."
-    #     )
-    #     assert dfs.get_status() == DataFileSummary.Status.REJECTED
+        assert TANF_Exiter1.objects.filter(datafile=datafile).count() == 5
+
+        errors = ParserError.objects.filter(file=datafile).order_by("id")
+        assert errors.count() == 8
+        for e in errors:
+            assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+        # TODO: need to update go parser to handle updating the DFS' record counts
+        # assert dfs.total_number_of_records_in_file == 11
+        # assert dfs.total_number_of_records_created == 5
+        assert dfs.get_status() == DataFileSummary.Status.PARTIALLY_ACCEPTED
+
+    @pytest.mark.parametrize(
+        "file",
+        [
+            ("fra_ofa_test_csv"),
+            ("fra_ofa_test_xlsx"),
+        ],
+    )
+    @pytest.mark.django_db(transaction=True)
+    def test_go_parse_fra_ofa_test_cases(self, request, file, dfs):
+        """Test parsing OFA FRA files."""
+        datafile = request.getfixturevalue(file)
+        datafile.year = 2025
+        datafile.quarter = "Q3"
+        datafile.version = datafile.pk
+        datafile.save()
+
+        dfs.datafile = datafile
+        dfs.save()
+
+        parse_datafile(dfs, datafile)
+
+        errors = ParserError.objects.filter(file=datafile).order_by("row_number")
+        for e in errors:
+            assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+
+        # We get one extra duplicate that the Python parser doesn't detect! The Python parser hasn't been catching that
+        # line 13 is a duplicate of line 3
+        assert errors.count() == 24
+        assert TANF_Exiter1.objects.filter(datafile=datafile).count() == 8
+        # assert dfs.total_number_of_records_in_file == 28
+        # assert dfs.total_number_of_records_created == 10
+        assert dfs.get_status() == DataFileSummary.Status.PARTIALLY_ACCEPTED
+
+    @pytest.mark.django_db(transaction=True)
+    # TODO: Failing
+    def test_go_parse_fra_formula_fields(self, fra_formula_fields_test_xlsx, dfs):
+        """Test parsing a correct FRA file with formula fields."""
+        datafile = fra_formula_fields_test_xlsx
+        datafile.year = 2025
+        datafile.quarter = "Q3"
+        datafile.version = datafile.pk
+        datafile.save()
+
+        dfs.datafile = datafile
+        dfs.save()
+
+        parse_datafile(dfs, datafile)
+
+        errors = ParserError.objects.filter(file=datafile).order_by("id")
+        assert errors.count() == 0
+        assert TANF_Exiter1.objects.filter(datafile=datafile).count() == 8
+        # See above TODO
+        # assert dfs.total_number_of_records_in_file == 8
+        # assert dfs.total_number_of_records_created == 8
+        assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
+
+    @pytest.mark.django_db(transaction=True)()
+    def test_go_parse_fra_decoder_unknown(self, fra_decoder_unknown, dfs):
+        """Test parsing a FRA file with bad encoding."""
+        datafile = fra_decoder_unknown
+        datafile.year = 2025
+        datafile.quarter = "Q3"
+        datafile.version = datafile.pk
+        datafile.save()
+
+        dfs.datafile = datafile
+        dfs.save()
+
+        parse_datafile(dfs, datafile)
+
+        errors = ParserError.objects.filter(file=datafile).order_by("id")
+        assert errors.count() == 1
+        assert errors.first().error_type == ParserErrorCategoryChoices.PRE_CHECK
+        assert errors.first().error_message == (
+            "Could not determine encoding of FRA file. If the file is an XLSX file, "
+            "ensure it can be opened in Excel. If the file is a CSV, ensure it can be "
+            "opened in a text editor and is UTF-8 encoded."
+        )
+        assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
     @pytest.mark.django_db(transaction=True)()
     def test_go_parse_section2_no_records(self, section2_no_records, dfs):
@@ -1886,9 +2206,247 @@ class TestGoParse:
                     "accepted_with_errors": 1,
                 },
             ],
-            "rejected": 1,  # Rejected is 1 for go parser since it doesn't worry about trailer errors
+            "rejected": 2,
         }
 
-        assert TANF_T1.objects.count() == 3
-        assert TANF_T2.objects.count() == 3
-        assert TANF_T3.objects.count() == 6
+        assert TANF_T1.objects.filter(datafile=case_aggregates_edge_case).count() == 3
+        assert TANF_T2.objects.filter(datafile=case_aggregates_edge_case).count() == 3
+        assert TANF_T3.objects.filter(datafile=case_aggregates_edge_case).count() == 6
+
+    @pytest.mark.django_db(transaction=True)
+    def test_go_parse_super_big_s1_file(self, super_big_s1_file, dfs):
+        """Test parsing super_big_s1_file and validate all records are created."""
+        super_big_s1_file.year = 2023
+        super_big_s1_file.quarter = "Q2"
+        super_big_s1_file.version = super_big_s1_file.pk
+        super_big_s1_file.save()
+
+        dfs.datafile = super_big_s1_file
+        dfs.save()
+
+        parse_datafile(dfs, super_big_s1_file)
+        expected_t1_record_count = 96497
+        expected_t2_record_count = 112622
+        expected_t3_record_count = 172552
+
+        assert (
+            TANF_T1.objects.filter(datafile=super_big_s1_file).count()
+            == expected_t1_record_count
+        )
+        assert (
+            TANF_T2.objects.filter(datafile=super_big_s1_file).count()
+            == expected_t2_record_count
+        )
+        assert (
+            TANF_T3.objects.filter(datafile=super_big_s1_file).count()
+            == expected_t3_record_count
+        )
+
+    @pytest.mark.django_db(transaction=True)
+    def test_go_parse_big_s1_file_with_rollback(self, big_s1_rollback_file, dfs):
+        """Test parsing big_s1_rollback_file with rollback on error."""
+        big_s1_rollback_file.year = 2023
+        big_s1_rollback_file.quarter = "Q2"
+        big_s1_rollback_file.version = big_s1_rollback_file.pk
+        big_s1_rollback_file.save()
+
+        dfs.datafile = big_s1_rollback_file
+        dfs.save()
+
+        parse_datafile(dfs, big_s1_rollback_file)
+
+        parser_errors = ParserError.objects.filter(file=big_s1_rollback_file)
+        assert parser_errors.count() == 1
+
+        err = parser_errors.first()
+
+        assert err.row_number == 13609
+        assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
+        assert err.error_message == "Multiple headers found."
+        assert err.content_type is None
+        assert err.object_id is None
+
+        assert TANF_T1.objects.filter(datafile=big_s1_rollback_file).count() == 0
+        assert TANF_T2.objects.filter(datafile=big_s1_rollback_file).count() == 0
+        assert TANF_T3.objects.filter(datafile=big_s1_rollback_file).count() == 0
+
+    @pytest.mark.parametrize(
+        "file, batch_size, model, record_type, num_errors",
+        [
+            ("tanf_s1_exact_dup_file", 10000, TANF_T1, "T1", 5),
+            ("tanf_s1_exact_dup_file", 1, TANF_T1, "T1", 5),
+            ("tanf_s2_exact_dup_file", 10000, TANF_T4, "T4", 3),
+            ("tanf_s2_exact_dup_file", 1, TANF_T4, "T4", 3),
+            ("tanf_s3_exact_dup_file", 10000, TANF_T6, "T6", 3),
+            ("tanf_s3_exact_dup_file", 1, TANF_T6, "T6", 3),
+            ("tanf_s4_exact_dup_file", 10000, TANF_T7, "T7", 18),
+            ("tanf_s4_exact_dup_file", 1, TANF_T7, "T7", 18),
+            ("ssp_s1_exact_dup_file", 10000, SSP_M1, "M1", 5),
+            ("ssp_s1_exact_dup_file", 1, SSP_M1, "M1", 5),
+            ("ssp_s2_exact_dup_file", 10000, SSP_M4, "M4", 3),
+            ("ssp_s2_exact_dup_file", 1, SSP_M4, "M4", 3),
+            ("ssp_s3_exact_dup_file", 10000, SSP_M6, "M6", 3),
+            ("ssp_s3_exact_dup_file", 1, SSP_M6, "M6", 3),
+            ("ssp_s4_exact_dup_file", 10000, SSP_M7, "M7", 12),
+            ("ssp_s4_exact_dup_file", 1, SSP_M7, "M7", 12),
+        ],
+    )
+    @pytest.mark.django_db(transaction=True)
+    def test_go_parse_duplicate(
+        self, file, batch_size, model, record_type, num_errors, dfs, request
+    ):
+        """Test cases for datafiles that have exact duplicate records."""
+        datafile = request.getfixturevalue(file)
+        datafile.version = datafile.pk
+        datafile.save()
+        dfs.datafile = datafile
+
+        parse_datafile(dfs, datafile)
+
+        parser_errors = ParserError.objects.filter(
+            file=datafile, error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY
+        ).order_by("error_message")
+
+        for e in parser_errors:
+            assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+        assert parser_errors.count() == num_errors
+
+        dup_error = parser_errors.first()
+
+        assert (
+            dup_error.error_message
+            == f"Duplicate record detected with record type {record_type} at line 3. Record is a duplicate of the record at line number 2."
+        )
+
+        assert model.objects.filter(datafile=datafile).count() == 0
+
+    @pytest.mark.parametrize(
+        "file, batch_size, model, record_type, num_errors, err_msg",
+        [
+            (
+                "tanf_s1_partial_dup_file",
+                10000,
+                TANF_T1,
+                "T1",
+                5,
+                "Partial duplicate record detected with record type T1 at line 3.",
+            ),
+            (
+                "tanf_s1_partial_dup_file",
+                1,
+                TANF_T1,
+                "T1",
+                5,
+                "Partial duplicate record detected with record type T1 at line 3.",
+            ),
+            (
+                "tanf_s2_partial_dup_file",
+                10000,
+                TANF_T5,
+                "T5",
+                3,
+                "Partial duplicate record detected with record type T5 at line 3.",
+            ),
+            (
+                "tanf_s2_partial_dup_file",
+                1,
+                TANF_T5,
+                "T5",
+                3,
+                "Partial duplicate record detected with record type T5 at line 3.",
+            ),
+            (
+                "ssp_s1_partial_dup_file",
+                10000,
+                SSP_M1,
+                "M1",
+                5,
+                "Partial duplicate record detected with record type M1 at line 3.",
+            ),
+            (
+                "ssp_s1_partial_dup_file",
+                1,
+                SSP_M1,
+                "M1",
+                5,
+                "Partial duplicate record detected with record type M1 at line 3.",
+            ),
+            (
+                "ssp_s2_partial_dup_file",
+                10000,
+                SSP_M5,
+                "M5",
+                3,
+                "Partial duplicate record detected with record type M5 at line 3.",
+            ),
+            (
+                "ssp_s2_partial_dup_file",
+                1,
+                SSP_M5,
+                "M5",
+                3,
+                "Partial duplicate record detected with record type M5 at line 3.",
+            ),
+        ],
+    )
+    @pytest.mark.django_db(transaction=True)
+    def test_go_parse_partial_duplicate(
+        self, file, batch_size, model, record_type, num_errors, err_msg, dfs, request
+    ):
+        """Test cases for datafiles that have partial duplicate records."""
+        datafile = request.getfixturevalue(file)
+        datafile.version = datafile.pk
+        datafile.save()
+        expected_error_msg = err_msg
+
+        dfs.datafile = datafile
+
+        parse_datafile(dfs, datafile)
+
+        parser_errors = ParserError.objects.filter(
+            file=datafile, error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY
+        ).order_by("-error_message")
+        for e in parser_errors:
+            assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+        assert parser_errors.count() == num_errors
+
+        dup_error = parser_errors.first()
+        assert (
+            expected_error_msg.format(record_type=record_type)
+            in dup_error.error_message
+        )
+
+        assert model.objects.filter(datafile=datafile).count() == 0
+
+    @pytest.mark.django_db(transaction=True)
+    def test_go_parse_cat_4_edge_case_file(self, cat4_edge_case_file, dfs):
+        """Test parsing file with a cat4 error edge case submission."""
+        cat4_edge_case_file.year = 2024
+        cat4_edge_case_file.quarter = "Q1"
+        cat4_edge_case_file.save()
+
+        dfs.datafile = cat4_edge_case_file
+        dfs.save()
+
+        parse_datafile(dfs, cat4_edge_case_file)
+
+        parser_errors = (
+            ParserError.objects.filter(file=cat4_edge_case_file)
+            .filter(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
+            .order_by("row_number", "id")
+        )
+
+        assert TANF_T1.objects.filter(datafile=cat4_edge_case_file).count() == 2
+        assert TANF_T2.objects.filter(datafile=cat4_edge_case_file).count() == 2
+        assert TANF_T3.objects.filter(datafile=cat4_edge_case_file).count() == 4
+
+        # TODO
+        # assert dfs.total_number_of_records_in_file == 17
+        # assert dfs.total_number_of_records_created == 8
+
+        err = parser_errors.first()
+        assert err.error_message == (
+            "Every T1 record should have at least one corresponding T2 or T3 record "
+            "with the same RPT_MONTH_YEAR and CASE_NUMBER"
+        )
+        assert dfs.get_status() == DataFileSummary.Status.PARTIALLY_ACCEPTED

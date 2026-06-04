@@ -324,9 +324,7 @@ func TestParseBatch_SingleGroupSingleSegment(t *testing.T) {
 		BatchID: 42,
 		DecodedGroups: []*DecodedGroup{
 			{
-				Key:          "202401|CASE001",
-				RptMonthYear: "202401",
-				CaseNumber:   "CASE001",
+				Key: "202401|CASE001",
 				DecodedRecords: []DecodedRecord{
 					{Row: row, Schema: cs},
 				},
@@ -381,14 +379,10 @@ func TestParseBatch_MultipleGroups(t *testing.T) {
 		DecodedGroups: []*DecodedGroup{
 			{
 				Key:            "key1",
-				RptMonthYear:   "202401",
-				CaseNumber:     "CASE1",
 				DecodedRecords: []DecodedRecord{{Row: row1, Schema: cs}},
 			},
 			{
 				Key:            "key2",
-				RptMonthYear:   "202402",
-				CaseNumber:     "CASE2",
 				DecodedRecords: []DecodedRecord{{Row: row2, Schema: cs}, {Row: row3, Schema: cs}},
 			},
 		},
@@ -429,8 +423,6 @@ func TestParseBatch_PreservesGroupMetadata(t *testing.T) {
 		DecodedGroups: []*DecodedGroup{
 			{
 				Key:            "202403|MYCASE",
-				RptMonthYear:   "202403",
-				CaseNumber:     "MYCASE",
 				DecodedRecords: []DecodedRecord{{Row: row, Schema: cs}},
 			},
 		},
@@ -441,12 +433,6 @@ func TestParseBatch_PreservesGroupMetadata(t *testing.T) {
 	group := result.Groups[0]
 	if group.Key != "202403|MYCASE" {
 		t.Errorf("Key = %q, want %q", group.Key, "202403|MYCASE")
-	}
-	if group.RptMonthYear != "202403" {
-		t.Errorf("RptMonthYear = %q, want %q", group.RptMonthYear, "202403")
-	}
-	if group.CaseNumber != "MYCASE" {
-		t.Errorf("CaseNumber = %q, want %q", group.CaseNumber, "MYCASE")
 	}
 }
 

@@ -439,8 +439,80 @@ func TestCalendarQuarterToMonth(t *testing.T) {
 	}
 }
 
+func TestFRAExitDate(t *testing.T) {
+	tests := []struct {
+		name    string
+		value   string
+		want    string
+		wantErr bool
+	}{
+		{
+			name:  "already YYYYMM",
+			value: "202310",
+			want:  "202310",
+		},
+		{
+			name:  "xlsx formatted date with four digit year",
+			value: "10/1/2023",
+			want:  "202310",
+		},
+		{
+			name:  "xlsx formatted date with two digit year",
+			value: "10/1/23",
+			want:  "202310",
+		},
+		{
+			name:  "iso date",
+			value: "2023-10-01",
+			want:  "202310",
+		},
+		{
+			name:  "month year",
+			value: "Oct-23",
+			want:  "202310",
+		},
+		{
+			name:  "excel serial date",
+			value: "45200",
+			want:  "202310",
+		},
+		{
+			name:  "empty date",
+			value: "",
+			want:  "",
+		},
+		{
+			name:  "invalid date",
+			value: "not-a-date",
+			want:  "not-a-date",
+		},
+		{
+			name:  "invalid YYYYMM month",
+			value: "202313",
+			want:  "202313",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := FRAExitDate(tt.value, nil, nil)
+			if tt.wantErr {
+				if err == nil {
+					t.Fatal("expected error, got nil")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if got != tt.want {
+				t.Errorf("FRAExitDate(%q) = %q, want %q", tt.value, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestRegistryContainsAllTransforms(t *testing.T) {
-	expected := []string{"trim", "zero_pad", "ssn_decrypt", "calendar_quarter_to_month"}
+	expected := []string{"trim", "zero_pad", "ssn_decrypt", "calendar_quarter_to_month", "fra_exit_date"}
 	for _, name := range expected {
 		if _, ok := Registry[name]; !ok {
 			t.Errorf("Registry missing transform: %s", name)

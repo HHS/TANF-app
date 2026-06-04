@@ -1,5 +1,12 @@
 package decoder
 
+import (
+	"fmt"
+	"strings"
+
+	"go-parser/internal/config/filespec"
+)
+
 // Row is the interface that all row types implement.
 // This allows the parser to work with any row format.
 type Row interface {
@@ -14,6 +21,9 @@ type Row interface {
 
 	// DecodedLength returns the length of the decoded row
 	DecodedLength() int
+
+	// ExtractKey returns the composite key for the configured key fields.
+	ExtractKey(fields []filespec.KeyFieldDef) (string, error)
 }
 
 // PositionalRow represents a row from a positional (fixed-width) file.
@@ -55,6 +65,20 @@ func (r *PositionalRow) Data() string {
 	return r.data
 }
 
+func (r *PositionalRow) ExtractKey(fields []filespec.KeyFieldDef) (string, error) {
+	// Fields are assumed to be ordered by position
+	minLen := fields[len(fields)-1].End
+	if len(r.data) < minLen {
+		return "", fmt.Errorf("line too short for key extraction: need %d bytes, got %d", minLen, len(r.data))
+	}
+
+	parts := make([]string, 0, len(fields))
+	for _, field := range fields {
+		parts = append(parts, r.data[field.Start:field.End])
+	}
+	return strings.Join(parts, "|"), nil
+}
+
 // ColumnarRow represents a row from a columnar (CSV/XLSX) file.
 // The data is a slice of values, and fields are accessed by column index.
 type ColumnarRow struct {
@@ -91,4 +115,16 @@ func (r *ColumnarRow) Column(index int) any {
 // ColumnCount returns the number of columns in the row.
 func (r *ColumnarRow) ColumnCount() int {
 	return len(r.columns)
+}
+
+func (r *ColumnarRow) ExtractKey(fields []filespec.KeyFieldDef) (string, error) {
+	parts := make([]string, 0, len(fields))
+	for _, field := range fields {
+		value := r.Column(field.Start)
+		if value == nil {
+			return "", fmt.Errorf("column %d is empty or missing", field.Start)
+		}
+		parts = append(parts, strings.TrimSpace(fmt.Sprintf("%v", value)))
+	}
+	return strings.Join(parts, "|"), nil
 }

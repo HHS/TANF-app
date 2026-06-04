@@ -444,6 +444,26 @@ func TestColumnarExtractor_Extract(t *testing.T) {
 		}
 	})
 
+	t.Run("with FRA exit date transform converts xlsx date to integer", func(t *testing.T) {
+		row := decoder.NewColumnarRow(1, "TE1", 2, []any{"10/1/2023", "123456789"})
+		field := &schema.FieldDef{
+			Name:   "EXIT_DATE",
+			Type:   "integer",
+			Column: 0,
+			Transform: &schema.TransformDef{
+				Name: "fra_exit_date",
+			},
+		}
+
+		got, err := ext.Extract(row, field, nil, nil)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if got != 202310 {
+			t.Errorf("got %v, want 202310", got)
+		}
+	})
+
 	t.Run("with unknown transform returns error", func(t *testing.T) {
 		row := decoder.NewColumnarRow(1, "T1", 2, []any{"value", "other"})
 		field := &schema.FieldDef{

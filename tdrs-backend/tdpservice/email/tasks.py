@@ -32,6 +32,40 @@ from tdpservice.users.models import (
 logger = logging.getLogger(__name__)
 
 
+def _normalize_required_section(section: str) -> str:
+    """Return the section name without any legacy program prefix."""
+    for program_type in DataFile.ProgramType.values:
+        prefix = f"{program_type} "
+        if section.upper().startswith(prefix):
+            return section[len(prefix) :]
+
+    return section
+
+
+def _get_required_program_types(stt: STT) -> set[str]:
+    """Return the TANF-family program types an STT must submit."""
+    if stt.type == STT.EntityType.TRIBE:
+        return {DataFile.ProgramType.TRIBAL}
+
+    program_types = {DataFile.ProgramType.TANF}
+    if stt.ssp:
+        program_types.add(DataFile.ProgramType.SSP)
+
+    return program_types
+
+
+def _get_required_program_sections(stt: STT) -> set[tuple[str, str]]:
+    """Return required data file submissions as program type and section pairs."""
+    required_sections = {
+        _normalize_required_section(section) for section in stt.filenames.keys()
+    }
+    return {
+        (program_type, section)
+        for program_type in _get_required_program_types(stt)
+        for section in required_sections
+    }
+
+
 @shared_task
 def deactivate_users():
     """Deactivate users that have not logged in in the last 180 days."""
@@ -182,16 +216,13 @@ def send_data_submission_reminder(due_date, reporting_period, fiscal_quarter):
     )
 
     for loc in all_locations:
-        submitted_programs_sections = (
+        submitted_programs_sections = set(
             year_quarter_files.filter(stt=loc)
             .values_list("program_type", "section")
             .distinct()
         )
 
-        submitted_programs_sections = [f"{ps[0]} {ps[1]}".upper() for ps in submitted_programs_sections]
-
-        required_program_sections = loc.filenames.keys()
-        required_program_sections = [ps.upper() for ps in required_program_sections]
+        required_program_sections = _get_required_program_sections(loc)
 
         submitted_all_programs_sections = all(
             ps in submitted_programs_sections for ps in required_program_sections

@@ -629,9 +629,8 @@ def test_sumIsLarger():
     assert result.field_names == ["TestField1", "TestField3"]
 
 
-def test_suppress_for_fra_pilot_state():
-    """Test `suppress_for_fra_pilot_state` suppresses validation logic."""
-    stt = STT(type="state", postal_code="AZ")
+def _fra_pilot_validator_schema(stt_type="state", postal_code="AZ"):
+    stt = STT(type=stt_type, postal_code=postal_code)
     datafile = DataFile(stt=stt)
     schema = TanfDataReportSchema(
         fields=[
@@ -654,13 +653,11 @@ def test_suppress_for_fra_pilot_state():
         ],
     )
     schema.prepare(datafile)
+    return schema
 
-    record = {
-        "WORK_ELIGIBLE_INDICATOR": "1",
-        "WORK_PART_STATUS": "99",
-    }
 
-    validate = category3.suppress_for_fra_pilot_state(
+def _fra_pilot_validator():
+    return category3.suppress_for_fra_pilot_state(
         "WORK_ELIGIBLE_INDICATOR",
         "WORK_PART_STATUS",
         category3.ifThenAlso(
@@ -671,11 +668,57 @@ def test_suppress_for_fra_pilot_state():
         ),
     )
 
-    settings.FRA_PILOT_STATES = ["AZ"]
+
+@pytest.mark.parametrize("postal_code", ["AZ", "IA", "NE", "OH", "VA"])
+def test_suppress_for_fra_pilot_state(postal_code):
+    """Test `suppress_for_fra_pilot_state` suppresses FY2026 pilot state validation logic."""
+    schema = _fra_pilot_validator_schema(postal_code=postal_code)
+
+    record = {
+        "WORK_ELIGIBLE_INDICATOR": "1",
+        "WORK_PART_STATUS": "99",
+    }
+
+    validate = _fra_pilot_validator()
+    settings.FRA_PILOT_STATES = ["AZ", "IA", "NE", "OH", "VA"]
 
     result = validate(record, schema)
     assert result.valid
     assert result.error_message is None
+
+
+@pytest.mark.parametrize("postal_code", ["CA", "KY", "ME", "MN"])
+def test_suppress_for_fra_pilot_state_no_longer_suppresses_old_pilots(postal_code):
+    """Test FY2025-only pilot states use normal WPR validation under the FY2026 list."""
+    schema = _fra_pilot_validator_schema(postal_code=postal_code)
+    record = {
+        "WORK_ELIGIBLE_INDICATOR": "1",
+        "WORK_PART_STATUS": "99",
+    }
+
+    validate = _fra_pilot_validator()
+    settings.FRA_PILOT_STATES = ["AZ", "IA", "NE", "OH", "VA"]
+
+    result = validate(record, schema)
+    assert result.valid is False
+    assert result.error_message is not None
+
+
+@pytest.mark.parametrize("stt_type", ["territory", "tribe"])
+def test_suppress_for_fra_pilot_state_only_suppresses_states(stt_type):
+    """Test matching postal codes are only suppressed for state STTs."""
+    schema = _fra_pilot_validator_schema(stt_type=stt_type, postal_code="AZ")
+    record = {
+        "WORK_ELIGIBLE_INDICATOR": "1",
+        "WORK_PART_STATUS": "99",
+    }
+
+    validate = _fra_pilot_validator()
+    settings.FRA_PILOT_STATES = ["AZ", "IA", "NE", "OH", "VA"]
+
+    result = validate(record, schema)
+    assert result.valid is False
+    assert result.error_message is not None
 
 
 def test_validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():

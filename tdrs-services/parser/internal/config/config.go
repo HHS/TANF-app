@@ -32,11 +32,22 @@ type ValidationConfig struct {
 // DatabaseConfig holds connection pool settings.
 type DatabaseConfig struct {
 	URL               string        `yaml:"url"` // Database connection URL (supports ${DATABASE_URL} interpolation)
+	ShadowMode        bool          `yaml:"shadow_mode"`
+	TablePrefix       string        `yaml:"table_prefix"`
 	MaxConns          int           `yaml:"max_conns"`
 	MinConns          int           `yaml:"min_conns"`
 	MaxConnLifetime   time.Duration `yaml:"max_conn_lifetime"`
 	MaxConnIdleTime   time.Duration `yaml:"max_conn_idle_time"`
 	HealthCheckPeriod time.Duration `yaml:"health_check_period"`
+}
+
+// EffectiveTablePrefix returns the table prefix to use for parser-owned writes.
+// When shadow mode is disabled, the Go parser writes to production tables.
+func (c DatabaseConfig) EffectiveTablePrefix() string {
+	if !c.ShadowMode {
+		return ""
+	}
+	return c.TablePrefix
 }
 
 // S3Config holds S3-specific storage settings.
@@ -80,9 +91,11 @@ type ServerConfig struct {
 
 // CeleryConfig holds Celery worker settings.
 type CeleryConfig struct {
-	RedisURL   string `yaml:"redis_url"`
-	Queue      string `yaml:"queue"`
-	NumWorkers int    `yaml:"num_workers"` // Number of concurrent celery task workers (default 1)
+	RedisURL          string `yaml:"redis_url"`
+	Queue             string `yaml:"queue"`
+	NumWorkers        int    `yaml:"num_workers"` // Number of concurrent celery task workers (default 1)
+	PostParseTaskName string `yaml:"post_parse_task_name"`
+	PostParseQueue    string `yaml:"post_parse_queue"`
 }
 
 // GRPCConfig holds gRPC server settings.
@@ -126,7 +139,9 @@ func DefaultConfig() *Config {
 		Server: ServerConfig{
 			Mode: "local",
 			Celery: CeleryConfig{
-				Queue: "go-parser",
+				Queue:             "go-parser",
+				PostParseTaskName: "tdpservice.scheduling.parser_task.post_parse",
+				PostParseQueue:    "celery",
 			},
 			GRPC: GRPCConfig{
 				ListenAddress: ":50051",
@@ -154,6 +169,8 @@ func DefaultConfig() *Config {
 			ValidatorFiles: []string{"validation/validators.yaml"},
 		},
 		Database: DatabaseConfig{
+			ShadowMode:        true,
+			TablePrefix:       DefaultTablePrefix,
 			MaxConns:          10,
 			MinConns:          2,
 			MaxConnLifetime:   30 * time.Minute,
