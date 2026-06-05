@@ -327,6 +327,12 @@ func renderHeaderErrorMessage(vr *validation.ValidationResult, header *parser.Pa
 
 	// DataFileContext for cross-validation message templates
 	ctx["DataFileContext"] = dfCtx
+	fileProgram := header.GetString("program_type")
+	tribeCode := strings.TrimSpace(header.GetString("tribe_code"))
+	if tribeCode != "" && strings.Trim(tribeCode, "0") != "" {
+		fileProgram = "TRIBAL"
+	}
+	ctx["FileProgram"] = fileProgram
 
 	// Involved fields
 	if vr.Validator.Fields != nil {

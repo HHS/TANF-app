@@ -225,8 +225,7 @@ class TestGoParse:
             (
                 "SSP",
                 "Active Case Data",
-                "Submitted program type (SSP) does not match file program type inferred from "
-                + "Program Type (TAN) and Tribe Code (<no value>).",
+                "Submitted program type (SSP) does not match file program type (TAN).",
                 None,
                 True,
                 2,
@@ -247,6 +246,7 @@ class TestGoParse:
         """Test parsing when file metadata does not match the raw data layout."""
         small_correct_file.program_type = program
         small_correct_file.section = section
+        small_correct_file.version = small_correct_file.id
         small_correct_file.save()
 
         dfs.datafile = small_correct_file
@@ -278,9 +278,9 @@ class TestGoParse:
         assert err.object_id is None
 
         if program == "SSP" and section == "Active Case Data":
-            assert TANF_T1.objects.count() == 0
-            assert TANF_T2.objects.count() == 0
-            assert TANF_T3.objects.count() == 0
+            assert TANF_T1.objects.filter(datafile=small_correct_file).count() == 0
+            assert TANF_T2.objects.filter(datafile=small_correct_file).count() == 0
+            assert TANF_T3.objects.filter(datafile=small_correct_file).count() == 0
 
     @pytest.mark.django_db(transaction=True)
     @pytest.mark.parametrize(

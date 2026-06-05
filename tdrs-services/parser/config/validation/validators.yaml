@@ -461,7 +461,7 @@ record_validators:
       ((not isTribeCodeEmpty(GetString('tribe_code'))) and DataFileContext.Program == 'TRIBAL')
       or (isTribeCodeEmpty(GetString('tribe_code')) and DataFileContext.Program == GetString('program_type'))
     error_type: PRE_CHECK
-    message: "Submitted program type ({{.DataFileContext.Program}}) does not match file program type inferred from Program Type ({{.Values.program_type}}) and Tribe Code ({{.Values.tribe_code}})."
+    message: 'Submitted program type ({{.DataFileContext.Program}}) does not match file program type ({{.FileProgram}}).'
     fields: [tribe_code, program_type]
 
   - id: header_section_match

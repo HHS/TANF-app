@@ -391,22 +391,19 @@ func TestProcess_HeaderProgramTypeMismatchWritesPreCheckError(t *testing.T) {
 			name:   "submitted SSP with TAN header",
 			header: "HEADER20241A06000TAN1ED",
 			dfCtx:  testSSPContext(),
-			expectedMessage: "Submitted program type (SSP) does not match file program type inferred from " +
-				"Program Type (TAN) and Tribe Code (000).",
+			expectedMessage: "Submitted program type (SSP) does not match file program type (TAN).",
 		},
 		{
 			name:   "submitted TAN with SSP header",
 			header: "HEADER20241A06000SSP1ED",
 			dfCtx:  testTANFContext(),
-			expectedMessage: "Submitted program type (TAN) does not match file program type inferred from " +
-				"Program Type (SSP) and Tribe Code (000).",
+			expectedMessage: "Submitted program type (TAN) does not match file program type (SSP).",
 		},
 		{
 			name:   "submitted TAN with Tribal header",
 			header: "HEADER20241A00142TAN1ED",
 			dfCtx:  testTANFContext(),
-			expectedMessage: "Submitted program type (TAN) does not match file program type inferred from " +
-				"Program Type (TAN) and Tribe Code (142).",
+			expectedMessage: "Submitted program type (TAN) does not match file program type (TRIBAL).",
 		},
 		{
 			name:   "submitted Tribal with TAN header and empty tribe code",
@@ -419,8 +416,7 @@ func TestProcess_HeaderProgramTypeMismatchWritesPreCheckError(t *testing.T) {
 				FiscalQuarter: "Q2",
 				SectionName:   "Active Case Data",
 			},
-			expectedMessage: "Submitted program type (TRIBAL) does not match file program type inferred from " +
-				"Program Type (TAN) and Tribe Code (000).",
+			expectedMessage: "Submitted program type (TRIBAL) does not match file program type (TAN).",
 		},
 	}
 
