@@ -43,6 +43,7 @@ type ValidationResult struct {
 	Error           error  // Set if expression evaluation failed
 	DataFileContext *DataFileContext
 	Validator       *CompiledValidator
+	TemplateData    map[string]any
 }
 
 // BlocksRecord returns true if this error type blocks record serialization.
@@ -56,7 +57,7 @@ func (vr *ValidationResult) BlocksGroup() bool {
 }
 
 // Message generates the error message for this validation result.
-// Context provides template variables (RecordType, Item, Value, etc.).
+// TemplateData provides template variables (RecordType, Item, Value, etc.).
 func (vr *ValidationResult) Message(ctx map[string]any) string {
 	if vr.Valid || vr.Validator == nil || vr.Validator.Message == nil {
 		return ""

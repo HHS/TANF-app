@@ -137,7 +137,7 @@ def total_errors_by_month(df, dfs_status, *, parser_error_model=ParserError):
     return total_errors_data
 
 
-def fra_total_errors(df, *, parser_error_model=ParserError):
+def fra_total_errors(df, parser_error_model=ParserError):
     """Return total errors for the file."""
     errors = parser_error_model.objects.all().filter(file=df, deprecated=False)
     return {"total_errors": errors.count()}
