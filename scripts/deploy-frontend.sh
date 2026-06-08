@@ -66,7 +66,7 @@ update_frontend()
     cp nginx/cloud.gov/locations.conf deployment/locations.conf
     cp nginx/cloud.gov/ip_whitelist_ipv4.conf deployment/ip_whitelist_ipv4.conf
     cp nginx/cloud.gov/ip_whitelist_ipv6.conf deployment/ip_whitelist_ipv6.conf
-    if [ "$CGHOSTNAME_FRONTEND" = "develop" ]; then
+    if [ "$CGAPPNAME_FRONTEND" = "tdp-frontend-develop" ]; then
         cp nginx/cloud.gov/ip_whitelist_develop.conf deployment/ip_whitelist.conf
         bash ../scripts/generate-circleci-ip-ranges.sh
     else
