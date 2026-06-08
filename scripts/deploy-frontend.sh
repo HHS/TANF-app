@@ -7,6 +7,7 @@ DEPLOY_STRATEGY=${1}
 
 #The application name  defined via the manifest yml for the frontend
 CGHOSTNAME_FRONTEND=${2}
+CGAPPNAME_FRONTEND="tdp-frontend-${CGHOSTNAME_FRONTEND}"
 CGHOSTNAME_BACKEND=${3}
 CF_SPACE=${4}
 ENVIRONMENT=${5}
@@ -40,8 +41,8 @@ update_frontend()
         echo "REACT_APP_BACKEND_HOST=https://$CGHOSTNAME_FRONTEND.tanfdata.acf.hhs.gov" >> .env.development
         echo "REACT_APP_CF_SPACE=$CF_SPACE" >> .env.development
 
-        cf set-env "$CGHOSTNAME_FRONTEND" ALLOWED_ORIGIN "https://$CGHOSTNAME_FRONTEND.tanfdata.acf.hhs.gov"
-        cf set-env "$CGHOSTNAME_FRONTEND" CONNECT_SRC '*.tanfdata.acf.hhs.gov'
+        cf set-env "$CGAPPNAME_FRONTEND" ALLOWED_ORIGIN "https://$CGHOSTNAME_FRONTEND.tanfdata.acf.hhs.gov"
+        cf set-env "$CGAPPNAME_FRONTEND" CONNECT_SRC '*.tanfdata.acf.hhs.gov'
     else
         echo "REACT_APP_BACKEND_URL=https://$CGHOSTNAME_FRONTEND.tanfdata.acf.hhs.gov/v1" >> .env.development
         echo "REACT_APP_AUTH_URL=https://$CGHOSTNAME_FRONTEND.tanfdata.acf.hhs.gov" >> .env.development
@@ -49,11 +50,11 @@ update_frontend()
         echo "REACT_APP_BACKEND_HOST=https://$CGHOSTNAME_FRONTEND.tanfdata.acf.hhs.gov" >> .env.development
         echo "REACT_APP_CF_SPACE=$CF_SPACE" >> .env.development
 
-        cf set-env "$CGHOSTNAME_FRONTEND" ALLOWED_ORIGIN "https://$CGHOSTNAME_FRONTEND.tanfdata.acf.hhs.gov"
-        cf set-env "$CGHOSTNAME_FRONTEND" CONNECT_SRC '*.tanfdata.acf.hhs.gov'
+        cf set-env "$CGAPPNAME_FRONTEND" ALLOWED_ORIGIN "https://$CGHOSTNAME_FRONTEND.tanfdata.acf.hhs.gov"
+        cf set-env "$CGAPPNAME_FRONTEND" CONNECT_SRC '*.tanfdata.acf.hhs.gov'
     fi
 
-    cf set-env "$CGHOSTNAME_FRONTEND" BACKEND_HOST "$CGHOSTNAME_BACKEND"
+    cf set-env "$CGAPPNAME_FRONTEND" BACKEND_HOST "$CGHOSTNAME_BACKEND"
 
     yarn build:$ENVIRONMENT
     unlink .env.production
@@ -81,17 +82,17 @@ update_frontend()
     if [ "$1" = "rolling" ] ; then
         # Do a zero downtime deploy.  This requires enough memory for
         # two apps to exist in the org/space at one time.
-        cf push "$CGHOSTNAME_FRONTEND" --no-route -f manifest.buildpack.yml --strategy rolling || exit 1
+        cf push "$CGAPPNAME_FRONTEND" --no-route -f manifest.buildpack.yml --strategy rolling || exit 1
     else
-        cf push "$CGHOSTNAME_FRONTEND" --no-route -f manifest.buildpack.yml
+        cf push "$CGAPPNAME_FRONTEND" --no-route -f manifest.buildpack.yml
     fi
 
     if [ "$CF_SPACE" = "tanf-prod" ]; then
-        cf map-route "$CGHOSTNAME_FRONTEND" tanfdata.acf.hhs.gov
+        cf map-route "$CGAPPNAME_FRONTEND" tanfdata.acf.hhs.gov
     elif [ "$CF_SPACE" = "tanf-staging" ]; then
-        cf map-route "$CGHOSTNAME_FRONTEND" "$CGHOSTNAME_FRONTEND".tanfdata.acf.hhs.gov
+        cf map-route "$CGAPPNAME_FRONTEND" "$CGHOSTNAME_FRONTEND".tanfdata.acf.hhs.gov
     else
-        cf map-route "$CGHOSTNAME_FRONTEND" tanfdata.acf.hhs.gov --hostname "${CGHOSTNAME_FRONTEND}"
+        cf map-route "$CGAPPNAME_FRONTEND" tanfdata.acf.hhs.gov --hostname "${CGHOSTNAME_FRONTEND}"
     fi
 
     cd ../..
