@@ -79,7 +79,7 @@
       backend-appname:
         default: tdp-backend
         type: string
-      frontend-appname:
+      frontend-hostname:
         default: tdp-frontend
         type: string
       cf-space:
@@ -104,7 +104,7 @@
           command: |
             bash ./scripts/deploy-backend.sh \
               $DEPLOY_STRATEGY \
-              <<parameters.frontend-appname>> \
+              <<parameters.frontend-hostname>> \
               <<parameters.backend-appname>> \
               <<parameters.cf-space>>
 
@@ -144,7 +144,7 @@
       - install-yarn-packages:
           app-dir: tdrs-frontend
       - get-app-deploy-strategy:
-          appname: <<parameters.frontend-appname>>
+          appname: <<parameters.frontend-hostname>>
       - run:
           name: Deploy frontend application
           command: |
@@ -165,7 +165,7 @@
           command: |
             # NOTE: The || true is a no-op included to suppress exit codes which
             #       would cause the step to exit early due to use of pipefail
-            APP_GUID=$(cf app <<parameters.appname>> --guid || true)
+            APP_GUID=$(cf app tdp-frontend-<<parameters.appname>> --guid || true)
             if [ "$APP_GUID" == "FAILED" ]; then
               echo "export DEPLOY_STRATEGY=initial" >> $BASH_ENV
             else

@@ -8,7 +8,7 @@
       - init-deploy
       - deploy-cloud-dot-gov:
           backend-appname: tdp-backend-<< parameters.target_env >>
-          frontend-hostname: tdp-frontend-<< parameters.target_env >>
+          frontend-hostname: << parameters.target_env >>
 
   deploy-staging:
     executor: docker-executor
