@@ -1480,8 +1480,8 @@
           },
           {
             "selected": false,
-            "text": "raft",
-            "value": "raft"
+            "text": "test",
+            "value": "test"
           },
           {
             "selected": false,
@@ -1489,7 +1489,7 @@
             "value": "local"
           }
         ],
-        "query": "prod, staging, develop, qasp, raft, local",
+        "query": "prod, staging, develop, qasp, test, local",
         "type": "custom"
       },
       {
