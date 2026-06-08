@@ -14,7 +14,7 @@ REPORT_NAME=owasp_report.html
 
 
 if [ "$ENVIRONMENT" = "nightly" ]; then
-    APP_URL="https://tdp-frontend-$TARGET_ENV.acf.hhs.gov/"
+    APP_URL="https://$TARGET_ENV.acf.hhs.gov/"
     if [ "$TARGET_ENV" = "prod" ]; then
         APP_URL="https://tanfdata.acf.hhs.gov/"
     fi

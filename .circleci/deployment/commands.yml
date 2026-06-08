@@ -27,7 +27,7 @@
       cf-username:
         default: CF_USERNAME_DEV
         type: env_var_name
-      frontend-appname:
+      frontend-hostname:
         default: tdp-frontend
         type: string
     steps:
@@ -38,12 +38,12 @@
           cf-username: <<parameters.cf-username>>
       - deploy-backend:
           backend-appname: <<parameters.backend-appname>>
-          frontend-appname: <<parameters.frontend-appname>>
+          frontend-hostname: <<parameters.frontend-hostname>>
           cf-space: <<parameters.cf-space>>
       - deploy-frontend:
           environment: <<parameters.environment>>
           backend-appname: <<parameters.backend-appname>>
-          frontend-appname: <<parameters.frontend-appname>>
+          frontend-hostname: <<parameters.frontend-hostname>>
           cf-space: <<parameters.cf-space>>
 
   clamav-cloud-dot-gov:
@@ -126,7 +126,7 @@
       backend-appname:
         default: tdp-backend
         type: string
-      frontend-appname:
+      frontend-hostname:
         default: tdp-frontend
         type: string
 # So the frontend knows what space its in for the banner.
@@ -150,7 +150,7 @@
           command: |
             bash ./scripts/deploy-frontend.sh \
               $DEPLOY_STRATEGY \
-              <<parameters.frontend-appname>> \
+              <<parameters.frontend-hostname>> \
               <<parameters.backend-appname>> \
               <<parameters.cf-space>> \
               <<parameters.environment>>

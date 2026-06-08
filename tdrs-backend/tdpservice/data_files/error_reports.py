@@ -1,4 +1,5 @@
 """Utility functions for DataFile views."""
+
 import calendar
 from abc import ABC, abstractmethod
 from io import BytesIO
@@ -246,9 +247,11 @@ class TanfDataErrorReportBase(ErrorReportBase):
                 worksheet.write(
                     row_idx,
                     1,
-                    calendar.month_name[int(rpt_month_year[4:])]
-                    if rpt_month_year[4:]
-                    else None,
+                    (
+                        calendar.month_name[int(rpt_month_year[4:])]
+                        if rpt_month_year[4:]
+                        else None
+                    ),
                 )
                 worksheet.write(
                     row_idx,
@@ -299,7 +302,7 @@ class TanfDataErrorReportBase(ErrorReportBase):
         worksheet.write_url(
             row,
             col,
-            "https://tdp-project-updates.app.cloud.gov/knowledge-center/viewing-error-reports.html",
+            "https://tdp-project-updates.tanfdata.acf.hhs.gov/knowledge-center/viewing-error-reports.html",
             string="Visit the Knowledge Center for further guidance on reviewing error reports",
         )
 
@@ -362,9 +365,11 @@ class ActiveClosedErrorReport(TanfDataErrorReportBase):
         return lambda error, rpt_month_year, fields_json: (
             error.case_number,
             rpt_month_year[:4],
-            calendar.month_name[int(rpt_month_year[4:])]
-            if rpt_month_year[4:]
-            else None,
+            (
+                calendar.month_name[int(rpt_month_year[4:])]
+                if rpt_month_year[4:]
+                else None
+            ),
             self.format_error_msg(error.error_message, fields_json),
             error.item_number,
             self.friendly_names(fields_json),
@@ -404,9 +409,11 @@ class AggregateStratumErrorReport(TanfDataErrorReportBase):
         """Get row generator for error report."""
         return lambda error, rpt_month_year, fields_json: (
             rpt_month_year[:4],
-            calendar.month_name[int(rpt_month_year[4:])]
-            if rpt_month_year[4:]
-            else None,
+            (
+                calendar.month_name[int(rpt_month_year[4:])]
+                if rpt_month_year[4:]
+                else None
+            ),
             self.format_error_msg(error.error_message, fields_json),
             error.item_number,
             self.friendly_names(fields_json),

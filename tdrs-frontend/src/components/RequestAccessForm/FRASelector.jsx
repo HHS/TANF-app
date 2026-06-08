@@ -8,7 +8,7 @@ function FRASelector({ hasFRAAccess, setHasFRAAccess, error }) {
         <p className="text-no-wrap margin-y-2px">
           Unsure?{' '}
           <a
-            href="https://tdp-project-updates.app.cloud.gov/knowledge-center/submitting-fra-data.html"
+            href="https://tdp-project-updates.tanfdata.acf.hhs.gov/knowledge-center/submitting-fra-data.html"
             target="_blank"
             aria-describedby="fra-selector-error-message"
             rel="noopener noreferrer"

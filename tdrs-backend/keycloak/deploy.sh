@@ -8,7 +8,7 @@ STAGING_CELERY_APPS=("tdp-celery-develop" "tdp-celery-staging")
 PROD_BACKEND="tdp-backend-prod"
 PROD_CELERY="tdp-celery-prod"
 
-PUBLIC_DOMAIN="app.cloud.gov"
+PUBLIC_DOMAIN="tanfdata.acf.hhs.gov"
 
 # Environment variables that must be set in the deployer's shell.
 # These are injected into the CF app's environment via the manifest.
