@@ -101,11 +101,7 @@ describe('TanfSspReports feedback report alert', () => {
     const stt = { id: 12, name: 'Ho-Chunk Nation', type: 'tribe' }
 
     render(
-      <TanfSspReports
-        stt={stt}
-        isDataAnalyst={false}
-        isRegionalStaff={true}
-      />
+      <TanfSspReports stt={stt} isDataAnalyst={false} isRegionalStaff={true} />
     )
 
     expect(screen.getByTestId('feedback-report-alert')).toBeInTheDocument()
