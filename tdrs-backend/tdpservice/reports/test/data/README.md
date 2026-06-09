@@ -28,7 +28,7 @@ FY2025_valid_single_stt/
 - Creates 1 ReportFile for Alabama (STT_CODE: 1, Region 4)
 - Files bundled into `stt_1_reports.zip`
 
-### Nested folders under an STT
+### 2. `FY2025_valid_nested_stt.zip`
 **Structure:**
 ```
 FY2025_valid_nested_stt/
@@ -49,7 +49,7 @@ reports/february/summary.pdf
 readme.txt
 ```
 
-### 2. `FY2025_valid_multiple_stts_same_region.zip`
+### 3. `FY2025_valid_multiple_stts_same_region.zip`
 **Structure:**
 ```
 FY2025_valid_multiple_stts_same_region/
@@ -64,7 +64,7 @@ FY2025_valid_multiple_stts_same_region/
 - Creates 2 ReportFiles (Alabama and Florida, both Region 4)
 - Each STT gets its own bundled zip
 
-### 3. `FY2025_valid_multiple_regions.zip`
+### 4. `FY2025_valid_multiple_regions.zip`
 **Structure:**
 ```
 FY2025_valid_multiple_regions/
@@ -87,7 +87,7 @@ FY2025_valid_multiple_regions/
 
 ## Invalid Test Files (Should FAIL)
 
-### 4. `invalid_fiscal_year_bad_format.zip`
+### 5. `invalid_fiscal_year_bad_format.zip`
 **Structure:**
 ```
 invalid_fiscal_year_bad_format/
@@ -98,14 +98,14 @@ invalid_fiscal_year_bad_format/
 ```
 **Expected Error:** Invalid fiscal year format in folder name.
 
-### 5. `invalid_flat_structure.zip`
+### 6. `invalid_flat_structure.zip`
 **Structure:**
 ```
 report.pdf  (no folders)
 ```
 **Expected Error:** `"No STT folders found. Expected structure: {ZipName}/FY{YYYY}/RO{X}/F{X}/files"`
 
-### 6. `FY2025_invalid_stt_code_999.zip`
+### 7. `FY2025_invalid_stt_code_999.zip`
 **Structure:**
 ```
 FY2025_invalid_stt_code_999/
@@ -116,7 +116,7 @@ FY2025_invalid_stt_code_999/
 ```
 **Expected Error:** `"STT code '999' not found in system."`
 
-### 7. `FY2025_invalid_empty_stt_folder.zip`
+### 8. `FY2025_invalid_empty_stt_folder.zip`
 **Structure:**
 ```
 FY2025_invalid_empty_stt_folder/
@@ -126,7 +126,7 @@ FY2025_invalid_empty_stt_folder/
 ```
 **Expected Error:** `"No STT folders found..."` (empty folders are skipped)
 
-### 8. `invalid_multiple_fiscal_years.zip`
+### 9. `invalid_multiple_fiscal_years.zip`
 **Structure:**
 ```
 invalid_multiple_fiscal_years/
