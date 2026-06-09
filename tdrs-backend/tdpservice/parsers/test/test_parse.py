@@ -843,6 +843,49 @@ class TestParse:
         assert t5.AMOUNT_UNEARNED_INCOME == "0000"
 
     @pytest.mark.django_db()
+    @pytest.mark.parametrize(
+        "file_fixture,year,expected_message",
+        [
+            (
+                "oasdi_age_first_tanf_section2_file",
+                2021,
+                "Since person is older than 18, then 19A "
+                "(Received Disability Benefits: OASDI Program) must be 1 or 2",
+            ),
+            (
+                "oasdi_age_first_ssp_section2_file",
+                2019,
+                "Since person is older than 18, then 18A "
+                "(Received Disability Benefits: OASDI Program) must be 1 or 2",
+            ),
+            (
+                "oasdi_age_first_tribal_section2_file",
+                2020,
+                "Since person is older than 18, then 19A "
+                "(Received Disability Benefits: OASDI Program) must be 1 or 2",
+            ),
+        ],
+    )
+    def test_parse_oasdi_age_first_section2_files(
+        self, file_fixture, year, expected_message, request, dfs
+    ):
+        """Test committed manual fixtures exercise OASDI AGE_FIRST validation."""
+        datafile = request.getfixturevalue(file_fixture)
+        datafile.year = year
+        datafile.quarter = "Q1"
+        datafile.save()
+
+        dfs.datafile = datafile
+        dfs.save()
+
+        parse_datafile(dfs, datafile)
+
+        parser_errors = ParserError.objects.filter(file=datafile)
+        error_messages = [error.error_message for error in parser_errors]
+
+        assert expected_message in error_messages
+
+    @pytest.mark.django_db()
     def test_parse_tanf_section2_file(self, tanf_section2_file, dfs):
         """Test parsing TANF Section 2 submission."""
         tanf_section2_file.year = 2022
