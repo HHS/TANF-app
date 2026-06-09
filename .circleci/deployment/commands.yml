@@ -36,10 +36,10 @@
           cf-org: <<parameters.cf-org>>
           cf-space: <<parameters.cf-space>>
           cf-username: <<parameters.cf-username>>
-      - deploy-backend:
-          backend-appname: <<parameters.backend-appname>>
-          frontend-hostname: <<parameters.frontend-hostname>>
-          cf-space: <<parameters.cf-space>>
+      # - deploy-backend:
+      #     backend-appname: <<parameters.backend-appname>>
+      #     frontend-hostname: <<parameters.frontend-hostname>>
+      #     cf-space: <<parameters.cf-space>>
       - deploy-frontend:
           environment: <<parameters.environment>>
           backend-appname: <<parameters.backend-appname>>
