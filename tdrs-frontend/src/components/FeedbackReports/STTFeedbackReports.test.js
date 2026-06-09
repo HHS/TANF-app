@@ -246,6 +246,7 @@ describe('STTFeedbackReports', () => {
       expect(screen.getByText('Feedback Report Type*')).toBeInTheDocument()
       expect(screen.getByLabelText('TANF/SSP')).toBeInTheDocument()
       expect(screen.getByLabelText('FRA')).toBeInTheDocument()
+      expect(screen.queryByLabelText('Tribal TANF')).not.toBeInTheDocument()
     })
 
     it('does not show radio selector for tribe Data Analysts', () => {
@@ -254,6 +255,33 @@ describe('STTFeedbackReports', () => {
       expect(
         screen.queryByText('Feedback Report Type*')
       ).not.toBeInTheDocument()
+    })
+
+    it('shows Tribal TANF reference table for tribe Data Analysts', () => {
+      renderComponent(tribeDataAnalystStore())
+
+      expect(
+        screen.getByText('Tribal TANF Data Reporting Reference')
+      ).toBeInTheDocument()
+      expect(
+        screen.queryByText('TANF/SSP Data Reporting Reference')
+      ).not.toBeInTheDocument()
+    })
+
+    it('uses Tribal TANF heading for tribe Data Analysts', async () => {
+      renderComponent(tribeDataAnalystStore())
+
+      const yearSelect = screen.getByLabelText(/Fiscal Year/i)
+      fireEvent.change(yearSelect, { target: { value: '2025' } })
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('heading', {
+            level: 2,
+            name: 'Ho-Chunk Nation — Tribal TANF Fiscal Year 2025 Feedback Reports',
+          })
+        ).toBeInTheDocument()
+      })
     })
 
     it('defaults to TANF/SSP', () => {
@@ -340,7 +368,7 @@ describe('STTFeedbackReports', () => {
       })
     })
 
-    it('ignores FRA URL param for tribe users', async () => {
+    it('uses TRIBAL_TANF for tribe users despite FRA URL param', async () => {
       render(
         <MemoryRouter initialEntries={['/feedback-reports?type=FRA&year=2025']}>
           <Provider store={tribeDataAnalystStore()}>
@@ -354,12 +382,28 @@ describe('STTFeedbackReports', () => {
         screen.queryByText('Feedback Report Type*')
       ).not.toBeInTheDocument()
 
-      // Should fetch as TANF_SSP despite URL param
+      // Should fetch as TRIBAL_TANF despite URL param
       await waitFor(() => {
         expect(get).toHaveBeenCalledWith(
           expect.stringContaining('/reports/'),
           expect.objectContaining({
-            params: { year: 2025, report_type: 'TANF_SSP' },
+            params: { year: 2025, report_type: 'TRIBAL_TANF' },
+          })
+        )
+      })
+    })
+
+    it('fetches TRIBAL_TANF reports for tribe Data Analysts by default', async () => {
+      renderComponent(tribeDataAnalystStore())
+
+      const yearSelect = screen.getByLabelText(/Fiscal Year/i)
+      fireEvent.change(yearSelect, { target: { value: '2025' } })
+
+      await waitFor(() => {
+        expect(get).toHaveBeenCalledWith(
+          expect.stringContaining('/reports/'),
+          expect.objectContaining({
+            params: { year: 2025, report_type: 'TRIBAL_TANF' },
           })
         )
       })
@@ -383,6 +427,7 @@ describe('STTFeedbackReports', () => {
       expect(screen.getByText('Feedback Report Type*')).toBeInTheDocument()
       expect(screen.getByLabelText('TANF/SSP')).toBeInTheDocument()
       expect(screen.getByLabelText('FRA')).toBeInTheDocument()
+      expect(screen.queryByLabelText('Tribal TANF')).not.toBeInTheDocument()
     })
   })
 
@@ -862,6 +907,25 @@ describe('STTFeedbackReports', () => {
       })
     })
 
+    it('auto-fetches Tribal TANF reports when a tribal STT and year are selected', async () => {
+      renderComponent(regionalStore)
+
+      const sttSelect = screen.getByLabelText(/State, Tribe, or Territory/i)
+      fireEvent.change(sttSelect, { target: { value: 'Ho-Chunk Nation' } })
+
+      const yearSelect = screen.getByLabelText(/Fiscal Year/i)
+      fireEvent.change(yearSelect, { target: { value: '2025' } })
+
+      await waitFor(() => {
+        expect(get).toHaveBeenCalledWith(
+          expect.stringContaining('/reports/'),
+          expect.objectContaining({
+            params: { year: 2025, stt: 12, report_type: 'TRIBAL_TANF' },
+          })
+        )
+      })
+    })
+
     it('shows H2 heading with selected STT name and report type', async () => {
       renderComponent(regionalStore)
 
@@ -876,6 +940,25 @@ describe('STTFeedbackReports', () => {
           screen.getByRole('heading', {
             level: 2,
             name: 'Wisconsin — TANF/SSP Fiscal Year 2025 Feedback Reports',
+          })
+        ).toBeInTheDocument()
+      })
+    })
+
+    it('shows Tribal TANF heading when a tribal STT is selected', async () => {
+      renderComponent(regionalStore)
+
+      const sttSelect = screen.getByLabelText(/State, Tribe, or Territory/i)
+      fireEvent.change(sttSelect, { target: { value: 'Ho-Chunk Nation' } })
+
+      const yearSelect = screen.getByLabelText(/Fiscal Year/i)
+      fireEvent.change(yearSelect, { target: { value: '2025' } })
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('heading', {
+            level: 2,
+            name: 'Ho-Chunk Nation — Tribal TANF Fiscal Year 2025 Feedback Reports',
           })
         ).toBeInTheDocument()
       })
@@ -949,6 +1032,9 @@ describe('STTFeedbackReports', () => {
       expect(
         screen.queryByText('Feedback Report Type*')
       ).not.toBeInTheDocument()
+      expect(
+        screen.getByText('Tribal TANF Data Reporting Reference')
+      ).toBeInTheDocument()
     })
 
     it('shows radio again when switching from tribe to state STT', async () => {
@@ -970,6 +1056,32 @@ describe('STTFeedbackReports', () => {
       await waitFor(() => {
         expect(screen.getByText('Feedback Report Type*')).toBeInTheDocument()
         expect(screen.getByLabelText('TANF/SSP')).toBeChecked()
+      })
+    })
+
+    it('initializes tribal STT from URL with TRIBAL_TANF report type', async () => {
+      render(
+        <MemoryRouter
+          initialEntries={[
+            '/feedback-reports?year=2025&stt=Ho-Chunk%20Nation&type=FRA',
+          ]}
+        >
+          <Provider store={regionalStore}>
+            <STTFeedbackReports />
+          </Provider>
+        </MemoryRouter>
+      )
+
+      const sttSelect = screen.getByLabelText(/State, Tribe, or Territory/i)
+      expect(sttSelect.value).toBe('Ho-Chunk Nation')
+
+      await waitFor(() => {
+        expect(get).toHaveBeenCalledWith(
+          expect.stringContaining('/reports/'),
+          expect.objectContaining({
+            params: { year: 2025, stt: 12, report_type: 'TRIBAL_TANF' },
+          })
+        )
       })
     })
   })

@@ -29,6 +29,15 @@ const REFERENCE_TABLES = {
       { label: 'FY Q4', period: 'Jul 1 - Sep 30', deadline: 'November 14' },
     ],
   },
+  TRIBAL_TANF: {
+    caption: 'Tribal TANF Data Reporting Reference',
+    quarters: [
+      { label: 'FY Q1', period: 'Oct 1 - Dec 31', deadline: 'February 14' },
+      { label: 'FY Q2', period: 'Jan 1 - Mar 31', deadline: 'May 15' },
+      { label: 'FY Q3', period: 'Apr 1 - Jun 30', deadline: 'August 14' },
+      { label: 'FY Q4', period: 'Jul 1 - Sep 30', deadline: 'November 14' },
+    ],
+  },
   FRA: {
     caption: 'FRA Data Reporting Reference',
     quarters: [
@@ -39,6 +48,10 @@ const REFERENCE_TABLES = {
     ],
   },
 }
+
+const STT_REPORT_TYPE_OPTIONS = REPORT_TYPE_OPTIONS.filter(
+  ({ value }) => value !== REPORT_TYPES.TRIBAL_TANF
+)
 
 /**
  * STTFeedbackReports component allows STT Data Analysts and Regional Staff
@@ -54,15 +67,24 @@ function STTFeedbackReports() {
 
   const user = useSelector((state) => state.auth.user)
   const isRegionalStaff = useSelector(accountIsRegionalStaff)
+  // Always show all STTs (including tribes) in the ComboBox.
+  const filteredStts = useSelector(availableStts('/feedback-reports'))
 
   // Get validated report type from URL params
   const getValidatedReportType = () => {
     // For Data Analysts, check their assigned STT type
     if (!isRegionalStaff && user?.stt?.type === 'tribe') {
-      return REPORT_TYPES.TANF_SSP
+      return REPORT_TYPES.TRIBAL_TANF
+    }
+    if (isRegionalStaff) {
+      const urlStt = searchParams.get('stt')
+      const sttObj = filteredStts.find((s) => s.name === urlStt)
+      if (sttObj?.type === 'tribe') {
+        return REPORT_TYPES.TRIBAL_TANF
+      }
     }
     const urlType = searchParams.get('type')
-    if (urlType && Object.values(REPORT_TYPES).includes(urlType)) {
+    if (urlType && STT_REPORT_TYPE_OPTIONS.some(({ value }) => value === urlType)) {
       return urlType
     }
     return REPORT_TYPES.TANF_SSP
@@ -71,11 +93,6 @@ function STTFeedbackReports() {
   const [selectedReportType, setSelectedReportType] = useState(
     getValidatedReportType
   )
-
-  // Always show all STTs (including tribes) in the ComboBox.
-  // Tribe-based restrictions are handled by hiding the report type radio
-  // and defaulting to TANF_SSP when a tribe is selected.
-  const filteredStts = useSelector(availableStts('/feedback-reports'))
 
   // Initialize STT from URL query param (regional staff only)
   const getValidatedStt = () => {
@@ -210,8 +227,9 @@ function STTFeedbackReports() {
     if (name) {
       const sttObj = filteredStts.find((s) => s.name === name)
       setSelectedStt(sttObj || null)
-      // Reset to TANF_SSP when a tribe is selected
       if (sttObj?.type === 'tribe') {
+        setSelectedReportType(REPORT_TYPES.TRIBAL_TANF)
+      } else if (selectedReportType === REPORT_TYPES.TRIBAL_TANF) {
         setSelectedReportType(REPORT_TYPES.TANF_SSP)
       }
     } else {
@@ -257,7 +275,7 @@ function STTFeedbackReports() {
                 label="Feedback Report Type*"
                 fieldName="reportType"
                 classes="margin-top-4"
-                options={REPORT_TYPE_OPTIONS}
+                options={STT_REPORT_TYPE_OPTIONS}
                 setValue={handleReportTypeChange}
                 selectedValue={selectedReportType}
               />
