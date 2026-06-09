@@ -96,7 +96,7 @@ update_frontend()
     elif [ "$CF_SPACE" = "tanf-staging" ]; then
         cf map-route "$CGAPPNAME_FRONTEND" "$CGHOSTNAME_FRONTEND".tanfdata.acf.hhs.gov
     else
-        cf map-route "$CGAPPNAME_FRONTEND" tanfdata.acf.hhs.gov --hostname "${CGHOSTNAME_FRONTEND}"
+        cf map-route "$CGAPPNAME_FRONTEND" "${CGHOSTNAME_FRONTEND}".tanfdata.acf.hhs.gov
     fi
 
     cd ../..
