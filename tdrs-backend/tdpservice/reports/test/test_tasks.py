@@ -440,6 +440,52 @@ class TestProcessReportSourceReportType:
         assert report_file.report_type == ReportType.TANF_SSP
 
     @patch("tdpservice.reports.tasks.timezone.now")
+    def test_tribal_tanf_source_creates_tribal_tanf_report_files(
+        self, mock_now, ofa_admin
+    ):
+        """Verify ReportSource with report_type=TRIBAL_TANF produces ReportFiles with report_type=TRIBAL_TANF."""
+        from tdpservice.stts.models import STT, Region
+
+        region = Region.objects.create(id=9023, name="Test Region RT4")
+        STT.objects.create(
+            id=8024,
+            stt_code="101",
+            name="Test Tribal STT RT4",
+            region=region,
+            postal_code="R5",
+            type="TRIBE",
+        )
+
+        mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
+
+        structure = {"FY2025": {"RO1": {"F101": ["report1.pdf"]}}}
+        zip_buffer = create_nested_zip(structure, "FY2025_test")
+
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        uploaded_file = SimpleUploadedFile(
+            "report_source.zip", zip_buffer.read(), content_type="application/zip"
+        )
+
+        source = ReportSource.objects.create(
+            uploaded_by=ofa_admin,
+            original_filename="report_source.zip",
+            slug="report_source.zip",
+            file=uploaded_file,
+            year=2025,
+            date_extracted_on=date(2025, 1, 31),
+            report_type=ReportType.TRIBAL_TANF,
+        )
+
+        process_report_source(source.id)
+
+        source.refresh_from_db()
+        assert source.status == ReportSource.Status.SUCCEEDED
+
+        report_file = ReportFile.objects.filter(source=source).first()
+        assert report_file.report_type == ReportType.TRIBAL_TANF
+
+    @patch("tdpservice.reports.tasks.timezone.now")
     def test_fra_source_multiple_stts_all_inherit_report_type(self, mock_now, ofa_admin):
         """All ReportFiles from an FRA source should have report_type=FRA."""
         from tdpservice.stts.models import STT, Region
