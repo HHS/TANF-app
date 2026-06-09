@@ -88,10 +88,12 @@ def bundle_stt_files(zip_file: zipfile.ZipFile, file_infos: list, stt_code: str)
             # Read file from report source zip
             file_data = zip_file.read(file_info.filename)
 
-            # Get just the filename (not the full path)
-            filename = file_info.filename.split('/')[-1]
+            # Keep the folder hierarchy under the STT folder.
+            relative_path_parts = file_info.filename.split('/')[4:]
+            if not relative_path_parts or any(part in ("", ".", "..") for part in relative_path_parts):
+                raise ValueError(f"Invalid file path in STT folder: {file_info.filename}")
+            filename = "/".join(relative_path_parts)
 
-            # Add to bundle with just the filename (flatten structure)
             bundle_zip.writestr(filename, file_data)
 
     # Rewind buffer

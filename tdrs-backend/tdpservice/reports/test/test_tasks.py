@@ -105,9 +105,9 @@ class TestBundleSttFiles:
         assert "report2.pdf" in names
         assert len(names) == 2
 
-    def test_bundle_flattens_structure(self):
-        """Should flatten folder structure when bundling."""
-        structure = {"FY2025": {"RO1": {"F1": ["report1.pdf"]}}}
+    def test_bundle_preserves_paths_relative_to_stt_folder(self):
+        """Should preserve folder structure under the STT folder when bundling."""
+        structure = {"FY2025": {"RO1": {"F1": ["reports/january/report1.pdf"]}}}
         zip_buffer = create_nested_zip(structure, "FY2025_test")
         report_source_zip = zipfile.ZipFile(zip_buffer)
 
@@ -119,11 +119,40 @@ class TestBundleSttFiles:
 
         bundled = bundle_stt_files(report_source_zip, file_infos, "1")
 
-        # Check that file is flattened (no path)
         bundled_zip = zipfile.ZipFile(io.BytesIO(bundled.read()))
         names = bundled_zip.namelist()
 
-        assert names[0] == "report1.pdf"  # Not "FY2025_test/FY2025/RO1/F1/report1.pdf"
+        assert names == ["reports/january/report1.pdf"]
+
+    def test_bundle_retains_duplicate_basenames_in_different_folders(self):
+        """Should retain files with the same basename when their relative paths differ."""
+        structure = {
+            "FY2025": {
+                "RO1": {
+                    "F1": [
+                        "reports/january/summary.pdf",
+                        "reports/february/summary.pdf",
+                    ]
+                }
+            }
+        }
+        zip_buffer = create_nested_zip(structure, "FY2025_test")
+        report_source_zip = zipfile.ZipFile(zip_buffer)
+
+        file_infos = [
+            info
+            for info in report_source_zip.infolist()
+            if not info.is_dir() and "FY2025_test/FY2025/RO1/F1/" in info.filename
+        ]
+
+        bundled = bundle_stt_files(report_source_zip, file_infos, "1")
+
+        bundled_zip = zipfile.ZipFile(io.BytesIO(bundled.read()))
+        names = bundled_zip.namelist()
+
+        assert "reports/january/summary.pdf" in names
+        assert "reports/february/summary.pdf" in names
+        assert len(names) == 2
 
 
 @pytest.mark.django_db
@@ -187,6 +216,68 @@ class TestProcessReportSource:
         assert report_file.date_extracted_on == date(2025, 1, 31)
         assert report_file.stt.stt_code == "01"
         assert report_file.version == 1
+
+    @patch("tdpservice.reports.tasks.timezone.now")
+    def test_process_preserves_nested_paths_in_report_file_zip(self, mock_now, ofa_admin):
+        """Should preserve STT-relative nested paths in the created ReportFile zip."""
+        from tdpservice.stts.models import STT, Region
+
+        region = Region.objects.create(id=9006, name="Test Region 6")
+        STT.objects.create(
+            id=8007,
+            stt_code="12",
+            name="Test STT 12",
+            region=region,
+            postal_code="T2",
+            type="STATE",
+        )
+
+        mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
+
+        structure = {
+            "FY2025": {
+                "RO1": {
+                    "F12": [
+                        "reports/january/summary.pdf",
+                        "reports/february/summary.pdf",
+                        "readme.txt",
+                    ]
+                }
+            }
+        }
+        zip_buffer = create_nested_zip(structure, "FY2025_01312025")
+
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        uploaded_file = SimpleUploadedFile(
+            "report_source.zip", zip_buffer.read(), content_type="application/zip"
+        )
+
+        source = ReportSource.objects.create(
+            uploaded_by=ofa_admin,
+            original_filename="report_source.zip",
+            slug="report_source.zip",
+            file=uploaded_file,
+            year=2025,
+            date_extracted_on=date(2025, 1, 31),
+        )
+
+        process_report_source(source.id)
+
+        source.refresh_from_db()
+        assert source.status == ReportSource.Status.SUCCEEDED
+        assert source.num_reports_created == 1
+
+        report_file = ReportFile.objects.get(source=source)
+        report_file.file.open("rb")
+        bundled_zip = zipfile.ZipFile(io.BytesIO(report_file.file.read()))
+        report_file.file.close()
+
+        names = bundled_zip.namelist()
+        assert "reports/january/summary.pdf" in names
+        assert "reports/february/summary.pdf" in names
+        assert "readme.txt" in names
+        assert len(names) == 3
 
     @patch("tdpservice.reports.tasks.timezone.now")
     def test_process_multiple_stts(self, mock_now, ofa_admin):

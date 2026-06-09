@@ -4,12 +4,13 @@ This directory contains test zip files for manually testing the report source wo
 
 ## File Structure
 
-All valid files follow the structure: `{ZipName}/FY{YYYY}/RO{X}/F{X}/files`
+All valid files follow the structure: `{ZipName}/FY{YYYY}/RO{X}/F{X}/files`, where files may be at any depth under the STT folder.
 
 - **{ZipName}**: Root folder matching the zip filename (e.g., `FY2025_07312025`)
 - **FY{YYYY}**: Fiscal year folder with "FY" prefix (e.g., `FY2025`)
 - **RO{X}**: Regional Office folder with "RO" prefix (e.g., `RO1`, `RO4`)
 - **F{X}**: STT folder with "F" prefix representing FIPS code (e.g., `F1`, `F12`)
+- **files**: Report files directly under the STT folder or in nested subfolders. Generated STT zip files preserve paths relative to the STT folder.
 
 ## Valid Test Files (Should PASS)
 
@@ -26,6 +27,27 @@ FY2025_valid_single_stt/
 **Expected Result:** Success
 - Creates 1 ReportFile for Alabama (STT_CODE: 1, Region 4)
 - Files bundled into `stt_1_reports.zip`
+
+### Nested folders under an STT
+**Structure:**
+```
+FY2025_valid_nested_stt/
+  └── FY2025/
+      └── RO4/
+          └── F12/
+              ├── reports/
+              │   ├── january/
+              │   │   └── summary.pdf
+              │   └── february/
+              │       └── summary.pdf
+              └── readme.txt
+```
+**Expected bundled `stt_12_reports.zip` contents:**
+```
+reports/january/summary.pdf
+reports/february/summary.pdf
+readme.txt
+```
 
 ### 2. `FY2025_valid_multiple_stts_same_region.zip`
 **Structure:**
@@ -150,4 +172,3 @@ The `date_extracted_on` field indicates when the data was extracted from the dat
 - Copied from ReportSource to each ReportFile created
 - Displayed to STT users in the feedback reports table
 - Used in email notifications to indicate the data cutoff date
-
