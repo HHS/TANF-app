@@ -741,15 +741,15 @@ class TestGoParse:
         assert cat4_errors.count() == 20
         assert (
             cat4_errors[0].error_message
-            == "Duplicate record detected with record type M3 at line 453."
+            == "Duplicate record detected with record type M3 at line 453. Record is a duplicate of the record at line number 452."
         )
         assert (
             cat4_errors[1].error_message
-            == "Duplicate record detected with record type M3 at line 3273."
+            == "Duplicate record detected with record type M3 at line 3273. Record is a duplicate of the record at line number 3272."
         )
         assert (
             cat4_errors[2].error_message
-            == "Partial duplicate record detected with record type M3 at line 3275."
+            == "Partial duplicate record detected with record type M3 at line 3275. Record is a partial duplicate of the record at line number 3274. Duplicated fields causing error: Item 0 (Record Type), Item 3 (Reporting Month/Year), Item 5 (Case Number), Item 60 (Family Affiliation), Item 61 (Date of Birth), and Item 62 (Social Security Number)."
         )
 
         # We have a few more errors because the go parser separates the the OR'd
@@ -2315,7 +2315,7 @@ class TestGoParse:
 
         assert (
             dup_error.error_message
-            == f"Duplicate record detected with record type {record_type} at line 3."
+            == f"Duplicate record detected with record type {record_type} at line 3. Record is a duplicate of the record at line number 2."
         )
 
         assert model.objects.filter(datafile=datafile).count() == 0
