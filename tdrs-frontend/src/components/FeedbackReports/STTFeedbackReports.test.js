@@ -249,26 +249,30 @@ describe('STTFeedbackReports', () => {
       expect(screen.queryByLabelText('Tribal TANF')).not.toBeInTheDocument()
     })
 
-    it('does not show radio selector for tribe Data Analysts', () => {
+    it('shows only TANF radio selector for tribe Data Analysts', () => {
       renderComponent(tribeDataAnalystStore())
 
-      expect(
-        screen.queryByText('Feedback Report Type*')
-      ).not.toBeInTheDocument()
+      expect(screen.getByText('Feedback Report Type*')).toBeInTheDocument()
+      expect(screen.getByLabelText('TANF')).toBeChecked()
+      expect(screen.queryByLabelText('TANF/SSP')).not.toBeInTheDocument()
+      expect(screen.queryByLabelText('FRA')).not.toBeInTheDocument()
     })
 
-    it('shows Tribal TANF reference table for tribe Data Analysts', () => {
+    it('shows TANF reference table for tribe Data Analysts', () => {
       renderComponent(tribeDataAnalystStore())
 
       expect(
-        screen.getByText('Tribal TANF Data Reporting Reference')
+        screen.getByText('TANF Data Reporting Reference')
       ).toBeInTheDocument()
       expect(
         screen.queryByText('TANF/SSP Data Reporting Reference')
       ).not.toBeInTheDocument()
+      expect(
+        screen.queryByText('Tribal TANF Data Reporting Reference')
+      ).not.toBeInTheDocument()
     })
 
-    it('uses Tribal TANF heading for tribe Data Analysts', async () => {
+    it('uses TANF heading for tribe Data Analysts', async () => {
       renderComponent(tribeDataAnalystStore())
 
       const yearSelect = screen.getByLabelText(/Fiscal Year/i)
@@ -278,7 +282,7 @@ describe('STTFeedbackReports', () => {
         expect(
           screen.getByRole('heading', {
             level: 2,
-            name: 'Ho-Chunk Nation — Tribal TANF Fiscal Year 2025 Feedback Reports',
+            name: 'Ho-Chunk Nation — TANF Fiscal Year 2025 Feedback Reports',
           })
         ).toBeInTheDocument()
       })
@@ -377,10 +381,9 @@ describe('STTFeedbackReports', () => {
         </MemoryRouter>
       )
 
-      // Should not show radio selector
-      expect(
-        screen.queryByText('Feedback Report Type*')
-      ).not.toBeInTheDocument()
+      expect(screen.getByText('Feedback Report Type*')).toBeInTheDocument()
+      expect(screen.getByLabelText('TANF')).toBeChecked()
+      expect(screen.queryByLabelText('FRA')).not.toBeInTheDocument()
 
       // Should fetch as TRIBAL_TANF despite URL param
       await waitFor(() => {
@@ -907,7 +910,7 @@ describe('STTFeedbackReports', () => {
       })
     })
 
-    it('auto-fetches Tribal TANF reports when a tribal STT and year are selected', async () => {
+    it('auto-fetches TANF reports when a tribal STT and year are selected', async () => {
       renderComponent(regionalStore)
 
       const sttSelect = screen.getByLabelText(/State, Tribe, or Territory/i)
@@ -945,7 +948,7 @@ describe('STTFeedbackReports', () => {
       })
     })
 
-    it('shows Tribal TANF heading when a tribal STT is selected', async () => {
+    it('shows TANF heading when a tribal STT is selected', async () => {
       renderComponent(regionalStore)
 
       const sttSelect = screen.getByLabelText(/State, Tribe, or Territory/i)
@@ -958,7 +961,7 @@ describe('STTFeedbackReports', () => {
         expect(
           screen.getByRole('heading', {
             level: 2,
-            name: 'Ho-Chunk Nation — Tribal TANF Fiscal Year 2025 Feedback Reports',
+            name: 'Ho-Chunk Nation — TANF Fiscal Year 2025 Feedback Reports',
           })
         ).toBeInTheDocument()
       })
@@ -1018,7 +1021,7 @@ describe('STTFeedbackReports', () => {
       expect(sttSelect.value).toBe('Wisconsin')
     })
 
-    it('hides report type selector when a tribe is selected', () => {
+    it('shows only TANF report type selector when a tribe is selected', () => {
       renderComponent(regionalStore)
 
       // Initially radio should be visible (no STT selected yet)
@@ -1028,26 +1031,25 @@ describe('STTFeedbackReports', () => {
       const sttSelect = screen.getByLabelText(/State, Tribe, or Territory/i)
       fireEvent.change(sttSelect, { target: { value: 'Ho-Chunk Nation' } })
 
-      // Radio should be hidden
+      expect(screen.getByText('Feedback Report Type*')).toBeInTheDocument()
+      expect(screen.getByLabelText('TANF')).toBeChecked()
+      expect(screen.queryByLabelText('TANF/SSP')).not.toBeInTheDocument()
+      expect(screen.queryByLabelText('FRA')).not.toBeInTheDocument()
       expect(
-        screen.queryByText('Feedback Report Type*')
-      ).not.toBeInTheDocument()
-      expect(
-        screen.getByText('Tribal TANF Data Reporting Reference')
+        screen.getByText('TANF Data Reporting Reference')
       ).toBeInTheDocument()
     })
 
     it('shows radio again when switching from tribe to state STT', async () => {
       renderComponent(regionalStore)
 
-      // Select a tribe — radio should hide
+      // Select a tribe - radio should show only TANF
       const sttSelect = screen.getByLabelText(/State, Tribe, or Territory/i)
       fireEvent.change(sttSelect, { target: { value: 'Ho-Chunk Nation' } })
 
       await waitFor(() => {
-        expect(
-          screen.queryByText('Feedback Report Type*')
-        ).not.toBeInTheDocument()
+        expect(screen.getByText('Feedback Report Type*')).toBeInTheDocument()
+        expect(screen.getByLabelText('TANF')).toBeChecked()
       })
 
       // Select a state — radio should reappear with TANF_SSP selected

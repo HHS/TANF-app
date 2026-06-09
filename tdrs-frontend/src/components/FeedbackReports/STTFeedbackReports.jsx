@@ -30,7 +30,7 @@ const REFERENCE_TABLES = {
     ],
   },
   TRIBAL_TANF: {
-    caption: 'Tribal TANF Data Reporting Reference',
+    caption: 'TANF Data Reporting Reference',
     quarters: [
       { label: 'FY Q1', period: 'Oct 1 - Dec 31', deadline: 'February 14' },
       { label: 'FY Q2', period: 'Jan 1 - Mar 31', deadline: 'May 15' },
@@ -52,6 +52,15 @@ const REFERENCE_TABLES = {
 const STT_REPORT_TYPE_OPTIONS = REPORT_TYPE_OPTIONS.filter(
   ({ value }) => value !== REPORT_TYPES.TRIBAL_TANF
 )
+
+const TRIBAL_REPORT_TYPE_OPTIONS = [
+  { value: REPORT_TYPES.TRIBAL_TANF, label: 'TANF' },
+]
+
+const STT_REPORT_TYPE_LABELS = {
+  ...REPORT_TYPE_LABELS,
+  [REPORT_TYPES.TRIBAL_TANF]: 'TANF',
+}
 
 /**
  * STTFeedbackReports component allows STT Data Analysts and Regional Staff
@@ -253,7 +262,7 @@ function STTFeedbackReports() {
 
   // Get reference table data for selected report type
   const referenceTable = REFERENCE_TABLES[selectedReportType]
-  const reportTypeLabel = REPORT_TYPE_LABELS[selectedReportType]
+  const reportTypeLabel = STT_REPORT_TYPE_LABELS[selectedReportType]
 
   return (
     <div className="feedback-reports">
@@ -270,16 +279,16 @@ function STTFeedbackReports() {
               </div>
             )}
 
-            {!isTribe && (
-              <RadioSelect
-                label="Feedback Report Type*"
-                fieldName="reportType"
-                classes="margin-top-4"
-                options={STT_REPORT_TYPE_OPTIONS}
-                setValue={handleReportTypeChange}
-                selectedValue={selectedReportType}
-              />
-            )}
+            <RadioSelect
+              label="Feedback Report Type*"
+              fieldName="reportType"
+              classes="margin-top-4"
+              options={
+                isTribe ? TRIBAL_REPORT_TYPE_OPTIONS : STT_REPORT_TYPE_OPTIONS
+              }
+              setValue={handleReportTypeChange}
+              selectedValue={selectedReportType}
+            />
 
             <div className="usa-form-group maxw-mobile margin-top-4">
               <label
