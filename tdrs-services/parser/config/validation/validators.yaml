@@ -69,12 +69,16 @@ field_validators:
 
   # Date validators
   - id: valid_year
-    expr: "year(Value) >= 1900 and year(Value) <= 2100"
-    message: "{{.RecordType}} Item {{.Item}}: year must be 1900-2100"
+    expr: "year(Value) >= 1900"
+    message: "{{.RecordType}} Item {{.Item}}: year must be larger than 1900"
 
   - id: year_after_1998
     expr: "year(Value) > 1998"
     message: "{{.RecordType}} Item {{.Item}}: year must be after 1998"
+
+  - id: valid_day
+    expr: "day(Value) >= 1 and day(Value) <= 31"
+    message: "{{.RecordType}} Item {{.Item}}: day must be 1-31"
 
   - id: valid_month
     expr: "month(Value) >= 1 and month(Value) <= 12"
@@ -208,6 +212,23 @@ record_validators:
     error_type: RECORD_PRE_CHECK
     message: "{{.RecordType}}: case number is required and cannot be blank"
 
+  - id: rpt_month_year_is_valid
+    expr: |
+      let rpt_month_year = GetString('RPT_MONTH_YEAR');
+      let year_int = int(rpt_month_year[0:4]);
+      let month_int = int(trimPrefix(rpt_month_year[4:], "0"));
+      year_int > 1900 && month_int > 0 && month_int < 13
+    error_type: RECORD_PRE_CHECK
+    fields: [RPT_MONTH_YEAR]
+
+  - id: rpt_month_year_matches_header_year_quarter
+    expr: >
+      year(GetString('RPT_MONTH_YEAR')) == fiscalToCalendarYear(DataFileContext.FiscalYear, DataFileContext.FiscalQuarter)
+      and string(quarter(GetString('RPT_MONTH_YEAR'))) == fiscalToCalendarQuarter(DataFileContext.FiscalYear, DataFileContext.FiscalQuarter)
+    error_type: RECORD_PRE_CHECK
+    fields: [RPT_MONTH_YEAR]
+    message: "{{.RecordType}}: Reporting month year {{.Values.RPT_MONTH_YEAR}} does not match file reporting year:{{.DataFileContext.FiscalYear}}, quarter:{{.DataFileContext.FiscalQuarter}}."
+
   # --- VALUE_CONSISTENCY validators (allow record serialization) ---
 
   # Amount requires positive field validator
@@ -233,7 +254,14 @@ record_validators:
   - id: t1_sum_assistance_positive
     expr: "GetInt('AMT_FOOD_STAMP_ASSISTANCE') + GetInt('AMT_SUB_CC') + GetInt('CASH_AMOUNT') + GetInt('CC_AMOUNT') + GetInt('TRANSP_AMOUNT') > 0"
     message: "Sum of AMT_FOOD_STAMP_ASSISTANCE, AMT_SUB_CC, CASH_AMOUNT, CC_AMOUNT, TRANSP_AMOUNT must be greater than 0"
-    fields: [AMT_FOOD_STAMP_ASSISTANCE, AMT_SUB_CC, CASH_AMOUNT, CC_AMOUNT, TRANSP_AMOUNT]
+    fields:
+      [
+        AMT_FOOD_STAMP_ASSISTANCE,
+        AMT_SUB_CC,
+        CASH_AMOUNT,
+        CC_AMOUNT,
+        TRANSP_AMOUNT,
+      ]
 
   # =============================================================================
   # Reusable ifThenAlso validators (parametrized)
@@ -310,7 +338,14 @@ record_validators:
   - id: m1_sum_assistance_positive
     expr: "GetInt('AMT_FOOD_STAMP_ASSISTANCE') + GetInt('AMT_SUB_CC') + GetInt('CASH_AMOUNT') + GetInt('CC_AMOUNT') + GetInt('CC_NBR_MONTHS') > 0"
     message: "Sum of AMT_FOOD_STAMP_ASSISTANCE, AMT_SUB_CC, CASH_AMOUNT, CC_AMOUNT, CC_NBR_MONTHS must be greater than 0"
-    fields: [AMT_FOOD_STAMP_ASSISTANCE, AMT_SUB_CC, CASH_AMOUNT, CC_AMOUNT, CC_NBR_MONTHS]
+    fields:
+      [
+        AMT_FOOD_STAMP_ASSISTANCE,
+        AMT_SUB_CC,
+        CASH_AMOUNT,
+        CC_AMOUNT,
+        CC_NBR_MONTHS,
+      ]
 
   # =============================================================================
   # M2 special case validators (SSP)
@@ -358,7 +393,7 @@ record_validators:
   # Validates that a total field equals the sum of component fields
   # Params: total_field (string), component_fields (array of strings)
   - id: sum_equals
-    expr: "GetInt(Params.total_field) == sumFields(Params.component_fields)"
+    expr: "GetInt(Params.total_field) == SumFields(Params.component_fields)"
     message: "{{.Params.total_field}} must equal the sum of {{.Params.component_fields}}"
 
   # =============================================================================
@@ -404,6 +439,18 @@ record_validators:
 # produce per-record errors without blocking group serialization
 
 group_validators:
+  # =============================================================================
+  # Shared Group/Case Validators
+  # =============================================================================
+
+  # Max records per case - exceeding this will block the entire group from serialization
+  # Params: max
+  - id: max_records_per_case
+    expr: "TotalRecords <= Params.max"
+    error_type: CASE_CONSISTENCY
+    result_mode: single
+    message: "Cases must contain up to {{.Params.max}} person (Child + Adult) records within a given reporting month and year. All records associated with this case have been rejected."
+
   # =============================================================================
   # TANF Section 1 Group/Case Validators
   # =============================================================================
@@ -452,72 +499,34 @@ group_validators:
   - id: federally_funded_ssn
     expr: |
       filter(
-        getRecordsOfType(Group, 'T2'),
-        { .GetInt('FAMILY_AFFILIATION') == 1 and
-          any(getRecordsOfType(Group, 'T1'), { #.GetInt('FUNDING_STREAM') == 1 }) and
-          not isValidSSN(.GetString('SSN')) }
+        getRecordsOfType(Group, Params.recipient_record_type),
+        { .GetInt(Params.family_affiliation_field) == Params.family_affiliation_value and
+          hasAnyRecordOfTypeWithInt(Group, Params.funding_record_type, Params.funding_field, Params.funding_value) and
+          not isValidSSN(.GetString(Params.ssn_field)) }
       )
     error_type: VALUE_CONSISTENCY
     result_mode: per_record
     message: "Federally funded recipients must have a valid Social Security number."
     fields: [FUNDING_STREAM, FAMILY_AFFILIATION, SSN]
 
-
   # =============================================================================
-  # TANF Section 1 Group/Case Validators
-  # =============================================================================
-
-  # T1 must have at least one T2 or T3 record
-  # Python: __validate_s1_records_are_related - validates T2/T3 presence
-  # Note: This validator behaves mostly correctly in comparison to the python parser. The python parser will generate
-  # this error for every T2 record that doesn't have a corresponding T1 record, while this validator only generates
-  # the error once per group.
-  - id: t1_has_t2_or_t3
-    expr: "RecordCounts['T3'] > 0 or RecordCounts['T2'] > 0"
-    message: "Every T1 record should have at least one corresponding T2 or T3 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
-
-  # T1 must have at least one T2 or T3 with FAMILY_AFFILIATION == 1
-  # Python: __validate_family_affiliation - validates family affiliation requirement
-  # Note: This validator behaves mostly correctly in comparison to the python parser. The python parser will generate
-  # this error for every T2 record that doesn't have a corresponding T1 record, while this validator only generates
-  # the error once per group.
-  - id: t1_family_affiliation
-    expr: "RecordCounts['T1'] == 0 or any(getRecordsOfType(Group, 'T2'), .GetInt('FAMILY_AFFILIATION') == 1) or any(getRecordsOfType(Group, 'T3'), .GetInt('FAMILY_AFFILIATION') == 1)"
-    message: "Every T1 record should have at least one corresponding T2 or T3 record with FAMILY_AFFILIATION == 1"
-
-  # T2 records require at least one T1 record in the same case
-  # Python: __validate_s1_records_are_related - "Every T2 record should have at least one corresponding T1..."
-  # Note: This validator behaves mostly correctly in comparison to the python parser. The python parser will generate
-  # this error for every T2 record that doesn't have a corresponding T1 record, while this validator only generates
-  # the error once per group.
-  - id: t2_requires_t1
-    expr: "RecordCounts['T2'] == 0 or RecordCounts['T1'] >= 1"
-    message: "Every T2 record should have at least one corresponding T1 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
-
-  # T3 records require at least one T1 record in the same case
-  # Python: __validate_s1_records_are_related - "Every T3 record should have at least one corresponding T1..."
-  # Note: This validator behaves mostly correctly in comparison to the python parser. The python parser will generate
-  # this error for every T3 record that doesn't have a corresponding T1 record, while this validator only generates
-  # the error once per group.
-  - id: t3_requires_t1
-    expr: "RecordCounts['T3'] == 0 or RecordCounts['T1'] >= 1"
-    message: "Every T3 record should have at least one corresponding T1 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
-
-  # =============================================================================
-  # TANF Section 2 Group/Case Validators
+  # Shared Group/Case Validators
   # =============================================================================
 
-  # T4 records require at least one T5 record in the same case
-  # Python: __validate_s2_records_are_related - "Every T4 record should have at least one corresponding T5..."
-  - id: t4_requires_t5
-    expr: "RecordCounts['T4'] == 0 or RecordCounts['T5'] >= 1"
-    message: "Every T4 record should have at least one corresponding T5 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
+  # Record type must have at least one related record in the same case.
+  # Params: record_type (string), related_record_types (array of strings)
+  - id: requires_related_record
+    expr: "RecordCounts[Params.record_type] == 0 or hasAnyRecordType(RecordCounts, Params.related_record_types)"
+    message: "When {{.Params.record_type}} is present, at least one related record type must also be present"
 
-  # T5 records require at least one T4 record in the same case
-  # Python: __validate_s2_records_are_related - "Every T5 record should have at least one corresponding T4..."
-  # Note: This validator behaves mostly correctly in comparison to the python parser. The python parser will generate
-  # this error for every T5 record that doesn't have a corresponding T4 record, while this validator only generates
-  # the error once per group.
-  - id: t5_requires_t4
-    expr: "RecordCounts['T5'] == 0 or RecordCounts['T4'] >= 1"
-    message: "Every T5 record should have at least one corresponding T4 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
+  # Record type must have at least one related record with a specific int field value.
+  # Params: record_type (string), related_record_types (array of strings), field_name (string), expected_value (int)
+  - id: requires_related_record_with_int_value
+    expr: "RecordCounts[Params.record_type] == 0 or anyRecordOfTypesHasInt(Group, Params.related_record_types, Params.field_name, Params.expected_value)"
+    message: "When {{.Params.record_type}} is present, at least one related record must have {{.Params.field_name}} == {{.Params.expected_value}}"
+
+  # Record type requires a corresponding record type in the same case.
+  # Params: record_type (string), required_record_type (string)
+  - id: requires_corresponding_record
+    expr: "RecordCounts[Params.record_type] == 0 or RecordCounts[Params.required_record_type] >= 1"
+    message: "When {{.Params.record_type}} is present, {{.Params.required_record_type}} must also be present"

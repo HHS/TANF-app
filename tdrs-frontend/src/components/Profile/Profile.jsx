@@ -24,7 +24,7 @@ function Profile({
 }) {
   const authUser = useSelector(selectUser)
   const resolvedUser = user ?? authUser
-  const isAMSUser = resolvedUser?.email?.includes('@acf.hhs.gov')
+  const isAMSUser = resolvedUser?.idp === 'ams'
   const userPermissions =
     resolvedUser?.permissions?.map((p) => p.codename) || []
   const hasFRAAccess = userPermissions.includes('has_fra_access')

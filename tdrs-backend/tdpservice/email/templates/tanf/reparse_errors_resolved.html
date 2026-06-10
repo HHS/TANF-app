@@ -1,0 +1,41 @@
+{% extends '../datafile_base.html' %}
+
+{% block message %}
+Good news! Your <b>{{ file_type }}</b> data files submitted for <b>{{ stt_name }}</b> on <b>{{ submission_date }}</b> in Fiscal Year <b>{{ fiscal_year }}</b> were reprocessed and all previously detected errors have been cleared. Your file(s) have been <b>accepted without errors</b>.
+{% endblock %}
+
+{% block table %}
+<table>
+    <caption>
+      Submitted files:
+    </caption>
+    <thead>
+        <tr>
+            {% if is_program_audit %}<th>Fiscal Quarter</th>{% else %}<th>Section</th>{% endif %}
+            <th>Submitted By</th>
+            <th>Status</th>
+            {% if is_aggregate %}
+            <th>Total Errors</th>
+            {% else %}
+            <th>Cases Without Errors</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            {% if is_program_audit %}<td>{{ quarter_label }}</td>{% else %}<td>{{ section_name }}</td>{% endif %}
+            <td>{{ submitted_by }}</td>
+            <td>{{ status }}</td>
+            {% if is_aggregate %}
+            <td>{{ total_errors }}</td>
+            {% else %}
+            <td>{{ cases_without_errors }}</td>
+            {% endif %}
+        </tr>
+    </tbody>
+</table>
+{% endblock %}
+
+{% block end_message %}
+The data file(s) can now be accessed via the Submission History tab of the Data Files page.
+{% endblock %}

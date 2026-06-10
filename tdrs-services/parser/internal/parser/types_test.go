@@ -385,6 +385,34 @@ func TestParsedRecord_GetInt(t *testing.T) {
 	}
 }
 
+func TestParsedRecord_SumFields(t *testing.T) {
+	s := newSchema("T1", "A", "B", "C", "TEXT")
+	rec := newRecord(s, 1, map[string]any{
+		"A":    10,
+		"B":    "20",
+		"C":    "",
+		"TEXT": "nope",
+	})
+
+	tests := []struct {
+		name       string
+		fieldNames []any
+		want       int
+	}{
+		{"sums numeric fields", []any{"A", "B"}, 30},
+		{"ignores blanks and non-numeric values", []any{"A", "C", "TEXT"}, 10},
+		{"ignores missing and non-string field names", []any{"A", "MISSING", 123}, 10},
+		{"empty input", nil, 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := rec.SumFields(tt.fieldNames); got != tt.want {
+				t.Errorf("SumFields(%v) = %d, want %d", tt.fieldNames, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestParsedRecord_GetRecordType(t *testing.T) {
 	tests := []struct {
 		recordType string

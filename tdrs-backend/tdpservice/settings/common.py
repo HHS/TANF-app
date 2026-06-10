@@ -49,6 +49,20 @@ def traces_sampler(sampling_context: SamplingContext) -> float:
     return 0.5
 
 
+def before_send(event, hint):
+    """Drop known noisy Tempo infrastructure logs before sending events to Sentry."""
+    logentry = event.get("logentry", {})
+    message = logentry.get("message", "")
+    params = logentry.get("params") or []
+
+    log_text = " ".join([message, *(str(param) for param in params)])
+
+    if "tempo.apps.internal" in log_text:
+        return None
+
+    return event
+
+
 def init_sentry(sentry_dsn, environment: str = "ERROR") -> None:
     """Initialize Sentry for error tracking."""
     sentry_sdk.init(
@@ -70,6 +84,7 @@ def init_sentry(sentry_dsn, environment: str = "ERROR") -> None:
             LoggingIntegration(level=logging.ERROR, event_level=logging.ERROR),
         ],
         traces_sampler=traces_sampler,
+        before_send=before_send,
         enable_logs=True,
     )
 
@@ -98,6 +113,7 @@ class Common(Configuration):
         "storages",
         "django_prometheus",
         "django_json_widget",
+        "mozilla_django_oidc",
         "simple_history",
         # Local apps
         "tdpservice.core.apps.CoreConfig",
@@ -120,6 +136,7 @@ class Common(Configuration):
         "django.middleware.common.CommonMiddleware",
         "django.middleware.csrf.CsrfViewMiddleware",
         "django.contrib.auth.middleware.AuthenticationMiddleware",
+        "mozilla_django_oidc.middleware.SessionRefresh",
         "django.contrib.messages.middleware.MessageMiddleware",
         "django.middleware.clickjacking.XFrameOptionsMiddleware",
         "corsheaders.middleware.CorsMiddleware",
@@ -410,11 +427,6 @@ class Common(Configuration):
         "TEST_REQUEST_RENDERER_CLASSES": TEST_REQUEST_RENDERER_CLASSES,
     }
 
-    AUTHENTICATION_BACKENDS = (
-        "tdpservice.users.authentication.CustomAuthentication",
-        "django.contrib.auth.backends.ModelBackend",
-    )
-
     TOKEN_EXPIRATION_HOURS = int(os.getenv("TOKEN_EXPIRATION_HOURS", 24))
 
     # CORS
@@ -455,15 +467,17 @@ class Common(Configuration):
 
     s3_src = "s3-fips.us-gov-west-1.amazonaws.com"
 
+    keycloak_browser_src = os.getenv("KEYCLOAK_BROWSER_URL", "http://localhost:8443")
+
     CSP_DEFAULT_SRC = "'none'"
     CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", s3_src)
     CSP_IMG_SRC = ("'self'", "data:", s3_src)
     CSP_FONT_SRC = ("'self'", s3_src)
-    CSP_CONNECT_SRC = ("'self'", "*.cloud.gov")
+    CSP_CONNECT_SRC = ("'self'", "*.cloud.gov", keycloak_browser_src)
     CSP_MANIFEST_SRC = "'self'"
     CSP_OBJECT_SRC = "'none'"
     CSP_FRAME_ANCESTORS = "'none'"
-    CSP_FORM_ACTION = "'self'"
+    CSP_FORM_ACTION = ("'self'", keycloak_browser_src)
     CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", s3_src)
 
     ####################################
@@ -518,12 +532,88 @@ class Common(Configuration):
 
     AMS_CLIENT_SECRET = os.getenv("AMS_CLIENT_SECRET", "")
 
+    ############################
+    # Keycloak Settings        #
+    ############################
+
+    # Canary cutover: percentage of new login requests routed through Keycloak (0-100).
+    # 0 = 100% legacy (default), 100 = 100% Keycloak. Changeable via cf set-env.
+    KEYCLOAK_AUTH_PERCENTAGE = int(os.getenv("KEYCLOAK_AUTH_PERCENTAGE", "0"))
+    KEYCLOAK_SYNC_ENABLED = bool(strtobool(os.getenv("KEYCLOAK_SYNC_ENABLED", "yes")))
+    KEYCLOAK_SERVER_URL = os.getenv("KEYCLOAK_SERVER_URL", "http://keycloak:8080")
+    KEYCLOAK_REALM = os.getenv("KEYCLOAK_REALM", "tdp")
+    KEYCLOAK_ADMIN_CLIENT_ID = os.getenv("KEYCLOAK_ADMIN_CLIENT_ID", "tdp-django")
+    KEYCLOAK_ADMIN_CLIENT_SECRET = os.getenv(
+        "KEYCLOAK_ADMIN_CLIENT_SECRET", "tdp-django-local-secret"
+    )
+    KEYCLOAK_DJANGO_CLIENT_ID = os.getenv("KEYCLOAK_DJANGO_CLIENT_ID", "tdp-django")
+    KEYCLOAK_DJANGO_CLIENT_SECRET = os.getenv(
+        "KEYCLOAK_DJANGO_CLIENT_SECRET", "tdp-django-local-secret"
+    )
+
+    ####################################
+    # mozilla-django-oidc Settings     #
+    ####################################
+
+    OIDC_RP_CLIENT_ID = KEYCLOAK_DJANGO_CLIENT_ID
+    OIDC_RP_CLIENT_SECRET = KEYCLOAK_DJANGO_CLIENT_SECRET
+    OIDC_RP_SIGN_ALGO = "RS256"
+    OIDC_RP_SCOPES = "openid email"
+    OIDC_USERNAME_ALGO = "tdpservice.users.oidc.keycloak_username_algo"
+
+    # Keycloak realm OIDC endpoints
+    # KEYCLOAK_SERVER_URL is the Docker-internal URL (server-to-server: token, userinfo, JWKS)
+    # KEYCLOAK_BROWSER_URL is the browser-facing URL (authorization redirect, logout redirect)
+    # In Cloud.gov these are the same (internal route), but locally they differ.
+    KEYCLOAK_BROWSER_URL = os.getenv("KEYCLOAK_BROWSER_URL", "http://localhost:8443")
+
+    _KC_REALM_URL = f"{KEYCLOAK_SERVER_URL}/realms/{KEYCLOAK_REALM}"
+    _KC_BROWSER_REALM_URL = f"{KEYCLOAK_BROWSER_URL}/realms/{KEYCLOAK_REALM}"
+
+    # Browser-facing endpoints (user's browser is redirected here)
+    OIDC_OP_AUTHORIZATION_ENDPOINT = (
+        f"{_KC_BROWSER_REALM_URL}/protocol/openid-connect/auth"
+    )
+    OIDC_OP_LOGOUT_ENDPOINT = f"{_KC_BROWSER_REALM_URL}/protocol/openid-connect/logout"
+
+    # Server-to-server endpoints (Django backend talks to Keycloak within Docker)
+    OIDC_OP_TOKEN_ENDPOINT = f"{_KC_REALM_URL}/protocol/openid-connect/token"
+    OIDC_OP_USER_ENDPOINT = f"{_KC_REALM_URL}/protocol/openid-connect/userinfo"
+    OIDC_OP_JWKS_ENDPOINT = f"{_KC_REALM_URL}/protocol/openid-connect/certs"
+
+    # Custom authentication backend
+    OIDC_AUTHENTICATION_CALLBACK_URL = "oidc_authentication_callback"
+    AUTHENTICATION_BACKENDS = (
+        "tdpservice.users.oidc.KeycloakOIDCBackend",
+        "tdpservice.users.authentication.CustomAuthentication",
+        "django.contrib.auth.backends.ModelBackend",
+    )
+
+    # Redirect to frontend after login
+    LOGIN_REDIRECT_URL = FRONTEND_BASE_URL
+
+    # Allow OIDC login to work alongside existing session auth
+    OIDC_STORE_ACCESS_TOKEN = True
+    OIDC_STORE_ID_TOKEN = True
+
+    # SessionRefresh middleware: exempt API endpoints from silent re-auth redirects
+    OIDC_EXEMPT_URLS = [
+        "/v1/",
+        "/admin/",
+        "/prometheus/",
+        "/plg_auth_check/",
+        "/login/",
+        "/auth_check",
+        "/logout/",
+    ]
+
     # -------- CELERY CONFIG
     REDIS_URI = os.getenv("REDIS_URI", "redis://redis-server:6379")
     logger.debug("REDIS_URI: " + REDIS_URI)
 
     CELERY_BROKER_URL = REDIS_URI + "/0"
     CELERY_RESULT_BACKEND = REDIS_URI + "/0"
+    CELERY_GO_PARSER_QUEUE = os.getenv("CELERY_GO_PARSER_QUEUE", "go-parser")
     CELERY_ACCEPT_CONTENT = ["application/json"]
     CELERY_TASK_SERIALIZER = "json"
     CELERY_RESULT_SERIALIZER = "json"
@@ -531,6 +621,9 @@ class Common(Configuration):
     CELERYD_SEND_EVENTS = True
     CELERY_ENABLE_UTC = True
     CELERY_TASK_PROTOCOL = 1
+    CELERY_TASK_ROUTES = {
+        "tdpservice.scheduling.parser_task.go_parse": {"queue": CELERY_GO_PARSER_QUEUE}
+    }
 
     CELERY_BEAT_SCHEDULE = {
         "Database Backup": {
@@ -623,6 +716,10 @@ class Common(Configuration):
                 "reporting_period": "Jul - Sep",
                 "fiscal_quarter": "Q4",
             },
+        },
+        "Reconcile Keycloak Users": {
+            "task": "tdpservice.users.tasks.reconcile_keycloak_users",
+            "schedule": crontab(minute="0", hour="*/6"),  # Every 6 hours
         },
     }
 

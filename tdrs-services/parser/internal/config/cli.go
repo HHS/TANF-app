@@ -29,6 +29,8 @@ type CLI struct {
 	// Server
 	ServerMode              string `kong:"name='server.mode',help='Server mode (celery, grpc, http, local)'"`
 	ServerCeleryRedisURL    string `kong:"name='server.celery.redis-url',help='Redis URL for Celery broker'"`
+	ServerCeleryQueue       string `kong:"name='server.celery.queue',env='GO_PARSER_QUEUE',help='Redis queue name for Celery tasks'"`
+	ServerCeleryNumWorkers  int    `kong:"name='server.celery.num-workers',help='Number of concurrent celery task workers'"`
 	ServerGRPCListenAddress string `kong:"name='server.grpc.listen-address',help='gRPC listen address'"`
 	ServerHTTPListenAddress string `kong:"name='server.http.listen-address',help='HTTP listen address'"`
 	ServerLocalFilePath     string `kong:"name='server.local.file-path',help='File path for local processing'"`
@@ -68,10 +70,11 @@ type CLI struct {
 	DatabaseHealthCheckPeriod time.Duration `kong:"name='database.health-check-period',help='Health check period'"`
 
 	// Storage
-	StorageSource     string `kong:"name='storage.source',help='File storage source (local, s3)'"`
-	StorageS3Bucket   string `kong:"name='storage.s3.bucket',help='S3 bucket name'"`
-	StorageS3Endpoint string `kong:"name='storage.s3.endpoint',help='S3 endpoint (for LocalStack)'"`
-	StorageS3Region   string `kong:"name='storage.s3.region',help='S3 region'"`
+	StorageSource      string `kong:"name='storage.source',help='File storage source (local, s3)'"`
+	StorageS3Bucket    string `kong:"name='storage.s3.bucket',help='S3 bucket name'"`
+	StorageS3Endpoint  string `kong:"name='storage.s3.endpoint',help='S3 endpoint (for LocalStack)'"`
+	StorageS3Region    string `kong:"name='storage.s3.region',help='S3 region'"`
+	StorageS3KeyPrefix string `kong:"name='storage.s3.key-prefix',help='S3 key prefix (Django APP_NAME)'"`
 }
 
 // ParseCLI parses command-line arguments using Kong and returns the CLI struct.
@@ -117,6 +120,12 @@ func (c *CLI) ApplyTo(cfg *Config, ctx *kong.Context) {
 	}
 	if set["server.celery.redis-url"] {
 		cfg.Server.Celery.RedisURL = c.ServerCeleryRedisURL
+	}
+	if set["server.celery.queue"] {
+		cfg.Server.Celery.Queue = c.ServerCeleryQueue
+	}
+	if set["server.celery.num-workers"] {
+		cfg.Server.Celery.NumWorkers = c.ServerCeleryNumWorkers
 	}
 	if set["server.grpc.listen-address"] {
 		cfg.Server.GRPC.ListenAddress = c.ServerGRPCListenAddress
@@ -217,6 +226,9 @@ func (c *CLI) ApplyTo(cfg *Config, ctx *kong.Context) {
 	}
 	if set["storage.s3.region"] {
 		cfg.Storage.S3.Region = c.StorageS3Region
+	}
+	if set["storage.s3.key-prefix"] {
+		cfg.Storage.S3.KeyPrefix = c.StorageS3KeyPrefix
 	}
 }
 

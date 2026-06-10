@@ -61,3 +61,11 @@ scrape_configs:
         labels:
           service: "grafana"
           env: "local"
+
+  - job_name: keycloak-local
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["keycloak:9000"]
+        labels:
+          service: "keycloak"
+          env: "local"

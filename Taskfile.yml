@@ -127,6 +127,16 @@ tasks:
       - task: backend-up
       - docker compose -f docker-compose.yml exec web sh -c "pytest --basetemp=/home/tdpapp/ {{.PYTEST_ARGS}}"
 
+  backend-pytest-go-integration:
+    desc: 'Run the live Go parser integration suite. E.g: task backend-pytest-go-integration PYTEST_ARGS="-k section1 -vv"'
+    dir: tdrs-backend
+    vars:
+      PYTEST_ARGS: '{{.PYTEST_ARGS | default ""}}'
+    cmds:
+      - task: create-network
+      - GO_PARSER_SHADOW_MODE=false docker compose -f docker-compose.yml up -d
+      - docker compose -f docker-compose.yml exec web sh -c "DJANGO_SETTINGS_MODULE=tdpservice.settings.go_parser_integration DJANGO_CONFIGURATION=GoParserIntegration pytest -c pytest-go-parser.ini --basetemp=/home/tdpapp/ tdpservice/parsers/test/integration {{.PYTEST_ARGS}}"
+
   backend-pytest-cov:
     desc: 'Generate coverage.json file in the backend container. E.g: task backend-pytest-cov PYTEST_ARGS="tdpservice/test/ -s -vv"'
     dir: tdrs-backend
@@ -171,6 +181,57 @@ tasks:
       - docker compose -f docker-compose.yml up -d postgres
       - sleep 5
       - docker compose -f docker-compose.yml exec postgres sh -c "psql -U tdpuser -d tdrs_test"
+
+  dump-parser-schema:
+    desc: Dump selected parser table CREATE TABLE statements to schema-tmp.sql
+    cmds:
+      - |
+        docker compose -f tdrs-backend/docker-compose.yml exec -T postgres pg_dump \
+          -U tdpuser \
+          -d tdrs_test \
+          --schema-only \
+          --section=pre-data \
+          --no-owner \
+          --no-privileges \
+          --table=public.data_files_datafile \
+          --table=public.stts_stt \
+          --table=public.parser_error \
+          --table=public.parsers_datafilesummary \
+          --table=public.search_indexes_reparsemeta \
+          --table=public.search_indexes_ssp_m1 \
+          --table=public.search_indexes_ssp_m2 \
+          --table=public.search_indexes_ssp_m3 \
+          --table=public.search_indexes_ssp_m4 \
+          --table=public.search_indexes_ssp_m5 \
+          --table=public.search_indexes_ssp_m6 \
+          --table=public.search_indexes_ssp_m7 \
+          --table=public.search_indexes_tanf_t1 \
+          --table=public.search_indexes_tanf_t2 \
+          --table=public.search_indexes_tanf_t3 \
+          --table=public.search_indexes_tanf_t4 \
+          --table=public.search_indexes_tanf_t5 \
+          --table=public.search_indexes_tanf_t6 \
+          --table=public.search_indexes_tanf_t7 \
+          --table=public.search_indexes_tribal_tanf_t1 \
+          --table=public.search_indexes_tribal_tanf_t2 \
+          --table=public.search_indexes_tribal_tanf_t3 \
+          --table=public.search_indexes_tribal_tanf_t4 \
+          --table=public.search_indexes_tribal_tanf_t5 \
+          --table=public.search_indexes_tribal_tanf_t6 \
+          --table=public.search_indexes_tribal_tanf_t7 \
+          --table=public.search_indexes_programaudit_t1 \
+          --table=public.search_indexes_programaudit_t2 \
+          --table=public.search_indexes_programaudit_t3 \
+          --table=public.search_indexes_tanf_exiter1 \
+          | awk ' \
+            /^ALTER TABLE .* ALTER COLUMN .* ADD GENERATED / { skip = 1; next } \
+            skip && /^\);$/ { skip = 0; next } \
+            skip { next } \
+            /^SET / { next } \
+            /^SELECT pg_catalog\.set_config\(/ { next } \
+            { print } \
+          ' > ./tdrs-services/parser/schema.sql
+
 
   clean:
     desc: Remove ALL containers, images, and volumes (DANGEROUS)
@@ -294,6 +355,7 @@ tasks:
     cmds:
       - export CYPRESS_TOKEN=local-cypress-token
       - docker compose -f docker-compose.yml exec web python manage.py delete_cypress_users -usernames new-cypress@teamraft.com cypress-admin@teamraft.com cypress-data-analyst-dana@teamraft.com cypress-fra-data-analyst-derek@teamraft.com cypress-data-analyst-donna@teamraft.com cypress-fra-data-analyst-david@teamraft.com cypress-fra-ofa-regional-staff-rachel@acf.hhs.gov cypress-fra-ofa-regional-staff-robert@acf.hhs.gov cypress-fra-ofa-regional-staff-rita@acf.hhs.gov cypress-fra-ofa-regional-staff-ryan@acf.hhs.gov
+      - docker compose -f docker-compose.yml exec web python manage.py reset_cypress_profile_editing_users --allow-non-debug
       - docker compose -f docker-compose.yml exec web python manage.py loaddata cypress/users cypress/data_files cypress/regions cypress/profile_editing_regions cypress/profile_editing_users cypress/feature_flags
 
   frontend-e2e-local:
@@ -360,6 +422,85 @@ tasks:
     cmds:
       - task: backend-down
       - task: frontend-down
+
+  create-infected-test-file:
+    desc: Create a test file with a valid TANF header that ClamAV will flag as infected
+    dir: tdrs-backend
+    preconditions:
+      - sh: docker compose ps clamav-rest --status running -q 2>/dev/null
+        msg: "clamav-rest container is not running. Start it first with: task backend-up"
+    cmds:
+      - |
+        printf 'HEADER20204A06   TAN1ED\nTDP-INFECTED-TEST-MARKER\nTRAILER0000001         \n' > infected_test.txt
+      - >-
+        docker compose exec -T clamav-rest sh -c
+        'echo "TDP.Test.Infected:0:*:5444502d494e4645435445442d544553542d4d41524b4552" > /var/lib/clamav/tdp-test.ndb
+        && pkill -USR2 clamd
+        && sleep 5
+        && tail -1 /var/log/clamav/clamd.log'
+      - echo "Created tdrs-backend/infected_test.txt and loaded ClamAV test signature. Upload this file through the frontend to test AV rejection."
+
+  parser:compile-check:
+    desc: Compile all Go parser packages and tests
+    dir: tdrs-services/parser
+    cmds:
+      - make compile-check
+
+  parser:lint:
+    desc: Run static analysis for the Go parser
+    dir: tdrs-services/parser
+    cmds:
+      - make lint
+
+  parser:sqlc-diff:
+    desc: Verify sqlc generated code matches the parser schema and queries
+    dir: tdrs-services/parser
+    cmds:
+      - |
+        if ! make sqlc-diff; then
+          echo ""
+          echo "sqlc generated code is out of sync."
+          echo "If model changes were made, update the definitions in:"
+          echo "  - tdrs-services/parser/config/schemas"
+          echo "  - tdrs-services/parser/internal/storage/writer"
+          exit 1
+        fi
+
+  parser:sqlc-vet:
+    desc: Run sqlc static analysis for the parser schema and queries
+    dir: tdrs-services/parser
+    cmds:
+      - make sqlc-vet
+
+  parser:sqlc-verify:
+    desc: Verify parser SQL queries against the configured engine and schema
+    dir: tdrs-services/parser
+    cmds:
+      - make sqlc-verify
+
+  parser:validate-config:
+    desc: Load parser config and compile validator expressions
+    dir: tdrs-services/parser
+    cmds:
+      - make validate-config
+
+  parser:test-all-coverage:
+    desc: Run all Go parser tests with coverage
+    dir: tdrs-services/parser
+    cmds:
+      - make test-all-coverage
+
+  parser:coverage-report:
+    desc: Generate readable Go parser coverage summary and HTML artifacts
+    dir: tdrs-services/parser
+    cmds:
+      - make coverage-report
+
+  parser:ci-checks:
+    desc: Run the non-test CI checks for the Go parser
+    dir: tdrs-services/parser
+    cmds:
+      - make ci-checks
 
   help:
     desc: Show this help message

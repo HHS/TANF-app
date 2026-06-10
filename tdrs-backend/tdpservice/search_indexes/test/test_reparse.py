@@ -14,6 +14,7 @@ import pytest
 from tdpservice.data_files.models import DataFile, ReparseFileMeta
 from tdpservice.parsers import util
 from tdpservice.parsers.factory import ParserFactory
+from tdpservice.parsers.models import DataFileSummary
 from tdpservice.parsers.test.factories import DataFileSummaryFactory
 from tdpservice.scheduling.management.commands import backup_db
 from tdpservice.search_indexes.management.commands import clean_and_reparse
@@ -663,6 +664,36 @@ def test_mm_file_counts_match(big_file):
     fm.finished = True
     fm.save()
     assert ReparseMeta.file_counts_match(meta_model) is True
+
+
+@pytest.mark.django_db()
+def test_handle_datafiles_persists_previous_summary_status(
+    monkeypatch, big_file, log_context
+):
+    """Store the pre-reparse DataFileSummary status on the file meta row."""
+    meta_model = ReparseMeta.objects.create(db_backup_location="s3://backup")
+    delay_calls = []
+
+    monkeypatch.setattr(
+        "tdpservice.search_indexes.reparse.parser_task.parse.delay",
+        lambda file_id, reparse_id=None: delay_calls.append((file_id, reparse_id)),
+    )
+
+    from tdpservice.search_indexes.reparse import handle_datafiles
+
+    handle_datafiles(
+        [big_file],
+        meta_model,
+        log_context,
+        {big_file.pk: DataFileSummary.Status.ACCEPTED},
+    )
+
+    file_meta = ReparseFileMeta.objects.get(
+        data_file_id=big_file.pk, reparse_meta_id=meta_model.pk
+    )
+
+    assert file_meta.previous_summary_status == DataFileSummary.Status.ACCEPTED
+    assert delay_calls == [(big_file.pk, meta_model.pk)]
 
 
 @pytest.mark.django_db

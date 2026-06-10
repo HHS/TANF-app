@@ -3,10 +3,13 @@ from datetime import datetime, timedelta, timezone
 
 from django.conf import settings
 from django.contrib.admin.sites import AdminSite
+from django.test import RequestFactory
 
 import pytest
 
+from tdpservice.data_files.admin import admin as data_file_admin_module
 from tdpservice.data_files.admin.admin import DataFileAdmin
+from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.models import DataFile
 from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.parsers.test.factories import DataFileSummaryFactory
@@ -39,6 +42,147 @@ def test_DataFileAdmin_exposes_state_in_admin():
 
     assert "parsing_state" in data_file_admin.list_display
     assert "parsing_state" in properties_fieldset[1]["fields"]
+
+
+@pytest.mark.django_db
+def test_DataFileAdmin_parsing_state_uses_choice_label():
+    """Test DataFileAdmin displays friendly submission state labels."""
+    data_file = DataFileFactory(state=SubmissionState.PARSE_FAILED)
+    data_file_admin = DataFileAdmin(DataFile, AdminSite())
+
+    assert data_file_admin.parsing_state(data_file) == "Parse failed"
+
+
+@pytest.mark.django_db
+def test_DataFileAdmin_reparse_requests_reparse_for_safe_files(
+    monkeypatch,
+    admin_user,
+):
+    """Test admin reparse moves safe files to reparse_requested before queueing."""
+    ready_file = DataFileFactory(state=SubmissionState.PARSE_COMPLETED)
+    uploaded_file = DataFileFactory(state=SubmissionState.UPLOADED)
+    unsafe_file = DataFileFactory(state=SubmissionState.VIRUS_SCAN_FAILED)
+    queued_calls = []
+    messages = []
+    data_file_admin = DataFileAdmin(DataFile, AdminSite())
+    request = RequestFactory().post("/admin/data_files/datafile/")
+    request.user = admin_user
+    monkeypatch.setattr(
+        data_file_admin_module.reparse_files,
+        "delay",
+        lambda *args, **kwargs: queued_calls.append((args, kwargs)),
+    )
+    monkeypatch.setattr(
+        data_file_admin,
+        "message_user",
+        lambda request, message, level=None: messages.append((message, level)),
+    )
+
+    data_file_admin.reparse(
+        request,
+        DataFile.objects.filter(
+            id__in=[ready_file.id, uploaded_file.id, unsafe_file.id]
+        ).order_by("id"),
+    )
+
+    ready_file.refresh_from_db()
+    uploaded_file.refresh_from_db()
+    unsafe_file.refresh_from_db()
+    assert ready_file.state == SubmissionState.REPARSE_REQUESTED
+    assert uploaded_file.state == SubmissionState.UPLOADED
+    assert unsafe_file.state == SubmissionState.VIRUS_SCAN_FAILED
+    assert len(queued_calls) == 1
+    queued_args, _ = queued_calls[0]
+    assert queued_args[0] == [ready_file.id]
+    # Worker also receives the pre-transition state so it can revert on failure.
+    assert queued_args[1] == {ready_file.id: str(SubmissionState.PARSE_COMPLETED)}
+    assert any("1 file successfully submitted" in message for message, _ in messages)
+    assert any(
+        "3 file(s) selected. 2 file(s) could not be moved" in message
+        for message, _ in messages
+    )
+    assert any("1 file was moved to reparse requested" in message for message, _ in messages)
+    assert any(
+        f"Skipped 2 file(s): {uploaded_file.id}" in message for message, _ in messages
+    )
+
+
+@pytest.mark.django_db
+def test_DataFileAdmin_reparse_skips_when_no_files_can_request_reparse(
+    monkeypatch,
+    admin_user,
+):
+    """Test admin reparse reports selected files that cannot move to reparse."""
+    uploaded_file = DataFileFactory(state=SubmissionState.UPLOADED)
+    queued_calls = []
+    messages = []
+    data_file_admin = DataFileAdmin(DataFile, AdminSite())
+    request = RequestFactory().post("/admin/data_files/datafile/")
+    request.user = admin_user
+    monkeypatch.setattr(
+        data_file_admin_module.reparse_files,
+        "delay",
+        lambda *args, **kwargs: queued_calls.append((args, kwargs)),
+    )
+    monkeypatch.setattr(
+        data_file_admin,
+        "message_user",
+        lambda request, message, level=None: messages.append((message, level)),
+    )
+
+    data_file_admin.reparse(request, DataFile.objects.filter(id=uploaded_file.id))
+
+    uploaded_file.refresh_from_db()
+    assert uploaded_file.state == SubmissionState.UPLOADED
+    assert queued_calls == []
+    assert any("No selected files were eligible" in message for message, _ in messages)
+    assert any(
+        "1 file(s) selected. 1 file(s) could not be moved" in message
+        for message, _ in messages
+    )
+    assert any("state uploaded" in message for message, _ in messages)
+
+
+@pytest.mark.django_db(transaction=True)
+def test_DataFileAdmin_reparse_rolls_back_state_when_queue_fails(
+    monkeypatch,
+    admin_user,
+):
+    """If reparse_files.delay raises, state must be reverted to its original value.
+
+    The enqueue is deferred until after the state-transition transaction
+    commits (so a Celery worker can never race with an uncommitted row).
+    A post-commit broker failure therefore requires a manual revert rather
+    than a DB rollback; the end state must still be the pre-reparse value.
+    """
+    ready_file = DataFileFactory(state=SubmissionState.PARSE_COMPLETED)
+    messages = []
+    data_file_admin = DataFileAdmin(DataFile, AdminSite())
+    request = RequestFactory().post("/admin/data_files/datafile/")
+    request.user = admin_user
+
+    def broken_delay(*_args, **_kwargs):
+        raise RuntimeError("broker unreachable")
+
+    monkeypatch.setattr(data_file_admin_module.reparse_files, "delay", broken_delay)
+    monkeypatch.setattr(
+        data_file_admin,
+        "message_user",
+        lambda request, message, level=None: messages.append((message, level)),
+    )
+
+    data_file_admin.reparse(
+        request,
+        DataFile.objects.filter(id=ready_file.id),
+    )
+
+    ready_file.refresh_from_db()
+    assert ready_file.state == SubmissionState.PARSE_COMPLETED
+    assert any("Could not queue the reparse task" in message for message, _ in messages)
+    assert not any(
+        "file successfully submitted for reparsing" in message
+        for message, _ in messages
+    )
 
 
 @pytest.mark.django_db

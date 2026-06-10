@@ -6,13 +6,9 @@ from rest_framework import serializers
 
 from tdpservice.data_files.errors import ImmutabilityError
 from tdpservice.data_files.models import DataFile, ReparseFileMeta
-from tdpservice.data_files.validators import (
-    validate_file_extension,
-    validate_file_infection,
-)
+from tdpservice.data_files.validators import validate_file_extension
 from tdpservice.parsers.models import ParserError
 from tdpservice.parsers.serializers import DataFileSummarySerializer
-from tdpservice.security.models import ClamAVFileScan
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
 
@@ -78,6 +74,9 @@ class DataFileSerializer(serializers.ModelSerializer):
 
     def get_has_error(self, obj):
         """Return whether the file has an error."""
+        # Use annotated value if available, otherwise fallback to query
+        if hasattr(obj, "has_error"):
+            return obj.has_error
         parser_errors = ParserError.objects.filter(file=obj.id, deprecated=False)
         return parser_errors.count() > 0
 
@@ -103,16 +102,6 @@ class DataFileSerializer(serializers.ModelSerializer):
             validated_data["program_type"] = DataFile.ProgramType.TANF
 
         data_file = DataFile.create_new_version(validated_data)
-        # Determine the matching ClamAVFileScan for this DataFile.
-        av_scan = ClamAVFileScan.objects.filter(
-            file_name=data_file.original_filename, uploaded_by=data_file.user
-        ).last()
-
-        # Link the newly created DataFile to the relevant ClamAVFileScan.
-        if av_scan is not None:
-            av_scan.data_file = data_file
-            av_scan.save()
-
         return data_file
 
     def update(self, instance, validated_data):
@@ -121,13 +110,11 @@ class DataFileSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """Perform all validation steps on a given file."""
-        user = self.context.get("user")
         file = data["file"] if "file" in data else None
         section = data["section"] if "section" in data else None
 
         if file and section:
             validate_file_extension(file.name, is_fra=DataFile.Section.is_fra(section))
-            validate_file_infection(file, file.name, user)
 
         return data
 

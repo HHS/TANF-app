@@ -28,7 +28,7 @@ function RequestAccessForm({
   type = 'access request',
 }) {
   const errorRef = useRef(null)
-  const isAMSUser = user?.email?.includes('@acf.hhs.gov')
+  const isAMSUser = user?.idp === 'ams'
   const originallyHadFRAAccess = initialValues.hasFRAAccess ?? null
 
   const [profileInfo, setProfileInfo] = useState(

@@ -22,6 +22,35 @@
     <script src="components/shutdown-banner.js?v=${v}" defer><\/script>
   `);
 </script>
+<style>
+
+html {
+  scroll-behavior: smooth;
+}
+</style>
+<script>
+function showDiv(id) {
+  // 1. Explicitly hide both potential IDs
+  document.getElementById('asubmitted').style.display = "none";
+  document.getElementById('aapproved').style.display = "none";
+  document.getElementById('deactivated').style.display = "none";
+  document.getElementById('inactive').style.display = "none";
+
+  // 2. Show the one that was passed to the function
+  document.getElementById(id).style.display = "block";
+}
+</script>
+<script>
+function showDiv2(id) {
+  // 1. Explicitly hide both potential IDs
+  document.getElementById('containserrors').style.display = "none";
+  document.getElementById('noerrors').style.display = "none";
+
+  // 2. Show the one that was passed to the function
+  document.getElementById(id).style.display = "block";
+}
+</script>
+
 
 
 
@@ -187,102 +216,507 @@
 
 
 
-<!--         <div class="usa-alert usa-alert--warning">
-  <div class="usa-alert__body" style="padding-left: 16px;">
-    <h2 class="usa-alert__heading"><span aria-hidden="true">⚠️</span>Notifications Temporarily Unavailable</h2>
-    <p class="usa-alert__text">
-      Starting on March 1, 2025, automated e-mail notifications will be temporarily unavailable until further notice. We are actively exploring solutions to resume these automated communications. Please reach out to <a href="mailto:tanfdata@acf.hhs.gov">tanfdata@acf.hhs.gov</a> with any questions.
-    </p>
-  </div>
-</div> -->
 
 <div style="min-height: 22px;"></div>
 
         <p class="usa-intro">
-        Email notifications will be sent out automatically to alert you when certain key actions are taken in the TANF Data Portal (TDP). Below is a sequence of email notifications that you may expect to receive when interacting with TDP.
+        Email notifications are sent out automatically to alert you when certain key actions in the TANF Data Portal (TDP). In this guide you can preview common email notifications that you may receive when interacting with TDP.
         </p>
+<div style="min-height: 22px;"></div>
 
-        <ol class="usa-process-list">
-          <li class="usa-process-list__item">
-            <h2 class="usa-process-list__heading">Access Request Submitted</h2>
-            <p class="margin-top-05">
-              You will receive a notification email from <em>no-reply@tanfdata.acf.hhs.gov</em> when your access request has been submitted. Please allow up to 1 business day for TDP admins to review your request.
-              <div style="min-height: 22px;"></div>
-              <a href="../img/getting-started/access-request-submitted.png" data-lity data-lity-desc="Access Request Submitted Email">
-              <img src="../img/getting-started/access-request-submitted.png" alt="Access Request Submitted Email">
-                </a>
-            </p>
-          </li>
-
-          <li class="usa-process-list__item">
-            <h2 class="usa-process-list__heading">Access Request Status</h2>
-            <p>
-              Once your request for access has been reviewed, you will receive another email notification from <em>no-reply@tanfdata.acf.hhs.gov</em> with the status of your request.
-              <div style="min-height: 22px;"></div>
-              We'll also notify you if your request is denied. Should this happen and you believe it to be in error please let us know by reaching out to TDP support at <a href="mailto:tanfdata@acf.hhs.gov">TANFdata@acf.hhs.gov.</a>.
-              <div style="min-height: 22px;"></div>
-              <a href="../img/getting-started/access-request.png" data-lity data-lity-desc="Access Request Approved or Denied Emails">
-              <img src="../img/getting-started/access-request.png" alt="Access Request Approved or Denied Emails">
-              </a>
-            </p>
-          </li>
-
-          <li class="usa-process-list__item">
-            <h2 class="usa-process-list__heading">Data Submitted by Section</h2>
-            <p>
-              When data files you've submitted have been processed by the system you will also receive an email confirmation for each section from <em>no-reply@tanfdata.acf.hhs.gov</em>.
-                <br>
-              <a href="../img/getting-started/data-submitted.png" data-lity data-lity-desc="Data Submitted by Section">
-              <img src="../img/getting-started/data-submitted.png" alt="Data Submitted by Section">
-              </a>
-
-              These emails will also highlight whether or not the system found errors in your data. Note that OFA may still reach out to you via email with additional feedback on your data even if TDP detected no errors. <a href="viewing-error-reports.html">Read more about error reports</a>.
-            </p>
-          </li>
-
-          <li class="usa-process-list__item">
-            <h2 class="usa-process-list__heading">Inactive Account Notice</h2>
-            <p>
-              If an account has not been logged into TDP for 180 days, the process to deactivate the account will be set in motion.
-              <div style="min-height: 22px;"></div>
-              Before any action is taken, TDP will send multiple email notifications to notify you beginning 10 days, 3 days and then 1 day prior to the deactivation date.
-              <div style="min-height: 22px;"></div>
-            <a href="../img/getting-started/inactive-account.png" data-lity data-lity-desc="Example of the emails for inactive accounts">
-            <img src="../img/getting-started/inactive-account.png" alt="Example of the emails for inactive accounts">
-            </a>
-            </p>
-          </li>
-
-          <li class="usa-process-list__item">
-            <h2 class="usa-process-list__heading">Account is Deactivated</h2>
-            <p>
-              After 180 days of no activity on TDP, the account is deactivated. If this is a mistake or if you have any questions about your TDP account, please reach out to the TDP Admin team at <a href="mailto:tanfdata@acf.hhs.gov">TANFdata@acf.hhs.gov</a>.
-              <div style="min-height: 22px;"></div>
-            <a href="../img/getting-started/account-is-deactivated.png" data-lity data-lity-desc="Example of the email for account is deactivated">
-            <img src="../img/getting-started/account-is-deactivated.png" alt="Example of the email for account is deactivated">
-            </a>
-            </p>
-          </li>
-
-
-<h2 id="feedbackemail">Feedback Report Available</h2>
-<p>You'll be notified any time OFA uploads Feedback Reports concerning your TANF submissions. <a href="feedback-reports.html">Read more about Feedback Reports</a></p>
-                              <a href="../img/feedback-reports/feedback-email.png" data-lity data-lity-desc="Feedback Report Available Email notification example. A new Feedback Report is available for Colorado for Fiscal Year 2025 (reflects data submitted through 02/02/2026)
-
-The report was uploaded on 02/11/2026. Please review the feedback and, if needed, resubmit complete and accurate data. ">
-              <img src="../img/feedback-reports/feedback-email.png" alt="Feedback Report Available Email notification example. A new Feedback Report is available for Colorado for Fiscal Year 2025 (reflects data submitted through 02/02/2026)
-
-The report was uploaded on 02/11/2026. Please review the feedback and, if needed, resubmit complete and accurate data.">
-                </a>
-
-        </ol>
-        <h2>Not seeing email notifications?</h2>
+         <h2>Not seeing email notifications?</h2>
         <p>
           <br>
-          We make every effort to ensure that the email notifications are delivered.<br>
-          If you do not see the email in your inbox, please check your "junk mail" or "spam" folder<br>
-          and add <em>no-reply@tanfdata.acf.hhs.gov</em> to your Safe Sender List.
+          We make every effort to ensure that the email notifications are delivered. If you do not see the email in your inbox, please check your "junk mail" or "spam" folder and add "<em>no-reply@tanfdata.acf.hhs.gov</em>" to your Safe Sender List.
         </p>
+      <div style="min-height: 22px;"></div>
+              <p><strong>Jump to:</strong></p>
+                        <div style="min-height: 22px;"></div>
+        <a href="#getting-started">User Account Emails</a><br>
+        <a href="#tanf-ssp">TANF/SSP Emails</a><br>
+        <!-- <a href="#fra">FRA Emails</a><br> -->
+        <a href="#feedback">Feedback Report Emails</a><br>
+
+
+                <div style="min-height: 22px;"></div>
+
+                        <hr class="releaseHr">
+
+                                        <div style="min-height: 22px;"></div>
+
+
+        <h2 id="getting-started">User Account Emails</h2>
+
+
+<form class="usa-form">
+  <fieldset class="usa-fieldset">
+    <legend class="usa-legend">Select an email to preview:</legend>
+    
+    <div class="usa-radio">
+      <input
+        class="usa-radio__input usa-radio__input--tile"
+        id="radio-submitted"
+        type="radio"
+        name="email-preview-group"
+        value="asubmitted"
+        onclick="showDiv('asubmitted')"
+        checked="checked"
+      />
+      <label class="usa-radio__label" for="radio-submitted">
+        Access Request Submitted
+      </label>
+    </div>
+
+    <div class="usa-radio">
+      <input
+        class="usa-radio__input usa-radio__input--tile"
+        id="radio-approved"
+        type="radio"
+        name="email-preview-group"
+        value="aapproved"
+        onclick="showDiv('aapproved')"
+      />
+      <label class="usa-radio__label" for="radio-approved">
+        Access Request Approved
+      </label>
+    </div>
+      <div class="usa-radio">
+      <input
+        class="usa-radio__input usa-radio__input--tile"
+        id="radio-inactive"
+        type="radio"
+        name="email-preview-group"
+        value="inactive"
+        onclick="showDiv('inactive')"
+      />
+      <label class="usa-radio__label" for="radio-inactive">
+        Account Inactive
+      </label>
+    </div>
+     <div class="usa-radio">
+      <input
+        class="usa-radio__input usa-radio__input--tile"
+        id="radio-deactivated"
+        type="radio"
+        name="email-preview-group"
+        value="deactivated"
+        onclick="showDiv('deactivated')"
+      />
+      <label class="usa-radio__label" for="radio-deactivated">
+        Account Deactivated
+      </label>
+    </div>
+    
+  </fieldset>
+</form>
+                <div style="min-height: 22px;"></div>
+
+
+<div id="asubmitted" class="email-window">
+  <div class="email-header">
+    <div class="window-dots">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+
+  <div class="email-meta">
+    <div><span class="label">From:</span>no-reply@tanfdata.acf.hhs.gov</div>
+    <div><span class="label">Subject:</span>Access Request Submitted</div>
+  </div>
+
+
+  <div class="email-body">
+                      <img src="https://i.imgur.com/ydabPh2.png" alt="TANF Data Portal" height="auto" width="200">
+
+    <h3 style="font-size: 2rem">Access Request Submitted</h3>
+    <div class="email-content">
+    <p>Hello, <br><br>
+         <strong>Your request for access to the TANF Data Portal (TDP) has been submitted for review</strong></p>
+    
+  
+           <p>You can view the status of your request by logging into TDP.</p>
+
+            <div class="usa-button">
+      Sign in to TDP
+    </div>
+          
+   <p><strong>Need help?</strong> <br> We're here for you! Check out the <span class="fake-link">Getting Started</span> guide or reach out to the TDP Admin team at <span class="fake-link">TANFData@acf.hhs.gov</span>.</p> 
+
+
+
+     <p>Thank you, <br><br> TDP Team</p>
+</div>
+    
+    </div>
+  </div>
+
+
+<div id="aapproved" class="email-window" style="display: none;">
+  <div class="email-header">
+    <div class="window-dots">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+
+  <div class="email-meta">
+    <div><span class="label">From:</span>no-reply@tanfdata.acf.hhs.gov</div>
+    <div><span class="label">Subject:</span>Access Request Approved</div>
+  </div>
+
+
+  <div class="email-body">
+                      <img src="https://i.imgur.com/ydabPh2.png" alt="TANF Data Portal" height="auto" width="200">
+
+    <h3 style="font-size: 2rem">Access Request Approved</h3>
+    <div class="email-content">
+    <p>Hello, <br><br>
+         Congratulations! Your request for the TANF Data Portal (TDP) is <strong>approved</strong> and access as a Data Analyst for Texas <strong>has been granted</strong>. 
+    </p>
+    
+   <div class="usa-button">
+      Sign in to TDP
+    </div>
+
+   <p><strong>Need help?</strong> <br> We're here for you! Check out the <span class="fake-link">Getting Started</span> guide or reach out to the TDP Admin team at <span class="fake-link">TANFData@acf.hhs.gov</span>.</p> 
+
+
+
+     <p>Thank you, <br><br> TDP Team</p>
+
+</div>
+    
+    </div>
+  </div>
+
+  
+<div id="inactive" class="email-window" style="display: none;">
+  <div class="email-header">
+    <div class="window-dots">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+
+  <div class="email-meta">
+    <div><span class="label">From:</span>no-reply@tanfdata.acf.hhs.gov</div>
+    <div><span class="label">Subject:</span>Inactive Account</div>
+  </div>
+
+
+  <div class="email-body">
+                      <img src="https://i.imgur.com/ydabPh2.png" alt="TANF Data Portal" height="auto" width="200">
+
+    <h3 style="font-size: 2rem">Inactive Account</h3>
+    <div class="email-content">
+    <p>Hello, <br><br>
+         We noticed that you have not logged into the TANF Data Portal (TDP) for almost 180 days. <br> Since your account has been inactive, it's scheduled to be deactivated in <strong>10 days</strong> on <strong>April 21, 2026</strong> at <strong>5PM EST</strong>. However, if you are interested in keeping your account, it's easy!
+    </p>
+    
+   <div class="usa-button">
+      Sign in to keep your account active
+    </div>
+
+   <p><strong>Need help?</strong> <br> We're here for you! Check out the <span class="fake-link">Getting Started</span> guide or reach out to the TDP Admin team at <span class="fake-link">TANFData@acf.hhs.gov</span>.</p> 
+
+
+
+     <p>Thank you, <br><br> TDP Team</p>
+
+</div>
+    
+    </div>
+  </div>
+
+  <div id="deactivated" class="email-window" style="display: none;">
+  <div class="email-header">
+    <div class="window-dots">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+
+  <div class="email-meta">
+    <div><span class="label">From:</span>no-reply@tanfdata.acf.hhs.gov</div>
+    <div><span class="label">Subject:</span>Account is Deactivated</div>
+  </div>
+
+
+  <div class="email-body">
+                      <img src="https://i.imgur.com/ydabPh2.png" alt="TANF Data Portal" height="auto" width="200">
+
+    <h3 style="font-size: 2rem">Account is Deactivated</h3>
+    <div class="email-content">
+    <p>Hello, <br><br>
+         Your account for the TANF Data Portal (TDP) has been deactivated. 
+    </p>
+    
+  
+
+   <p>Please contact the TDP Admin team at <span class="fake-link">TANFData@acf.hhs.gov</span> for further assistance if this was in error.</p> 
+
+
+
+     <p>Thank you, <br><br> TDP Team</p>
+
+</div>
+    
+    </div>
+  </div>
+
+
+                          <hr class="releaseHr">
+
+
+        <div style="min-height: 22px;"></div>
+        <h2 id="tanf-ssp">TANF/SSP Emails</h2>
+        <div style="min-height: 22px;"></div>
+
+        <form class="usa-form">
+  <fieldset class="usa-fieldset">
+    <legend class="usa-legend">Select an email to preview:</legend>
+    
+    <div class="usa-radio">
+      <input
+        class="usa-radio__input usa-radio__input--tile"
+        id="radio-containserrors"
+        type="radio"
+        name="email-preview-group"
+        value="asubmitted"
+        onclick="showDiv2('containserrors')"
+        checked="checked"
+      />
+      <label class="usa-radio__label" for="radio-containserrors">
+        Data Processed With Errors
+      </label>
+    </div>
+
+    <div class="usa-radio">
+      <input
+        class="usa-radio__input usa-radio__input--tile"
+        id="radio-noerrors"
+        type="radio"
+        name="email-preview-group"
+        value="noerrors"
+        onclick="showDiv2('noerrors')"
+      />
+      <label class="usa-radio__label" for="radio-noerrors">
+        Data Processed Without Errors
+      </label>
+    </div>
+
+    
+  </fieldset>
+</form>
+
+        <div style="min-height: 22px;"></div>
+
+
+<div id="containserrors" class="email-window">
+  <div class="email-header">
+    <div class="window-dots">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+
+  <div class="email-meta">
+    <div><span class="label">From:</span>no-reply@tanfdata.acf.hhs.gov</div>
+    <div><span class="label">Subject:</span>Action Required: Active Case Data Contains Errors</div>
+  </div>
+
+
+  <div class="email-body">
+                      <img src="https://i.imgur.com/ydabPh2.png" alt="TANF Data Portal" height="auto" width="200">
+
+    <h3 style="font-size: 2rem">Action Required: Active Case Data Contains Errors </h3>
+    <div class="email-content">
+    <p>Hello, <br><br>
+         Your <strong>TANF</strong> data file submitted for <strong>Indiana</strong> on <strong>March 19, 2026, 10:02 p.m.</strong> in <strong>Fiscal Year 2025 - Q1 (Oct - Dec)</strong> was <strong>Accepted with Errors</strong>. Review the error report for more details, and <strong>resubmit your data file</strong> once the errors have been corrected. 
+    </p>
+    
+  
+           <p>Submitted files:</p>
+           <div style="overflow-x: scroll !important">
+<table class="usa-table"> 
+<thead>
+  <tr>
+    <th>Section</th>
+    <th>Submitted By</th>
+    <th>Status</th>
+    <th>Cases Without Errors</th>
+    <th>Cases With Errors</th>
+    <th>Records Unable to Process</th>
+    <th>Error Report</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>Active Case Data</td>
+    <td>Rhonda Laur</td>
+    <td>Accepted with Errors</td>
+    <td>45</td>
+    <td>158</td>
+    <td>0</td>
+    <td>Error Report Available</td>
+  </tr>
+
+</tbody>
+</table>
+</div>
+
+   <p> The data file and the error report(s) can now be accessed via the Submission History tab of the Data Files page. <span class="fake-link">Read more about using Submission History</span></p> 
+
+   <div class="usa-button">
+      Sign in to TDP
+    </div>
+
+     <p>Please contact TDP Admin team at <span class="fake-link">TANFData@acf.hhs.gov</span> if you need further assistance. <br><br> Thank you, <br><br> TDP Team</p>
+
+</div>
+    
+    </div>
+  </div>
+
+  
+<div id="noerrors" class="email-window" style="display: none;">
+  <div class="email-header">
+    <div class="window-dots">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+
+  <div class="email-meta">
+    <div><span class="label">From:</span>no-reply@tanfdata.acf.hhs.gov</div>
+    <div><span class="label">Subject:</span>TANF Data Processed Without Errors</div>
+  </div>
+
+
+  <div class="email-body">
+                      <img src="https://i.imgur.com/ydabPh2.png" alt="TANF Data Portal" height="auto" width="200">
+
+    <h3 style="font-size: 2rem">TANF Data Processed Without Errors</h3>
+    <div class="email-content">
+    <p>Hello, <br><br>
+         Your <strong>TANF</strong> data file submitted for <strong>Indiana</strong> on <strong>March 19, 2026, 10:02 p.m.</strong> in <strong>Fiscal Year 2025 - Q1 (Oct - Dec)</strong> was <strong>Processed Without Errors</strong> for the following sections: 
+    </p>
+    
+  
+           <p>Submitted files:</p>
+           <div style="overflow-x: scroll !important">
+<table class="usa-table"> 
+<thead>
+  <tr>
+    <th>Section</th>
+    <th>Submitted By</th>
+    <th>Status</th>
+    <th>Cases Without Errors</th>
+    <th>Cases With Errors</th>
+    <th>Records Unable to Process</th>
+    <th>Error Report</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>Active Case Data</td>
+    <td>Jett Reno</td>
+    <td>Accepted</td>
+    <td>742</td>
+    <td>0</td>
+    <td>0</td>
+    <td>No Errors</td>
+  </tr>
+
+</tbody>
+</table>
+</div>
+
+   <p>You can view your submission via the Submission History tab of the Data Files page if you need to review it. <span class="fake-link">Read more about using Submission History</span></p> 
+
+   <div class="usa-button">
+      Sign in to TDP
+    </div>
+
+     <p>Please contact TDP Admin team at <span class="fake-link">TANFData@acf.hhs.gov</span> if you need further assistance. <br><br> Thank you, <br><br> TDP Team</p>
+
+</div>
+    
+    </div>
+  </div>
+
+   <div style="min-height: 22px;"></div>
+
+                        <!-- <hr class="releaseHr">
+
+
+                <div style="min-height: 22px;"></div>
+        <h2 id="fra">FRA Emails</h2>
+        <div style="min-height: 22px;"></div>
+
+
+
+           <div style="min-height: 22px;"></div> -->
+
+                        <hr class="releaseHr">
+
+        <div style="min-height: 22px;"></div>
+        <h2 id="feedback">Feedback Report Emails</h2>
+        <div style="min-height: 22px;"></div>
+
+<div id="feedbackavailable" class="email-window">
+  <div class="email-header">
+    <div class="window-dots">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+
+  <div class="email-meta">
+    <div><span class="label">From:</span>no-reply@tanfdata.acf.hhs.gov</div>
+    <div><span class="label">Subject:</span>TANF/SSP Feedback Report Available: Colorado FY 2025</div>
+  </div>
+
+
+  <div class="email-body">
+                      <img src="https://i.imgur.com/ydabPh2.png" alt="TANF Data Portal" height="auto" width="200">
+
+    <h3 style="font-size: 2rem">TANF/SSP Feedback Report Available: Colorado FY 2025</h3>
+    <div class="email-content">
+    <p>Hello, <br><br>
+         A new <strong>TANF/SSP</strong> Feedback Report is available for<strong> Colorado</strong>for Fiscal Year <strong>2025</strong> (reflecting data submitted through <strong>02/02/2026</strong>). 
+    </p>
+    <p>The report was uploaded on <strong>02/11/2026</strong>. Please review the feedback and, if needed, resubmit complete and accurate data.</p>
+    
+   <div class="usa-button">
+      View Feedback Reports
+    </div>
+
+     <p>Please contact TDP Admin team at <span class="fake-link">TANFData@acf.hhs.gov</span> if you need further assistance. <br><br> Thank you, <br><br> TDP Team</p>
+
+
+</div>
+    
+    </div>
+  </div>
+  
+
+   <div style="min-height: 22px;"></div>
+
+                        <hr class="releaseHr">
+
+                                        <div style="min-height: 22px;"></div>
+
+        </ol>
+       
 
       </main>
     </div>

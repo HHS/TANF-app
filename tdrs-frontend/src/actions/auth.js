@@ -43,7 +43,7 @@ export const SET_MOCK_LOGIN_STATE = 'SET_MOCK_LOGIN_STATE'
 
 export const fetchAuth = () => async (dispatch) => {
   dispatch({ type: FETCH_AUTH })
-  const URL = `${process.env.REACT_APP_BACKEND_URL}/auth_check`
+  const URL = `${process.env.REACT_APP_AUTH_URL || process.env.REACT_APP_BACKEND_URL}/auth_check`
   const { data, ok, error } = await get(URL)
 
   if (!ok) {

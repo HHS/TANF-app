@@ -36,6 +36,78 @@ services:
     volumes:
       - grafana_pg_data:/var/lib/postgresql/data/:rw
 
+  keycloak-pg:
+    image: postgres:15.7
+    environment:
+      - PGDATA=/var/lib/postgresql/data/
+      - POSTGRES_DB=keycloak
+      - POSTGRES_PASSWORD=something_secure
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=keycloak
+    ports:
+      - "5434:5432"
+    volumes:
+      - keycloak_pg_data:/var/lib/postgresql/data/:rw
+
+  keycloak:
+    build:
+      context: ./keycloak
+    environment:
+      - DEPLOY_ENV=local
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://keycloak-pg:5432/keycloak
+      - KC_DB_USERNAME=keycloak
+      - KC_DB_PASSWORD=something_secure
+      - KC_HOSTNAME_STRICT=false
+      - KC_HTTP_ENABLED=true
+      - KC_PROXY_HEADERS=xforwarded
+      - KC_HEALTH_ENABLED=true
+      - KC_METRICS_ENABLED=true
+      - KC_HTTP_METRICS_HISTOGRAMS_ENABLED=true
+      - KC_EVENT_METRICS_USER_ENABLED=true
+      - KC_EVENT_METRICS_USER_EVENTS=client_login,code_to_token,login,logout,refresh_token,token_exchange
+      - KC_EVENT_METRICS_USER_TAGS=realm,idp,clientId
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_TDP_DJANGO_CLIENT_SECRET=tdp-django-local-secret
+      - KC_TDP_GRAFANA_CLIENT_SECRET=tdp-grafana-local-secret
+      # Login.gov IdP (sandbox defaults)
+      - LOGIN_GOV_CLIENT_ID=urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-dev
+      - LOGIN_GOV_AUTH_URL=https://idp.int.identitysandbox.gov/openid_connect/authorize
+      - LOGIN_GOV_TOKEN_URL=https://idp.int.identitysandbox.gov/api/openid_connect/token
+      - LOGIN_GOV_JWKS_URL=https://idp.int.identitysandbox.gov/api/openid_connect/certs
+      - LOGIN_GOV_LOGOUT_URL=https://idp.int.identitysandbox.gov/openid_connect/logout
+      - LOGIN_GOV_ISSUER=https://idp.int.identitysandbox.gov/
+      # AMS IdP (stage defaults)
+      - AMS_CLIENT_ID=${AMS_CLIENT_ID}
+      - AMS_CLIENT_SECRET=${AMS_CLIENT_SECRET}
+      - AMS_AUTH_URL=https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/auth
+      - AMS_TOKEN_URL=https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/token
+      - AMS_JWKS_URL=https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/certs
+      - AMS_LOGOUT_URL=https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/logout
+      - AMS_USERINFO_URL=https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/userinfo
+      - AMS_ISSUER=https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO
+    ports:
+      - "8443:8080"
+      - "9001:9000"
+    command: start-dev --import-realm
+    depends_on:
+      - keycloak-pg
+
+  keycloak-configure:
+    build:
+      context: ./keycloak
+    environment:
+      - DEPLOY_ENV=local
+      - KEYCLOAK_MANAGEMENT_URL=http://keycloak:9000
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - LOGIN_GOV_JWT_KEY=${JWT_KEY}
+    entrypoint: ["/bin/bash", "/opt/keycloak/configure-idps.sh"]
+    depends_on:
+      - keycloak
+
   clamav-rest:
     image: rafttech/clamav-rest:0.103.2
     environment:
@@ -74,6 +146,15 @@ services:
     command: --config /usr/share/grafana/conf/custom.ini
     depends_on:
       - grafana-pg
+      - keycloak
+
+  grafana-init:
+    image: curlimages/curl:8.5.0
+    volumes:
+      - ./plg/grafana/init-grafana-orgs.sh:/init-grafana-orgs.sh:ro
+    entrypoint: ["/bin/sh", "/init-grafana-orgs.sh"]
+    depends_on:
+      - grafana
 
   alertmanager:
     restart: always
@@ -82,7 +163,10 @@ services:
       - 9093:9093
     volumes:
       - ./plg/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
-    command: --config.file=/etc/alertmanager/alertmanager.yml --storage.path=/alertmanager --log.level=debug --web.external-url=http://localhost:3000/alerts --web.route-prefix=/alerts --cluster.listen-address=""
+    command: --config.file=/etc/alertmanager/alertmanager.yml
+      --storage.path=/alertmanager --log.level=debug
+      --web.external-url=http://localhost:3000/alerts --web.route-prefix=/alerts
+      --cluster.listen-address=""
 
   mimir:
     image: grafana/mimir:2.15.1
@@ -126,20 +210,21 @@ services:
       - ./plg/alloy:/etc/alloy
       - ~/tdp-logs/nginx:/var/log/nginx
       - logs:/logs
-    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/alloy.local.config
+    command: run --server.http.listen-addr=0.0.0.0:12345
+      --storage.path=/var/lib/alloy/data /etc/alloy/alloy.local.config
 
   tempo:
     restart: always
     image: grafana/tempo:latest
-    command: [ "-config.file=/etc/tempo.yaml" ]
+    command: ["-config.file=/etc/tempo.yaml"]
     volumes:
       - ./plg/tempo/tempo.local.yml:/etc/tempo.yaml
       - tempo-data:/var/tempo
     ports:
-      - "3200:3200"   # tempo
+      - "3200:3200" # tempo
       - "9095:9095" # tempo grpc
-      - "4317:4317"  # otlp grpc
-      - "4318:4318"  # otlp http
+      - "4317:4317" # otlp grpc
+      - "4318:4318" # otlp http
     depends_on:
       - prometheus
       - localstack
@@ -216,6 +301,15 @@ services:
       - OTEL_PYTHON_DJANGO_EXCLUDED_URLS
       - CGAPPNAME_BACKEND
       - SENTRY_DSN
+      # Keycloak sync
+      - KEYCLOAK_SYNC_ENABLED=true
+      - KEYCLOAK_SERVER_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=tdp
+      - KEYCLOAK_ADMIN_CLIENT_ID=tdp-django
+      - KEYCLOAK_ADMIN_CLIENT_SECRET=tdp-django-local-secret
+      - KEYCLOAK_DJANGO_CLIENT_ID=tdp-django
+      - KEYCLOAK_DJANGO_CLIENT_SECRET=tdp-django-local-secret
+      - KEYCLOAK_AUTH_PERCENTAGE
     volumes:
       - .:/tdpapp
       - logs:/tmp
@@ -225,16 +319,18 @@ services:
       args:
         REGISTRY_OWNER: ${REGISTRY_OWNER:-hhs}
     command: >
-      bash -c "./wait_for_services.sh &&
-      ./manage.py makemigrations &&
-      ./manage.py migrate &&
-      ./manage.py populate_stts &&
-      ./manage.py populate_history --auto &&
-      python ./plg/grafana_views/generate_views.py --all &&
-      ./manage.py runscript apply_grafana_views &&
-      ./gunicorn_start.sh"
+      bash -c "rm -f /tmp/web-ready && ./wait_for_services.sh && ./manage.py
+      makemigrations && ./manage.py migrate && ./manage.py populate_stts &&
+      ./manage.py populate_history --auto && python
+      ./plg/grafana_views/generate_views.py --all && ./manage.py runscript
+      apply_grafana_views && touch /tmp/web-ready && exec ./gunicorn_start.sh"
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /tmp/web-ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 10s
     ports:
-      - "5555:5555"
       - "8989:8080"
     tty: true
     depends_on:
@@ -251,6 +347,32 @@ services:
       - "6379:6379"
     volumes:
       - .:/tdpapp
+
+  go-parser:
+    build:
+      context: ../tdrs-services/parser
+      dockerfile: Dockerfile
+    command: ["--server.mode=celery", "--storage.source=s3"]
+    environment:
+      - REDIS_URL=redis://redis-server:6379/0
+      - GO_PARSER_QUEUE=go-parser
+      - DATABASE_URL=postgres://tdpuser:something_secure@postgres:5432/tdrs_test?sslmode=disable
+      - S3_BUCKET=tdp-datafiles-localstack
+      - S3_ENDPOINT=http://localstack:4566
+      - S3_KEY_PREFIX=dev
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-gov-west-1
+      - AWS_EC2_METADATA_DISABLED=true
+    depends_on:
+      redis-server:
+        condition: service_started
+      postgres:
+        condition: service_started
+      localstack:
+        condition: service_started
+      web:
+        condition: service_healthy
 
   celery:
     restart: always
@@ -275,6 +397,8 @@ services:
       - AMS_CLIENT_SECRET
       - AMS_CONFIGURATION_ENDPOINT
       - REDIS_URI=redis://redis-server:6379
+      - CELERY_WORKER_QUEUES=celery
+      - CELERY_GO_PARSER_QUEUE=go-parser
       - REDIS_SERVER_LOCAL=TRUE
       - CYPRESS_TOKEN
       - DJANGO_DEBUG
@@ -286,9 +410,19 @@ services:
       - AWS_SECRET_ACCESS_KEY
       - AWS_S3_BUCKET_NAME
       - AWS_S3_LOGS_PREFIX
+      # Keycloak sync
+      - KEYCLOAK_SYNC_ENABLED=true
+      - KEYCLOAK_SERVER_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=tdp
+      - KEYCLOAK_ADMIN_CLIENT_ID=tdp-django
+      - KEYCLOAK_ADMIN_CLIENT_SECRET=tdp-django-local-secret
+      - KEYCLOAK_DJANGO_CLIENT_ID=tdp-django
+      - KEYCLOAK_DJANGO_CLIENT_SECRET=tdp-django-local-secret
     volumes:
       - .:/tdpapp
       - logs:/tmp
+    ports:
+      - "5555:8080"
     image: tdp
     build:
       context: .
@@ -304,6 +438,7 @@ volumes:
   localstack_data:
   postgres_data:
   grafana_pg_data:
+  keycloak_pg_data:
   prometheus_data:
   grafana_data:
   loki_data:
@@ -312,5 +447,5 @@ volumes:
 
 networks:
   default:
-      name: external-net
-      external: true
+    name: external-net
+    external: true

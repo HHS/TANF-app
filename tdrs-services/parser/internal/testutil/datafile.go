@@ -43,8 +43,9 @@ func CreateTestDatafile(ctx context.Context, pool *pgxpool.Pool, quarter string,
 			user_id,
 			created_at,
 			program_type,
-			is_program_audit
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+			is_program_audit,
+			state
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
 		RETURNING id
 	`,
 		"test_file.txt",
@@ -59,6 +60,7 @@ func CreateTestDatafile(ctx context.Context, pool *pgxpool.Pool, quarter string,
 		time.Now(),
 		programType,
 		false,
+		"uploaded",
 	).Scan(&datafileID)
 
 	if err != nil {

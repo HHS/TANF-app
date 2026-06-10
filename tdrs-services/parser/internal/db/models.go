@@ -24,6 +24,7 @@ type DataFilesDatafile struct {
 	S3VersioningID   pgtype.Text
 	ProgramType      string
 	IsProgramAudit   bool
+	State            string
 }
 
 type ParserError struct {
@@ -827,4 +828,5 @@ type SttsStt struct {
 	SttCode    pgtype.Text
 	Ssp        pgtype.Bool
 	Sample     pgtype.Bool
+	Timezone   string
 }

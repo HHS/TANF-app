@@ -2,11 +2,17 @@
 
 import datetime
 import logging
+from urllib.parse import urlencode
 
-from django.contrib.auth.models import AnonymousUser, Group
+from django.conf import settings
+from django.contrib.auth import logout
+from django.contrib.auth.models import AnonymousUser, Group, Permission
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.views import View
 
+from mozilla_django_oidc.views import OIDCAuthenticationRequestView
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import MethodNotAllowed
@@ -14,6 +20,7 @@ from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from tdpservice.users.api.canary import normalize_idp
 from tdpservice.users.models import (
     AccountApprovalStatusChoices,
     ChangeRequestAuditLog,
@@ -38,7 +45,6 @@ from tdpservice.users.serializers import (
     UserProfileSerializer,
     UserSerializer,
 )
-from django.contrib.auth.models import Permission
 
 logger = logging.getLogger(__name__)
 
@@ -140,7 +146,9 @@ class UserViewSet(
         if regions is not None:
             instance.regions.set(regions)
 
-        return Response(UserProfileSerializer(instance).data)
+        return Response(
+            UserProfileSerializer(instance, context={"request": request}).data
+        )
 
     @action(methods=["GET"], detail=False)
     def profile(self, request):
@@ -281,3 +289,60 @@ class FeedbackViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         """Override the destroy method to disallow it."""
         return MethodNotAllowed(method="DELETE")
+
+
+# ---- Keycloak /v2/ auth views ----
+
+
+class KeycloakLoginDotGovView(OIDCAuthenticationRequestView):
+    """Redirect to Keycloak with kc_idp_hint=login-gov to skip the Keycloak login page."""
+
+    def get(self, request, *args, **kwargs):
+        """Log the Login.gov auth flow before redirecting to Keycloak."""
+        request.session["auth_idp"] = normalize_idp("login-gov")
+        logger.info(
+            "Login initiated",
+            extra={"auth_flow": "keycloak", "auth_idp": "login-gov"},
+        )
+        return super().get(request, *args, **kwargs)
+
+    def get_extra_params(self, request):
+        """Add the Login.gov identity provider hint to the auth request."""
+        return {"kc_idp_hint": "login-gov"}
+
+
+class KeycloakLoginAMSView(OIDCAuthenticationRequestView):
+    """Redirect to Keycloak with kc_idp_hint=ams to skip the Keycloak login page."""
+
+    def get(self, request, *args, **kwargs):
+        """Log the AMS auth flow before redirecting to Keycloak."""
+        request.session["auth_idp"] = normalize_idp("ams")
+        logger.info(
+            "Login initiated", extra={"auth_flow": "keycloak", "auth_idp": "ams"}
+        )
+        return super().get(request, *args, **kwargs)
+
+    def get_extra_params(self, request):
+        """Add the AMS identity provider hint to the auth request."""
+        return {"kc_idp_hint": "ams"}
+
+
+class KeycloakLogoutView(View):
+    """Logout from Django session and redirect to Keycloak end_session endpoint."""
+
+    def get(self, request):
+        """Clear the Django session and redirect to Keycloak logout."""
+        id_token = request.session.get("oidc_id_token")
+
+        # Clear Django session
+        logout(request)
+
+        # Build Keycloak end_session URL
+        logout_url = settings.OIDC_OP_LOGOUT_ENDPOINT
+        params = {
+            "post_logout_redirect_uri": settings.FRONTEND_BASE_URL,
+        }
+        if id_token:
+            params["id_token_hint"] = id_token
+
+        return HttpResponseRedirect(f"{logout_url}?{urlencode(params)}")

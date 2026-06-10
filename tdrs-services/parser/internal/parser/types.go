@@ -186,6 +186,21 @@ func (pr *ParsedRecord) GetInt(fieldName string) int {
 	}
 }
 
+// SumFields returns the sum of integer-coercible values for the given field names.
+// Missing fields, blank strings, non-numeric values, and non-string field names
+// contribute 0 so validator expressions can stay concise.
+func (pr *ParsedRecord) SumFields(fieldNames []any) int {
+	total := 0
+	for _, fieldName := range fieldNames {
+		name, ok := fieldName.(string)
+		if !ok || name == "" {
+			continue
+		}
+		total += pr.GetInt(name)
+	}
+	return total
+}
+
 // GetRecordType returns the record type from the schema.
 func (pr *ParsedRecord) GetRecordType() string {
 	return pr.Schema.RecordType

@@ -433,6 +433,34 @@ class TestLogin:
         response = view(request)
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
+    def test_logindotgov_with_hhs_user(
+        self,
+        ofa_system_admin,
+        patch_login_gov_jwt_key,
+        mock,
+        states_factory,
+        req_factory,
+    ):
+        """Login should *NOT* work with HHS user."""
+        states = states_factory
+        request = req_factory
+        request = create_session(request, states_factory)
+
+        ofa_system_admin.username = "tadmin"
+        ofa_system_admin.email = "test_admin@hhs.gov"
+        ofa_system_admin.is_staff = True
+        ofa_system_admin.save()
+        view = TokenAuthorizationLoginDotGov.as_view()
+        mock_post, mock_decode = mock
+        mock_decode.return_value = decoded_token(
+            "test_admin@hhs.gov",
+            states["nonce"],
+            sub=ofa_system_admin.login_gov_uuid,
+        )
+
+        response = view(request)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
 
 @pytest.mark.django_db
 def test_login_fails_with_bad_data(api_client):

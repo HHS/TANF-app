@@ -199,8 +199,14 @@ func TestParseRow_MissingRequiredField_Segment0(t *testing.T) {
 	if err != nil {
 		t.Fatalf("parseRow() error = %v", err)
 	}
-	if len(records) != 0 {
-		t.Errorf("parseRow() returned %d records, want 0 (required field missing)", len(records))
+	if len(records) != 1 {
+		t.Fatalf("parseRow() returned %d records, want 1 (record should survive for validation)", len(records))
+	}
+	if got := records[0].Get("important"); got != nil {
+		t.Errorf("important = %v, want nil", got)
+	}
+	if !records[0].IsFieldRequired("important") {
+		t.Error("important should retain required field metadata for validation")
 	}
 }
 
@@ -230,6 +236,39 @@ func TestParseRow_MissingField_Segment1_SkipsRecord(t *testing.T) {
 		t.Fatalf("parseRow() error = %v", err)
 	}
 	// Only segment 0 should be present; segment 1 has nil field and segIdx >= 1
+	if len(records) != 1 {
+		t.Fatalf("parseRow() returned %d records, want 1", len(records))
+	}
+	if records[0].SegmentIndex != 0 {
+		t.Errorf("SegmentIndex = %d, want 0", records[0].SegmentIndex)
+	}
+}
+
+func TestParseRow_ComputedOnlySegment1_SkipsRecord(t *testing.T) {
+	shared := []schema.FieldDef{
+		{Name: "calendar_quarter", Type: "string", Start: 0, End: 5},
+	}
+	segments := []schema.SegmentDef{
+		{Fields: []schema.FieldDef{
+			{Name: "rpt_month_year", Type: "string", SourceField: "calendar_quarter"},
+			{Name: "families_month", Type: "string", Start: 5, End: 8},
+		}},
+		{Fields: []schema.FieldDef{
+			{Name: "rpt_month_year", Type: "string", SourceField: "calendar_quarter"},
+			{Name: "families_month", Type: "string", Start: 8, End: 11},
+		}},
+	}
+	cs := buildSchemaWithPool("T7", shared, segments)
+	o := NewParsingOrchestrator(filespec.FormatPositional, &ParseContext{})
+
+	// Segment 0 has data, segment 1 only has the computed/source field.
+	data := "20241ABC   "
+	row := decoder.NewPositionalRow(1, "T7", len(data), data)
+	records, err := o.parseRow(DecodedRecord{Row: row, Schema: cs})
+
+	if err != nil {
+		t.Fatalf("parseRow() error = %v", err)
+	}
 	if len(records) != 1 {
 		t.Fatalf("parseRow() returned %d records, want 1", len(records))
 	}

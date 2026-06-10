@@ -50,7 +50,7 @@ func TestNewWorkerPool_Construction(t *testing.T) {
 	})
 	router.Start(ctx)
 
-	wp := NewWorkerPool(parsingOrch, valOrch, "TEST:1", router, 42, WorkerPoolConfig{
+	wp := NewWorkerPool(parsingOrch, valOrch, &validation.DataFileContext{}, "TEST:1", router, 42, WorkerPoolConfig{
 		NumWorkers:     4,
 		WorkBufferSize: 8,
 	})
@@ -94,7 +94,7 @@ func TestWorkerPool_StartAndStop_NoWork(t *testing.T) {
 	})
 	router.Start(ctx)
 
-	wp := NewWorkerPool(parsingOrch, valOrch, "TEST:1", router, 42, WorkerPoolConfig{
+	wp := NewWorkerPool(parsingOrch, valOrch, &validation.DataFileContext{}, "TEST:1", router, 42, WorkerPoolConfig{
 		NumWorkers:     2,
 		WorkBufferSize: 4,
 	})
@@ -157,7 +157,7 @@ func TestWorkerPool_ProcessesBatches(t *testing.T) {
 	})
 	router.Start(ctx)
 
-	wp := NewWorkerPool(parsingOrch, valOrch, "TEST:1", router, 42, WorkerPoolConfig{
+	wp := NewWorkerPool(parsingOrch, valOrch, &validation.DataFileContext{}, "TEST:1", router, 42, WorkerPoolConfig{
 		NumWorkers:     2,
 		WorkBufferSize: 4,
 	})
@@ -232,7 +232,7 @@ func TestWorkerPool_MultipleBatches(t *testing.T) {
 	})
 	router.Start(ctx)
 
-	wp := NewWorkerPool(parsingOrch, valOrch, "TEST:1", router, 42, WorkerPoolConfig{
+	wp := NewWorkerPool(parsingOrch, valOrch, &validation.DataFileContext{}, "TEST:1", router, 42, WorkerPoolConfig{
 		NumWorkers:     2,
 		WorkBufferSize: 8,
 	})
@@ -295,7 +295,7 @@ func TestWorkerPool_AggregateStats_CombinesWorkers(t *testing.T) {
 	})
 	router.Start(ctx)
 
-	wp := NewWorkerPool(parsingOrch, valOrch, "TEST:1", router, 42, WorkerPoolConfig{
+	wp := NewWorkerPool(parsingOrch, valOrch, &validation.DataFileContext{}, "TEST:1", router, 42, WorkerPoolConfig{
 		NumWorkers:     3,
 		WorkBufferSize: 4,
 	})
@@ -358,7 +358,7 @@ func TestWorkerPool_ContextCancellation(t *testing.T) {
 	})
 	router.Start(ctx)
 
-	wp := NewWorkerPool(parsingOrch, valOrch, "TEST:1", router, 42, WorkerPoolConfig{
+	wp := NewWorkerPool(parsingOrch, valOrch, &validation.DataFileContext{}, "TEST:1", router, 42, WorkerPoolConfig{
 		NumWorkers:     2,
 		WorkBufferSize: 4,
 	})
@@ -407,7 +407,7 @@ func TestWorkerPool_ProcessBatch_WithMultipleGroups(t *testing.T) {
 	})
 	router.Start(ctx)
 
-	wp := NewWorkerPool(parsingOrch, valOrch, "TEST:1", router, 42, WorkerPoolConfig{
+	wp := NewWorkerPool(parsingOrch, valOrch, &validation.DataFileContext{}, "TEST:1", router, 42, WorkerPoolConfig{
 		NumWorkers:     1,
 		WorkBufferSize: 4,
 	})

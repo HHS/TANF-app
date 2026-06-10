@@ -9,6 +9,10 @@ import (
 
 	"go-parser/internal/config"
 	"go-parser/internal/db"
+	"go-parser/internal/decoder"
+	"go-parser/internal/pipeline"
+	"go-parser/internal/storage/reader"
+	"go-parser/internal/storage/writer"
 	"go-parser/internal/validation"
 )
 
@@ -49,4 +53,30 @@ func (b *Base) ConnectDB(ctx context.Context) (*pgxpool.Pool, error) {
 	log.Printf("Loaded %d content types from database", len(contentTypes))
 
 	return pool, nil
+}
+
+// RunPipeline opens the file source, resolves the file spec, creates a decoder,
+// and runs the parsing pipeline. It centralizes the shared orchestration logic
+// used by all server modes.
+func (b *Base) RunPipeline(ctx context.Context, source reader.FileSource, sink writer.Sink, dfCtx pipeline.DataFileContext) (*pipeline.ParsingResult, error) {
+	file, err := source.Open(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open file: %w", err)
+	}
+	defer file.Close()
+	defer source.Cleanup()
+
+	spec := b.Registry.GetFileSpec(dfCtx.Program, dfCtx.Section)
+	if spec == nil {
+		return nil, fmt.Errorf("no file spec for %s section %d", dfCtx.Program, dfCtx.Section)
+	}
+
+	dec, err := decoder.CreateDecoder(file, spec)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create decoder: %w", err)
+	}
+	defer dec.Close()
+
+	pipeln := pipeline.NewPipeline(sink, b.Registry, b.Validators, pipeline.NewConfig(b.Config))
+	return pipeln.Process(ctx, dec, dfCtx)
 }

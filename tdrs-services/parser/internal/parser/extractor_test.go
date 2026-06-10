@@ -111,6 +111,18 @@ func TestConvertValue(t *testing.T) {
 			want:      nil,
 		},
 		{
+			name:      "hash fill value returns nil",
+			rawValue:  "####",
+			fieldType: "string",
+			want:      nil,
+		},
+		{
+			name:      "underscore fill value returns nil",
+			rawValue:  "____",
+			fieldType: "integer",
+			want:      nil,
+		},
+		{
 			name:      "integer success",
 			rawValue:  "  42 ",
 			fieldType: "integer",
@@ -198,6 +210,24 @@ func TestPositionalExtractor_Extract(t *testing.T) {
 		}
 		if got != "ABCDE" {
 			t.Errorf("got %v, want %q", got, "ABCDE")
+		}
+	})
+
+	t.Run("fill value extracts as nil", func(t *testing.T) {
+		row := decoder.NewPositionalRow(1, "M5", 66, "M520181011111111177119680701WTTTP0PYZ222221122222201121112####0000")
+		field := &schema.FieldDef{
+			Name:  "AMOUNT_EARNED_INCOME",
+			Type:  "string",
+			Start: 58,
+			End:   62,
+		}
+
+		got, err := ext.Extract(row, field, nil, nil)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if got != nil {
+			t.Errorf("got %v, want nil", got)
 		}
 	})
 

@@ -93,3 +93,64 @@ accumulator:
   grouped_schemas:
     - ssp/m4
     - ssp/m5
+
+validation_orchestrator:
+  categories:
+  - id: 1
+    name: Record pre-check
+    default_error_type: RECORD_PRE_CHECK
+  - id: 2
+    name: Field validation
+    default_error_type: FIELD_VALUE
+  - id: 3
+    name: Cross-field
+    default_error_type: VALUE_CONSISTENCY
+  - id: 4
+    name: Group validation
+    default_error_type: CASE_CONSISTENCY
+
+# =============================================================================
+# GROUP VALIDATORS (Group/Case Level)
+# =============================================================================
+#
+# These validators run at the case/group level and validate relationships
+# between records within the same case (RPT_MONTH_YEAR + CASE_NUMBER).
+#
+# Python equivalent: case_consistency_validator.py -> __validate_s2_records_are_related
+#
+# Validation rules for Section 2:
+# 1. Every M4 must have at least one corresponding M5 in the same case
+# 2. Every M5 must have at least one corresponding M4 in the same case
+
+group_validators:
+  # M4 records require at least one M5 record in the same case
+  - id: requires_corresponding_record
+    params:
+      record_type: M4
+      required_record_type: M5
+    message: "Every M4 record should have at least one corresponding M5 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
+
+  # M5 records require at least one M4 record in the same case
+  - id: requires_corresponding_record
+    params:
+      record_type: M5
+      required_record_type: M4
+    message: "Every M5 record should have at least one corresponding M4 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
+
+  # --- Exact duplicate detection ---
+  - id: exact_duplicates
+    params:
+      record_type: M4
+  - id: exact_duplicates
+    params:
+      record_type: M5
+
+  # --- Partial duplicate detection ---
+  - id: partial_duplicates
+    params:
+      record_type: M4
+      fields: [RecordType, RPT_MONTH_YEAR, CASE_NUMBER]
+  - id: partial_duplicates
+    params:
+      record_type: M5
+      fields: [RecordType, RPT_MONTH_YEAR, CASE_NUMBER, FAMILY_AFFILIATION, DATE_OF_BIRTH, SSN]

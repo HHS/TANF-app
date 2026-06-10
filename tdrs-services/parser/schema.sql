@@ -3,13 +3,13 @@
 --
 
 -- Dumped from database version 15.7 (Debian 15.7-1.pgdg120+1)
--- Dumped by pg_dump version 16.3
+-- Dumped by pg_dump version 15.7 (Debian 15.7-1.pgdg120+1)
 
--- Started on 2026-01-08 19:05:19 CST
+
+
 
 --
--- TOC entry 245 (class 1259 OID 16639)
--- Name: data_files_datafile; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: data_files_datafile; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.data_files_datafile (
@@ -27,18 +27,16 @@ CREATE TABLE public.data_files_datafile (
     file character varying(100),
     s3_versioning_id character varying(1024),
     program_type character varying(32) NOT NULL,
-    is_program_audit boolean NOT NULL
+    is_program_audit boolean NOT NULL,
+    state character varying(32) NOT NULL
 );
 
 
-
-
 --
--- TOC entry 248 (class 1259 OID 16721)
--- Name: search_indexes_ssp_m1; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: search_indexes_ssp_m1; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE search_indexes_ssp_m1 (
+CREATE TABLE public.search_indexes_ssp_m1 (
     "RecordType" character varying(156),
     "RPT_MONTH_YEAR" integer,
     "CASE_NUMBER" character varying(11),
@@ -88,14 +86,11 @@ CREATE TABLE search_indexes_ssp_m1 (
 );
 
 
-
-
 --
--- TOC entry 243 (class 1259 OID 16611)
--- Name: stts_stt; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: stts_stt; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE stts_stt (
+CREATE TABLE public.stts_stt (
     id integer NOT NULL,
     type character varying(200),
     postal_code character varying(2),
@@ -105,18 +100,16 @@ CREATE TABLE stts_stt (
     filenames jsonb,
     stt_code character varying(3),
     ssp boolean,
-    sample boolean
+    sample boolean,
+    timezone character varying(63) NOT NULL
 );
 
 
-
-
 --
--- TOC entry 249 (class 1259 OID 16728)
--- Name: search_indexes_ssp_m2; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: search_indexes_ssp_m2; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE search_indexes_ssp_m2 (
+CREATE TABLE public.search_indexes_ssp_m2 (
     "RecordType" character varying(156),
     "RPT_MONTH_YEAR" integer,
     "CASE_NUMBER" character varying(11),
@@ -190,14 +183,11 @@ CREATE TABLE search_indexes_ssp_m2 (
 );
 
 
-
-
 --
--- TOC entry 250 (class 1259 OID 16735)
--- Name: search_indexes_ssp_m3; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: search_indexes_ssp_m3; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE search_indexes_ssp_m3 (
+CREATE TABLE public.search_indexes_ssp_m3 (
     "RecordType" character varying(156),
     "RPT_MONTH_YEAR" integer,
     "CASE_NUMBER" character varying(11),
@@ -226,14 +216,11 @@ CREATE TABLE search_indexes_ssp_m3 (
 );
 
 
-
-
 --
--- TOC entry 253 (class 1259 OID 17147)
--- Name: search_indexes_ssp_m4; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: search_indexes_ssp_m4; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE search_indexes_ssp_m4 (
+CREATE TABLE public.search_indexes_ssp_m4 (
     id uuid NOT NULL,
     "RecordType" character varying(156),
     "RPT_MONTH_YEAR" integer,
@@ -252,14 +239,11 @@ CREATE TABLE search_indexes_ssp_m4 (
 );
 
 
-
-
 --
--- TOC entry 252 (class 1259 OID 17142)
--- Name: search_indexes_ssp_m5; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: search_indexes_ssp_m5; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE search_indexes_ssp_m5 (
+CREATE TABLE public.search_indexes_ssp_m5 (
     id uuid NOT NULL,
     "RecordType" character varying(156),
     "RPT_MONTH_YEAR" integer,
@@ -293,14 +277,11 @@ CREATE TABLE search_indexes_ssp_m5 (
 );
 
 
-
-
 --
--- TOC entry 251 (class 1259 OID 17131)
--- Name: search_indexes_ssp_m6; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: search_indexes_ssp_m6; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE search_indexes_ssp_m6 (
+CREATE TABLE public.search_indexes_ssp_m6 (
     id uuid NOT NULL,
     "RecordType" character varying(156),
     "CALENDAR_QUARTER" integer,
@@ -320,14 +301,11 @@ CREATE TABLE search_indexes_ssp_m6 (
 );
 
 
-
-
 --
--- TOC entry 254 (class 1259 OID 17164)
--- Name: search_indexes_ssp_m7; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: search_indexes_ssp_m7; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE search_indexes_ssp_m7 (
+CREATE TABLE public.search_indexes_ssp_m7 (
     id uuid NOT NULL,
     "RecordType" character varying(156),
     "CALENDAR_QUARTER" integer,
@@ -340,14 +318,11 @@ CREATE TABLE search_indexes_ssp_m7 (
 );
 
 
-
-
 --
--- TOC entry 234 (class 1259 OID 16552)
--- Name: search_indexes_tanf_t1; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: search_indexes_tanf_t1; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE search_indexes_tanf_t1 (
+CREATE TABLE public.search_indexes_tanf_t1 (
     "RecordType" character varying(156),
     "RPT_MONTH_YEAR" integer,
     "CASE_NUMBER" character varying(11),
@@ -400,14 +375,11 @@ CREATE TABLE search_indexes_tanf_t1 (
 );
 
 
-
-
 --
--- TOC entry 235 (class 1259 OID 16559)
--- Name: search_indexes_tanf_t2; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: search_indexes_tanf_t2; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE search_indexes_tanf_t2 (
+CREATE TABLE public.search_indexes_tanf_t2 (
     "AID_AGED_BLIND" integer,
     "CASE_NUMBER" character varying(11),
     "CITIZENSHIP_STATUS" integer,
@@ -483,14 +455,11 @@ CREATE TABLE search_indexes_tanf_t2 (
 );
 
 
-
-
 --
--- TOC entry 236 (class 1259 OID 16566)
--- Name: search_indexes_tanf_t3; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: search_indexes_tanf_t3; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE search_indexes_tanf_t3 (
+CREATE TABLE public.search_indexes_tanf_t3 (
     "CASE_NUMBER" character varying(11),
     "CITIZENSHIP_STATUS" integer,
     "DATE_OF_BIRTH" character varying(8),
@@ -518,14 +487,11 @@ CREATE TABLE search_indexes_tanf_t3 (
 );
 
 
-
-
 --
--- TOC entry 237 (class 1259 OID 16573)
--- Name: search_indexes_tanf_t4; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: search_indexes_tanf_t4; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE search_indexes_tanf_t4 (
+CREATE TABLE public.search_indexes_tanf_t4 (
     id uuid NOT NULL,
     datafile_id integer,
     "CASE_NUMBER" character varying(11),
@@ -544,14 +510,11 @@ CREATE TABLE search_indexes_tanf_t4 (
 );
 
 
-
-
 --
--- TOC entry 238 (class 1259 OID 16580)
--- Name: search_indexes_tanf_t5; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: search_indexes_tanf_t5; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE search_indexes_tanf_t5 (
+CREATE TABLE public.search_indexes_tanf_t5 (
     id uuid NOT NULL,
     datafile_id integer,
     "AMOUNT_EARNED_INCOME" character varying(4),
@@ -587,14 +550,11 @@ CREATE TABLE search_indexes_tanf_t5 (
 );
 
 
-
-
 --
--- TOC entry 239 (class 1259 OID 16587)
--- Name: search_indexes_tanf_t6; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: search_indexes_tanf_t6; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE search_indexes_tanf_t6 (
+CREATE TABLE public.search_indexes_tanf_t6 (
     id uuid NOT NULL,
     datafile_id integer,
     "ASSISTANCE" integer,
@@ -619,14 +579,11 @@ CREATE TABLE search_indexes_tanf_t6 (
 );
 
 
-
-
 --
--- TOC entry 240 (class 1259 OID 16594)
--- Name: search_indexes_tanf_t7; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: search_indexes_tanf_t7; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE search_indexes_tanf_t7 (
+CREATE TABLE public.search_indexes_tanf_t7 (
     id uuid NOT NULL,
     datafile_id integer,
     "CALENDAR_QUARTER" integer,
@@ -639,14 +596,11 @@ CREATE TABLE search_indexes_tanf_t7 (
 );
 
 
-
-
 --
--- TOC entry 257 (class 1259 OID 17185)
--- Name: search_indexes_tribal_tanf_t1; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: search_indexes_tribal_tanf_t1; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE search_indexes_tribal_tanf_t1 (
+CREATE TABLE public.search_indexes_tribal_tanf_t1 (
     id uuid NOT NULL,
     "RecordType" character varying(156),
     "RPT_MONTH_YEAR" integer,
@@ -698,14 +652,11 @@ CREATE TABLE search_indexes_tribal_tanf_t1 (
 );
 
 
-
-
 --
--- TOC entry 256 (class 1259 OID 17180)
--- Name: search_indexes_tribal_tanf_t2; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: search_indexes_tribal_tanf_t2; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE search_indexes_tribal_tanf_t2 (
+CREATE TABLE public.search_indexes_tribal_tanf_t2 (
     id uuid NOT NULL,
     "RecordType" character varying(156),
     "RPT_MONTH_YEAR" integer,
@@ -764,14 +715,11 @@ CREATE TABLE search_indexes_tribal_tanf_t2 (
 );
 
 
-
-
 --
--- TOC entry 255 (class 1259 OID 17175)
--- Name: search_indexes_tribal_tanf_t3; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: search_indexes_tribal_tanf_t3; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE search_indexes_tribal_tanf_t3 (
+CREATE TABLE public.search_indexes_tribal_tanf_t3 (
     id uuid NOT NULL,
     "RecordType" character varying(156),
     "RPT_MONTH_YEAR" integer,
@@ -799,14 +747,11 @@ CREATE TABLE search_indexes_tribal_tanf_t3 (
 );
 
 
-
-
 --
--- TOC entry 259 (class 1259 OID 17213)
--- Name: search_indexes_tribal_tanf_t4; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: search_indexes_tribal_tanf_t4; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE search_indexes_tribal_tanf_t4 (
+CREATE TABLE public.search_indexes_tribal_tanf_t4 (
     id uuid NOT NULL,
     "RecordType" character varying(71),
     "RPT_MONTH_YEAR" integer,
@@ -825,14 +770,11 @@ CREATE TABLE search_indexes_tribal_tanf_t4 (
 );
 
 
-
-
 --
--- TOC entry 258 (class 1259 OID 17208)
--- Name: search_indexes_tribal_tanf_t5; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: search_indexes_tribal_tanf_t5; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE search_indexes_tribal_tanf_t5 (
+CREATE TABLE public.search_indexes_tribal_tanf_t5 (
     id uuid NOT NULL,
     "RecordType" character varying(71),
     "RPT_MONTH_YEAR" integer,
@@ -868,14 +810,11 @@ CREATE TABLE search_indexes_tribal_tanf_t5 (
 );
 
 
-
-
 --
--- TOC entry 260 (class 1259 OID 17230)
--- Name: search_indexes_tribal_tanf_t6; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: search_indexes_tribal_tanf_t6; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE search_indexes_tribal_tanf_t6 (
+CREATE TABLE public.search_indexes_tribal_tanf_t6 (
     id uuid NOT NULL,
     "RecordType" character varying(156),
     "CALENDAR_QUARTER" integer,
@@ -900,14 +839,11 @@ CREATE TABLE search_indexes_tribal_tanf_t6 (
 );
 
 
-
-
 --
--- TOC entry 261 (class 1259 OID 17241)
--- Name: search_indexes_tribal_tanf_t7; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: search_indexes_tribal_tanf_t7; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE search_indexes_tribal_tanf_t7 (
+CREATE TABLE public.search_indexes_tribal_tanf_t7 (
     id uuid NOT NULL,
     "RecordType" character varying(156),
     "CALENDAR_QUARTER" integer,
@@ -920,14 +856,11 @@ CREATE TABLE search_indexes_tribal_tanf_t7 (
 );
 
 
-
-
 --
--- TOC entry 278 (class 1259 OID 17458)
--- Name: parser_error; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: parser_error; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE parser_error (
+CREATE TABLE public.parser_error (
     id integer NOT NULL,
     row_number integer,
     column_number character varying(8),
@@ -947,14 +880,17 @@ CREATE TABLE parser_error (
 );
 
 
+--
+-- Name: parser_error_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
 
 
 --
--- TOC entry 280 (class 1259 OID 17501)
--- Name: parsers_datafilesummary; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: parsers_datafilesummary; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE parsers_datafilesummary (
+CREATE TABLE public.parsers_datafilesummary (
     id bigint NOT NULL,
     status character varying(50) NOT NULL,
     case_aggregates jsonb,
@@ -965,14 +901,23 @@ CREATE TABLE parsers_datafilesummary (
 );
 
 
+--
+-- Name: parsers_datafilesummary_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
 
 
 --
--- TOC entry 288 (class 1259 OID 17613)
--- Name: search_indexes_programaudit_t1; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: reports_reportfile_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE TABLE search_indexes_programaudit_t1 (
+
+
+--
+-- Name: search_indexes_programaudit_t1; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.search_indexes_programaudit_t1 (
     line_number integer,
     id uuid NOT NULL,
     "RecordType" character varying(156),
@@ -984,14 +929,11 @@ CREATE TABLE search_indexes_programaudit_t1 (
 );
 
 
-
-
 --
--- TOC entry 287 (class 1259 OID 17608)
--- Name: search_indexes_programaudit_t2; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: search_indexes_programaudit_t2; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE search_indexes_programaudit_t2 (
+CREATE TABLE public.search_indexes_programaudit_t2 (
     line_number integer,
     id uuid NOT NULL,
     "RecordType" character varying(156),
@@ -1005,14 +947,11 @@ CREATE TABLE search_indexes_programaudit_t2 (
 );
 
 
-
-
 --
--- TOC entry 286 (class 1259 OID 17603)
--- Name: search_indexes_programaudit_t3; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: search_indexes_programaudit_t3; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE search_indexes_programaudit_t3 (
+CREATE TABLE public.search_indexes_programaudit_t3 (
     line_number integer,
     id uuid NOT NULL,
     "RecordType" character varying(156),
@@ -1026,31 +965,11 @@ CREATE TABLE search_indexes_programaudit_t3 (
 );
 
 
-
-
 --
--- TOC entry 285 (class 1259 OID 17592)
--- Name: search_indexes_tanf_exiter1; Type: TABLE; Schema: public; Owner: tdpuser
+-- Name: search_indexes_reparsemeta; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.search_indexes_tanf_exiter1 (
-    id uuid NOT NULL,
-    "RecordType" character varying(25),
-    "EXIT_DATE" integer,
-    "SSN" character varying(9),
-    datafile_id integer,
-    line_number integer
-);
-
-
-
-
---
--- TOC entry 263 (class 1259 OID 17287)
--- Name: search_indexes_reparsemeta; Type: TABLE; Schema: public; Owner: tdpuser
---
-
-CREATE TABLE search_indexes_reparsemeta (
+CREATE TABLE public.search_indexes_reparsemeta (
     id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
     timeout_at timestamp with time zone,
@@ -1068,3 +987,34 @@ CREATE TABLE search_indexes_reparsemeta (
     CONSTRAINT search_indexes_reparsemeta_total_num_records_initial_check CHECK ((total_num_records_initial >= 0)),
     CONSTRAINT search_indexes_reparsemeta_total_num_records_post_check CHECK ((total_num_records_post >= 0))
 );
+
+
+--
+-- Name: search_indexes_reparsemeta_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+
+
+--
+-- Name: search_indexes_tanf_exiter1; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.search_indexes_tanf_exiter1 (
+    id uuid NOT NULL,
+    "RecordType" character varying(25),
+    "EXIT_DATE" integer,
+    "SSN" character varying(9),
+    datafile_id integer,
+    line_number integer
+);
+
+
+--
+-- Name: stts_stt_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+
+
+--
+-- PostgreSQL database dump complete
+--

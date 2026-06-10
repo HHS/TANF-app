@@ -1,5 +1,7 @@
 /* eslint-disable no-undef */
 
+const getSessionId = (scope, username) => [scope, username]
+
 // ***********************************************
 // This example commands.js shows you how to
 // create various custom commands and overwrite
@@ -28,7 +30,7 @@
 
 Cypress.Commands.add('login', (username) =>
   cy.session(
-    username,
+    getSessionId('login', username),
     () => {
       cy.request({
         method: 'GET',
@@ -55,7 +57,7 @@ Cypress.Commands.add('login', (username) =>
 
 Cypress.Commands.add('adminLogin', (username) =>
   cy.session(
-    username,
+    getSessionId('adminLogin', username),
     () => {
       cy.visit('/')
       cy.request({

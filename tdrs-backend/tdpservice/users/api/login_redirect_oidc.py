@@ -13,6 +13,8 @@ from django.views.generic.base import RedirectView
 import requests
 from rest_framework import status
 
+from .canary import normalize_idp
+
 logger = logging.getLogger(__name__)
 
 
@@ -36,6 +38,11 @@ class LoginRedirectLoginDotGov(RedirectView):
 
     def get(self, request, *args, **kwargs):
         """Handle login workflow based on request origin."""
+        request.session["auth_idp"] = normalize_idp("login-gov")
+        logger.info(
+            "Login initiated",
+            extra={"auth_flow": "legacy", "auth_idp": "login-gov"},
+        )
         # Create state and nonce to track requests
         state = secrets.token_hex(32)
         nonce = secrets.token_hex(32)
@@ -106,6 +113,8 @@ class LoginRedirectAMS(RedirectView):
 
     def get(self, request, *args, **kwargs):
         """Handle login workflow based on request origin."""
+        request.session["auth_idp"] = normalize_idp("ams")
+        logger.info("Login initiated", extra={"auth_flow": "legacy", "auth_idp": "ams"})
         # Create state and nonce to track requests
         state = secrets.token_hex(32)
         nonce = secrets.token_hex(32)
