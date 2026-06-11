@@ -87,7 +87,15 @@ export const getAvailableFileList =
   }
 
 export const download =
-  ({ id, quarter = 'Q1', program_type, section, year, s3_version_id, fileName }) =>
+  ({
+    id,
+    quarter = 'Q1',
+    program_type,
+    section,
+    year,
+    s3_version_id,
+    fileName,
+  }) =>
   async (dispatch) => {
     try {
       if (!id) throw new Error('No id was provided to download action.')
