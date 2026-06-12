@@ -509,6 +509,46 @@ def test_post_parse_can_finalize_production_reparse(monkeypatch, stt):
 
 
 @pytest.mark.django_db
+def test_finalize_reparse_sets_total_num_records_post_when_last_file_finishes(
+    monkeypatch, stt
+):
+    """Persist the post-reparse total after the last file is marked finished."""
+    datafile = DataFileFactory(stt=stt, version=5)
+    summary = DataFileSummary.objects.create(
+        datafile=datafile,
+        status=DataFileSummary.Status.ACCEPTED,
+        total_number_of_records_created=7,
+    )
+    meta_model = ReparseMeta.objects.create(db_backup_location="s3://backup")
+    file_meta = ReparseFileMeta.objects.create(
+        data_file=datafile,
+        reparse_meta=meta_model,
+        finished=False,
+        success=False,
+    )
+    monkeypatch.setattr(
+        "tdpservice.search_indexes.models.reparse_meta.count_all_records",
+        lambda: 42,
+    )
+
+    parser_task._finalize_reparse(
+        datafile.id,
+        meta_model.pk,
+        file_meta,
+        summary,
+        reparse_success=True,
+    )
+
+    meta_model.refresh_from_db()
+    file_meta.refresh_from_db()
+
+    assert file_meta.finished is True
+    assert file_meta.success is True
+    assert file_meta.num_records_created == 7
+    assert meta_model.total_num_records_post == 42
+
+
+@pytest.mark.django_db
 def test_parse_success_sends_email(monkeypatch, data_analyst):
     """Send notification email on successful parse."""
     datafile = DataFileFactory(
