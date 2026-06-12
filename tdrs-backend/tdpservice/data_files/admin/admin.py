@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 
 from django.conf import settings
 from django.contrib import admin, messages
+from django.db import transaction
 from django.shortcuts import redirect
 from django.utils.html import format_html
 from django.utils.translation import ngettext
@@ -15,6 +16,11 @@ from tdpservice.core.utils import ReadOnlyAdminMixin
 from tdpservice.data_files.admin.filters import LatestReparseEvent, VersionFilter
 from tdpservice.data_files.models import DataFile, LegacyFileTransfer, ShadowDataFile
 from tdpservice.data_files.s3_client import S3Client
+from tdpservice.data_files.submission_lifecycle import (
+    ReparsePreparationError,
+    prepare_datafile_for_reparse,
+    revert_reparse_request,
+)
 from tdpservice.data_files.tasks import reparse_files
 from tdpservice.data_files.util import (
     create_legacy_s3_log_file_path,
@@ -155,21 +161,180 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         else:
             return qs
 
-    def reparse(self, request, queryset):
-        """Reparse the selected data files."""
-        files = queryset.values_list("id", flat=True)
-        reparse_files.delay(list(files))
+    def _prepare_and_enqueue_reparse(self, queryset):
+        """Transition selected files, commit, then enqueue the reparse task.
+
+        Returns ``(file_ids, original_states, reparse_requested_count, skipped,
+        enqueue_failed)``.
+
+        The state transitions are performed inside ``transaction.atomic`` and
+        the broker enqueue is deferred until **after** the transaction commits.
+        This avoids a race where a Celery worker could begin executing
+        ``reparse_files`` (and read the still-uncommitted row as its old
+        state) before the admin transaction has committed
+        ``REPARSE_REQUESTED`` \u2014 which would cause the worker's revert path
+        to no-op and leave the row stranded once the admin commit lands.
+
+        If the post-commit enqueue raises, the state changes are already
+        persisted; we make a best-effort manual revert and report failure.
+        """
+        file_ids = []
+        original_states = {}
+        reparse_requested_count = 0
+        skipped = []
+
+        try:
+            with transaction.atomic():
+                # Stream rows with a server-side cursor so very large admin
+                # selections don't load every DataFile into memory at once.
+                for data_file in queryset.iterator(chunk_size=500):
+                    pre_transition_state = data_file.state
+                    try:
+                        _, reparse_requested = prepare_datafile_for_reparse(data_file)
+                    except ReparsePreparationError as exc:
+                        skipped.append(f"{data_file.id}: {exc}")
+                        continue
+
+                    file_ids.append(data_file.id)
+                    # Track the state we transitioned away from so the worker
+                    # can revert if clean_reparse fails before parser tasks
+                    # are queued. Cast to str so the payload survives Celery
+                    # JSON serialization regardless of enum vs str.
+                    original_states[data_file.id] = str(pre_transition_state)
+                    if reparse_requested:
+                        reparse_requested_count += 1
+        except Exception:
+            logger.exception(
+                "Failed to prepare admin reparse state transitions for files %s.",
+                file_ids,
+            )
+            return [], {}, 0, skipped, True
+
+        # State transitions are now committed. Enqueue *after* commit so the
+        # worker can never observe an uncommitted REPARSE_REQUESTED row.
+        if file_ids:
+            try:
+                reparse_files.delay(file_ids, original_states)
+            except Exception:
+                logger.exception(
+                    "Broker enqueue failed after committing reparse state for files %s; "
+                    "reverting state.",
+                    file_ids,
+                )
+                self._revert_committed_reparse_requests(file_ids, original_states)
+                return [], {}, 0, skipped, True
+
+        return file_ids, original_states, reparse_requested_count, skipped, False
+
+    @staticmethod
+    def _revert_committed_reparse_requests(file_ids, original_states):
+        """Best-effort revert when a post-commit broker enqueue fails."""
+        for data_file in DataFile.objects.filter(id__in=file_ids):
+            original = original_states.get(data_file.id)
+            if original is None:
+                continue
+            try:
+                revert_reparse_request(
+                    data_file,
+                    original,
+                    note="admin broker enqueue failure",
+                )
+            except Exception:
+                logger.exception(
+                    "Failed to revert reparse_requested state for DataFile %s "
+                    "after admin enqueue failure.",
+                    data_file.id,
+                )
+
+    def _report_reparse_outcome(
+        self,
+        request,
+        selected_count,
+        file_ids,
+        reparse_requested_count,
+        skipped,
+        enqueue_failed,
+    ):
+        """Surface admin messages describing the reparse outcome."""
+        if enqueue_failed:
+            self.message_user(
+                request,
+                (
+                    "Could not queue the reparse task. State changes were rolled back; "
+                    "please retry. See server logs for details."
+                ),
+                messages.ERROR,
+            )
+        elif file_ids:
+            self.message_user(
+                request,
+                ngettext(
+                    "%d file successfully submitted for reparsing.",
+                    "%d files successfully submitted for reparsing.",
+                    len(file_ids),
+                )
+                % len(file_ids),
+                messages.SUCCESS,
+            )
+        else:
+            self.message_user(
+                request,
+                "No selected files were eligible for reparsing.",
+                messages.WARNING,
+            )
 
         self.message_user(
             request,
-            ngettext(
-                "%d file successfully submitted for reparsing.",
-                "%d files successfully submitted for reparsing.",
-                files.count(),
-            )
-            % files.count(),
-            messages.SUCCESS,
+            (
+                f"{selected_count} file(s) selected. {len(skipped)} file(s) "
+                "could not be moved to reparse requested state."
+            ),
+            messages.INFO if not skipped else messages.WARNING,
         )
+
+        if reparse_requested_count:
+            self.message_user(
+                request,
+                ngettext(
+                    "%d file was moved to reparse requested state.",
+                    "%d files were moved to reparse requested state.",
+                    reparse_requested_count,
+                )
+                % reparse_requested_count,
+                messages.INFO,
+            )
+
+        if skipped:
+            skipped_preview = "; ".join(skipped[:10])
+            remaining = len(skipped) - 10
+            if remaining > 0:
+                skipped_preview += f"; and {remaining} more"
+            self.message_user(
+                request,
+                f"Skipped {len(skipped)} file(s): {skipped_preview}",
+                messages.WARNING,
+            )
+
+    def reparse(self, request, queryset):
+        """Reparse the selected data files."""
+        selected_count = queryset.count()
+        (
+            file_ids,
+            _original_states,
+            reparse_requested_count,
+            skipped,
+            enqueue_failed,
+        ) = self._prepare_and_enqueue_reparse(queryset)
+
+        self._report_reparse_outcome(
+            request,
+            selected_count,
+            file_ids,
+            reparse_requested_count,
+            skipped,
+            enqueue_failed,
+        )
+
         return redirect("/admin/search_indexes/reparsemeta/")
 
     def get_actions(self, request):
