@@ -85,6 +85,7 @@ The config file supports `${VAR}` interpolation. Common variables:
 
 | Variable             | Used In                   | Purpose                         |
 | -------------------- | ------------------------- | ------------------------------- |
+| `GO_PARSER_LOG_LEVEL` | `global.log_level` / `--global.log-level` | Structured log level (`debug`, `info`, `warn`, `error`) |
 | `DATABASE_URL`       | `database.url`            | PostgreSQL connection string    |
 | `GO_PARSER_SHADOW_MODE` | `database.shadow_mode` | `true` writes to shadow tables; `false` writes to production tables |
 | `DATABASE_TABLE_PREFIX` | `database.table_prefix` | Prefix for Go parser-owned output tables (default `shadow_`) |
@@ -171,6 +172,50 @@ go run ./cmd/parser \
   --pipeline.work-buffer-size=64 \
   ...
 ```
+
+### Logging
+
+The parser writes structured JSON logs to stdout. The production default is `info`, which emits bounded task, summary, and count logs without per-row noise. Use `debug` for lower-level troubleshooting outside the normal parse hot path.
+
+Configure the level in `config/parser.yaml`:
+
+```yaml
+global:
+  log_level: info # debug | info | warn | error
+```
+
+Or override it with a CLI flag:
+
+```sh
+go run ./cmd/parser \
+  --global.log-level=debug \
+  --server.mode=local \
+  ...
+```
+
+The same setting can be supplied by environment variable:
+
+```sh
+GO_PARSER_LOG_LEVEL=debug go run ./cmd/parser --server.mode=local ...
+```
+
+Example log entry:
+
+```json
+{"time":"2026-05-27T15:04:05.123Z","level":"INFO","msg":"pipeline completed","file_id":42,"program":"TANF","section":1,"section_name":"Active Case Data","fiscal_year":2024,"fiscal_quarter":"Q1","stage":"complete","duration_ms":812,"record_counts":{"shadow_search_indexes_tanf_t1":10,"parser_error":2},"detail_record_count":12,"error_count":2}
+```
+
+Parser runtime code should emit logs only through `internal/logging`:
+
+```go
+logging.Info(ctx, "pipeline completed",
+	slog.Int(logging.KeyFileID, int(dfCtx.DatafileID)),
+	slog.String(logging.KeyStage, "complete"),
+	slog.Int64(logging.KeyDurationMS, duration.Milliseconds()),
+)
+```
+
+Direct `slog` imports are allowed for building `slog.Attr` values, but direct `slog.InfoContext`, `slog.ErrorContext`, `slog.LogAttrs`, and `log.Printf` should be avoided in favor of the logging package functions. Use stable message strings, typed `slog` constructors for primitive fields, and reserve `slog.Any` for genuinely structured fields like `record_counts`. Do not add logging to row, batch, group, or writer flush hot loops to avoid I/O bottlenecks.
 
 ### Celery Mode
 

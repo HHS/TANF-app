@@ -2,37 +2,45 @@ package main
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"os"
 	"runtime/pprof"
 
 	"go-parser/internal/config"
+	"go-parser/internal/logging"
 	"go-parser/internal/server/celery"
 	"go-parser/internal/server/local"
 	"go-parser/internal/validation"
 )
 
 func main() {
+	if err := logging.Configure("info"); err != nil {
+		fatal("Failed to configure logging", err)
+	}
+
 	// Parse CLI flags (Kong)
 	cli, ctx, err := config.ParseCLI(os.Args[1:])
 	if err != nil {
-		log.Fatalf("Failed to parse CLI: %v", err)
+		fatal("Failed to parse CLI", err)
 	}
 
 	// Load config file with env var interpolation
 	cfg, err := config.LoadConfig(cli.ConfigFile)
 	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
+		fatal("Failed to load config", err)
 	}
 
 	// Apply CLI flag overrides (highest precedence)
 	cli.ApplyTo(cfg, ctx)
+	if err := logging.Configure(cfg.Global.LogLevel); err != nil {
+		fatal("Failed to configure logging", err)
+	}
 
 	// CPU profiling
 	if cli.CPUProfile != "" {
 		f, err := os.Create(cli.CPUProfile)
 		if err != nil {
-			log.Fatal(err)
+			fatal("Failed to create CPU profile", err)
 		}
 		pprof.StartCPUProfile(f)
 		defer pprof.StopCPUProfile()
@@ -47,44 +55,51 @@ func main() {
 	// the registry each time a new parsing request comes in (simpler).
 	reg, err := config.NewRegistry(cfg)
 	if err != nil {
-		log.Fatalf("Failed to load configuration: %v", err)
+		fatal("Failed to load configuration", err)
 	}
 
 	// Load and compile validators
 	validators, err := validation.NewRegistry(cfg, reg)
 	if err != nil {
-		log.Fatalf("Failed to load validators: %v", err)
+		fatal("Failed to load validators", err)
 	}
 
 	// ---- Server mode dispatch ----
 	switch cfg.Server.Mode {
 	case "local":
 		if err := local.New(cfg, reg, validators).Run(bgCtx); err != nil {
-			log.Fatalf("Local mode failed: %v", err)
+			fatal("Local mode failed", err)
 		}
 	case "celery":
 		mode, err := celery.New(cfg, reg, validators)
 		if err != nil {
-			log.Fatalf("Failed to initialize celery mode: %v", err)
+			fatal("Failed to initialize celery mode", err)
 		}
 		if err := mode.Run(bgCtx); err != nil {
-			log.Fatalf("Celery mode failed: %v", err)
+			fatal("Celery mode failed", err)
 		}
 	case "grpc":
-		log.Fatal("gRPC server mode not yet implemented")
+		fatal("gRPC server mode not yet implemented", nil)
 	case "http":
-		log.Fatal("HTTP server mode not yet implemented")
+		fatal("HTTP server mode not yet implemented", nil)
 	default:
-		log.Fatalf("unknown server mode: %s", cfg.Server.Mode)
+		logging.Fatal("unknown server mode", slog.String("mode", cfg.Server.Mode))
 	}
 
 	// Memory profiling (after work completes)
 	if cli.MemProfile != "" {
 		f, err := os.Create(cli.MemProfile)
 		if err != nil {
-			log.Fatal(err)
+			fatal("Failed to create memory profile", err)
 		}
 		pprof.WriteHeapProfile(f)
 		f.Close()
 	}
+}
+
+func fatal(message string, err error) {
+	if err != nil {
+		logging.Fatal(message, slog.String(logging.KeyError, err.Error()))
+	}
+	logging.Fatal(message)
 }

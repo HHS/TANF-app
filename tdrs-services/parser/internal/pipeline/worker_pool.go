@@ -2,9 +2,10 @@ package pipeline
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"sync"
 
+	"go-parser/internal/logging"
 	"go-parser/internal/parser"
 	"go-parser/internal/storage/writer"
 	"go-parser/internal/validation"
@@ -96,7 +97,6 @@ func (wp *WorkerPool) CloseInputs() {
 // Wait blocks until all workers finish.
 func (wp *WorkerPool) Wait() {
 	wp.wg.Wait()
-	log.Print("All lines in file have been parsed, validated, and routed to writers.")
 }
 
 // Err returns the first routing error encountered by any worker, or nil.
@@ -147,7 +147,12 @@ func (wp *WorkerPool) worker(ctx context.Context, workerID int) {
 
 			// Route to writers
 			if err := routeValidatedBatch(ctx, wp.router, vb.Groups, wp.datafileID, &errorRows); err != nil {
-				log.Printf("Worker %d: batch %d error: %v", workerID, vb.BatchID, err)
+				logging.Error(ctx, "worker batch failed",
+					slog.Int(logging.KeyFileID, int(wp.datafileID)),
+					slog.Int("worker_id", workerID),
+					slog.Int("batch_id", vb.BatchID),
+					slog.Any(logging.KeyError, err),
+				)
 				wp.errOnce.Do(func() { wp.workerErr = err })
 				return
 			}
