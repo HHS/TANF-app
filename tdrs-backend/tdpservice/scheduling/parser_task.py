@@ -238,9 +238,13 @@ def update_dfs(
 
 def set_error_report(dfs, error_report):
     """Update DataFileSummary error_report."""
-    dfs.error_report = File(
-        error_report, name=f"{dfs.datafile.original_filename}_error_report"
-    )
+    is_shadow = isinstance(dfs, ShadowDataFileSummary)
+    file_name = f"{dfs.datafile.original_filename}"
+    if is_shadow:
+        file_name += "_shadow"
+
+    file_name += "_error_report"
+    dfs.error_report = File(error_report, name=file_name)
     dfs.save()
 
 
@@ -401,8 +405,6 @@ def go_parse(data_file_id):
 @shared_task(name=GO_PARSER_POST_PARSE_TASK_NAME)
 def post_parse(data_file_id, reparse_id=0, parse_error=None):
     """Finalize Go parser output after every parse attempt."""
-    del reparse_id
-
     data_file, parser_models = _get_post_parse_data_file(data_file_id)
     dfs, _ = parser_models.summary_model.objects.get_or_create(
         datafile=data_file,
@@ -429,6 +431,11 @@ def post_parse(data_file_id, reparse_id=0, parse_error=None):
         record_model_resolver=parser_models.record_model_resolver,
         roll_log=False,
     )
+    if not settings.GO_PARSER_SHADOW_MODE and reparse_id:
+        file_meta = ReparseFileMeta.objects.get(
+            data_file_id=data_file_id, reparse_meta_id=reparse_id
+        )
+        _finalize_reparse(data_file_id, reparse_id, file_meta, dfs, True)
 
 
 @shared_task
