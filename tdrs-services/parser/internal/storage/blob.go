@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"os"
 	"time"
 
@@ -16,6 +16,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
+
+	"go-parser/internal/logging"
 )
 
 // S3Storage encapsulates Amazon S3 actions for file storage operations.
@@ -67,10 +69,10 @@ func (s S3Storage) ListBuckets(ctx context.Context) ([]types.Bucket, error) {
 		if err != nil {
 			var apiErr smithy.APIError
 			if errors.As(err, &apiErr) && apiErr.ErrorCode() == "AccessDenied" {
-				fmt.Println("You don't have permission to list buckets for this account.")
+				logging.Warn(ctx, "permission denied listing buckets")
 				err = apiErr
 			} else {
-				log.Printf("Couldn't list buckets for your account. Here's why: %v\n", err)
+				logging.Error(ctx, "could not list buckets", slog.Any(logging.KeyError, err))
 			}
 			break
 		} else {
@@ -91,16 +93,18 @@ func (s S3Storage) BucketExists(ctx context.Context, bucketName string) (bool, e
 		if errors.As(err, &apiError) {
 			switch apiError.(type) {
 			case *types.NotFound:
-				log.Printf("Bucket %v is available.\n", bucketName)
+				logging.Debug(ctx, "bucket is available", slog.String("bucket", bucketName))
 				exists = false
 				err = nil
 			default:
-				log.Printf("Either you don't have access to bucket %v or another error occurred. "+
-					"Here's what happened: %v\n", bucketName, err)
+				logging.Error(ctx, "bucket access check failed",
+					slog.String("bucket", bucketName),
+					slog.Any(logging.KeyError, err),
+				)
 			}
 		}
 	} else {
-		log.Printf("Bucket %v exists and you already own it.", bucketName)
+		logging.Debug(ctx, "bucket exists", slog.String("bucket", bucketName))
 	}
 
 	return exists, err
@@ -118,17 +122,17 @@ func (s S3Storage) CreateBucket(ctx context.Context, name string, region string)
 		var owned *types.BucketAlreadyOwnedByYou
 		var exists *types.BucketAlreadyExists
 		if errors.As(err, &owned) {
-			log.Printf("You already own bucket %s.\n", name)
+			logging.Warn(ctx, "bucket already owned", slog.String("bucket", name))
 			err = owned
 		} else if errors.As(err, &exists) {
-			log.Printf("Bucket %s already exists.\n", name)
+			logging.Warn(ctx, "bucket already exists", slog.String("bucket", name))
 			err = exists
 		}
 	} else {
 		err = s3.NewBucketExistsWaiter(s.Client).Wait(
 			ctx, &s3.HeadBucketInput{Bucket: aws.String(name)}, time.Minute)
 		if err != nil {
-			log.Printf("Failed attempt to wait for bucket %s to exist.\n", name)
+			logging.Error(ctx, "failed waiting for bucket to exist", slog.String("bucket", name), slog.Any(logging.KeyError, err))
 		}
 	}
 	return err
@@ -138,7 +142,7 @@ func (s S3Storage) CreateBucket(ctx context.Context, name string, region string)
 func (s S3Storage) UploadFile(ctx context.Context, bucketName string, objectKey string, fileName string) error {
 	file, err := os.Open(fileName)
 	if err != nil {
-		log.Printf("Couldn't open file %v to upload. Here's why: %v\n", fileName, err)
+		logging.Error(ctx, "could not open file for upload", slog.String("file_name", fileName), slog.Any(logging.KeyError, err))
 	} else {
 		defer file.Close()
 		_, err = s.Client.PutObject(ctx, &s3.PutObjectInput{
@@ -149,18 +153,24 @@ func (s S3Storage) UploadFile(ctx context.Context, bucketName string, objectKey 
 		if err != nil {
 			var apiErr smithy.APIError
 			if errors.As(err, &apiErr) && apiErr.ErrorCode() == "EntityTooLarge" {
-				log.Printf("Error while uploading object to %s. The object is too large.\n"+
-					"To upload objects larger than 5GB, use the S3 console (160GB max)\n"+
-					"or the multipart upload API (5TB max).", bucketName)
+				logging.Error(ctx, "object too large for single upload", slog.String("bucket", bucketName), slog.Any(logging.KeyError, err))
 			} else {
-				log.Printf("Couldn't upload file %v to %v:%v. Here's why: %v\n",
-					fileName, bucketName, objectKey, err)
+				logging.Error(ctx, "could not upload file",
+					slog.String("file_name", fileName),
+					slog.String("bucket", bucketName),
+					slog.String("object_key", objectKey),
+					slog.Any(logging.KeyError, err),
+				)
 			}
 		} else {
 			err = s3.NewObjectExistsWaiter(s.Client).Wait(
 				ctx, &s3.HeadObjectInput{Bucket: aws.String(bucketName), Key: aws.String(objectKey)}, time.Minute)
 			if err != nil {
-				log.Printf("Failed attempt to wait for object %s to exist.\n", objectKey)
+				logging.Error(ctx, "failed waiting for object to exist",
+					slog.String("bucket", bucketName),
+					slog.String("object_key", objectKey),
+					slog.Any(logging.KeyError, err),
+				)
 			}
 		}
 	}
@@ -183,17 +193,23 @@ func (s S3Storage) UploadLargeObject(ctx context.Context, bucketName string, obj
 	if err != nil {
 		var apiErr smithy.APIError
 		if errors.As(err, &apiErr) && apiErr.ErrorCode() == "EntityTooLarge" {
-			log.Printf("Error while uploading object to %s. The object is too large.\n"+
-				"The maximum size for a multipart upload is 5TB.", bucketName)
+			logging.Error(ctx, "object too large for multipart upload", slog.String("bucket", bucketName), slog.Any(logging.KeyError, err))
 		} else {
-			log.Printf("Couldn't upload large object to %v:%v. Here's why: %v\n",
-				bucketName, objectKey, err)
+			logging.Error(ctx, "could not upload large object",
+				slog.String("bucket", bucketName),
+				slog.String("object_key", objectKey),
+				slog.Any(logging.KeyError, err),
+			)
 		}
 	} else {
 		err = s3.NewObjectExistsWaiter(s.Client).Wait(
 			ctx, &s3.HeadObjectInput{Bucket: aws.String(bucketName), Key: aws.String(objectKey)}, time.Minute)
 		if err != nil {
-			log.Printf("Failed attempt to wait for object %s to exist.\n", objectKey)
+			logging.Error(ctx, "failed waiting for object to exist",
+				slog.String("bucket", bucketName),
+				slog.String("object_key", objectKey),
+				slog.Any(logging.KeyError, err),
+			)
 		}
 	}
 
@@ -209,23 +225,34 @@ func (s S3Storage) DownloadFile(ctx context.Context, bucketName string, objectKe
 	if err != nil {
 		var noKey *types.NoSuchKey
 		if errors.As(err, &noKey) {
-			log.Printf("Can't get object %s from bucket %s. No such key exists.\n", objectKey, bucketName)
+			logging.Warn(ctx, "object does not exist",
+				slog.String("bucket", bucketName),
+				slog.String("object_key", objectKey),
+			)
 			err = noKey
 		} else {
-			log.Printf("Couldn't get object %v:%v. Here's why: %v\n", bucketName, objectKey, err)
+			logging.Error(ctx, "could not get object",
+				slog.String("bucket", bucketName),
+				slog.String("object_key", objectKey),
+				slog.Any(logging.KeyError, err),
+			)
 		}
 		return err
 	}
 	defer result.Body.Close()
 	file, err := os.Create(fileName)
 	if err != nil {
-		log.Printf("Couldn't create file %v. Here's why: %v\n", fileName, err)
+		logging.Error(ctx, "could not create file", slog.String("file_name", fileName), slog.Any(logging.KeyError, err))
 		return err
 	}
 	defer file.Close()
 	body, err := io.ReadAll(result.Body)
 	if err != nil {
-		log.Printf("Couldn't read object body from %v. Here's why: %v\n", objectKey, err)
+		logging.Error(ctx, "could not read object body",
+			slog.String("bucket", bucketName),
+			slog.String("object_key", objectKey),
+			slog.Any(logging.KeyError, err),
+		)
 	}
 	_, err = file.Write(body)
 	return err
@@ -245,8 +272,11 @@ func (s S3Storage) DownloadLargeObject(ctx context.Context, bucketName string, o
 		Key:    aws.String(objectKey),
 	})
 	if err != nil {
-		log.Printf("Couldn't download large object from %v:%v. Here's why: %v\n",
-			bucketName, objectKey, err)
+		logging.Error(ctx, "could not download large object",
+			slog.String("bucket", bucketName),
+			slog.String("object_key", objectKey),
+			slog.Any(logging.KeyError, err),
+		)
 	}
 	return buffer.Bytes(), err
 }
@@ -262,15 +292,21 @@ func (s S3Storage) CopyToFolder(ctx context.Context, bucketName string, objectKe
 	if err != nil {
 		var notActive *types.ObjectNotInActiveTierError
 		if errors.As(err, &notActive) {
-			log.Printf("Couldn't copy object %s from %s because the object isn't in the active tier.\n",
-				objectKey, bucketName)
+			logging.Warn(ctx, "object is not in active tier",
+				slog.String("bucket", bucketName),
+				slog.String("object_key", objectKey),
+			)
 			err = notActive
 		}
 	} else {
 		err = s3.NewObjectExistsWaiter(s.Client).Wait(
 			ctx, &s3.HeadObjectInput{Bucket: aws.String(bucketName), Key: aws.String(objectDest)}, time.Minute)
 		if err != nil {
-			log.Printf("Failed attempt to wait for object %s to exist.\n", objectDest)
+			logging.Error(ctx, "failed waiting for copied object to exist",
+				slog.String("bucket", bucketName),
+				slog.String("object_key", objectDest),
+				slog.Any(logging.KeyError, err),
+			)
 		}
 	}
 	return err
@@ -286,15 +322,21 @@ func (s S3Storage) CopyToBucket(ctx context.Context, sourceBucket string, destin
 	if err != nil {
 		var notActive *types.ObjectNotInActiveTierError
 		if errors.As(err, &notActive) {
-			log.Printf("Couldn't copy object %s from %s because the object isn't in the active tier.\n",
-				objectKey, sourceBucket)
+			logging.Warn(ctx, "object is not in active tier",
+				slog.String("bucket", sourceBucket),
+				slog.String("object_key", objectKey),
+			)
 			err = notActive
 		}
 	} else {
 		err = s3.NewObjectExistsWaiter(s.Client).Wait(
 			ctx, &s3.HeadObjectInput{Bucket: aws.String(destinationBucket), Key: aws.String(objectKey)}, time.Minute)
 		if err != nil {
-			log.Printf("Failed attempt to wait for object %s to exist.\n", objectKey)
+			logging.Error(ctx, "failed waiting for copied object to exist",
+				slog.String("bucket", destinationBucket),
+				slog.String("object_key", objectKey),
+				slog.Any(logging.KeyError, err),
+			)
 		}
 	}
 	return err
@@ -314,7 +356,7 @@ func (s S3Storage) ListObjects(ctx context.Context, bucketName string) ([]types.
 		if err != nil {
 			var noBucket *types.NoSuchBucket
 			if errors.As(err, &noBucket) {
-				log.Printf("Bucket %s does not exist.\n", bucketName)
+				logging.Warn(ctx, "bucket does not exist", slog.String("bucket", bucketName))
 				err = noBucket
 			}
 			break
@@ -336,16 +378,20 @@ func (s S3Storage) DeleteObjects(ctx context.Context, bucketName string, objectK
 		Delete: &types.Delete{Objects: objectIds, Quiet: aws.Bool(true)},
 	})
 	if err != nil || len(output.Errors) > 0 {
-		log.Printf("Error deleting objects from bucket %s.\n", bucketName)
+		logging.Error(ctx, "error deleting objects from bucket", slog.String("bucket", bucketName), slog.Any(logging.KeyError, err))
 		if err != nil {
 			var noBucket *types.NoSuchBucket
 			if errors.As(err, &noBucket) {
-				log.Printf("Bucket %s does not exist.\n", bucketName)
+				logging.Warn(ctx, "bucket does not exist", slog.String("bucket", bucketName))
 				err = noBucket
 			}
 		} else if len(output.Errors) > 0 {
 			for _, outErr := range output.Errors {
-				log.Printf("%s: %s\n", *outErr.Key, *outErr.Message)
+				logging.Error(ctx, "object delete failed",
+					slog.String("bucket", bucketName),
+					slog.String("object_key", *outErr.Key),
+					slog.String("message", *outErr.Message),
+				)
 			}
 			err = fmt.Errorf("%s", *output.Errors[0].Message)
 		}
@@ -354,9 +400,16 @@ func (s S3Storage) DeleteObjects(ctx context.Context, bucketName string, objectK
 			err = s3.NewObjectNotExistsWaiter(s.Client).Wait(
 				ctx, &s3.HeadObjectInput{Bucket: aws.String(bucketName), Key: delObjs.Key}, time.Minute)
 			if err != nil {
-				log.Printf("Failed attempt to wait for object %s to be deleted.\n", *delObjs.Key)
+				logging.Error(ctx, "failed waiting for object deletion",
+					slog.String("bucket", bucketName),
+					slog.String("object_key", *delObjs.Key),
+					slog.Any(logging.KeyError, err),
+				)
 			} else {
-				log.Printf("Deleted %s.\n", *delObjs.Key)
+				logging.Debug(ctx, "object deleted",
+					slog.String("bucket", bucketName),
+					slog.String("object_key", *delObjs.Key),
+				)
 			}
 		}
 	}
@@ -370,18 +423,18 @@ func (s S3Storage) DeleteBucket(ctx context.Context, bucketName string) error {
 	if err != nil {
 		var noBucket *types.NoSuchBucket
 		if errors.As(err, &noBucket) {
-			log.Printf("Bucket %s does not exist.\n", bucketName)
+			logging.Warn(ctx, "bucket does not exist", slog.String("bucket", bucketName))
 			err = noBucket
 		} else {
-			log.Printf("Couldn't delete bucket %v. Here's why: %v\n", bucketName, err)
+			logging.Error(ctx, "could not delete bucket", slog.String("bucket", bucketName), slog.Any(logging.KeyError, err))
 		}
 	} else {
 		err = s3.NewBucketNotExistsWaiter(s.Client).Wait(
 			ctx, &s3.HeadBucketInput{Bucket: aws.String(bucketName)}, time.Minute)
 		if err != nil {
-			log.Printf("Failed attempt to wait for bucket %s to be deleted.\n", bucketName)
+			logging.Error(ctx, "failed waiting for bucket deletion", slog.String("bucket", bucketName), slog.Any(logging.KeyError, err))
 		} else {
-			log.Printf("Deleted %s.\n", bucketName)
+			logging.Debug(ctx, "bucket deleted", slog.String("bucket", bucketName))
 		}
 	}
 	return err

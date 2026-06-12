@@ -14,6 +14,7 @@ format: positional
 record_validators:
   - id: header_record_length
   - id: header_tribe_fips_program_agree
+  - id: header_program_type_match
   - id: header_section_match
   - id: header_fiscal_period_match
 

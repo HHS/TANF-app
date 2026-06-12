@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"sync"
 
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"go-parser/internal/config"
 	"go-parser/internal/config/filespec"
+	"go-parser/internal/logging"
 	"go-parser/internal/parser"
 )
 
@@ -126,7 +127,6 @@ func NewRouter(
 
 		// Apply schema filter if configured
 		if len(includeSet) > 0 && !includeSet[schemaPath] {
-			log.Printf("Skipping writer for %s (not in include_schemas)", schemaPath)
 			continue
 		}
 
@@ -140,7 +140,10 @@ func NewRouter(
 		// Schema path (e.g., "tanf/t1") distinguishes TANF vs Tribal T1
 		conv := GetSerializer(schemaPath)
 		if conv == nil {
-			log.Printf("Warning: no serializer for schema %s", schemaPath)
+			logging.Error(context.Background(), "no serializer for schema",
+				slog.Int(logging.KeyFileID, int(datafileID)),
+				slog.String("schema_path", schemaPath),
+			)
 			continue
 		}
 
@@ -156,9 +159,6 @@ func NewRouter(
 			meta.Columns,
 			cfg.FlushThreshold,
 		)
-
-		log.Printf("Created writer for %s -> %s (%d columns)",
-			schemaPath, meta.TableName, len(meta.Columns))
 	}
 
 	// Create error writer with higher threshold for error volume
@@ -168,9 +168,6 @@ func NewRouter(
 			parserErrorColumns,
 			cfg.ErrorFlushThreshold,
 		)
-		log.Printf("Created error writer for %s (%d columns)", router.errorTableName, len(parserErrorColumns))
-	} else {
-		log.Printf("Error writing disabled (include_errors=false)")
 	}
 
 	return router

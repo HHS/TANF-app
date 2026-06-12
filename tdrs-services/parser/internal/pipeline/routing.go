@@ -2,7 +2,7 @@ package pipeline
 
 import (
 	"context"
-	"log"
+	"log/slog"
 
 	"github.com/jackc/pgx/v5/pgtype"
 
@@ -22,6 +22,17 @@ type ErrorStats struct {
 // Total returns the total number of errors across all scopes.
 func (s *ErrorStats) Total() int64 {
 	return s.RecordPreCheck + s.FieldValue + s.ValueConsistency + s.CaseConsistency
+}
+
+// LogAttrs returns structured error count fields.
+func (s ErrorStats) LogAttrs() []slog.Attr {
+	return []slog.Attr{
+		slog.Int64("record_pre_check_error_count", s.RecordPreCheck),
+		slog.Int64("field_value_error_count", s.FieldValue),
+		slog.Int64("value_consistency_error_count", s.ValueConsistency),
+		slog.Int64("case_consistency_error_count", s.CaseConsistency),
+		slog.Int64("total_validation_error_count", s.Total()),
+	}
 }
 
 // RouteStats holds batch/group counts collected during result routing.
@@ -86,7 +97,6 @@ func routeValidatedBatch(ctx context.Context, router *writer.Router, groups []*v
 
 		// Handle blocked groups: serialize all errors, release records, skip record writing
 		if vg.Result.HasBlockingGroupErrors() {
-			log.Printf("Skipping group %s: blocking group validation failed", vg.Group.Key)
 			for i, recResult := range vg.Result.RecordResults {
 				record := vg.Group.Records[i]
 				appendRecordErrors(errorRows, recResult, record, nil, datafileID, nil)
@@ -103,8 +113,6 @@ func routeValidatedBatch(ctx context.Context, router *writer.Router, groups []*v
 			record := vg.Group.Records[i]
 
 			if recResult.HasBlockingErrors() {
-				log.Printf("Skipping record (line %d, type %s): blocking record validation failed",
-					record.LineNumber, record.Schema.RecordType)
 				appendRecordErrors(errorRows, recResult, record, nil, datafileID, nil)
 				record.Schema.ReleaseRecord(record)
 				continue

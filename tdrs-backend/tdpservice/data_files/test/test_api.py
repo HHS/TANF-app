@@ -84,7 +84,11 @@ class DataFileAPITestBase:
     def test_ssp_datafile(self, stt_user, stt):
         """Fixture for small_ssp_section1."""
         df = util.create_test_datafile(
-            "small_ssp_section1.txt", stt_user, stt, "Active Case Data"
+            "small_ssp_section1.txt",
+            stt_user,
+            stt,
+            "Active Case Data",
+            DataFile.ProgramType.SSP,
         )
         df.year = 2024
         df.quarter = "Q1"

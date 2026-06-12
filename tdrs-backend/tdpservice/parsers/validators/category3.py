@@ -148,6 +148,52 @@ def isOlderThan(min_age):
     )
 
 
+def calculate_age_first(date_of_birth, rpt_month_year):
+    """Calculate age as of the first day of the reporting month."""
+    dob_date = datetime.datetime.strptime(str(date_of_birth), "%Y%m%d")
+    rpt_month_first_date = datetime.datetime.strptime(
+        f"{str(rpt_month_year)}01", "%Y%m%d"
+    )
+
+    return round((rpt_month_first_date - dob_date).days / 365.25, 1)
+
+
+def validate__REC_OASDI_INSURANCE__AGE_FIRST(min_age=18):
+    """Validate REC_OASDI_INSURANCE when AGE_FIRST is older than min_age."""
+
+    def validate(record, row_schema):
+        field_names = ["DATE_OF_BIRTH", "RPT_MONTH_YEAR", "REC_OASDI_INSURANCE"]
+        true_case = Result(field_names=field_names)
+
+        try:
+            date_of_birth = get_record_value_by_field_name(record, "DATE_OF_BIRTH")
+            rpt_month_year = get_record_value_by_field_name(record, "RPT_MONTH_YEAR")
+            rec_oasdi_insurance = get_record_value_by_field_name(
+                record, "REC_OASDI_INSURANCE"
+            )
+
+            age_first = calculate_age_first(date_of_birth, rpt_month_year)
+            if age_first <= min_age or rec_oasdi_insurance in [1, 2]:
+                return true_case
+
+            oasdi_field = row_schema.get_field_by_name("REC_OASDI_INSURANCE")
+            return Result(
+                valid=False,
+                error_message=(
+                    f"Since person is older than {min_age}, then {oasdi_field.item} "
+                    f"({oasdi_field.friendly_name}) must be 1 or 2"
+                ),
+                field_names=field_names,
+            )
+        except Exception:
+            logger.debug(
+                "Caught exception in validator: validate__REC_OASDI_INSURANCE__AGE_FIRST."
+            )
+            return true_case
+
+    return validate
+
+
 def validateSSN():
     """Validate that SSN value is not a repeating digit."""
     options = [str(i) * 9 for i in range(0, 10)]
