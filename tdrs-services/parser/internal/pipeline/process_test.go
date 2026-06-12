@@ -185,6 +185,47 @@ func writeTempFile(t *testing.T, content string) string {
 	return f.Name()
 }
 
+func processContentForTest(
+	t *testing.T,
+	reg *config.Registry,
+	validators *validation.ValidatorRegistry,
+	content string,
+	dfCtx DataFileContext,
+) (*ParsingResult, *capturingSink) {
+	t.Helper()
+
+	filePath := writeTempFile(t, content)
+	f, err := os.Open(filePath)
+	if err != nil {
+		t.Fatalf("failed to open file: %v", err)
+	}
+	defer f.Close()
+
+	spec := reg.GetFileSpec(dfCtx.Program, dfCtx.Section)
+	if spec == nil {
+		t.Fatalf("GetFileSpec(%s, %d) returned nil", dfCtx.Program, dfCtx.Section)
+	}
+
+	dec, err := decoder.CreateDecoder(f, spec)
+	if err != nil {
+		t.Fatalf("CreateDecoder failed: %v", err)
+	}
+	defer dec.Close()
+
+	sink := newCapturingSink()
+	pipelineCfg := TestConfig()
+	pipelineCfg.IncludeRecords = false
+	pipelineCfg.IncludeErrors = true
+	p := NewPipeline(sink, reg, validators, pipelineCfg)
+
+	result, err := p.Process(context.Background(), dec, dfCtx)
+	if err != nil {
+		t.Fatalf("Process failed: %v", err)
+	}
+
+	return result, sink
+}
+
 // --- End-to-end Process tests ---
 
 func TestProcess_FRAInvalidFirstRowWritesPreCheckError(t *testing.T) {
@@ -374,6 +415,99 @@ func TestProcess_TANF_S1_ValidData(t *testing.T) {
 	}
 	if result.GroupCount < 1 {
 		t.Errorf("GroupCount = %d, want >= 1", result.GroupCount)
+	}
+}
+
+func TestProcess_HeaderProgramTypeMismatchWritesPreCheckError(t *testing.T) {
+	reg := loadRegistry(t)
+	validators := loadValidators(t, reg)
+
+	tests := []struct {
+		name            string
+		header          string
+		dfCtx           DataFileContext
+		expectedMessage string
+	}{
+		{
+			name:   "submitted SSP with TAN header",
+			header: "HEADER20241A06000TAN1ED",
+			dfCtx:  testSSPContext(),
+			expectedMessage: "Submitted program type (SSP) does not match file program type (TAN).",
+		},
+		{
+			name:   "submitted TAN with SSP header",
+			header: "HEADER20241A06000SSP1ED",
+			dfCtx:  testTANFContext(),
+			expectedMessage: "Submitted program type (TAN) does not match file program type (SSP).",
+		},
+		{
+			name:   "submitted TAN with Tribal header",
+			header: "HEADER20241A00142TAN1ED",
+			dfCtx:  testTANFContext(),
+			expectedMessage: "Submitted program type (TAN) does not match file program type (TRIBAL).",
+		},
+		{
+			name:   "submitted Tribal with TAN header and empty tribe code",
+			header: "HEADER20241A06000TAN1ED",
+			dfCtx: DataFileContext{
+				Program:       "TRIBAL",
+				Section:       1,
+				DatafileID:    1,
+				FiscalYear:    2024,
+				FiscalQuarter: "Q2",
+				SectionName:   "Active Case Data",
+			},
+			expectedMessage: "Submitted program type (TRIBAL) does not match file program type (TAN).",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			content := tt.header + "\n"
+			result, sink := processContentForTest(t, reg, validators, content, tt.dfCtx)
+
+			if result.ErrorCount != 1 {
+				t.Errorf("ErrorCount = %d, want 1", result.ErrorCount)
+			}
+			if sink.errorCount() != 1 {
+				t.Fatalf("sink error count = %d, want 1", sink.errorCount())
+			}
+			if sink.totalRecords() != 0 {
+				t.Errorf("totalRecords = %d, want 0", sink.totalRecords())
+			}
+
+			row := sink.errorRows(TestConfig())[0]
+			if got := row[0]; got != int32(1) {
+				t.Errorf("row_number = %v, want %d", got, 1)
+			}
+			if got := row[6]; got != tt.expectedMessage {
+				t.Errorf("error_message = %v, want %q", got, tt.expectedMessage)
+			}
+			if got := row[7]; got != "1" {
+				t.Errorf("error_type = %v, want %q", got, "1")
+			}
+		})
+	}
+}
+
+func TestProcess_TribalHeaderMatchesTribalContext(t *testing.T) {
+	reg := loadRegistry(t)
+	validators := loadValidators(t, reg)
+
+	dfCtx := testTANFContext()
+	dfCtx.Program = "TRIBAL"
+	content := "HEADER20241A00142TAN1ED\n"
+	_, sink := processContentForTest(t, reg, validators, content, dfCtx)
+
+	parserErrorRows := sink.errorRows(TestConfig())
+	for _, row := range parserErrorRows {
+		message, ok := row[6].(string)
+		if !ok {
+			t.Fatalf("error_message type = %T, want string", row[6])
+		}
+		if strings.Contains(message, "Submitted program type") {
+			t.Fatalf("parser errors = %v, want no program mismatch error", parserErrorRows)
+		}
 	}
 }
 

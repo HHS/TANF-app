@@ -5,7 +5,9 @@ import pytest
 from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.submission_lifecycle import (
     InvalidTransition,
+    ReparsePreparationError,
     allowed_next_states,
+    prepare_datafile_for_reparse,
     transition_datafile,
     validate_transition,
 )
@@ -158,3 +160,107 @@ def test_parse_outcome_states_can_reparse(state):
 
     assert transition.previous_state == state
     assert transition.next_state == SubmissionState.PARSE_STARTED
+
+
+def test_reparse_requested_can_transition_to_parse_started():
+    """Test requested reparses can transition to parse_started."""
+    transition = validate_transition(
+        SubmissionState.REPARSE_REQUESTED,
+        SubmissionState.PARSE_STARTED,
+    )
+
+    assert transition.previous_state == SubmissionState.REPARSE_REQUESTED
+    assert transition.next_state == SubmissionState.PARSE_STARTED
+
+
+@pytest.mark.parametrize(
+    "state",
+    [
+        SubmissionState.VIRUS_SCAN_COMPLETED,
+        SubmissionState.PARSE_FAILED,
+        SubmissionState.PARSED_WITH_ERRORS,
+        SubmissionState.PARSE_COMPLETED,
+    ],
+)
+def test_safe_states_can_request_reparse(state):
+    """Test safe states can transition to reparse_requested."""
+    transition = validate_transition(state, SubmissionState.REPARSE_REQUESTED)
+
+    assert transition.previous_state == state
+    assert transition.next_state == SubmissionState.REPARSE_REQUESTED
+
+
+@pytest.mark.parametrize(
+    "state",
+    [
+        SubmissionState.VIRUS_SCAN_COMPLETED,
+        SubmissionState.PARSE_FAILED,
+        SubmissionState.PARSED_WITH_ERRORS,
+        SubmissionState.PARSE_COMPLETED,
+    ],
+)
+@pytest.mark.django_db
+def test_prepare_datafile_for_reparse_requests_reparse_for_safe_states(state):
+    """Test safe states are moved to reparse_requested before queueing."""
+    data_file = DataFileFactory(state=state)
+    payloads = []
+
+    prepared_file, reparse_requested = prepare_datafile_for_reparse(
+        data_file,
+        logger_hook=payloads.append,
+    )
+
+    assert prepared_file == data_file
+    assert reparse_requested is True
+    data_file.refresh_from_db()
+    assert data_file.state == SubmissionState.REPARSE_REQUESTED
+    assert payloads == [
+        {
+            "data_file_id": data_file.id,
+            "previous_state": state.value,
+            "next_state": SubmissionState.REPARSE_REQUESTED.value,
+            "note": "admin reparse requested",
+        }
+    ]
+
+
+@pytest.mark.django_db
+def test_prepare_datafile_for_reparse_is_idempotent_for_reparse_requested():
+    """Test files already marked for reparse are still eligible for queueing."""
+    data_file = DataFileFactory(state=SubmissionState.REPARSE_REQUESTED)
+
+    prepared_file, reparse_requested = prepare_datafile_for_reparse(data_file)
+
+    assert prepared_file == data_file
+    assert reparse_requested is False
+    data_file.refresh_from_db()
+    assert data_file.state == SubmissionState.REPARSE_REQUESTED
+
+
+@pytest.mark.django_db
+def test_prepare_datafile_for_reparse_rejects_uploaded_file():
+    """Test uploaded files require separate legacy data repair before reparse."""
+    data_file = DataFileFactory(state=SubmissionState.UPLOADED)
+
+    with pytest.raises(ReparsePreparationError, match="state uploaded"):
+        prepare_datafile_for_reparse(data_file)
+
+
+@pytest.mark.parametrize(
+    "state",
+    [
+        SubmissionState.VIRUS_SCAN_STARTED,
+        SubmissionState.VIRUS_SCAN_FAILED,
+        SubmissionState.PARSE_STARTED,
+        SubmissionState.COMPLETED,
+        SubmissionState.CANCELED,
+        SubmissionState.STUCK,
+    ],
+)
+@pytest.mark.django_db
+def test_prepare_datafile_for_reparse_rejects_unsafe_states(state):
+    """Test unsafe states are not prepared or queued for reparse."""
+    data_file = DataFileFactory(state=state)
+
+    with pytest.raises(ReparsePreparationError, match=f"state {state.value}"):
+        prepare_datafile_for_reparse(data_file)
