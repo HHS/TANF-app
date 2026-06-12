@@ -128,7 +128,7 @@ deploy_keycloak() {
     cf map-route "$app_name" apps.internal --hostname "$app_name"
 
     # Public route for browser redirects and admin console access
-    cf map-route "$app_name" "$PUBLIC_DOMAIN" --hostname "$public_hostname"
+    cf map-route "$app_name" "$public_hostname"."$PUBLIC_DOMAIN"
 
     rm $MANIFEST
 }
