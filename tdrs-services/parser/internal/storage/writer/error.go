@@ -27,6 +27,12 @@ type FieldsJSON struct {
 	ItemNumbers  map[string]string `json:"item_numbers"`
 }
 
+// FieldMeta exposes schema field metadata to error message templates.
+type FieldMeta struct {
+	Item         string
+	FriendlyName string
+}
+
 // SerializeError converts a ValidationResult to a database row immediately.
 // Must be called BEFORE the record is released to pool.
 // Returns []any row matching parserErrorColumns order:
@@ -113,10 +119,18 @@ func renderErrorMessage(vr *validation.ValidationResult, record *parser.ParsedRe
 		ctx["Fields"] = vr.Validator.Fields
 
 		values := make(map[string]any, len(vr.Validator.Fields))
+		fieldMeta := make(map[string]FieldMeta, len(vr.Validator.Fields))
 		for _, fieldName := range vr.Validator.Fields {
 			values[fieldName] = record.Get(fieldName)
+			if fd := getFieldDef(record, fieldName); fd != nil {
+				fieldMeta[fieldName] = FieldMeta{
+					Item:         fd.Item,
+					FriendlyName: fd.FriendlyName,
+				}
+			}
 		}
 		ctx["Values"] = values
+		ctx["FieldMeta"] = fieldMeta
 	}
 
 	return vr.Message(ctx)

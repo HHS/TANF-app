@@ -93,12 +93,7 @@ m5 = [
                 result_field_name="CITIZENSHIP_STATUS",
                 result_function=category3.isBetween(1, 3, inclusive=True),
             ),
-            category3.ifThenAlso(
-                condition_field_name="DATE_OF_BIRTH",
-                condition_function=category3.isOlderThan(18),
-                result_field_name="REC_OASDI_INSURANCE",
-                result_function=category3.isBetween(1, 2, inclusive=True),
-            ),
+            category3.validate__REC_OASDI_INSURANCE__AGE_FIRST(),
             category3.ifThenAlso(
                 condition_field_name="FAMILY_AFFILIATION",
                 condition_function=category3.isEqual(1),
