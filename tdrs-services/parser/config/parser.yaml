@@ -11,7 +11,7 @@
 #   4. CLI flags (--section.key=value)
 
 global:
-  log_level: info
+  log_level: info              # debug | info | warn | error
   config_dir: config
 
 # File pointers — globs resolved relative to config_dir

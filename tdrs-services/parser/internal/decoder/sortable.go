@@ -3,7 +3,6 @@ package decoder
 import (
 	"fmt"
 	"iter"
-	"log"
 	"slices"
 
 	"go-parser/internal/config/filespec"
@@ -91,9 +90,6 @@ func (s *Sortable) DoSort(
 	}
 
 	s.sorted = true
-
-	log.Printf("Presort complete: %d data rows sorted, %d unkeyed rows",
-		len(s.sortedRows), len(s.unkeyedRows))
 
 	return nil
 }
