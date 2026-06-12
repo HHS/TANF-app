@@ -4,13 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"strings"
 	"time"
 
 	"go-parser/internal/config"
 	"go-parser/internal/config/filespec"
+	"go-parser/internal/config/schema"
 	"go-parser/internal/decoder"
+	"go-parser/internal/logging"
 	"go-parser/internal/parser"
 	"go-parser/internal/sentinel"
 	"go-parser/internal/storage/writer"
@@ -39,14 +41,33 @@ type DataFileContext struct {
 	SectionName   string // Submission section ("Active Case Data", "Closed Case Data", etc.)
 }
 
+// LogAttrs returns standard structured log fields for this parsing run.
+func (d DataFileContext) LogAttrs() []slog.Attr {
+	return []slog.Attr{
+		slog.Int(logging.KeyFileID, int(d.DatafileID)),
+		slog.String(logging.KeyProgram, d.Program),
+		slog.Int(logging.KeySection, d.Section),
+		slog.String(logging.KeySectionName, d.SectionName),
+		slog.Int(logging.KeyFiscalYear, d.FiscalYear),
+		slog.String(logging.KeyFiscalQuarter, d.FiscalQuarter),
+	}
+}
+
+// LogAttrsWithStage returns standard parse fields plus a pipeline/server stage.
+func (d DataFileContext) LogAttrsWithStage(stage string, attrs ...slog.Attr) []slog.Attr {
+	base := append(d.LogAttrs(), slog.String(logging.KeyStage, stage))
+	return append(base, attrs...)
+}
+
 // ParsingResult contains statistics from the processing run.
 type ParsingResult struct {
-	RecordCounts map[string]int64
-	ErrorCount   int64
-	ErrorStats   *ErrorStats // Validation error counts by category
-	BatchCount   int64       // Number of batches processed
-	GroupCount   int64       // Number of groups processed
-	Duration     time.Duration
+	RecordCounts      map[string]int64
+	DetailRecordCount int64
+	ErrorCount        int64
+	ErrorStats        *ErrorStats // Validation error counts by category
+	BatchCount        int64       // Number of batches processed
+	GroupCount        int64       // Number of groups processed
+	Duration          time.Duration
 }
 
 // NewPipeline creates a Pipeline with the given configuration.
@@ -71,10 +92,6 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 	if spec == nil {
 		return nil, fmt.Errorf("no file spec for %s section %d", dfCtx.Program, dfCtx.Section)
 	}
-
-	log.Printf("Processing %s Section %d", dfCtx.Program, dfCtx.Section)
-	log.Printf("Format: %s, KeyFields: %v, BatchSize: %d",
-		spec.Format, spec.Accumulator.HasKeyFields(), spec.Accumulator.EffectiveBatchSize())
 
 	// Start timing for performance measurement
 	startTime := time.Now()
@@ -133,10 +150,6 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 	// Step 3b: Validate header (skip for FRA/columnar files where parseCtx is nil)
 	if parseCtx != nil {
 		parseCtx.DatafileID = dfCtx.DatafileID
-		log.Printf("Header: Year=%d, Quarter=%s, Encrypted=%v",
-			parseCtx.Year, parseCtx.Quarter, parseCtx.IsEncrypted)
-		log.Printf("Header fields: %v", parseCtx.Header.Fields)
-
 		headerResult := validationOrchestrator.ValidateHeader(parseCtx.Header, valDfCtx)
 		headerStats, result = p.handleHeaderValidationResult(
 			ctx,
@@ -169,6 +182,7 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 
 	// Step 5: Create parsing orchestrator
 	parsingOrchestrator := parser.NewParsingOrchestrator(spec.Format, parseCtx)
+	trailerSchema := p.registry.GetSchema(parser.TrailerSchemaPath)
 
 	// Step 6: Create pipeline worker pool (workers parse, validate, and route)
 	filespecKey := fmt.Sprintf("%s:%d", dfCtx.Program, dfCtx.Section)
@@ -181,7 +195,12 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 	// Step 7: Process rows through the accumulator
 	// TODO: I feel like accumulateBatches can live as a receiver on the accumulator instead a standalone function.
 	acc := parser.NewAccumulator(spec, detector)
-	err = accumulateBatches(runCtx, dec, acc, workers, router, dfCtx.DatafileID)
+	fileStats := validation.NewFileRecordStats(parseCtx)
+	requireTrailer := spec.Format == filespec.FormatPositional
+	err = accumulateBatches(runCtx, dec, acc, workers, router, dfCtx.DatafileID, trailerSchema, validationOrchestrator, valDfCtx, fileStats, requireTrailer)
+	if firstRow != nil {
+		fileStats.MaxLineNumber = max(fileStats.MaxLineNumber, firstRow.LineNum())
+	}
 
 	// Step 8: Wait for everything to complete
 	if err != nil {
@@ -210,6 +229,11 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 		return nil, err
 	}
 
+	addedTrailerCountError, err := p.writeTrailerRecordCountError(ctx, router, dfCtx.DatafileID, fileStats)
+	if err != nil {
+		return nil, err
+	}
+
 	// Flush remaining rows in all writers
 	if err := router.Stop(); err != nil {
 		if rollbackErr := p.rollbackDatafile(ctx, dfCtx, router); rollbackErr != nil {
@@ -221,12 +245,13 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 	routeStats := workers.AggregateStats()
 	addErrorStats(&routeStats.ErrorStats, headerStats)
 	recordCounts, errorCount := router.Stats()
+	routeStats.RecordPreCheck += addedTrailerCountError
 	if p.config.IncludeRecords && p.config.IncludeErrors && totalWrittenRecords(recordCounts) == 0 {
 		var headerRecord *parser.ParsedRecord
 		if parseCtx != nil {
 			headerRecord = parseCtx.Header
 		}
-		addedErrorCount, err := p.writeNoRecordsCreatedError(ctx, validationOrchestrator, dfCtx.DatafileID, headerRecord, func(row []any) error {
+		addedErrorCount, err := p.writeNoRecordsCreatedError(ctx, validationOrchestrator, dfCtx.DatafileID, headerRecord, validationOrchestrator.IsValidZeroRecordSubmission(dfCtx.SectionName, fileStats), func(row []any) error {
 			_, err := p.sink.Flush(ctx, router.ErrorTableName(), writer.ParserErrorColumns(), [][]any{row})
 			return err
 		})
@@ -234,24 +259,29 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 			return nil, err
 		}
 		errorCount += addedErrorCount
+		routeStats.RecordPreCheck += addedErrorCount
 	}
 	recordCounts["parser_error"] = errorCount
 
 	// Calculate duration
 	duration := time.Since(startTime)
-	log.Printf("Time to parse: %s", duration)
-
-	log.Printf("Validation errors: RecordPreCheck=%d, FieldValue=%d, ValueConsistency=%d, CaseConsistency=%d, Total=%d",
-		routeStats.RecordPreCheck, routeStats.FieldValue, routeStats.ValueConsistency, routeStats.CaseConsistency, routeStats.Total())
-	log.Printf("Batches: %d, Groups: %d", routeStats.BatchCount, routeStats.GroupCount)
+	completedAttrs := dfCtx.LogAttrsWithStage("complete",
+		slog.Int64(logging.KeyDurationMS, duration.Milliseconds()),
+		slog.Any("record_counts", recordCounts),
+		slog.Int64("detail_record_count", fileStats.DetailRows),
+		slog.Int64("error_count", errorCount),
+	)
+	completedAttrs = append(completedAttrs, routeStats.ErrorStats.LogAttrs()...)
+	logging.Info(ctx, "pipeline completed", completedAttrs...)
 
 	return &ParsingResult{
-		RecordCounts: recordCounts,
-		ErrorCount:   errorCount,
-		ErrorStats:   &routeStats.ErrorStats,
-		BatchCount:   routeStats.BatchCount,
-		GroupCount:   routeStats.GroupCount,
-		Duration:     duration,
+		RecordCounts:      recordCounts,
+		DetailRecordCount: fileStats.DetailRows,
+		ErrorCount:        errorCount,
+		ErrorStats:        &routeStats.ErrorStats,
+		BatchCount:        routeStats.BatchCount,
+		GroupCount:        routeStats.GroupCount,
+		Duration:          duration,
 	}, nil
 }
 
@@ -355,12 +385,10 @@ func (p *Pipeline) writeNoRecordsCreatedError(
 	validationOrchestrator *validation.ValidationOrchestrator,
 	datafileID int32,
 	headerRecord *parser.ParsedRecord,
+	validZeroRecordSubmission bool,
 	writeRow func([]any) error,
 ) (int64, error) {
-	if !p.config.IncludeRecords || !p.config.IncludeErrors {
-		return 0, nil
-	}
-	if headerRecord != nil && headerRecord.Get("type") == "C" {
+	if !p.config.IncludeRecords || !p.config.IncludeErrors || validZeroRecordSubmission {
 		return 0, nil
 	}
 
@@ -375,6 +403,26 @@ func (p *Pipeline) writeNoRecordsCreatedError(
 		return 0, err
 	}
 
+	return 1, nil
+}
+
+func (p *Pipeline) writeTrailerRecordCountError(ctx context.Context, router *writer.Router, datafileID int32, stats *validation.FileRecordStats) (int64, error) {
+	if !p.config.IncludeErrors || stats == nil || stats.DetailRows != 0 || stats.TrailerCount != 1 || !stats.TrailerValid {
+		return 0, nil
+	}
+	if int64(stats.TrailerRecordCount) == stats.DetailRows {
+		return 0, nil
+	}
+
+	row := writer.SerializeParserError(
+		stats.TrailerRowNumber,
+		fmt.Sprintf("The number of records in the TRAILER row count: %d, does not match the number of records detected in the file: %d.", stats.TrailerRecordCount, stats.DetailRows),
+		validation.ErrorTypePreCheck,
+		datafileID,
+	)
+	if err := router.RouteErrorRow(ctx, row); err != nil {
+		return 0, err
+	}
 	return 1, nil
 }
 
@@ -414,11 +462,17 @@ func (p *Pipeline) handleMultipleHeaders(ctx context.Context, cancelRun context.
 		errs = append(errs, rollbackErr)
 	}
 	if err := errors.Join(errs...); err != nil {
-		log.Printf("failed to rollback datafile records: %v", err)
+		logging.Error(ctx, "failed to rollback datafile records",
+			slog.Int(logging.KeyFileID, int(dfCtx.DatafileID)),
+			slog.Any(logging.KeyError, err),
+		)
 		return nil, err
 	}
 
-	log.Printf("Header validation failed: Multiple headers found.")
+	logging.Warn(ctx, "header validation failed", dfCtx.LogAttrsWithStage("header_validation",
+		slog.String("reason", "multiple_headers"),
+		slog.Int("row_number", rowNumber),
+	)...)
 	headerErr := writer.SerializeParserError(
 		rowNumber,
 		"Multiple headers found.",
@@ -426,7 +480,10 @@ func (p *Pipeline) handleMultipleHeaders(ctx context.Context, cancelRun context.
 		dfCtx.DatafileID,
 	)
 	if _, flushErr := p.sink.Flush(ctx, router.ErrorTableName(), writer.ParserErrorColumns(), [][]any{headerErr}); flushErr != nil {
-		log.Printf("failed to write multiple headers error: %v", flushErr)
+		logging.Error(ctx, "failed to write multiple headers error",
+			slog.Int(logging.KeyFileID, int(dfCtx.DatafileID)),
+			slog.Any(logging.KeyError, flushErr),
+		)
 	}
 	return &ParsingResult{
 		RecordCounts: map[string]int64{"parser_error": 1},
@@ -436,7 +493,9 @@ func (p *Pipeline) handleMultipleHeaders(ctx context.Context, cancelRun context.
 }
 
 func (p *Pipeline) handleFRAFirstRowInvalid(ctx context.Context, dfCtx DataFileContext, router *writer.Router, startTime time.Time) *ParsingResult {
-	log.Printf("FRA first-row validation failed: File does not begin with FRA data.")
+	logging.Warn(ctx, "FRA first-row validation failed", dfCtx.LogAttrsWithStage("first_row_validation",
+		slog.String("reason", "file_does_not_begin_with_fra_data"),
+	)...)
 	parserErr := writer.SerializeParserError(
 		1,
 		"File does not begin with FRA data.",
@@ -444,10 +503,16 @@ func (p *Pipeline) handleFRAFirstRowInvalid(ctx context.Context, dfCtx DataFileC
 		dfCtx.DatafileID,
 	)
 	if routeErr := router.RouteErrorRow(ctx, parserErr); routeErr != nil {
-		log.Printf("failed to write FRA first-row error: %v", routeErr)
+		logging.Error(ctx, "failed to write FRA first-row error",
+			slog.Int(logging.KeyFileID, int(dfCtx.DatafileID)),
+			slog.Any(logging.KeyError, routeErr),
+		)
 	}
 	if stopErr := router.Stop(); stopErr != nil {
-		log.Printf("failed to stop router: %v", stopErr)
+		logging.Error(ctx, "failed to stop router",
+			slog.Int(logging.KeyFileID, int(dfCtx.DatafileID)),
+			slog.Any(logging.KeyError, stopErr),
+		)
 	}
 
 	return &ParsingResult{
@@ -475,13 +540,21 @@ func (p *Pipeline) handleHeaderValidationResult(
 	allErrors := headerResult.AllErrors()
 	headerStats := countHeaderRecordValidationErrors(headerResult)
 
-	log.Printf("Header validation produced %d error(s):", len(allErrors))
+	logging.Warn(ctx, "header validation produced errors", dfCtx.LogAttrsWithStage("header_validation",
+		slog.Int("error_count", len(allErrors)),
+	)...)
 	for _, vr := range allErrors {
 		msg := renderHeaderErrorMessage(vr, parseCtx.Header, valDfCtx)
-		log.Printf("  [%s] %s", vr.ErrorType, msg)
+		logging.Debug(ctx, "header validation error", dfCtx.LogAttrsWithStage("header_validation",
+			slog.String("error_type", string(vr.ErrorType)),
+			slog.String("error_message", msg),
+		)...)
 		row := writer.SerializeParserError(parseCtx.Header.LineNumber, msg, vr.ErrorType, dfCtx.DatafileID)
 		if routeErr := router.RouteErrorRow(ctx, row); routeErr != nil {
-			log.Printf("failed to write header error: %v", routeErr)
+			logging.Error(ctx, "failed to write header error",
+				slog.Int(logging.KeyFileID, int(dfCtx.DatafileID)),
+				slog.Any(logging.KeyError, routeErr),
+			)
 		}
 	}
 
@@ -489,15 +562,23 @@ func (p *Pipeline) handleHeaderValidationResult(
 		return headerStats, nil
 	}
 
-	log.Printf("Header validation failed with %d error(s); stopping pipeline.", len(allErrors))
-	addedErrorCount, err := p.writeNoRecordsCreatedError(ctx, validationOrchestrator, dfCtx.DatafileID, parseCtx.Header, func(row []any) error {
+	logging.Warn(ctx, "header validation has blocking errors", dfCtx.LogAttrsWithStage("header_validation",
+		slog.Int("error_count", len(allErrors)),
+	)...)
+	addedErrorCount, err := p.writeNoRecordsCreatedError(ctx, validationOrchestrator, dfCtx.DatafileID, parseCtx.Header, false, func(row []any) error {
 		return router.RouteErrorRow(ctx, row)
 	})
 	if err != nil {
-		log.Printf("failed to write no-records-created error: %v", err)
+		logging.Error(ctx, "failed to write no-records-created error",
+			slog.Int(logging.KeyFileID, int(dfCtx.DatafileID)),
+			slog.Any(logging.KeyError, err),
+		)
 	}
 	if stopErr := router.Stop(); stopErr != nil {
-		log.Printf("failed to stop router: %v", stopErr)
+		logging.Error(ctx, "failed to stop router",
+			slog.Int(logging.KeyFileID, int(dfCtx.DatafileID)),
+			slog.Any(logging.KeyError, stopErr),
+		)
 	}
 	return headerStats, &ParsingResult{
 		RecordCounts: map[string]int64{"parser_error": int64(len(allErrors)) + addedErrorCount},
@@ -510,7 +591,9 @@ func (p *Pipeline) handleHeaderValidationResult(
 // When HEADER parsing fails, generate Error and fail pipeline
 func (p *Pipeline) handleHeaderParseInvalid(err error, ctx context.Context, dfCtx DataFileContext, router *writer.Router, validationOrchestrator *validation.ValidationOrchestrator, startTime time.Time) (*ParsingResult, error) {
 	// First line is not a HEADER record or other error — generate a PRE_CHECK error and stop
-	log.Printf("Header validation failed: %s.", err.Error())
+	logging.Warn(ctx, "header parse failed", dfCtx.LogAttrsWithStage("header_parse",
+		slog.String(logging.KeyError, err.Error()),
+	)...)
 	headerErr := writer.SerializeParserError(
 		1,
 		err.Error(),
@@ -518,16 +601,25 @@ func (p *Pipeline) handleHeaderParseInvalid(err error, ctx context.Context, dfCt
 		dfCtx.DatafileID,
 	)
 	if routeErr := router.RouteErrorRow(ctx, headerErr); routeErr != nil {
-		log.Printf("failed to write header error: %v", routeErr)
+		logging.Error(ctx, "failed to write header error",
+			slog.Int(logging.KeyFileID, int(dfCtx.DatafileID)),
+			slog.Any(logging.KeyError, routeErr),
+		)
 	}
-	addedErrorCount, writeErr := p.writeNoRecordsCreatedError(ctx, validationOrchestrator, dfCtx.DatafileID, nil, func(row []any) error {
+	addedErrorCount, writeErr := p.writeNoRecordsCreatedError(ctx, validationOrchestrator, dfCtx.DatafileID, nil, false, func(row []any) error {
 		return router.RouteErrorRow(ctx, row)
 	})
 	if writeErr != nil {
-		log.Printf("failed to write no-records-created error: %v", writeErr)
+		logging.Error(ctx, "failed to write no-records-created error",
+			slog.Int(logging.KeyFileID, int(dfCtx.DatafileID)),
+			slog.Any(logging.KeyError, writeErr),
+		)
 	}
 	if stopErr := router.Stop(); stopErr != nil {
-		log.Printf("failed to stop router: %v", stopErr)
+		logging.Error(ctx, "failed to stop router",
+			slog.Int(logging.KeyFileID, int(dfCtx.DatafileID)),
+			slog.Any(logging.KeyError, stopErr),
+		)
 	}
 	return &ParsingResult{
 		RecordCounts: map[string]int64{"parser_error": 1 + addedErrorCount},
@@ -544,14 +636,26 @@ func accumulateBatches(
 	workers *WorkerPool,
 	router *writer.Router,
 	datafileID int32,
+	trailerSchema *schema.CompiledSchema,
+	validationOrchestrator *validation.ValidationOrchestrator,
+	dfCtx *validation.DataFileContext,
+	stats *validation.FileRecordStats,
+	requireTrailer bool,
 ) error {
+	if stats == nil {
+		stats = &validation.FileRecordStats{}
+	}
 	for row, err := range dec.Rows() {
 		if err != nil {
 			return err
 		}
+		stats.MaxLineNumber = max(stats.MaxLineNumber, row.LineNum())
 
 		batch, sch, isAccumulated, err := acc.Add(row)
 		if err != nil {
+			if row.RecordType() != "HEADER" && row.RecordType() != "TRAILER" {
+				stats.DetailRows++
+			}
 			if errors.Is(err, sentinel.ErrUnknownRecordType) {
 				parserErr := writer.SerializeParserError(
 					row.LineNum(),
@@ -563,15 +667,30 @@ func accumulateBatches(
 					return routeErr
 				}
 			}
-			log.Printf("Line %d: %v", row.LineNum(), err)
 			continue
 		}
 
 		if !isAccumulated && sch != nil {
 			if row.RecordType() == "HEADER" {
+				stats.HeaderCount++
 				return sentinel.NewMultipleHeadersError(row.LineNum())
 			}
-			log.Printf("Line %d: %s (not accumulated)", row.LineNum(), sch.RecordType)
+			if row.RecordType() == "TRAILER" {
+				result := validationOrchestrator.ValidateTrailerRow(
+					row,
+					trailerSchema,
+					dfCtx,
+					stats,
+				)
+				if err := routeTrailerRowValidationResult(ctx, row, router, datafileID, result); err != nil {
+					return err
+				}
+				continue
+			}
+		}
+
+		if isAccumulated {
+			stats.DetailRows++
 		}
 
 		// For non-keyed modes, batches may be returned during iteration
@@ -585,5 +704,78 @@ func accumulateBatches(
 		workers.Submit(batch)
 	}
 
+	if requireTrailer {
+		if err := validateTrailerFileContext(ctx, router, datafileID, stats); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func routeTrailerRowValidationResult(
+	ctx context.Context,
+	row decoder.Row,
+	router *writer.Router,
+	datafileID int32,
+	result *validation.TrailerRowValidationResult,
+) error {
+	if result.MultipleTrailers {
+		parserErr := writer.SerializeParserError(
+			row.LineNum(),
+			"Multiple trailers found.",
+			validation.ErrorTypePreCheck,
+			datafileID,
+		)
+		if routeErr := router.RouteErrorRow(ctx, parserErr); routeErr != nil {
+			return routeErr
+		}
+	}
+
+	if result.ParseError != nil {
+		parserErr := writer.SerializeParserError(
+			row.LineNum(),
+			result.ParseError.Error(),
+			validation.ErrorTypePreCheck,
+			datafileID,
+		)
+		return router.RouteErrorRow(ctx, parserErr)
+	}
+
+	if result.Record == nil || result.ValidationResult == nil {
+		return nil
+	}
+
+	for _, vr := range result.ValidationResult.AllErrors() {
+		if err := router.RouteErrorRow(ctx, writer.SerializeError(vr, result.Record, nil, datafileID, nil)); err != nil {
+			result.Record.Schema.ReleaseRecord(result.Record)
+			return err
+		}
+	}
+
+	result.Record.Schema.ReleaseRecord(result.Record)
+	return nil
+}
+
+func validateTrailerFileContext(ctx context.Context, router *writer.Router, datafileID int32, stats *validation.FileRecordStats) error {
+	if stats.TrailerCount == 0 {
+		rowNumber := stats.MaxLineNumber
+		parserErr := writer.SerializeParserError(
+			rowNumber,
+			"Your file does not end with a TRAILER record.",
+			validation.ErrorTypePreCheck,
+			datafileID,
+		)
+		return router.RouteErrorRow(ctx, parserErr)
+	}
+	if stats.TrailerCount == 1 && stats.TrailerRowNumber != stats.MaxLineNumber {
+		parserErr := writer.SerializeParserError(
+			stats.MaxLineNumber,
+			"Your file does not end with a TRAILER record.",
+			validation.ErrorTypePreCheck,
+			datafileID,
+		)
+		return router.RouteErrorRow(ctx, parserErr)
+	}
 	return nil
 }

@@ -43,6 +43,36 @@ func TestCLI_OverrideDatabaseURL(t *testing.T) {
 	}
 }
 
+func TestCLI_OverrideGlobalLogLevel(t *testing.T) {
+	cli, ctx, err := ParseCLI([]string{"--global.log-level=debug"})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	cfg := DefaultConfig()
+	cli.ApplyTo(cfg, ctx)
+
+	if cfg.Global.LogLevel != "debug" {
+		t.Errorf("Global.LogLevel = %q, want debug", cfg.Global.LogLevel)
+	}
+}
+
+func TestCLI_OverrideGlobalLogLevelFromEnv(t *testing.T) {
+	t.Setenv("GO_PARSER_LOG_LEVEL", "warn")
+
+	cli, ctx, err := ParseCLI([]string{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	cfg := DefaultConfig()
+	cli.ApplyTo(cfg, ctx)
+
+	if cfg.Global.LogLevel != "warn" {
+		t.Errorf("Global.LogLevel = %q, want warn from GO_PARSER_LOG_LEVEL", cfg.Global.LogLevel)
+	}
+}
+
 func TestCLI_OverrideDatabaseTablePrefix(t *testing.T) {
 	cli, ctx, err := ParseCLI([]string{"--database.table-prefix=parser2_"})
 	if err != nil {

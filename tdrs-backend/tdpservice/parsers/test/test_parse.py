@@ -1569,13 +1569,19 @@ class TestParse:
 
         errors = ParserError.objects.filter(file=no_records_file)
 
-        assert errors.count() == 1
+        assert errors.count() == 2
 
-        error = errors.first()
-        assert error.error_message == "No records created."
-        assert error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-        assert error.content_type is None
-        assert error.object_id is None
+        count_error = errors.get(
+            error_message="The number of records in the TRAILER row count: 1, does not match the number of records detected in the file: 0."
+        )
+        assert count_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+        assert count_error.content_type is None
+        assert count_error.object_id is None
+
+        no_records_error = errors.get(error_message="No records created.")
+        assert no_records_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+        assert no_records_error.content_type is None
+        assert no_records_error.object_id is None
 
     @pytest.mark.django_db
     def test_parse_aggregates_rejected_datafile(
@@ -1890,6 +1896,65 @@ class TestParse:
         errors = ParserError.objects.filter(file=datafile).order_by("id")
         assert errors.count() == 0
         assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
+
+    @pytest.mark.django_db()
+    @pytest.mark.parametrize(
+        "fixture_name",
+        [
+            "tanf_section1_no_records",
+            "tanf_section3_no_records",
+            "tanf_section4_no_records",
+        ],
+    )
+    def test_parse_tanf_zero_record_sections(self, fixture_name, request, dfs):
+        """Test parsing valid zero-record TANF files."""
+        datafile = request.getfixturevalue(fixture_name)
+        dfs.datafile = datafile
+        dfs.save()
+
+        parse_datafile(dfs, datafile)
+
+        errors = ParserError.objects.filter(file=datafile).order_by("id")
+        assert errors.count() == 0
+        assert dfs.total_number_of_records_in_file == 0
+        assert dfs.total_number_of_records_created == 0
+        assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
+
+    @pytest.mark.django_db()
+    def test_parse_tanf_zero_record_bad_trailer_count_rejected(
+        self, tanf_section1_no_records_bad_trailer_count, dfs
+    ):
+        """Test zero-record files reject when trailer count is not zero."""
+        datafile = tanf_section1_no_records_bad_trailer_count
+        dfs.datafile = datafile
+        dfs.save()
+
+        parse_datafile(dfs, datafile)
+
+        errors = ParserError.objects.filter(file=datafile).order_by("id")
+        assert errors.filter(
+            error_message="The number of records in the TRAILER row count: 1, does not match the number of records detected in the file: 0.",
+            error_type=ParserErrorCategoryChoices.PRE_CHECK,
+        ).exists()
+        assert dfs.get_status() == DataFileSummary.Status.REJECTED
+
+    @pytest.mark.django_db()
+    def test_parse_tanf_detail_rows_skip_trailer_count_precheck(
+        self, tanf_section1_unknown_record_bad_trailer_count, dfs
+    ):
+        """Test trailer count precheck is limited to files with zero detail rows."""
+        datafile = tanf_section1_unknown_record_bad_trailer_count
+        dfs.datafile = datafile
+        dfs.save()
+
+        parse_datafile(dfs, datafile)
+
+        errors = ParserError.objects.filter(file=datafile)
+        assert (
+            errors.filter(error_message__startswith="TRAILER record count").count() == 0
+        )
+        assert errors.filter(error_message="No records created.").exists()
+        assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
     @pytest.mark.django_db
     def test_parse_tanf_s1_federally_funded_recipients(

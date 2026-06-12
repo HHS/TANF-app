@@ -3,7 +3,6 @@ package decoder
 import (
 	"fmt"
 	"iter"
-	"log"
 	"slices"
 
 	"go-parser/internal/config/filespec"
@@ -15,7 +14,6 @@ type Sortable struct {
 	sorted      bool
 	sortedRows  []Row
 	unkeyedRows []Row
-	trailer     Row
 }
 
 // IsSorted returns true if DoSort has been called.
@@ -29,6 +27,9 @@ func (s *Sortable) DoSort(
 	keyFields []filespec.KeyFieldDef,
 	groupedSchemas []string,
 ) error {
+	s.sortedRows = nil
+	s.unkeyedRows = nil
+
 	groupedSet := make(map[string]bool, len(groupedSchemas))
 	for _, name := range groupedSchemas {
 		groupedSet[name] = true
@@ -56,16 +57,7 @@ func (s *Sortable) DoSort(
 
 		// Check if this schema participates in grouping
 		if !groupedSet[sch.Path] {
-			// Non-grouped record: HEADER or TRAILER
-			switch sch.RecordType {
-			case "HEADER":
-				// Add the extra HEADER record(s) to the unkeyedRows which are processed after keyedRows
-				s.unkeyedRows = append(s.unkeyedRows, row)
-			case "TRAILER":
-				s.trailer = row
-			default:
-				s.unkeyedRows = append(s.unkeyedRows, row)
-			}
+			s.unkeyedRows = append(s.unkeyedRows, row)
 			continue
 		}
 
@@ -98,12 +90,6 @@ func (s *Sortable) DoSort(
 	}
 
 	s.sorted = true
-
-	log.Printf("Presort complete: %d data rows sorted, %d unkeyed rows",
-		len(s.sortedRows), len(s.unkeyedRows))
-	if s.trailer != nil {
-		log.Printf("Line %d: TRAILER (not accumulated)", s.trailer.LineNum())
-	}
 
 	return nil
 }

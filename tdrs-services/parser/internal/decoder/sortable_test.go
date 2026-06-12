@@ -125,7 +125,7 @@ func TestSortable_SortsByKey(t *testing.T) {
 	}
 }
 
-func TestSortable_SeparatesTrailerAndUnkeyed(t *testing.T) {
+func TestSortable_RetainsFileLevelAndUnkeyedRows(t *testing.T) {
 	detector := buildTestDetector()
 	keyFields := testPositionalKeyFields()
 	groupedSchemas := []string{"tanf/t1", "tanf/t2", "tanf/t3"}
@@ -152,9 +152,9 @@ func TestSortable_SeparatesTrailerAndUnkeyed(t *testing.T) {
 		rows = append(rows, row)
 	}
 
-	// 1 sorted data row + 2 unkeyed rows (XX unrecognized + T1short)
-	if len(rows) != 3 {
-		t.Fatalf("expected 3 rows (1 sorted + 2 unkeyed), got %d", len(rows))
+	// 1 sorted data row + 3 unkeyed rows (trailer + XX unrecognized + T1short)
+	if len(rows) != 4 {
+		t.Fatalf("expected 4 rows (1 sorted + 3 unkeyed), got %d", len(rows))
 	}
 
 	// First row should be the sorted data row
@@ -162,12 +162,15 @@ func TestSortable_SeparatesTrailerAndUnkeyed(t *testing.T) {
 		t.Errorf("expected sorted row at line 1, got line %d", rows[0].LineNum())
 	}
 
-	// Unkeyed rows follow
-	if rows[1].LineNum() != 3 {
-		t.Errorf("expected unkeyed row at line 3, got line %d", rows[1].LineNum())
+	// Unkeyed rows follow in original order.
+	if rows[1].LineNum() != 2 {
+		t.Errorf("expected trailer row at line 2, got line %d", rows[1].LineNum())
 	}
-	if rows[2].LineNum() != 4 {
-		t.Errorf("expected unkeyed row at line 4, got line %d", rows[2].LineNum())
+	if rows[2].LineNum() != 3 {
+		t.Errorf("expected unkeyed row at line 3, got line %d", rows[2].LineNum())
+	}
+	if rows[3].LineNum() != 4 {
+		t.Errorf("expected unkeyed row at line 4, got line %d", rows[3].LineNum())
 	}
 }
 

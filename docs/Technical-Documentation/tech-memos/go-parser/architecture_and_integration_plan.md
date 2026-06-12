@@ -352,6 +352,10 @@ Define which schemas belong to a file, how to detect record types, and how to gr
 - **Accumulator**: key-based grouping for case data (sections 1-2), batching for independent records (sections 3-4, FRA)
 - **Presort**: enabled for grouped schemas to guarantee in-memory duplicate detection
 
+Presort is intentionally performed before accumulation for grouped files so records with the same case key (`RPT_MONTH_YEAR`, `CASE_NUMBER`) are grouped together before group validators run. This allows exact and partial duplicate to be performed for each complete case group in- memory without relying on database cleanup queries.
+
+The tradeoff is memory. Presort does not hold only the raw file bytes; it also keeps decoded row objects, sort keys, row references, and sorted/unkeyed slices before the downstream parse and validation workers consume them. For the current largest known submitted file size, roughly 60 MB, this is expected to be sufficient when the parser has controlled concurrency and sufficient container headroom, but peak heap/RSS can be several times the input size. To account for this, we should size the parser container against measured peak memory rather than input file size alone. If measured memory pressure becomes unacceptable, we could implement disk-backed external presort that preserves the same accumulator and validation model while capping heap usage.
+
 ### Schemas
 
 Define the field layout for each record type:

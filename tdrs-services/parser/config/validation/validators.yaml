@@ -448,6 +448,11 @@ record_validators:
     message: "HEADER: record length is {{.RecordLength}} characters but must be 23."
     description: "RecordLength includes trailing newline (23 or 24 are both valid for a 23-char header)"
 
+  - id: trailer_record_length
+    expr: "RecordLength == 23"
+    error_type: RECORD_PRE_CHECK
+    message: "TRAILER: record length is {{.RecordLength}} characters but must be 23."
+
   - id: header_tribe_fips_program_agree
     expr: >
       ((GetString('program_type') == 'TAN' and (isEmpty(GetString('state_fips')) or GetString('state_fips') == '00'))
@@ -514,7 +519,7 @@ group_validators:
     expr: "getExactDuplicates(Group, Params.record_type)"
     error_type: CASE_CONSISTENCY
     result_mode: per_record
-    message: "Duplicate record detected with record type {{.RecordType}} at line {{.LineNumber}}."
+    message: "Duplicate record detected with record type {{.RecordType}} at line {{.LineNumber}}. Record is a duplicate of the record at line number {{.ExistingLineNumber}}."
 
   # Partial duplicate detection - specific key fields match (excludes exact dups)
   # Params: record_type (string), fields ([]string) - key fields to compare
@@ -522,7 +527,7 @@ group_validators:
     expr: "getPartialDuplicates(Group, Params.record_type, Params.fields)"
     error_type: CASE_CONSISTENCY
     result_mode: per_record
-    message: "Partial duplicate record detected with record type {{.RecordType}} at line {{.LineNumber}}."
+    message: "Partial duplicate record detected with record type {{.RecordType}} at line {{.LineNumber}}. Record is a partial duplicate of the record at line number {{.ExistingLineNumber}}. Duplicated fields causing error: {{.DuplicatedFields}}"
 
   # Partial duplicate detection with field exclusion (excludes exact dups)
   # Params: record_type, fields, exclude_field, exclude_values
@@ -530,7 +535,7 @@ group_validators:
     expr: "getPartialDuplicatesExcluding(Group, Params.record_type, Params.fields, Params.exclude_field, Params.exclude_values)"
     error_type: CASE_CONSISTENCY
     result_mode: per_record
-    message: "Partial duplicate record detected with record type {{.RecordType}} at line {{.LineNumber}}."
+    message: "Partial duplicate record detected with record type {{.RecordType}} at line {{.LineNumber}}. Record is a partial duplicate of the record at line number {{.ExistingLineNumber}}. Duplicated fields causing error: {{.DuplicatedFields}}"
 
   # =============================================================================
   # Federally funded SSN validator (group scope, per-record errors)

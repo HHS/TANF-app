@@ -390,7 +390,7 @@ def test_post_parse_finalizes_shadow_summary_only(monkeypatch, stt):
             {"month": "Dec", "total_errors": 0},
         ]
     }
-    assert "data_file.txt_error_report" in shadow_summary.error_report.name
+    assert "data_file.txt_shadow_error_report" in shadow_summary.error_report.name
     assert production_summary.status == DataFileSummary.Status.PENDING
     assert datafile.state == SubmissionState.VIRUS_SCAN_COMPLETED
     assert sent["called"] is False
