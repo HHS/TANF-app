@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -12,6 +12,7 @@ import (
 	"go-parser/internal/config"
 	"go-parser/internal/db"
 	"go-parser/internal/decoder"
+	"go-parser/internal/logging"
 	"go-parser/internal/pipeline"
 	"go-parser/internal/sentinel"
 	"go-parser/internal/storage/reader"
@@ -53,7 +54,10 @@ func (b *Base) ConnectDB(ctx context.Context) (*pgxpool.Pool, error) {
 		return nil, fmt.Errorf("failed to load content types: %w", err)
 	}
 	b.Registry.LoadContentTypes(contentTypes)
-	log.Printf("Loaded %d content types from database", len(contentTypes))
+	logging.Info(ctx, "loaded content types from database",
+		slog.String(logging.KeyStage, "database_metadata"),
+		slog.Int("content_type_count", len(contentTypes)),
+	)
 
 	return pool, nil
 }
