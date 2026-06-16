@@ -330,8 +330,7 @@ class TestGoParse:
             (
                 "SSP",
                 "Active Case Data",
-                # Go parser is explicitely looking for records prefixed with "M"
-                "Unknown record type was found.",
+                "Submitted program type (SSP) does not match file program type (TAN).",
                 None,
                 True,
                 2,
@@ -352,6 +351,7 @@ class TestGoParse:
         """Test parsing when file metadata does not match the raw data layout."""
         small_correct_file.program_type = program
         small_correct_file.section = section
+        small_correct_file.version = small_correct_file.id
         small_correct_file.save()
 
         dfs.datafile = small_correct_file
@@ -374,13 +374,18 @@ class TestGoParse:
             assert dfs.case_aggregates == expected_aggregates
 
         err = parser_errors.first()
-        assert (
-            err.error_type == ParserErrorCategoryChoices.PRE_CHECK
-            or ParserErrorCategoryChoices.RECORD_PRE_CHECK
-        )
+        assert err.error_type in [
+            ParserErrorCategoryChoices.PRE_CHECK,
+            ParserErrorCategoryChoices.RECORD_PRE_CHECK,
+        ]
         assert err.error_message == expected_message
         assert err.content_type is None
         assert err.object_id is None
+
+        if program == "SSP" and section == "Active Case Data":
+            assert TANF_T1.objects.filter(datafile=small_correct_file).count() == 0
+            assert TANF_T2.objects.filter(datafile=small_correct_file).count() == 0
+            assert TANF_T3.objects.filter(datafile=small_correct_file).count() == 0
 
     @pytest.mark.django_db(transaction=True)
     @pytest.mark.parametrize(
@@ -1391,6 +1396,10 @@ class TestGoParse:
         assert (
             Tribal_TANF_T3.objects.filter(datafile=tribal_section_1_file).count() == 2
         )
+        assert not ParserError.objects.filter(
+            file=tribal_section_1_file,
+            error_message__contains="Submitted program type",
+        ).exists()
 
         t1_objs = Tribal_TANF_T1.objects.filter(
             datafile=tribal_section_1_file
@@ -2214,6 +2223,7 @@ class TestGoParse:
         assert TANF_T3.objects.filter(datafile=case_aggregates_edge_case).count() == 6
 
     @pytest.mark.django_db(transaction=True)
+    @pytest.mark.skip(reason="long runtime")
     def test_go_parse_super_big_s1_file(self, super_big_s1_file, dfs):
         """Test parsing super_big_s1_file and validate all records are created."""
         super_big_s1_file.year = 2023

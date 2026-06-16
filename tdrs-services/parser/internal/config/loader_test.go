@@ -25,6 +25,8 @@ func TestLoadConfig_DefaultsOnly(t *testing.T) {
 func TestLoadConfig_ParsesParserYAML(t *testing.T) {
 	dir := t.TempDir()
 	content := `
+global:
+  log_level: debug
 pipeline:
   num_workers: 42
   work_buffer_size: 512
@@ -47,6 +49,9 @@ database:
 
 	if cfg.Pipeline.NumWorkers != 42 {
 		t.Errorf("NumWorkers = %d, want 42", cfg.Pipeline.NumWorkers)
+	}
+	if cfg.Global.LogLevel != "debug" {
+		t.Errorf("Global.LogLevel = %q, want debug", cfg.Global.LogLevel)
 	}
 	if cfg.Pipeline.WorkBufferSize != 512 {
 		t.Errorf("WorkBufferSize = %d, want 512", cfg.Pipeline.WorkBufferSize)

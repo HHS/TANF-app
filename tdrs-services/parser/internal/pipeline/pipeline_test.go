@@ -3,6 +3,7 @@ package pipeline
 import (
 	"context"
 	"iter"
+	"log/slog"
 	"testing"
 
 	"go-parser/internal/config"
@@ -139,5 +140,47 @@ func TestDataFileContext_Fields(t *testing.T) {
 	}
 	if params.DatafileID != 42 {
 		t.Errorf("DatafileID = %d, want 42", params.DatafileID)
+	}
+}
+
+func TestDataFileContext_LogAttrsWithStage(t *testing.T) {
+	dfCtx := DataFileContext{
+		Program:       "TANF",
+		Section:       1,
+		DatafileID:    42,
+		FiscalYear:    2024,
+		FiscalQuarter: "Q1",
+		SectionName:   "Active Case Data",
+	}
+
+	attrs := dfCtx.LogAttrsWithStage("complete", slog.Int64("duration_ms", 123))
+	got := map[string]any{}
+	for _, attr := range attrs {
+		got[attr.Key] = attr.Value.Any()
+	}
+
+	if got["file_id"] != int64(42) {
+		t.Errorf("file_id = %v, want 42", got["file_id"])
+	}
+	if got["program"] != "TANF" {
+		t.Errorf("program = %v, want TANF", got["program"])
+	}
+	if got["section"] != int64(1) {
+		t.Errorf("section = %v, want 1", got["section"])
+	}
+	if got["section_name"] != "Active Case Data" {
+		t.Errorf("section_name = %v, want Active Case Data", got["section_name"])
+	}
+	if got["fiscal_year"] != int64(2024) {
+		t.Errorf("fiscal_year = %v, want 2024", got["fiscal_year"])
+	}
+	if got["fiscal_quarter"] != "Q1" {
+		t.Errorf("fiscal_quarter = %v, want Q1", got["fiscal_quarter"])
+	}
+	if got["stage"] != "complete" {
+		t.Errorf("stage = %v, want complete", got["stage"])
+	}
+	if got["duration_ms"] != int64(123) {
+		t.Errorf("duration_ms = %v, want 123", got["duration_ms"])
 	}
 }

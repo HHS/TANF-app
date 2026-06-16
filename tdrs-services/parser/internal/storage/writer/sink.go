@@ -6,13 +6,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"sync"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"go-parser/internal/logging"
 )
 
 // Sink is the destination for flushed row batches.
@@ -51,7 +53,11 @@ func (s *DatabaseSink) RollbackDatafile(ctx context.Context, datafileID int32, t
 	// Always clean up parser errors
 	errorTable := pgx.Identifier{errorTableName}.Sanitize()
 	if _, err := s.pool.Exec(ctx, fmt.Sprintf("DELETE FROM %s WHERE file_id = $1", errorTable), datafileID); err != nil {
-		log.Printf("rollback: failed to delete from %s for datafile %d: %v", errorTableName, datafileID, err)
+		logging.Error(ctx, "rollback failed to delete parser errors",
+			slog.Int(logging.KeyFileID, int(datafileID)),
+			slog.String("table_name", errorTableName),
+			slog.Any(logging.KeyError, err),
+		)
 		errs = append(errs, fmt.Errorf("delete %s for datafile %d: %w", errorTableName, datafileID, err))
 	}
 
@@ -59,7 +65,11 @@ func (s *DatabaseSink) RollbackDatafile(ctx context.Context, datafileID int32, t
 	for _, table := range tables {
 		query := fmt.Sprintf("DELETE FROM %s WHERE datafile_id = $1", pgx.Identifier{table}.Sanitize())
 		if _, err := s.pool.Exec(ctx, query, datafileID); err != nil {
-			log.Printf("rollback: failed to delete from %s for datafile %d: %v", table, datafileID, err)
+			logging.Error(ctx, "rollback failed to delete records",
+				slog.Int(logging.KeyFileID, int(datafileID)),
+				slog.String("table_name", table),
+				slog.Any(logging.KeyError, err),
+			)
 			errs = append(errs, fmt.Errorf("delete %s for datafile %d: %w", table, datafileID, err))
 		}
 	}

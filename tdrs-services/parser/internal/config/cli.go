@@ -23,7 +23,7 @@ type CLI struct {
 	MemProfile string `kong:"type=path,name='memprofile',help='Write memory profile to file'"`
 
 	// Global
-	GlobalLogLevel  string `kong:"name='global.log-level',help='Log level (debug, info, warn, error)'"`
+	GlobalLogLevel  string `kong:"name='global.log-level',env='GO_PARSER_LOG_LEVEL',help='Log level (debug, info, warn, error)'"`
 	GlobalConfigDir string `kong:"name='global.config-dir',help='Config directory'"`
 
 	// Server
