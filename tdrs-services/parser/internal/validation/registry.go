@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"text/template"
 
 	"github.com/expr-lang/expr"
@@ -22,6 +23,12 @@ var defaultErrorTypes = map[string]string{
 	ScopeGroup:  ErrorTypeCaseConsistency,
 }
 
+const (
+	ValidationEngineExpr   = "expr"
+	ValidationEngineHybrid = "hybrid"
+	ValidationEngineNative = "native"
+)
+
 // ValidatorRegistry manages compiled validators organized by scope.
 type ValidatorRegistry struct {
 	// Deduped expressions by (scope, exprString)
@@ -38,6 +45,7 @@ type ValidatorRegistry struct {
 	group  map[string][]*CompiledValidator            // filespec key -> validators
 
 	exprOpts []expr.Option
+	engine   string
 }
 
 // NewRegistry resolves validator file globs from the Config, loads
@@ -45,6 +53,12 @@ type ValidatorRegistry struct {
 // filespecs in the Registry.
 func NewRegistry(cfg *config.Config, reg *config.Registry) (*ValidatorRegistry, error) {
 	r := newValidatorRegistry()
+
+	engine, err := normalizeValidationEngine(cfg.Validation.Engine)
+	if err != nil {
+		return nil, err
+	}
+	r.engine = engine
 
 	// 1. Register custom functions
 	r.exprOpts = RegisterFunctions()
@@ -86,6 +100,21 @@ func newValidatorRegistry() *ValidatorRegistry {
 		field:       make(map[string]map[string][]*CompiledValidator),
 		record:      make(map[string][]*CompiledValidator),
 		group:       make(map[string][]*CompiledValidator),
+		engine:      ValidationEngineExpr,
+	}
+}
+
+func normalizeValidationEngine(engine string) (string, error) {
+	engine = strings.ToLower(strings.TrimSpace(engine))
+	if engine == "" {
+		return ValidationEngineExpr, nil
+	}
+
+	switch engine {
+	case ValidationEngineExpr, ValidationEngineHybrid, ValidationEngineNative:
+		return engine, nil
+	default:
+		return "", fmt.Errorf("unknown validation engine %q (expected expr, hybrid, or native)", engine)
 	}
 }
 
@@ -333,6 +362,18 @@ func (r *ValidatorRegistry) resolveValidatorByScope(scope string, vdef *validati
 		return nil, fmt.Errorf("compiling expression: %w", err)
 	}
 
+	var native NativeExecutor
+	if r.engine != ValidationEngineExpr {
+		var ok bool
+		native, ok, err = nativeExecutorFor(scope, id, params)
+		if err != nil {
+			return nil, fmt.Errorf("compiling native validator: %w", err)
+		}
+		if r.engine == ValidationEngineNative && !ok {
+			return nil, fmt.Errorf("native validation engine has no executor for %s validator %q", scope, id)
+		}
+	}
+
 	var msgTmpl *template.Template
 	if message != "" {
 		msgTmpl, err = template.New(id).Parse(message)
@@ -346,7 +387,9 @@ func (r *ValidatorRegistry) resolveValidatorByScope(scope string, vdef *validati
 		Scope:       scope,
 		ErrorType:   errorType,
 		ResultMode:  resultMode,
+		Engine:      r.engine,
 		Expr:        ce,
+		Native:      native,
 		Message:     msgTmpl,
 		Fields:      fields,
 		Params:      params,

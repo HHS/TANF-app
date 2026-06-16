@@ -253,13 +253,20 @@ type CompiledExpr struct {
 	Program any // *vm.Program from expr package
 }
 
+// NativeExecutor is a typed Go validator implementation.
+// It returns either a bool for single-result validators or a per-record result
+// value accepted by toPerRecordResults for group validators.
+type NativeExecutor func(env any) (any, error)
+
 // CompiledValidator is per-use-site (resolved message at compile time).
 type CompiledValidator struct {
 	ID          string
 	Scope       string             // "field", "record", or "group"
 	ErrorType   string             // The declared error type (or default based on scope)
 	ResultMode  string             // "single" (default) or "per_record" (for group validators)
+	Engine      string             // "expr", "hybrid", or "native"
 	Expr        *CompiledExpr      // Pointer to shared compiled expr
+	Native      NativeExecutor     // Optional native Go implementation
 	Message     *template.Template // Pre-resolved (default or override)
 	Fields      []string           // Fields involved (for record/group validators)
 	Params      map[string]any     // Runtime params for expressions (e.g., {n: 9})

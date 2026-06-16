@@ -8,9 +8,41 @@ import (
 	"go-parser/internal/parser"
 )
 
-// runProgram extracts the vm.Program from a CompiledValidator and runs it.
-// Returns the raw output and any error from program extraction or execution.
+// runProgram executes the selected engine for a compiled validator.
+// It keeps expr as the default for tests and callers that construct validators
+// directly without going through the registry.
 func runProgram(cv *CompiledValidator, env any) (any, error) {
+	engine := cv.Engine
+	if engine == "" {
+		engine = ValidationEngineExpr
+	}
+
+	switch engine {
+	case ValidationEngineNative:
+		if cv.Native == nil {
+			return nil, fmt.Errorf("native validator %s is not compiled", cv.ID)
+		}
+		output, err := cv.Native(env)
+		if err != nil {
+			return nil, fmt.Errorf("validator %s: %w", cv.ID, err)
+		}
+		return output, nil
+	case ValidationEngineHybrid:
+		if cv.Native != nil {
+			output, err := cv.Native(env)
+			if err != nil {
+				return nil, fmt.Errorf("validator %s: %w", cv.ID, err)
+			}
+			return output, nil
+		}
+	}
+
+	return runExprProgram(cv, env)
+}
+
+// runExprProgram extracts the vm.Program from a CompiledValidator and runs it.
+// Returns the raw output and any error from program extraction or execution.
+func runExprProgram(cv *CompiledValidator, env any) (any, error) {
 	program, ok := cv.Expr.Program.(*vm.Program)
 	if !ok {
 		return nil, fmt.Errorf("invalid program type for validator %s", cv.ID)
