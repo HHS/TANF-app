@@ -99,6 +99,7 @@ t5 = [
                 result_field_name="REC_FEDERAL_DISABILITY",
                 result_function=category3.isBetween(1, 2, inclusive=True),
             ),
+            category3.validate__REC_OASDI_INSURANCE__AGE_FIRST(),
         ],
         fields=[
             Field(

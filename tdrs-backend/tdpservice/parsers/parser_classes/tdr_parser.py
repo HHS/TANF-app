@@ -291,6 +291,28 @@ class TanfDataReportParser(BaseParser):
             self.bulk_create_errors(flush=True)
             return HeaderResult(is_valid=False)
 
+        program_type_result = category1.validate_header_program_type_matches_submission(
+            self.datafile,
+            program_type,
+        )
+
+        if not program_type_result.valid:
+            logger.info(
+                "Preparser Error -> Program type is not valid: "
+                f"{program_type_result.error_message}"
+            )
+            self.num_errors += 1
+            generator_args = ErrorGeneratorArgs(
+                record=None,
+                schema=None,
+                error_message=program_type_result.error_message,
+                fields=[],
+            )
+            err_obj = generate_error(generator_args=generator_args)
+            self.unsaved_parser_errors.update({1: [err_obj]})
+            self.bulk_create_errors(flush=True)
+            return HeaderResult(is_valid=False)
+
         # Ensure file section matches upload section
         section_result = category1.validate_header_section_matches_submission(
             self.datafile,
