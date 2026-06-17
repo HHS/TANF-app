@@ -23,6 +23,7 @@ class BaseUserFactory(factory.django.DjangoModelFactory):
 
         model = "users.User"
         django_get_or_create = ("username",)
+        skip_postgeneration_save = True
 
     id = factory.Faker("uuid4")
     username = factory.LazyFunction(uuid_email)
