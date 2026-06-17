@@ -174,10 +174,10 @@ class TestParse:
             (
                 "SSP",
                 "Active Case Data",
-                "No records created.",
+                "Submitted program type (SSP) does not match file program type (TAN).",
                 None,
                 True,
-                2,
+                1,
             ),
         ],
     )
@@ -221,6 +221,94 @@ class TestParse:
         assert err.error_message == expected_message
         assert err.content_type is None
         assert err.object_id is None
+
+        if program == "SSP" and section == "Active Case Data":
+            assert TANF_T1.objects.count() == 0
+            assert TANF_T2.objects.count() == 0
+            assert TANF_T3.objects.count() == 0
+
+    @pytest.mark.django_db
+    @pytest.mark.parametrize(
+        "fixture_name, program_type, expected_message, expected_models",
+        [
+            (
+                "small_correct_file",
+                "SSP",
+                "Submitted program type (SSP) does not match file program type (TAN).",
+                (TANF_T1, TANF_T2, TANF_T3),
+            ),
+            (
+                "small_ssp_section1_datafile",
+                "TAN",
+                "Submitted program type (TAN) does not match file program type (SSP).",
+                (SSP_M1, SSP_M2, SSP_M3),
+            ),
+            (
+                "tribal_section_1_file",
+                "TAN",
+                "Submitted program type (TAN) does not match file program type (TRIBAL).",
+                (Tribal_TANF_T1, Tribal_TANF_T2, Tribal_TANF_T3),
+            ),
+        ],
+    )
+    def test_parse_program_type_mismatch_precheck(
+        self,
+        request,
+        dfs,
+        fixture_name,
+        program_type,
+        expected_message,
+        expected_models,
+    ):
+        """Test header-derived program type mismatches are rejected as prechecks."""
+        datafile = request.getfixturevalue(fixture_name)
+        datafile.program_type = program_type
+        datafile.save()
+
+        dfs.datafile = datafile
+        dfs.save()
+
+        parse_datafile(dfs, datafile)
+
+        dfs.status = dfs.get_status()
+        assert dfs.status == DataFileSummary.Status.REJECTED
+
+        parser_errors = ParserError.objects.filter(file=datafile).order_by("id")
+        assert parser_errors.count() == 1
+
+        err = parser_errors.first()
+        assert err.row_number == 1
+        assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
+        assert err.error_message == expected_message
+        assert err.content_type is None
+        assert err.object_id is None
+
+        for model in expected_models:
+            assert model.objects.count() == 0
+
+    @pytest.mark.django_db
+    def test_parse_tribal_header_matches_tribal_submission(
+        self, tribal_section_1_file, dfs
+    ):
+        """Test TAN tribal headers still parse when submission metadata is TRIBAL."""
+        tribal_section_1_file.year = 2022
+        tribal_section_1_file.quarter = "Q1"
+        tribal_section_1_file.program_type = "TRIBAL"
+        tribal_section_1_file.save()
+
+        dfs.datafile = tribal_section_1_file
+        dfs.save()
+
+        parse_datafile(dfs, tribal_section_1_file)
+
+        assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
+        assert not ParserError.objects.filter(
+            file=tribal_section_1_file,
+            error_message__contains="Submitted program type",
+        ).exists()
+        assert Tribal_TANF_T1.objects.count() == 1
+        assert Tribal_TANF_T2.objects.count() == 1
+        assert Tribal_TANF_T3.objects.count() == 2
 
     @pytest.mark.django_db
     @pytest.mark.parametrize(
@@ -841,6 +929,49 @@ class TestParse:
 
         assert t5.SEX == 2
         assert t5.AMOUNT_UNEARNED_INCOME == "0000"
+
+    @pytest.mark.django_db()
+    @pytest.mark.parametrize(
+        "file_fixture,year,expected_message",
+        [
+            (
+                "oasdi_age_first_tanf_section2_file",
+                2021,
+                "Since person is older than 18, then 19A "
+                "(Received Disability Benefits: OASDI Program) must be 1 or 2",
+            ),
+            (
+                "oasdi_age_first_ssp_section2_file",
+                2019,
+                "Since person is older than 18, then 18A "
+                "(Received Disability Benefits: OASDI Program) must be 1 or 2",
+            ),
+            (
+                "oasdi_age_first_tribal_section2_file",
+                2020,
+                "Since person is older than 18, then 19A "
+                "(Received Disability Benefits: OASDI Program) must be 1 or 2",
+            ),
+        ],
+    )
+    def test_parse_oasdi_age_first_section2_files(
+        self, file_fixture, year, expected_message, request, dfs
+    ):
+        """Test committed manual fixtures exercise OASDI AGE_FIRST validation."""
+        datafile = request.getfixturevalue(file_fixture)
+        datafile.year = year
+        datafile.quarter = "Q1"
+        datafile.save()
+
+        dfs.datafile = datafile
+        dfs.save()
+
+        parse_datafile(dfs, datafile)
+
+        parser_errors = ParserError.objects.filter(file=datafile)
+        error_messages = [error.error_message for error in parser_errors]
+
+        assert expected_message in error_messages
 
     @pytest.mark.django_db()
     def test_parse_tanf_section2_file(self, tanf_section2_file, dfs):
