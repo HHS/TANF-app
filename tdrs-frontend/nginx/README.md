@@ -77,6 +77,13 @@ There are two config files: one for development and one for deployed application
 ### Whitelist IPs
 A list of IP addresses has been added to ```ip_whitelist.conf```. This means any request from an ip address not in the subnets included in this file will be rejected. This list is created manually and needs to be maintained to whitelist and include user IP subnets.
 
+### Non-production Basic Auth
+Non-production cloud.gov frontend deployments require Nginx basic auth. Production deployments copy an empty ```basic_auth.conf```, so production remains publicly accessible.
+
+The deploy script writes ```deployment/.htpasswd``` from the ```FRONTEND_BASIC_AUTH_HTPASSWD``` environment variable for any frontend deployment outside ```tanf-prod```. Store the full htpasswd entry in CI secrets. The develop Cypress deployment test also expects ```FRONTEND_BASIC_AUTH_USERNAME``` and ```FRONTEND_BASIC_AUTH_PASSWORD``` so tests can authenticate against the protected frontend.
+
+To rotate the shared non-production password, update those CI secrets and redeploy the affected non-production frontend environments.
+
 ### Security Headers
 All security headers are following best practices from [Mozilla](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers) and [OWASP](https://owasp.org/www-project-secure-headers/) and are added with comments on the config files.
 
