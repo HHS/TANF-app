@@ -41,6 +41,7 @@
 **<Details><Summary>Past Product Team Members</Summary>**
 (most recent first)
 
+* Lauren Hux, Raft, facilitator/product manager
 * Rob Gendron, Raft, facilitator/product manager
 * Andrew Jameson, Raft, tech lead
 * Steve Nino, Raft, facilitator/product manager
