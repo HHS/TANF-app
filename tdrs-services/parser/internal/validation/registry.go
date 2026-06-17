@@ -286,6 +286,39 @@ func (r *ValidatorRegistry) envTypeForScope(scope string) any {
 	}
 }
 
+func (r *ValidatorRegistry) compileExecutor(scope string, id string, exprStr string, resultMode string, params map[string]any) (ValidatorExecutor, string, error) {
+	if r.engine != ValidationEngineExpr {
+		native, ok, err := nativeExecutorFor(scope, id, params)
+		if err != nil {
+			return nil, "", fmt.Errorf("compiling native validator: %w", err)
+		}
+		if ok {
+			return native, ValidationEngineNative, nil
+		}
+		if r.engine == ValidationEngineNative {
+			return nil, "", fmt.Errorf("native validation engine has no executor for %s validator %q", scope, id)
+		}
+	}
+
+	executor, err := r.compileExprExecutor(scope, exprStr, resultMode)
+	if err != nil {
+		return nil, "", err
+	}
+	return executor, ValidationEngineExpr, nil
+}
+
+func (r *ValidatorRegistry) compileExprExecutor(scope string, exprStr string, resultMode string) (ValidatorExecutor, error) {
+	ce, err := r.getOrCompileExpr(scope, exprStr, resultMode)
+	if err != nil {
+		return nil, fmt.Errorf("compiling expression: %w", err)
+	}
+	executor, err := newExprExecutor(ce, scope, resultMode)
+	if err != nil {
+		return nil, fmt.Errorf("compiling expression executor: %w", err)
+	}
+	return executor, nil
+}
+
 // resolveValidatorByScope resolves a validator definition to a compiled validator using scope-based lookup.
 // If defaultErrorType is provided and vdef.ErrorType is empty, it will be used.
 func (r *ValidatorRegistry) resolveValidatorByScope(scope string, vdef *validation.ValidatorDef, defaultErrorType string) (*CompiledValidator, error) {
@@ -357,21 +390,9 @@ func (r *ValidatorRegistry) resolveValidatorByScope(scope string, vdef *validati
 		fields = deriveFieldsFromParams(params)
 	}
 
-	ce, err := r.getOrCompileExpr(scope, exprStr, resultMode)
+	executor, resolvedEngine, err := r.compileExecutor(scope, id, exprStr, resultMode, params)
 	if err != nil {
-		return nil, fmt.Errorf("compiling expression: %w", err)
-	}
-
-	var native NativeExecutor
-	if r.engine != ValidationEngineExpr {
-		var ok bool
-		native, ok, err = nativeExecutorFor(scope, id, params)
-		if err != nil {
-			return nil, fmt.Errorf("compiling native validator: %w", err)
-		}
-		if r.engine == ValidationEngineNative && !ok {
-			return nil, fmt.Errorf("native validation engine has no executor for %s validator %q", scope, id)
-		}
+		return nil, err
 	}
 
 	var msgTmpl *template.Template
@@ -387,9 +408,9 @@ func (r *ValidatorRegistry) resolveValidatorByScope(scope string, vdef *validati
 		Scope:       scope,
 		ErrorType:   errorType,
 		ResultMode:  resultMode,
-		Engine:      r.engine,
-		Expr:        ce,
-		Native:      native,
+		Engine:      resolvedEngine,
+		Expression:  exprStr,
+		Executor:    executor,
 		Message:     msgTmpl,
 		Fields:      fields,
 		Params:      params,
@@ -549,7 +570,7 @@ func validatorSemanticKey(cv *CompiledValidator) string {
 		Scope:       cv.Scope,
 		ErrorType:   cv.ErrorType,
 		ResultMode:  cv.ResultMode,
-		Expr:        compiledExprString(cv.Expr),
+		Expr:        cv.Expression,
 		Message:     templateString(cv.Message),
 		Fields:      fields,
 		Params:      cv.Params,
@@ -562,13 +583,6 @@ func validatorSemanticKey(cv *CompiledValidator) string {
 			key.ID, key.Scope, key.ErrorType, key.ResultMode, key.Expr, key.Message, key.Fields, key.Params, key.Description)
 	}
 	return string(encoded)
-}
-
-func compiledExprString(expr *CompiledExpr) string {
-	if expr == nil {
-		return ""
-	}
-	return expr.Expr
 }
 
 func templateString(tmpl *template.Template) string {

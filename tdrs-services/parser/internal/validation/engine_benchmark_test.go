@@ -24,15 +24,14 @@ func BenchmarkValidationFieldHotset(b *testing.B) {
 				{cv: mustFieldValidatorForBenchmark(b, validators, "is_numeric"), value: "12345"},
 				{cv: mustFieldValidatorForBenchmark(b, validators, "not_negative"), value: 0},
 			}
-			env := &FieldEnv{}
+			state := NewFieldValidationState(nil, "", nil, nil)
 
 			b.ReportAllocs()
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
 				for _, item := range items {
-					env.Value = item.value
-					env.Params = item.cv.Params
-					if result := Execute(item.cv, env); !result.Valid {
+					state.Value = item.value
+					if result := Execute(item.cv, state); !result.Valid {
 						b.Fatalf("validator %s failed: %v", item.cv.ID, result.Error)
 					}
 				}
@@ -47,7 +46,7 @@ func BenchmarkValidationRecordHotset(b *testing.B) {
 			validators, reg := loadProductionValidatorsForBenchmark(b, engine)
 			items := []struct {
 				cv  *CompiledValidator
-				env *RecordEnv
+				env *ValidationState
 			}{
 				recordLengthBenchmarkItem(b, validators, reg),
 				recordIfThenRangeBenchmarkItem(b, validators, reg),
@@ -59,7 +58,6 @@ func BenchmarkValidationRecordHotset(b *testing.B) {
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
 				for _, item := range items {
-					item.env.Params = item.cv.Params
 					if result := Execute(item.cv, item.env); !result.Valid {
 						b.Fatalf("validator %s failed: %v", item.cv.ID, result.Error)
 					}
@@ -75,7 +73,7 @@ func BenchmarkValidationGroupHotset(b *testing.B) {
 			validators, reg := loadProductionValidatorsForBenchmark(b, engine)
 			items := []struct {
 				cv  *CompiledValidator
-				env *GroupEnv
+				env *ValidationState
 			}{
 				groupMaxRecordsBenchmarkItem(b, validators, reg),
 				groupExactDuplicatesBenchmarkItem(b, validators, reg),
@@ -86,7 +84,6 @@ func BenchmarkValidationGroupHotset(b *testing.B) {
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
 				for _, item := range items {
-					item.env.Params = item.cv.Params
 					_ = ExecuteGroup(item.cv, item.env)
 				}
 			}
@@ -192,7 +189,7 @@ func findFieldValidatorForBenchmark(b *testing.B, validators *ValidatorRegistry,
 
 func recordLengthBenchmarkItem(b *testing.B, validators *ValidatorRegistry, reg *configpkg.Registry) struct {
 	cv  *CompiledValidator
-	env *RecordEnv
+	env *ValidationState
 } {
 	b.Helper()
 	schemaKey, cv := findRecordValidatorForBenchmark(b, validators, "record_length_min")
@@ -200,13 +197,13 @@ func recordLengthBenchmarkItem(b *testing.B, validators *ValidatorRegistry, reg 
 	rec.DecodedSize = mustIntParamBenchmark(b, cv.Params, "min")
 	return struct {
 		cv  *CompiledValidator
-		env *RecordEnv
-	}{cv: cv, env: NewRecordEnv(rec)}
+		env *ValidationState
+	}{cv: cv, env: NewRecordValidationState(rec, nil)}
 }
 
 func recordIfThenRangeBenchmarkItem(b *testing.B, validators *ValidatorRegistry, reg *configpkg.Registry) struct {
 	cv  *CompiledValidator
-	env *RecordEnv
+	env *ValidationState
 } {
 	b.Helper()
 	schemaKey, cv := findRecordValidatorForBenchmark(b, validators, "ifthenalso_range_to_range")
@@ -216,13 +213,13 @@ func recordIfThenRangeBenchmarkItem(b *testing.B, validators *ValidatorRegistry,
 	})
 	return struct {
 		cv  *CompiledValidator
-		env *RecordEnv
-	}{cv: cv, env: NewRecordEnv(rec)}
+		env *ValidationState
+	}{cv: cv, env: NewRecordValidationState(rec, nil)}
 }
 
 func recordAmountRequiresPositiveBenchmarkItem(b *testing.B, validators *ValidatorRegistry, reg *configpkg.Registry) struct {
 	cv  *CompiledValidator
-	env *RecordEnv
+	env *ValidationState
 } {
 	b.Helper()
 	schemaKey, cv := findRecordValidatorForBenchmark(b, validators, "amount_requires_positive")
@@ -232,21 +229,23 @@ func recordAmountRequiresPositiveBenchmarkItem(b *testing.B, validators *Validat
 	})
 	return struct {
 		cv  *CompiledValidator
-		env *RecordEnv
-	}{cv: cv, env: NewRecordEnv(rec)}
+		env *ValidationState
+	}{cv: cv, env: NewRecordValidationState(rec, nil)}
 }
 
 func recordRptMonthYearBenchmarkItem(b *testing.B, validators *ValidatorRegistry, reg *configpkg.Registry) struct {
 	cv  *CompiledValidator
-	env *RecordEnv
+	env *ValidationState
 } {
 	b.Helper()
 	schemaKey, cv := findRecordValidatorForBenchmark(b, validators, "rpt_month_year_matches_header_year_quarter")
-	env := NewRecordEnv(testutil.NewTestRecord(reg.GetSchema(schemaKey), 4, map[string]any{"RPT_MONTH_YEAR": "202310"}))
-	env.DataFileContext = &DataFileContext{FiscalYear: 2024, FiscalQuarter: "Q1"}
+	env := NewRecordValidationState(
+		testutil.NewTestRecord(reg.GetSchema(schemaKey), 4, map[string]any{"RPT_MONTH_YEAR": "202310"}),
+		&DataFileContext{FiscalYear: 2024, FiscalQuarter: "Q1"},
+	)
 	return struct {
 		cv  *CompiledValidator
-		env *RecordEnv
+		env *ValidationState
 	}{cv: cv, env: env}
 }
 
@@ -263,20 +262,20 @@ func findRecordValidatorForBenchmark(b *testing.B, validators *ValidatorRegistry
 
 func groupMaxRecordsBenchmarkItem(b *testing.B, validators *ValidatorRegistry, reg *configpkg.Registry) struct {
 	cv  *CompiledValidator
-	env *GroupEnv
+	env *ValidationState
 } {
 	b.Helper()
 	_, cv := findGroupValidatorForBenchmark(b, validators, "max_records_per_case")
 	group := testutil.NewTestGroup(testutil.NewTestRecord(schemaForRecordTypeBenchmark(b, reg, "T1"), 10, nil))
 	return struct {
 		cv  *CompiledValidator
-		env *GroupEnv
-	}{cv: cv, env: NewGroupEnv(group)}
+		env *ValidationState
+	}{cv: cv, env: NewGroupValidationState(group, nil)}
 }
 
 func groupExactDuplicatesBenchmarkItem(b *testing.B, validators *ValidatorRegistry, reg *configpkg.Registry) struct {
 	cv  *CompiledValidator
-	env *GroupEnv
+	env *ValidationState
 } {
 	b.Helper()
 	_, cv := findGroupValidatorForBenchmark(b, validators, "exact_duplicates")
@@ -288,13 +287,13 @@ func groupExactDuplicatesBenchmarkItem(b *testing.B, validators *ValidatorRegist
 	)
 	return struct {
 		cv  *CompiledValidator
-		env *GroupEnv
-	}{cv: cv, env: NewGroupEnv(group)}
+		env *ValidationState
+	}{cv: cv, env: NewGroupValidationState(group, nil)}
 }
 
 func groupRequiresRelatedBenchmarkItem(b *testing.B, validators *ValidatorRegistry, reg *configpkg.Registry) struct {
 	cv  *CompiledValidator
-	env *GroupEnv
+	env *ValidationState
 } {
 	b.Helper()
 	_, cv := findGroupValidatorForBenchmark(b, validators, "requires_related_record")
@@ -302,8 +301,8 @@ func groupRequiresRelatedBenchmarkItem(b *testing.B, validators *ValidatorRegist
 	group := testutil.NewTestGroup(testutil.NewTestRecord(schemaForRecordTypeBenchmark(b, reg, recordType), 13, nil))
 	return struct {
 		cv  *CompiledValidator
-		env *GroupEnv
-	}{cv: cv, env: NewGroupEnv(group)}
+		env *ValidationState
+	}{cv: cv, env: NewGroupValidationState(group, nil)}
 }
 
 func findGroupValidatorForBenchmark(b *testing.B, validators *ValidatorRegistry, id string) (string, *CompiledValidator) {

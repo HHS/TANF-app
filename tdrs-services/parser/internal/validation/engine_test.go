@@ -73,12 +73,11 @@ func TestHybridEngineFallsBackToExpr(t *testing.T) {
 	if err != nil {
 		t.Fatalf("resolveValidatorByScope failed: %v", err)
 	}
-	if cv.Native != nil {
-		t.Fatal("expected ad hoc validator to use expr fallback")
+	if cv.Engine != ValidationEngineExpr {
+		t.Fatalf("expected ad hoc validator to use expr fallback, got %s", cv.Engine)
 	}
 
-	env := &FieldEnv{Value: 1, Params: cv.Params}
-	if result := Execute(cv, env); !result.Valid {
+	if result := Execute(cv, fieldState(1)); !result.Valid {
 		t.Fatalf("expected hybrid expr fallback to pass, got error %v", result.Error)
 	}
 }
@@ -92,8 +91,8 @@ func TestProductionNativeParityRepresentativeValidators(t *testing.T) {
 		nativeCV := validatorByID(nativeRegistry.GetFieldValidators(schemaKey, fieldName), exprCV.ID)
 		min := mustIntParam(t, exprCV.Params, "min")
 
-		assertExecuteParity(t, exprCV, nativeCV, &FieldEnv{Value: min})
-		assertExecuteParity(t, exprCV, nativeCV, &FieldEnv{Value: min - 1})
+		assertExecuteParity(t, exprCV, nativeCV, fieldState(min))
+		assertExecuteParity(t, exprCV, nativeCV, fieldState(min-1))
 	})
 
 	t.Run("field in_values", func(t *testing.T) {
@@ -101,8 +100,8 @@ func TestProductionNativeParityRepresentativeValidators(t *testing.T) {
 		nativeCV := validatorByID(nativeRegistry.GetFieldValidators(schemaKey, fieldName), exprCV.ID)
 		values := mustAnySliceParam(t, exprCV.Params, "values")
 
-		assertExecuteParity(t, exprCV, nativeCV, &FieldEnv{Value: values[0]})
-		assertExecuteParity(t, exprCV, nativeCV, &FieldEnv{Value: "__not_allowed__"})
+		assertExecuteParity(t, exprCV, nativeCV, fieldState(values[0]))
+		assertExecuteParity(t, exprCV, nativeCV, fieldState("__not_allowed__"))
 	})
 
 	t.Run("record ifthenalso_range_to_range", func(t *testing.T) {
@@ -123,8 +122,8 @@ func TestProductionNativeParityRepresentativeValidators(t *testing.T) {
 			targetField:    targetMin - 1,
 		})
 
-		assertExecuteParity(t, exprCV, nativeCV, NewRecordEnv(valid))
-		assertExecuteParity(t, exprCV, nativeCV, NewRecordEnv(invalid))
+		assertExecuteParity(t, exprCV, nativeCV, NewRecordValidationState(valid, nil))
+		assertExecuteParity(t, exprCV, nativeCV, NewRecordValidationState(invalid, nil))
 	})
 
 	t.Run("record rpt_month_year_matches_header_year_quarter", func(t *testing.T) {
@@ -133,10 +132,8 @@ func TestProductionNativeParityRepresentativeValidators(t *testing.T) {
 		cs := reg.GetSchema(schemaKey)
 		dfCtx := &DataFileContext{FiscalYear: 2024, FiscalQuarter: "Q1"}
 
-		valid := NewRecordEnv(testutil.NewTestRecord(cs, 12, map[string]any{"RPT_MONTH_YEAR": "202310"}))
-		valid.DataFileContext = dfCtx
-		invalid := NewRecordEnv(testutil.NewTestRecord(cs, 13, map[string]any{"RPT_MONTH_YEAR": "202401"}))
-		invalid.DataFileContext = dfCtx
+		valid := NewRecordValidationState(testutil.NewTestRecord(cs, 12, map[string]any{"RPT_MONTH_YEAR": "202310"}), dfCtx)
+		invalid := NewRecordValidationState(testutil.NewTestRecord(cs, 13, map[string]any{"RPT_MONTH_YEAR": "202401"}), dfCtx)
 
 		assertExecuteParity(t, exprCV, nativeCV, valid)
 		assertExecuteParity(t, exprCV, nativeCV, invalid)
@@ -149,7 +146,7 @@ func TestProductionNativeParityRepresentativeValidators(t *testing.T) {
 		recordSchema := schemaForRecordType(t, reg, recordType)
 		group := testutil.NewTestGroup(testutil.NewTestRecord(recordSchema, 20, nil))
 
-		assertExecuteGroupParity(t, exprCV, nativeCV, NewGroupEnv(group))
+		assertExecuteGroupParity(t, exprCV, nativeCV, NewGroupValidationState(group, nil))
 	})
 
 	t.Run("group exact_duplicates", func(t *testing.T) {
@@ -162,7 +159,7 @@ func TestProductionNativeParityRepresentativeValidators(t *testing.T) {
 			testutil.NewTestRecord(recordSchema, 31, map[string]any{"CASE_NUMBER": "1"}),
 		)
 
-		assertExecuteGroupParity(t, exprCV, nativeCV, NewGroupEnv(group))
+		assertExecuteGroupParity(t, exprCV, nativeCV, NewGroupValidationState(group, nil))
 	})
 }
 
@@ -232,22 +229,22 @@ func validatorByID(validators []*CompiledValidator, id string) *CompiledValidato
 	return nil
 }
 
-func assertExecuteParity(t *testing.T, exprCV *CompiledValidator, nativeCV *CompiledValidator, env any) {
+func assertExecuteParity(t *testing.T, exprCV *CompiledValidator, nativeCV *CompiledValidator, state *ValidationState) {
 	t.Helper()
 
-	exprResult := Execute(exprCV, cloneEnvWithParams(env, exprCV.Params))
-	nativeResult := Execute(nativeCV, cloneEnvWithParams(env, nativeCV.Params))
+	exprResult := Execute(exprCV, cloneValidationState(state))
+	nativeResult := Execute(nativeCV, cloneValidationState(state))
 	if exprResult.Valid != nativeResult.Valid {
 		t.Fatalf("%s parity mismatch: expr valid=%v err=%v, native valid=%v err=%v",
 			exprCV.ID, exprResult.Valid, exprResult.Error, nativeResult.Valid, nativeResult.Error)
 	}
 }
 
-func assertExecuteGroupParity(t *testing.T, exprCV *CompiledValidator, nativeCV *CompiledValidator, env *GroupEnv) {
+func assertExecuteGroupParity(t *testing.T, exprCV *CompiledValidator, nativeCV *CompiledValidator, state *ValidationState) {
 	t.Helper()
 
-	exprResults := ExecuteGroup(exprCV, cloneEnvWithParams(env, exprCV.Params).(*GroupEnv))
-	nativeResults := ExecuteGroup(nativeCV, cloneEnvWithParams(env, nativeCV.Params).(*GroupEnv))
+	exprResults := ExecuteGroup(exprCV, cloneValidationState(state))
+	nativeResults := ExecuteGroup(nativeCV, cloneValidationState(state))
 	if len(exprResults) != len(nativeResults) {
 		t.Fatalf("%s group result count mismatch: expr=%d native=%d", exprCV.ID, len(exprResults), len(nativeResults))
 	}
@@ -265,23 +262,12 @@ func assertExecuteGroupParity(t *testing.T, exprCV *CompiledValidator, nativeCV 
 	}
 }
 
-func cloneEnvWithParams(env any, params map[string]any) any {
-	switch typed := env.(type) {
-	case *FieldEnv:
-		clone := *typed
-		clone.Params = params
-		return &clone
-	case *RecordEnv:
-		clone := *typed
-		clone.Params = params
-		return &clone
-	case *GroupEnv:
-		clone := *typed
-		clone.Params = params
-		return &clone
-	default:
-		return env
+func cloneValidationState(state *ValidationState) *ValidationState {
+	if state == nil {
+		return nil
 	}
+	clone := *state
+	return &clone
 }
 
 func mustStringParam(t *testing.T, params map[string]any, key string) string {
