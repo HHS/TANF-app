@@ -12,7 +12,7 @@
 * Eric Lipe, Raft, tech lead
 * Jan Timpe, Raft, full stack engineer
 * Mo Sohani, Raft, full stack engineer
-* Matt Anderson, Raft, full stack engineer
+* Matthew Anderson, Raft, full stack engineer
 
 ## Subject Matter Experts
 **OFA Data Team**
