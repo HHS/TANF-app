@@ -274,7 +274,7 @@ def _transition_parse_outcome(data_file, dfs):
 
 
 def _notify_data_analysts(data_file, dfs, file_meta=None, reparse_id=None):
-    """Send submission email to relevant data analysts (initial submissions only)."""
+    """Send submission email to relevant data analysts."""
     qs = User.objects.filter(
         stt=data_file.stt,
         account_approval_status=AccountApprovalStatusChoices.APPROVED,
@@ -292,7 +292,7 @@ def _notify_data_analysts(data_file, dfs, file_meta=None, reparse_id=None):
 
 
 def _handle_parse_failure(data_file, note):
-    """Transition to PARSE_FAILED after parser startup."""
+    """Transition to failed parser state after parser startup."""
     transition_datafile(
         data_file,
         SubmissionState.PARSE_FAILED,
