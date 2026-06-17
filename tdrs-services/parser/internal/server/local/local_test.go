@@ -52,6 +52,32 @@ func TestNeedsDatabase_DefaultMode(t *testing.T) {
 	}
 }
 
+func TestDataFileTableNameUsesConfiguredShadowMode(t *testing.T) {
+	t.Run("shadow mode", func(t *testing.T) {
+		cfg := config.DefaultConfig()
+		cfg.Database.ShadowMode = true
+		cfg.Database.TablePrefix = config.DefaultTablePrefix
+
+		m := New(cfg, nil, nil)
+
+		if got := m.dataFileTableName(); got != "shadow_data_files_datafile" {
+			t.Fatalf("dataFileTableName() = %q, want shadow_data_files_datafile", got)
+		}
+	})
+
+	t.Run("production mode", func(t *testing.T) {
+		cfg := config.DefaultConfig()
+		cfg.Database.ShadowMode = false
+		cfg.Database.TablePrefix = config.DefaultTablePrefix
+
+		m := New(cfg, nil, nil)
+
+		if got := m.dataFileTableName(); got != "data_files_datafile" {
+			t.Fatalf("dataFileTableName() = %q, want data_files_datafile", got)
+		}
+	})
+}
+
 func TestRun_MissingFilePath(t *testing.T) {
 	cfg := config.DefaultConfig()
 	cfg.Writer.Mode = "file"
