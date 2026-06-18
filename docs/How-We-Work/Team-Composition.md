@@ -1,20 +1,18 @@
 # Team Composition
 
-Please refer to the [Team Members doc](https://hhsgov.sharepoint.com/:w:/r/sites/TANFDataPortalOFA/Shared%20Documents/General/Admin/Team%20Members%27%20Info.docx?d=w4ef9f646a6e34c6e9f348b100507a76b&csf=1&web=1&e=NcZSOo) 🔒 for our typical hours and contact info and [this mural](https://app.mural.co/t/raft2792/m/raft2792/1635271342915/2866555299fac78354b8ec1e364626905c24bdb8?sender=u2accafc8c5f5447b09444302) for our team norms 🔒
-
 ## Primary Product Team
 **OFA**
 * Lauren Frohlich, OFA, product owner/project COR
 * Alexandra Pennington, OFA, tech lead
 
 **Raft**
-* Rob Gendron, Raft, facilitator/product manager
+* Kenny McNett, Raft, facilitator/product manager
 * Victoria Amoroso, Raft, design lead + senior ux/ui researcher and designer
 * Miles Reiter, Raft, senior ux/ui researcher and designer
-* Andrew Jameson, Raft, tech lead
+* Eric Lipe, Raft, tech lead
 * Jan Timpe, Raft, full stack engineer
 * Mo Sohani, Raft, full stack engineer
-* Eric Lipe, Raft, full stack engineer
+* Matthew Anderson, Raft, full stack engineer
 
 ## Subject Matter Experts
 **OFA Data Team**
@@ -42,6 +40,10 @@ Please refer to the [Team Members doc](https://hhsgov.sharepoint.com/:w:/r/sites
 ---
 **<Details><Summary>Past Product Team Members</Summary>**
 (most recent first)
+
+* Lauren Hux, Raft, facilitator/product manager
+* Rob Gendron, Raft, facilitator/product manager
+* Andrew Jameson, Raft, tech lead
 * Steve Nino, Raft, facilitator/product manager
 * Timothy Whitlock, Raft, DevOps engineer
 * Aaron Beavers, Raft, full stack engineer
