@@ -18,9 +18,9 @@ var nativeRecordValidators = map[string]validationRule{
 	"amount_requires_value_in":                    amountRequiresValueInValidator{},
 	"start_before_end":                            startBeforeEndValidator{},
 	"t1_sum_assistance_positive":                  t1SumAssistancePositiveValidator{},
-	"ifthenalso_range_to_range":                   rangeToRangeSpec{},
-	"ifthenalso_range_to_values":                  rangeToValuesSpec{valuesKey: "values"},
-	"ifthenalso_range_to_not_values":              rangeToValuesSpec{valuesKey: "excluded_values", excludeValues: true},
+	"ifthenalso_range_to_range":                   rangeToRangeValidator{},
+	"ifthenalso_range_to_values":                  rangeToValuesValidator{valuesKey: "values"},
+	"ifthenalso_range_to_not_values":              rangeToValuesValidator{valuesKey: "excluded_values", excludeValues: true},
 	"t2_family_affil_2_3_education_level":         t2FamilyAffil23EducationLevelValidator{},
 	"t2_family_affil_1_2_work_eligible":           t2FamilyAffil12WorkEligibleValidator{},
 	"t2_family_affil_1_2_work_part_status":        t2FamilyAffil12WorkPartStatusValidator{},
@@ -116,6 +116,79 @@ func (v sumEqualsValidator) Compile(params validationParams) (ValidatorExecutor,
 
 func (v sumEqualsValidator) Execute(state *ValidationState) (ValidationOutcome, error) {
 	return boolOutcome(state.GetInt(v.totalField) == state.SumFields(v.componentFields)), nil
+}
+
+type rangeToRangeValidator struct {
+	conditionField string
+	conditionMin   int
+	conditionMax   int
+	targetField    string
+	targetMin      int
+	targetMax      int
+}
+
+func (v rangeToRangeValidator) Compile(params validationParams) (ValidatorExecutor, error) {
+	conditionField, conditionFieldErr := requiredStringParam(params, "condition_field")
+	conditionMin, conditionMinErr := requiredIntParam(params, "condition_min")
+	conditionMax, conditionMaxErr := requiredIntParam(params, "condition_max")
+	targetField, targetFieldErr := requiredStringParam(params, "target_field")
+	targetMin, targetMinErr := requiredIntParam(params, "target_min")
+	targetMax, targetMaxErr := requiredIntParam(params, "target_max")
+	return rangeToRangeValidator{
+		conditionField: conditionField,
+		conditionMin:   conditionMin,
+		conditionMax:   conditionMax,
+		targetField:    targetField,
+		targetMin:      targetMin,
+		targetMax:      targetMax,
+	}, firstError(conditionFieldErr, conditionMinErr, conditionMaxErr, targetFieldErr, targetMinErr, targetMaxErr)
+}
+
+func (v rangeToRangeValidator) Execute(state *ValidationState) (ValidationOutcome, error) {
+	condition := state.GetInt(v.conditionField)
+	if condition < v.conditionMin || condition > v.conditionMax {
+		return boolOutcome(true), nil
+	}
+	target := state.GetInt(v.targetField)
+	return boolOutcome(target >= v.targetMin && target <= v.targetMax), nil
+}
+
+type rangeToValuesValidator struct {
+	conditionField string
+	conditionMin   int
+	conditionMax   int
+	targetField    string
+	valuesKey      string
+	values         []any
+	excludeValues  bool
+}
+
+func (v rangeToValuesValidator) Compile(params validationParams) (ValidatorExecutor, error) {
+	conditionField, conditionFieldErr := requiredStringParam(params, "condition_field")
+	conditionMin, conditionMinErr := requiredIntParam(params, "condition_min")
+	conditionMax, conditionMaxErr := requiredIntParam(params, "condition_max")
+	targetField, targetFieldErr := requiredStringParam(params, "target_field")
+	values, valuesErr := requiredAnySliceParam(params, v.valuesKey)
+	return rangeToValuesValidator{
+		conditionField: conditionField,
+		conditionMin:   conditionMin,
+		conditionMax:   conditionMax,
+		targetField:    targetField,
+		values:         values,
+		excludeValues:  v.excludeValues,
+	}, firstError(conditionFieldErr, conditionMinErr, conditionMaxErr, targetFieldErr, valuesErr)
+}
+
+func (v rangeToValuesValidator) Execute(state *ValidationState) (ValidationOutcome, error) {
+	condition := state.GetInt(v.conditionField)
+	if condition < v.conditionMin || condition > v.conditionMax {
+		return boolOutcome(true), nil
+	}
+	targetInValues := valueInAny(state.GetInt(v.targetField), v.values)
+	if v.excludeValues {
+		return boolOutcome(!targetInValues), nil
+	}
+	return boolOutcome(targetInValues), nil
 }
 
 type recordHasValidTypeValidator struct{}

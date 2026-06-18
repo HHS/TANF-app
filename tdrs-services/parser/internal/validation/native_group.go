@@ -7,7 +7,7 @@ var nativeGroupValidators = map[string]validationRule{
 	"exact_duplicates":                       exactDuplicatesValidator{},
 	"partial_duplicates":                     partialDuplicatesValidator{},
 	"partial_duplicates_excluding":           partialDuplicatesExcludingValidator{},
-	"federally_funded_ssn":                   federallyFundedSSNSpec{},
+	"federally_funded_ssn":                   federallyFundedSSNValidator{},
 	"requires_related_record":                requiresRelatedRecordValidator{},
 	"requires_related_record_with_int_value": requiresRelatedRecordWithIntValueValidator{},
 }
@@ -84,6 +84,48 @@ func (v partialDuplicatesExcludingValidator) Execute(state *ValidationState) (Va
 		return duplicateMatchesOutcome(nil), nil
 	}
 	return duplicateMatchesOutcome(getPartialDuplicatesExcluding(state.Group, v.recordType, v.fields, v.excludeField, v.excludeValues)), nil
+}
+
+type federallyFundedSSNValidator struct {
+	recipientRecordType    string
+	familyAffiliationField string
+	familyAffiliationValue int
+	fundingRecordType      string
+	fundingField           string
+	fundingValue           int
+	ssnField               string
+}
+
+func (v federallyFundedSSNValidator) Compile(params validationParams) (ValidatorExecutor, error) {
+	recipientRecordType, recipientErr := requiredStringParam(params, "recipient_record_type")
+	familyAffiliationField, familyFieldErr := requiredStringParam(params, "family_affiliation_field")
+	familyAffiliationValue, familyValueErr := requiredIntParam(params, "family_affiliation_value")
+	fundingRecordType, fundingRecordErr := requiredStringParam(params, "funding_record_type")
+	fundingField, fundingFieldErr := requiredStringParam(params, "funding_field")
+	fundingValue, fundingValueErr := requiredIntParam(params, "funding_value")
+	ssnField, ssnErr := requiredStringParam(params, "ssn_field")
+	return federallyFundedSSNValidator{
+		recipientRecordType:    recipientRecordType,
+		familyAffiliationField: familyAffiliationField,
+		familyAffiliationValue: familyAffiliationValue,
+		fundingRecordType:      fundingRecordType,
+		fundingField:           fundingField,
+		fundingValue:           fundingValue,
+		ssnField:               ssnField,
+	}, firstError(recipientErr, familyFieldErr, familyValueErr, fundingRecordErr, fundingFieldErr, fundingValueErr, ssnErr)
+}
+
+func (v federallyFundedSSNValidator) Execute(state *ValidationState) (ValidationOutcome, error) {
+	var records []*parser.ParsedRecord
+	if state == nil || !state.HasAnyRecordOfTypeWithInt(v.fundingRecordType, v.fundingField, v.fundingValue) {
+		return recordsOutcome(records), nil
+	}
+	for _, rec := range state.RecordsOfType(v.recipientRecordType) {
+		if rec.GetInt(v.familyAffiliationField) == v.familyAffiliationValue && !isValidSSN(rec.GetString(v.ssnField)) {
+			records = append(records, rec)
+		}
+	}
+	return recordsOutcome(records), nil
 }
 
 type requiresRelatedRecordValidator struct {
