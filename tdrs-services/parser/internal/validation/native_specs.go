@@ -11,8 +11,7 @@ type rangeToRangeSpec struct {
 	targetMax      int
 }
 
-// rangeToRangeSpecFromParams extracts if-then range comparison settings.
-func rangeToRangeSpecFromParams(params map[string]any) (rangeToRangeSpec, error) {
+func (s rangeToRangeSpec) Compile(params validationParams) (ValidatorExecutor, error) {
 	conditionField, conditionFieldErr := requiredStringParam(params, "condition_field")
 	conditionMin, conditionMinErr := requiredIntParam(params, "condition_min")
 	conditionMax, conditionMaxErr := requiredIntParam(params, "condition_max")
@@ -48,24 +47,24 @@ type rangeToValuesSpec struct {
 	conditionMin   int
 	conditionMax   int
 	targetField    string
+	valuesKey      string
 	values         []any
 	excludeValues  bool
 }
 
-// rangeToValuesSpecFromParams extracts if-then value comparison settings.
-func rangeToValuesSpecFromParams(params map[string]any, valuesKey string, excludeValues bool) (rangeToValuesSpec, error) {
+func (s rangeToValuesSpec) Compile(params validationParams) (ValidatorExecutor, error) {
 	conditionField, conditionFieldErr := requiredStringParam(params, "condition_field")
 	conditionMin, conditionMinErr := requiredIntParam(params, "condition_min")
 	conditionMax, conditionMaxErr := requiredIntParam(params, "condition_max")
 	targetField, targetFieldErr := requiredStringParam(params, "target_field")
-	values, valuesErr := requiredAnySliceParam(params, valuesKey)
+	values, valuesErr := requiredAnySliceParam(params, s.valuesKey)
 	return rangeToValuesSpec{
 		conditionField: conditionField,
 		conditionMin:   conditionMin,
 		conditionMax:   conditionMax,
 		targetField:    targetField,
 		values:         values,
-		excludeValues:  excludeValues,
+		excludeValues:  s.excludeValues,
 	}, firstError(conditionFieldErr, conditionMinErr, conditionMaxErr, targetFieldErr, valuesErr)
 }
 
@@ -98,8 +97,7 @@ type federallyFundedSSNSpec struct {
 	ssnField               string
 }
 
-// federallyFundedSSNSpecFromParams extracts federally funded SSN settings.
-func federallyFundedSSNSpecFromParams(params map[string]any) (federallyFundedSSNSpec, error) {
+func (s federallyFundedSSNSpec) Compile(params validationParams) (ValidatorExecutor, error) {
 	recipientRecordType, recipientErr := requiredStringParam(params, "recipient_record_type")
 	familyAffiliationField, familyFieldErr := requiredStringParam(params, "family_affiliation_field")
 	familyAffiliationValue, familyValueErr := requiredIntParam(params, "family_affiliation_value")

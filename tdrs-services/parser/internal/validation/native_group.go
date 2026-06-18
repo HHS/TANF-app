@@ -2,32 +2,36 @@ package validation
 
 import "go-parser/internal/parser"
 
-var nativeGroupValidators = map[string]nativeFactory{
-	"max_records_per_case":                   compileMaxRecordsPerCase,
-	"exact_duplicates":                       compileExactDuplicates,
-	"partial_duplicates":                     compilePartialDuplicates,
-	"partial_duplicates_excluding":           compilePartialDuplicatesExcluding,
-	"federally_funded_ssn":                   compileFederallyFundedSSN,
-	"requires_related_record":                compileRequiresRelatedRecord,
-	"requires_related_record_with_int_value": compileRequiresRelatedRecordWithIntValue,
+var nativeGroupValidators = map[string]validationRule{
+	"max_records_per_case":                   maxRecordsPerCaseValidator{},
+	"exact_duplicates":                       exactDuplicatesValidator{},
+	"partial_duplicates":                     partialDuplicatesValidator{},
+	"partial_duplicates_excluding":           partialDuplicatesExcludingValidator{},
+	"federally_funded_ssn":                   federallyFundedSSNSpec{},
+	"requires_related_record":                requiresRelatedRecordValidator{},
+	"requires_related_record_with_int_value": requiresRelatedRecordWithIntValueValidator{},
 }
 
 type maxRecordsPerCaseValidator struct {
 	maxRecords int
 }
 
-func (v maxRecordsPerCaseValidator) Execute(state *ValidationState) (ValidationOutcome, error) {
-	return boolOutcome(groupStatsFromState(state).TotalRecords <= v.maxRecords), nil
-}
-
-// compileMaxRecordsPerCase enforces the maximum records allowed in a group.
-func compileMaxRecordsPerCase(params map[string]any) (ValidatorExecutor, error) {
+func (v maxRecordsPerCaseValidator) Compile(params validationParams) (ValidatorExecutor, error) {
 	maxRecords, err := requiredIntParam(params, "max")
 	return maxRecordsPerCaseValidator{maxRecords: maxRecords}, err
 }
 
+func (v maxRecordsPerCaseValidator) Execute(state *ValidationState) (ValidationOutcome, error) {
+	return boolOutcome(groupStatsFromState(state).TotalRecords <= v.maxRecords), nil
+}
+
 type exactDuplicatesValidator struct {
 	recordType string
+}
+
+func (v exactDuplicatesValidator) Compile(params validationParams) (ValidatorExecutor, error) {
+	recordType, err := requiredStringParam(params, "record_type")
+	return exactDuplicatesValidator{recordType: recordType}, err
 }
 
 func (v exactDuplicatesValidator) Execute(state *ValidationState) (ValidationOutcome, error) {
@@ -37,15 +41,15 @@ func (v exactDuplicatesValidator) Execute(state *ValidationState) (ValidationOut
 	return duplicateMatchesOutcome(getExactDuplicates(state.Group, v.recordType)), nil
 }
 
-// compileExactDuplicates reports exact duplicate records for a record type.
-func compileExactDuplicates(params map[string]any) (ValidatorExecutor, error) {
-	recordType, err := requiredStringParam(params, "record_type")
-	return exactDuplicatesValidator{recordType: recordType}, err
-}
-
 type partialDuplicatesValidator struct {
 	recordType string
 	fields     []any
+}
+
+func (v partialDuplicatesValidator) Compile(params validationParams) (ValidatorExecutor, error) {
+	recordType, recordErr := requiredStringParam(params, "record_type")
+	fields, fieldsErr := requiredAnySliceParam(params, "fields")
+	return partialDuplicatesValidator{recordType: recordType, fields: fields}, firstError(recordErr, fieldsErr)
 }
 
 func (v partialDuplicatesValidator) Execute(state *ValidationState) (ValidationOutcome, error) {
@@ -55,13 +59,6 @@ func (v partialDuplicatesValidator) Execute(state *ValidationState) (ValidationO
 	return duplicateMatchesOutcome(getPartialDuplicates(state.Group, v.recordType, v.fields)), nil
 }
 
-// compilePartialDuplicates reports duplicates across selected fields.
-func compilePartialDuplicates(params map[string]any) (ValidatorExecutor, error) {
-	recordType, recordErr := requiredStringParam(params, "record_type")
-	fields, fieldsErr := requiredAnySliceParam(params, "fields")
-	return partialDuplicatesValidator{recordType: recordType, fields: fields}, firstError(recordErr, fieldsErr)
-}
-
 type partialDuplicatesExcludingValidator struct {
 	recordType    string
 	fields        []any
@@ -69,15 +66,7 @@ type partialDuplicatesExcludingValidator struct {
 	excludeValues []any
 }
 
-func (v partialDuplicatesExcludingValidator) Execute(state *ValidationState) (ValidationOutcome, error) {
-	if state == nil || state.Group == nil {
-		return duplicateMatchesOutcome(nil), nil
-	}
-	return duplicateMatchesOutcome(getPartialDuplicatesExcluding(state.Group, v.recordType, v.fields, v.excludeField, v.excludeValues)), nil
-}
-
-// compilePartialDuplicatesExcluding reports partial duplicates after exclusions.
-func compilePartialDuplicatesExcluding(params map[string]any) (ValidatorExecutor, error) {
+func (v partialDuplicatesExcludingValidator) Compile(params validationParams) (ValidatorExecutor, error) {
 	recordType, recordErr := requiredStringParam(params, "record_type")
 	fields, fieldsErr := requiredAnySliceParam(params, "fields")
 	excludeField, excludeFieldErr := requiredStringParam(params, "exclude_field")
@@ -90,14 +79,25 @@ func compilePartialDuplicatesExcluding(params map[string]any) (ValidatorExecutor
 	}, firstError(recordErr, fieldsErr, excludeFieldErr, excludeErr)
 }
 
-// compileFederallyFundedSSN reports federally funded records with invalid SSNs.
-func compileFederallyFundedSSN(params map[string]any) (ValidatorExecutor, error) {
-	return federallyFundedSSNSpecFromParams(params)
+func (v partialDuplicatesExcludingValidator) Execute(state *ValidationState) (ValidationOutcome, error) {
+	if state == nil || state.Group == nil {
+		return duplicateMatchesOutcome(nil), nil
+	}
+	return duplicateMatchesOutcome(getPartialDuplicatesExcluding(state.Group, v.recordType, v.fields, v.excludeField, v.excludeValues)), nil
 }
 
 type requiresRelatedRecordValidator struct {
 	recordType         string
 	relatedRecordTypes []string
+}
+
+func (v requiresRelatedRecordValidator) Compile(params validationParams) (ValidatorExecutor, error) {
+	recordType, recordErr := requiredStringParam(params, "record_type")
+	relatedRecordTypes, relatedErr := requiredStringSliceParam(params, "related_record_types")
+	return requiresRelatedRecordValidator{
+		recordType:         recordType,
+		relatedRecordTypes: relatedRecordTypes,
+	}, firstError(recordErr, relatedErr)
 }
 
 func (v requiresRelatedRecordValidator) Execute(state *ValidationState) (ValidationOutcome, error) {
@@ -117,21 +117,24 @@ func (v requiresRelatedRecordValidator) Execute(state *ValidationState) (Validat
 	return recordsOutcome(records), nil
 }
 
-// compileRequiresRelatedRecord reports records missing any required related type.
-func compileRequiresRelatedRecord(params map[string]any) (ValidatorExecutor, error) {
-	recordType, recordErr := requiredStringParam(params, "record_type")
-	relatedRecordTypes, relatedErr := requiredStringSliceParam(params, "related_record_types")
-	return requiresRelatedRecordValidator{
-		recordType:         recordType,
-		relatedRecordTypes: relatedRecordTypes,
-	}, firstError(recordErr, relatedErr)
-}
-
 type requiresRelatedRecordWithIntValueValidator struct {
 	recordType         string
 	relatedRecordTypes []string
 	fieldName          string
 	expectedValue      int
+}
+
+func (v requiresRelatedRecordWithIntValueValidator) Compile(params validationParams) (ValidatorExecutor, error) {
+	recordType, recordErr := requiredStringParam(params, "record_type")
+	relatedRecordTypes, relatedErr := requiredStringSliceParam(params, "related_record_types")
+	fieldName, fieldErr := requiredStringParam(params, "field_name")
+	expectedValue, expectedErr := requiredIntParam(params, "expected_value")
+	return requiresRelatedRecordWithIntValueValidator{
+		recordType:         recordType,
+		relatedRecordTypes: relatedRecordTypes,
+		fieldName:          fieldName,
+		expectedValue:      expectedValue,
+	}, firstError(recordErr, relatedErr, fieldErr, expectedErr)
 }
 
 func (v requiresRelatedRecordWithIntValueValidator) Execute(state *ValidationState) (ValidationOutcome, error) {
@@ -145,20 +148,6 @@ func (v requiresRelatedRecordWithIntValueValidator) Execute(state *ValidationSta
 		}
 	}
 	return recordsOutcome(records), nil
-}
-
-// compileRequiresRelatedRecordWithIntValue reports records missing a typed related value.
-func compileRequiresRelatedRecordWithIntValue(params map[string]any) (ValidatorExecutor, error) {
-	recordType, recordErr := requiredStringParam(params, "record_type")
-	relatedRecordTypes, relatedErr := requiredStringSliceParam(params, "related_record_types")
-	fieldName, fieldErr := requiredStringParam(params, "field_name")
-	expectedValue, expectedErr := requiredIntParam(params, "expected_value")
-	return requiresRelatedRecordWithIntValueValidator{
-		recordType:         recordType,
-		relatedRecordTypes: relatedRecordTypes,
-		fieldName:          fieldName,
-		expectedValue:      expectedValue,
-	}, firstError(recordErr, relatedErr, fieldErr, expectedErr)
 }
 
 // recordsFromState safely returns the group's records from validation state.

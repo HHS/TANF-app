@@ -1,9 +1,14 @@
 package validation
 
-type nativeFactory func(params map[string]any) (ValidatorExecutor, error)
+type validationParams = map[string]any
 
-// nativeExecutorFor resolves a native executor factory by validator scope and ID.
-func nativeExecutorFor(scope string, id string, params map[string]any) (ValidatorExecutor, bool, error) {
+type validationRule interface {
+	Compile(validationParams) (ValidatorExecutor, error)
+	Execute(*ValidationState) (ValidationOutcome, error)
+}
+
+// nativeExecutorFor resolves and compiles a native rule by validator scope and ID.
+func nativeExecutorFor(scope string, id string, params validationParams) (ValidatorExecutor, bool, error) {
 	switch scope {
 	case ScopeField:
 		return nativeExecutorFromMap(nativeFieldValidators, id, params)
@@ -16,12 +21,12 @@ func nativeExecutorFor(scope string, id string, params map[string]any) (Validato
 	}
 }
 
-// nativeExecutorFromMap compiles a mapped native factory with validator params.
-func nativeExecutorFromMap(validators map[string]nativeFactory, id string, params map[string]any) (ValidatorExecutor, bool, error) {
-	factory, ok := validators[id]
+// nativeExecutorFromMap compiles a mapped validation rule with validator params.
+func nativeExecutorFromMap(validators map[string]validationRule, id string, params validationParams) (ValidatorExecutor, bool, error) {
+	rule, ok := validators[id]
 	if !ok {
 		return nil, false, nil
 	}
-	executor, err := factory(params)
+	executor, err := rule.Compile(validationParams(params))
 	return executor, true, err
 }
