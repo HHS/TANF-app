@@ -43,7 +43,7 @@ server:
 
 # Pipeline: worker pool tuning
 pipeline:
-  num_workers: 32
+  num_workers: 4
   work_buffer_size: 256
   pool_prewarm_size: 10000
 
