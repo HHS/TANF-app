@@ -546,7 +546,7 @@ class Common(Configuration):
     # Canary cutover: percentage of new login requests routed through Keycloak (0-100).
     # 0 = 100% legacy (default), 100 = 100% Keycloak. Changeable via cf set-env.
     KEYCLOAK_AUTH_PERCENTAGE = int(os.getenv("KEYCLOAK_AUTH_PERCENTAGE", "0"))
-    KEYCLOAK_SYNC_ENABLED = bool(strtobool(os.getenv("KEYCLOAK_SYNC_ENABLED", "yes")))
+    KEYCLOAK_SYNC_ENABLED = os.getenv("KEYCLOAK_SYNC_ENABLED", True)
     KEYCLOAK_SERVER_URL = os.getenv("KEYCLOAK_SERVER_URL", "http://keycloak:8080")
     KEYCLOAK_REALM = os.getenv("KEYCLOAK_REALM", "tdp")
     KEYCLOAK_ADMIN_CLIENT_ID = os.getenv("KEYCLOAK_ADMIN_CLIENT_ID", "tdp-django")
