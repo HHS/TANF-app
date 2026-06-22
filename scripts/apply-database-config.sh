@@ -48,7 +48,7 @@ fixed_vcap_services=$(echo $vcap_services | jq -rc '."aws-rds"[0].credentials.ho
 echo "VCAP_SERVICES='$fixed_vcap_services'" >> .env.ci
 echo "VCAP_APPLICATION='$vcap_application'" >> .env.ci
 echo "CGAPPNAME_BACKEND='$app'" >> .env.ci
-echo "KEYCLOAK_SYNC_ENABLED=False" >> .env.ci
+echo "KEYCLOAK_SYNC_ENABLED='no'" >> .env.ci
 
 set -a
 source .env.ci

@@ -177,7 +177,7 @@ class CloudGov(Common):
     )
 
     # Keycloak Sync
-    KEYCLOAK_SYNC_ENABLED = os.getenv("KEYCLOAK_SYNC_ENABLED", True)
+    KEYCLOAK_SYNC_ENABLED = bool(strtobool(os.getenv("KEYCLOAK_SYNC_ENABLED", "yes")))
     KEYCLOAK_SERVER_URL = os.getenv(
         "KEYCLOAK_SERVER_URL", "http://keycloak.apps.internal:8080"
     )
