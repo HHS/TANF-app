@@ -43,6 +43,8 @@ def sync_user_groups_to_keycloak(sender, instance, action, **kwargs):
         return
 
     try:
+        if not getattr(settings, "KEYCLOAK_SYNC_ENABLED", False):
+            return
         _get_client().sync_user_groups(instance)
     except Exception:
         logger.exception(
