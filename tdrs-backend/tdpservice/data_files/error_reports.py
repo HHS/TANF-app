@@ -268,40 +268,154 @@ class TanfDataErrorReportBase(ErrorReportBase):
 
     def write_readme_sheet(self, worksheet):
         """Write README sheet guidance."""
-        row, col = 0, 0
+        title = self.workbook.add_format(
+            {"bold": True, "font_size": 14, "underline": True}
+        )
+        section_header = self.workbook.add_format(
+            {"bold": True, "bg_color": "#D9EAD3", "bottom": 1}
+        )
+        section_header_right = self.workbook.add_format(
+            {"bold": True, "bg_color": "#D9EAD3", "top": 1, "right": 1, "bottom": 1}
+        )
+        section_header_wrapped = self.workbook.add_format(
+            {"bold": True, "bg_color": "#D9EAD3", "top": 1, "bottom": 1, "text_wrap": True}
+        )
+        wrapped_text = self.workbook.add_format({"text_wrap": True, "align": "left"})
+        wrapped_text_top = self.workbook.add_format(
+            {"text_wrap": True, "valign": "top"}
+        )
+        link = self.workbook.add_format(
+            {"font_color": "#0070C0", "underline": True}
+        )
+        link_top = self.workbook.add_format(
+            {"font_color": "#0070C0", "underline": True, "valign": "top"}
+        )
 
-        # write beta banner
+        worksheet.set_column(0, 0, 24.5703125)
+        worksheet.set_column(1, 1, 53)
+        for row, height in {
+            0: 18.75,
+            1: 66,
+            4: 60,
+            5: 30,
+            8: 36.75,
+            13: 45,
+            14: 45,
+            15: 60,
+            16: 45,
+        }.items():
+            worksheet.set_row(row, height)
+
+        knowledge_center_url = (
+            "https://tdp-project-updates.app.cloud.gov/knowledge-center/"
+            "viewing-error-reports.html"
+        )
+
+        worksheet.write(0, 0, "Error Report Readme", title)
+        worksheet.merge_range(
+            1,
+            0,
+            1,
+            1,
+            "Error Reports are generated for each file you submit when TDP "
+            "detects potential data quality issues. These reports are intended "
+            "to help you more easily navigate data correction (and then "
+            "resubmission). If you need help and can't find answers in the "
+            "Knowledge Center please feel free to reach out to "
+            "TANFdata@acf.hhs.gov.",
+            wrapped_text,
+        )
+
+        worksheet.write(3, 0, "Error Report Tabs", section_header)
+        worksheet.write(3, 1, "Description", section_header_right)
+        worksheet.write_url(4, 0, "internal:Critical!A1", link_top, "Critical")
         worksheet.write(
-            row,
-            col,
-            "Please refer to the most recent versions of the coding "
-            + "instructions (linked below) when looking up items "
-            + "and allowable values during the data revision process",
+            4,
+            1,
+            "Provides detailed information on the most important errors related "
+            "to data elements that identify families (and individuals) receiving "
+            "assistance and work-eligible individuals.",
+            wrapped_text_top,
+        )
+        worksheet.write_url(5, 0, "internal:Summary!A1", link_top, "Summary")
+        worksheet.write(
+            5,
+            1,
+            "Groups all errors by type, month, and year with a count of how "
+            "frequently that error occurs. ",
+            wrapped_text,
         )
 
-        row, col = 1, 0
+        worksheet.write(7, 0, "Coding Instructions", section_header_wrapped)
+        worksheet.merge_range(
+            8,
+            0,
+            8,
+            1,
+            "The latest versions of coding instructions (below) can help you "
+            "better understand the relationships between items and look-up "
+            "allowable values during the data revision process.",
+            wrapped_text,
+        )
         worksheet.write_url(
-            row,
-            col,
-            "https://acf.gov/sites/default/files/documents/ofa/tribal-tanf-data-report-instructions-valid-thru-2028-09.pdf",
-            string="For Tribal TANF data reports: Tribal TANF Instructions",
+            9,
+            0,
+            "https://www.acf.hhs.gov/ofa/policy-guidance/"
+            "tribal-tanf-data-coding-instructions",
+            link,
+            "For Tribal TANF data reports: Tribal TANF Instructions",
+        )
+        worksheet.write_url(
+            10,
+            0,
+            "https://www.acf.hhs.gov/ofa/policy-guidance/acf-ofa-pi-23-04",
+            link,
+            "For TANF and SSP-MOE data reports: TANF / SSP-MOE (ACF-199 / ACF-209) Instructions",
         )
 
-        row, col = 2, 0
-        worksheet.write_url(
-            row,
-            col,
-            "https://acf.gov/sites/default/files/documents/ofa/acf-199209-TANFSSP-data-report-instructions-valid-thru-2026-10.pdf",
-            string="For TANF and SSP-MOE data reports: TANF / SSP-MOE (ACF-199 / ACF-209) Instructions",
-        )
+        worksheet.write(12, 0, "Get More Help", section_header)
+        worksheet.write(12, 1, "Description", section_header_right)
 
-        row, col = 3, 0
-        worksheet.write_url(
-            row,
-            col,
-            "https://tdp-project-updates.app.cloud.gov/knowledge-center/viewing-error-reports.html",
-            string="Visit the Knowledge Center for further guidance on reviewing error reports",
-        )
+        help_links = [
+            (
+                13,
+                "Data File Structure",
+                "data-file-structure",
+                "Discusses the submission file format, how data is organized "
+                "within it, and terminology for different kinds of data within files.",
+            ),
+            (
+                14,
+                "Overview of Error Reports",
+                "overview-of-the-error-report",
+                "Defines all data columns within both Critical and Summary tabs "
+                "of the Error Report and their utility in correcting errors.",
+            ),
+            (
+                15,
+                "Interpreting Error Types",
+                "interpreting-error-types",
+                "Defines each type of error and how it should be prioritized for "
+                "review and correction. High priority errors will affect the "
+                "number of records that are accepted into the system database",
+            ),
+            (
+                16,
+                "Examples of Common Errors",
+                "examples-of-common-errors",
+                "Describes five types of commonly encountered errors, why they "
+                "occur, what they mean, and how to navigate correcting them.",
+            ),
+        ]
+        for row, label, anchor, description in help_links:
+            worksheet.write_url(
+                row,
+                0,
+                f"{knowledge_center_url}#{anchor}",
+                link_top,
+                label,
+            )
+            worksheet.write(row, 1, description, wrapped_text_top)
 
 
 class ActiveClosedErrorReport(TanfDataErrorReportBase):
