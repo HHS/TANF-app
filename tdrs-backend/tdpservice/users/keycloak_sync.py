@@ -21,9 +21,6 @@ def _get_client():
 @receiver(post_save, sender=User)
 def sync_user_to_keycloak(sender, instance, **kwargs):
     """Sync user attributes to Keycloak after save."""
-    sync = getattr(settings, "KEYCLOAK_SYNC_ENABLED", False)
-    val = "yes" if sync else "no"
-    print(f"Keycloak Sync Enabled?: {val}")
     if not getattr(settings, "KEYCLOAK_SYNC_ENABLED", False):
         return
 
@@ -38,9 +35,6 @@ def sync_user_to_keycloak(sender, instance, **kwargs):
 @receiver(m2m_changed, sender=User.groups.through)
 def sync_user_groups_to_keycloak(sender, instance, action, **kwargs):
     """Sync user group memberships to Keycloak after group changes."""
-    sync = getattr(settings, "KEYCLOAK_SYNC_ENABLED", False)
-    val = "yes" if sync else "no"
-    print(f"Keycloak Sync Enabled?: {val}")
     if not getattr(settings, "KEYCLOAK_SYNC_ENABLED", False):
         return
 
@@ -49,8 +43,6 @@ def sync_user_groups_to_keycloak(sender, instance, action, **kwargs):
         return
 
     try:
-        if not getattr(settings, "KEYCLOAK_SYNC_ENABLED", False):
-            return
         _get_client().sync_user_groups(instance)
     except Exception:
         logger.exception(
