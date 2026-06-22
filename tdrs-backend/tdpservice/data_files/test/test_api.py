@@ -189,63 +189,57 @@ class DataFileAPITestBase:
     def assert_error_report_tanf_file_content_matches_with_friendly_names(response):
         """Assert the error report file contents match expected with friendly names."""
         wb = DataFileAPITestBase.get_spreadsheet(response)
+        readme = wb["Readme"]
         critical = wb["Critical"]
         summary = wb["Summary"]
 
         COL_ERROR_MESSAGE = 4
         COL_NUM_OCCURRENCES = 8
 
+        assert readme.cell(row=1, column=1).value == "Error Report Readme"
+        assert critical.cell(row=1, column=1).value == "Case Number"
         assert (
-            critical.cell(row=1, column=1).value
-            == "Please refer to the most recent versions of the coding "
-            + "instructions (linked below) when looking up items and allowable values during the data revision process"
-        )
-        assert (
-            critical.cell(row=8, column=COL_ERROR_MESSAGE).value
+            critical.cell(row=3, column=COL_ERROR_MESSAGE).value
             == "No records created."
         )
-        assert summary.cell(row=7, column=COL_NUM_OCCURRENCES).value == 1
+        assert summary.cell(row=2, column=COL_NUM_OCCURRENCES).value == 1
 
     @staticmethod
     def assert_error_report_ssp_file_content_matches_with_friendly_names(response):
         """Assert the error report file contents match expected with friendly names."""
         wb = DataFileAPITestBase.get_spreadsheet(response)
+        readme = wb["Readme"]
         critical = wb["Critical"]
         summary = wb["Summary"]
 
         COL_ERROR_MESSAGE = 3
         COL_NUM_OCCURRENCES = 8
 
-        assert (
-            critical.cell(row=1, column=1).value
-            == "Please refer to the most recent versions of the coding "
-            + "instructions (linked below) when looking up items and allowable values during the data revision process"
-        )
-        assert summary.cell(row=10, column=COL_ERROR_MESSAGE).value == (
+        assert readme.cell(row=1, column=1).value == "Error Report Readme"
+        assert critical.cell(row=1, column=1).value == "Case Number"
+        assert summary.cell(row=5, column=COL_ERROR_MESSAGE).value == (
             "TRAILER: record length is 15 characters " "but must be 23."
         )
-        assert summary.cell(row=7, column=COL_NUM_OCCURRENCES).value == 3
+        assert summary.cell(row=2, column=COL_NUM_OCCURRENCES).value == 3
 
     @staticmethod
     def assert_error_report_file_content_matches_without_friendly_names(response):
         """Assert the error report file contents match expected without friendly names."""
         wb = DataFileAPITestBase.get_spreadsheet(response)
+        readme = wb["Readme"]
         critical = wb["Critical"]
         summary = wb["Summary"]
 
         COL_ERROR_MESSAGE = 4
         COL_NUM_OCCURRENCES = 8
 
+        assert readme.cell(row=1, column=1).value == "Error Report Readme"
+        assert critical.cell(row=1, column=1).value == "Case Number"
         assert (
-            critical.cell(row=1, column=1).value
-            == "Please refer to the most recent versions of the coding "
-            + "instructions (linked below) when looking up items and allowable values during the data revision process"
-        )
-        assert (
-            critical.cell(row=8, column=COL_ERROR_MESSAGE).value
+            critical.cell(row=3, column=COL_ERROR_MESSAGE).value
             == "No records created."
         )
-        assert summary.cell(row=7, column=COL_NUM_OCCURRENCES).value == 1
+        assert summary.cell(row=2, column=COL_NUM_OCCURRENCES).value == 1
 
     @staticmethod
     def assert_data_file_exists(data_file_data, version, user):
