@@ -158,11 +158,11 @@ class TanfDataErrorReportBase(ErrorReportBase):
 
     def generate(self):
         """Generate and return TDR error report."""
+        readme_sheet = self.workbook.add_worksheet(name="Readme")
         prioritized_sheet = self.workbook.add_worksheet(name="Critical")
         aggregate_sheet = self.workbook.add_worksheet(name="Summary")
 
-        self.write_worksheet_banner(prioritized_sheet)
-        self.write_worksheet_banner(aggregate_sheet)
+        self.write_readme_sheet(readme_sheet)
 
         bold = self.workbook.add_format({"bold": True})
         self.write_prioritized_errors(prioritized_sheet, bold)
@@ -183,12 +183,12 @@ class TanfDataErrorReportBase(ErrorReportBase):
         # We will write the headers in the first row, remove case_number if we are s3/s4
         columns = self.get_columns()
         for idx, col in enumerate(columns):
-            worksheet.write(5, idx, self.format_header(col), bold)
+            worksheet.write(0, idx, self.format_header(col), bold)
 
         paginator = Paginator(
             self.prioritized_errors.order_by("pk"), settings.BULK_CREATE_BATCH_SIZE
         )
-        row_idx = 6
+        row_idx = 1
         for page in paginator:
             for error in page.object_list:
                 rpt_month_year = getattr(error, "rpt_month_year", None)
@@ -204,7 +204,7 @@ class TanfDataErrorReportBase(ErrorReportBase):
 
     def write_aggregate_errors(self, worksheet, bold):
         """Aggregate by error message and write."""
-        row, col = 5, 0
+        row, col = 0, 0
 
         # We will write the headers in the first row
         columns = [
@@ -232,7 +232,7 @@ class TanfDataErrorReportBase(ErrorReportBase):
         paginator = Paginator(
             aggregates.order_by("-num_occurrences"), settings.BULK_CREATE_BATCH_SIZE
         )
-        row_idx = 6
+        row_idx = 1
         for page in paginator:
             for error in page.object_list:
                 rpt_month_year = error["rpt_month_year"]
@@ -266,8 +266,8 @@ class TanfDataErrorReportBase(ErrorReportBase):
                 worksheet.write(row_idx, 7, error["num_occurrences"])
                 row_idx += 1
 
-    def write_worksheet_banner(self, worksheet):
-        """Write worksheet banner."""
+    def write_readme_sheet(self, worksheet):
+        """Write README sheet guidance."""
         row, col = 0, 0
 
         # write beta banner
