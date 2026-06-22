@@ -268,17 +268,18 @@ class TanfDataErrorReportBase(ErrorReportBase):
 
     def write_readme_sheet(self, worksheet):
         """Write README sheet guidance."""
+        header_fill = "#DDEBF0"
         title = self.workbook.add_format(
             {"bold": True, "font_size": 14, "underline": True}
         )
         section_header = self.workbook.add_format(
-            {"bold": True, "bg_color": "#D9EAD3", "bottom": 1}
+            {"bold": True, "bg_color": header_fill, "top": 1, "bottom": 1}
         )
         section_header_right = self.workbook.add_format(
-            {"bold": True, "bg_color": "#D9EAD3", "top": 1, "right": 1, "bottom": 1}
+            {"bold": True, "bg_color": header_fill, "top": 1, "right": 1, "bottom": 1}
         )
         section_header_wrapped = self.workbook.add_format(
-            {"bold": True, "bg_color": "#D9EAD3", "top": 1, "bottom": 1, "text_wrap": True}
+            {"bold": True, "bg_color": header_fill, "top": 1, "bottom": 1, "text_wrap": True}
         )
         wrapped_text = self.workbook.add_format({"text_wrap": True, "align": "left"})
         wrapped_text_top = self.workbook.add_format(
@@ -347,6 +348,7 @@ class TanfDataErrorReportBase(ErrorReportBase):
         )
 
         worksheet.write(7, 0, "Coding Instructions", section_header_wrapped)
+        worksheet.write_blank(7, 1, None, section_header_right)
         worksheet.merge_range(
             8,
             0,

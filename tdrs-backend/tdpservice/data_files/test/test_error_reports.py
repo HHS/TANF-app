@@ -155,6 +155,14 @@ def test_tanf_error_report_readme_layout_and_representative_styles(
     assert readme["A2"].alignment.wrap_text is True
     assert readme["A9"].alignment.wrap_text is True
     assert readme["A4"].font.bold is True
+    assert readme["A4"].fill.fgColor.rgb == "FFDDEBF0"
+    assert readme["A4"].border.top.style == "thin"
     assert readme["A4"].border.bottom.style == "thin"
+    assert readme["A13"].border.top.style == "thin"
+    assert readme["A13"].border.bottom.style == "thin"
+    assert readme["B8"].fill.fgColor.rgb == "FFDDEBF0"
+    assert readme["B8"].border.top.style == "thin"
+    assert readme["B8"].border.right.style == "thin"
+    assert readme["B8"].border.bottom.style == "thin"
     assert readme["A5"].font.underline == "single"
     assert readme["A5"].font.color.rgb == "FF0070C0"
