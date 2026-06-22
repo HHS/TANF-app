@@ -57,6 +57,8 @@ export DJANGO_SETTINGS_MODULE=tdpservice.settings.cloudgov
 set +a
 echo "Done."
 
+env
+
 echo "Applying migrations..."
 python manage.py migrate
 status=$?
