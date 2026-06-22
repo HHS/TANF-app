@@ -49,7 +49,7 @@ class KeycloakSyncClient:
     @classmethod
     def get_instance(cls) -> "KeycloakSyncClient":
         """Return a singleton instance of the client."""
-        if cls._instance is None:
+        if cls._instance is None and getattr(settings, "KEYCLOAK_SYNC_ENABLED", False):
             with cls._lock:
                 if cls._instance is None:
                     cls._instance = cls()
