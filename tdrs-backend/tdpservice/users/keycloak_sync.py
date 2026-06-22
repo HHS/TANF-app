@@ -22,7 +22,8 @@ def _get_client():
 def sync_user_to_keycloak(sender, instance, **kwargs):
     """Sync user attributes to Keycloak after save."""
     sync = getattr(settings, "KEYCLOAK_SYNC_ENABLED", False)
-    print(f"Keycloak Sync Enabled?: {sync}")
+    val = "yes" if sync else "no"
+    print(f"Keycloak Sync Enabled?: {val}")
     if not getattr(settings, "KEYCLOAK_SYNC_ENABLED", False):
         return
 
@@ -38,7 +39,8 @@ def sync_user_to_keycloak(sender, instance, **kwargs):
 def sync_user_groups_to_keycloak(sender, instance, action, **kwargs):
     """Sync user group memberships to Keycloak after group changes."""
     sync = getattr(settings, "KEYCLOAK_SYNC_ENABLED", False)
-    print(f"Keycloak Sync Enabled?: {sync}")
+    val = "yes" if sync else "no"
+    print(f"Keycloak Sync Enabled?: {val}")
     if not getattr(settings, "KEYCLOAK_SYNC_ENABLED", False):
         return
 
