@@ -1,5 +1,12 @@
 # Spring 2026 TDP Error Reporting Research
 
+**Jump To:**
+* [Background & Motivation](#background--motivation)
+* [Methods & Approach](#methods--approach)
+* [Core Findings & Research Questions Addressed]([#core-findings--research-questions-addressed)
+* [Next Steps: Research and Design Priorities](#research-and-design-priorities)
+* [Index, Supporting Documents and Artifiacts](#index-supporting-documentation-and-artifacts)
+
 ## Background & Motivation 
 The TANF Data Portal (TDP) has meaningfully modernized data reporting by replacing more manual submission methods with a faster, easier file upload experience. Since its MVP stage, research participants have reliably described TDP as a major improvement over prior processes, with one from this round of research noting that what used to take days can now happen “pretty much within minutes” and another describing the current drag-and-drop process as “so much better” than the legacy workflows.
 
@@ -96,9 +103,7 @@ System cues and guidance do help, but they help most when they are close to the 
 
 > “When I submitted, a little line shows up at the top that says submitted successfully... but it doesn't say submitted successfully with errors... The only way I know there's an error is... once I hit that submit successfully button... I am going to log out... we don't know the errors happening until the e-mail comes in." – S03-P3
 
-Interviews suggested recurring confusion between the immediate Error Reports shown after upload and the Monthly Feedback Reports distributed by Yun via email, also provided in the Monthly Feedback page. Most participants described uploading files, leaving TDP and only returning once the confirmation or feedback email arrives, suggesting these emails provide strong value as both prompts for follow-up action and historical audit documentation. Additionally, the separation between the Submission and History tabs may cause newer users to overlook the upload Error Report entirely. Overall, while the current experience is functional, users still perform significant translation and reconciliation work across multiple tools, communications and external references to fully understand and resolve issues.
-
-## Next Steps: Research and Design Priorities / Make the report ecosystem legible
+Interviews suggested recurring confusion between the immediate Error Reports shown after upload and the Monthly Feedback Reports distributed by Yun via email, also provided in the Monthly Feedback page. Most participants described uploading files, leaving TDP and only returning once the confirmation or feedback email arrives, suggesting these emails provide strong value as both prompts for follow-up action and historical audit documentation. Additionally, the separation between the Submission and History tabs may cause newer users to overlook the upload Error Report entirely. Overall, while the current experience is functional, users still perform significant translation and reconciliation work across multiple tools, communications and external references to fully understand and resolve issues. (See Next Steps: Research and Design Priorities Make the report ecosystem legible)
 
 Knowledge Center usage is mixed. Some participants use it often, bookmark it, or rely on trainings and related resources. Others barely use it, are only vaguely aware of it, or said it rarely answers the question they actually have. S04 was especially direct that the Knowledge Center has almost never been helpful for the specific answers they need, while S13 described heavy use but still said some information can be difficult to find without bookmarking. The lesson is that documentation cannot remain a separate destination if the real interpretive burden occurs inside a correction flow.
 
