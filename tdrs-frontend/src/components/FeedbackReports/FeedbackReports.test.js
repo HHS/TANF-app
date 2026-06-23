@@ -118,7 +118,7 @@ describe('FeedbackReports', () => {
 
       // Should have the upload button
       expect(
-        screen.getByRole('button', { name: /Upload & Notify States/i })
+        screen.getByRole('button', { name: /Upload & Notify STTs/i })
       ).toBeInTheDocument()
     })
 
@@ -157,7 +157,7 @@ describe('FeedbackReports', () => {
 
       // Should NOT have the Upload button (that's for OFA admins only)
       expect(
-        screen.queryByRole('button', { name: /Upload & Notify States/i })
+        screen.queryByRole('button', { name: /Upload & Notify STTs/i })
       ).not.toBeInTheDocument()
     })
 
@@ -279,7 +279,7 @@ describe('FeedbackReports', () => {
 
       // Should NOT have the Upload button
       expect(
-        screen.queryByRole('button', { name: /Upload & Notify States/i })
+        screen.queryByRole('button', { name: /Upload & Notify STTs/i })
       ).not.toBeInTheDocument()
     })
   })
