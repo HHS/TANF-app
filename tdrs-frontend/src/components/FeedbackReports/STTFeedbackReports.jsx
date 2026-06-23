@@ -53,10 +53,6 @@ const STT_REPORT_TYPE_OPTIONS = REPORT_TYPE_OPTIONS.filter(
   ({ value }) => value !== REPORT_TYPES.TRIBAL_TANF
 )
 
-const TRIBAL_REPORT_TYPE_OPTIONS = [
-  { value: REPORT_TYPES.TRIBAL_TANF, label: 'TANF' },
-]
-
 const STT_REPORT_TYPE_LABELS = {
   ...REPORT_TYPE_LABELS,
   [REPORT_TYPES.TRIBAL_TANF]: 'TANF',
@@ -279,16 +275,16 @@ function STTFeedbackReports() {
               </div>
             )}
 
-            <RadioSelect
-              label="Feedback Report Type*"
-              fieldName="reportType"
-              classes="margin-top-4"
-              options={
-                isTribe ? TRIBAL_REPORT_TYPE_OPTIONS : STT_REPORT_TYPE_OPTIONS
-              }
-              setValue={handleReportTypeChange}
-              selectedValue={selectedReportType}
-            />
+            {!isTribe && (
+              <RadioSelect
+                label="Feedback Report Type*"
+                fieldName="reportType"
+                classes="margin-top-4"
+                options={STT_REPORT_TYPE_OPTIONS}
+                setValue={handleReportTypeChange}
+                selectedValue={selectedReportType}
+              />
+            )}
 
             <div className="usa-form-group maxw-mobile margin-top-4">
               <label

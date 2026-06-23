@@ -249,11 +249,11 @@ describe('STTFeedbackReports', () => {
       expect(screen.queryByLabelText('Tribal TANF')).not.toBeInTheDocument()
     })
 
-    it('shows only TANF radio selector for tribe Data Analysts', () => {
+    it('hides report type selector for tribe Data Analysts', () => {
       renderComponent(tribeDataAnalystStore())
 
-      expect(screen.getByText('Feedback Report Type*')).toBeInTheDocument()
-      expect(screen.getByLabelText('TANF')).toBeChecked()
+      expect(screen.queryByText('Feedback Report Type*')).not.toBeInTheDocument()
+      expect(screen.queryByLabelText('TANF')).not.toBeInTheDocument()
       expect(screen.queryByLabelText('TANF/SSP')).not.toBeInTheDocument()
       expect(screen.queryByLabelText('FRA')).not.toBeInTheDocument()
     })
@@ -381,8 +381,8 @@ describe('STTFeedbackReports', () => {
         </MemoryRouter>
       )
 
-      expect(screen.getByText('Feedback Report Type*')).toBeInTheDocument()
-      expect(screen.getByLabelText('TANF')).toBeChecked()
+      expect(screen.queryByText('Feedback Report Type*')).not.toBeInTheDocument()
+      expect(screen.queryByLabelText('TANF')).not.toBeInTheDocument()
       expect(screen.queryByLabelText('FRA')).not.toBeInTheDocument()
 
       // Should fetch as TRIBAL_TANF despite URL param
@@ -1021,7 +1021,7 @@ describe('STTFeedbackReports', () => {
       expect(sttSelect.value).toBe('Wisconsin')
     })
 
-    it('shows only TANF report type selector when a tribe is selected', () => {
+    it('hides report type selector when a tribe is selected', () => {
       renderComponent(regionalStore)
 
       // Initially radio should be visible (no STT selected yet)
@@ -1031,8 +1031,8 @@ describe('STTFeedbackReports', () => {
       const sttSelect = screen.getByLabelText(/State, Tribe, or Territory/i)
       fireEvent.change(sttSelect, { target: { value: 'Ho-Chunk Nation' } })
 
-      expect(screen.getByText('Feedback Report Type*')).toBeInTheDocument()
-      expect(screen.getByLabelText('TANF')).toBeChecked()
+      expect(screen.queryByText('Feedback Report Type*')).not.toBeInTheDocument()
+      expect(screen.queryByLabelText('TANF')).not.toBeInTheDocument()
       expect(screen.queryByLabelText('TANF/SSP')).not.toBeInTheDocument()
       expect(screen.queryByLabelText('FRA')).not.toBeInTheDocument()
       expect(
@@ -1043,13 +1043,14 @@ describe('STTFeedbackReports', () => {
     it('shows radio again when switching from tribe to state STT', async () => {
       renderComponent(regionalStore)
 
-      // Select a tribe - radio should show only TANF
+      // Select a tribe - radio should be hidden
       const sttSelect = screen.getByLabelText(/State, Tribe, or Territory/i)
       fireEvent.change(sttSelect, { target: { value: 'Ho-Chunk Nation' } })
 
       await waitFor(() => {
-        expect(screen.getByText('Feedback Report Type*')).toBeInTheDocument()
-        expect(screen.getByLabelText('TANF')).toBeChecked()
+        expect(
+          screen.queryByText('Feedback Report Type*')
+        ).not.toBeInTheDocument()
       })
 
       // Select a state — radio should reappear with TANF_SSP selected
