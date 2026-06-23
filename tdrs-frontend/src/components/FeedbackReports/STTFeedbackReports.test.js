@@ -252,7 +252,9 @@ describe('STTFeedbackReports', () => {
     it('hides report type selector for tribe Data Analysts', () => {
       renderComponent(tribeDataAnalystStore())
 
-      expect(screen.queryByText('Feedback Report Type*')).not.toBeInTheDocument()
+      expect(
+        screen.queryByText('Feedback Report Type*')
+      ).not.toBeInTheDocument()
       expect(screen.queryByLabelText('TANF')).not.toBeInTheDocument()
       expect(screen.queryByLabelText('TANF/SSP')).not.toBeInTheDocument()
       expect(screen.queryByLabelText('FRA')).not.toBeInTheDocument()
@@ -381,7 +383,9 @@ describe('STTFeedbackReports', () => {
         </MemoryRouter>
       )
 
-      expect(screen.queryByText('Feedback Report Type*')).not.toBeInTheDocument()
+      expect(
+        screen.queryByText('Feedback Report Type*')
+      ).not.toBeInTheDocument()
       expect(screen.queryByLabelText('TANF')).not.toBeInTheDocument()
       expect(screen.queryByLabelText('FRA')).not.toBeInTheDocument()
 
@@ -1031,7 +1035,9 @@ describe('STTFeedbackReports', () => {
       const sttSelect = screen.getByLabelText(/State, Tribe, or Territory/i)
       fireEvent.change(sttSelect, { target: { value: 'Ho-Chunk Nation' } })
 
-      expect(screen.queryByText('Feedback Report Type*')).not.toBeInTheDocument()
+      expect(
+        screen.queryByText('Feedback Report Type*')
+      ).not.toBeInTheDocument()
       expect(screen.queryByLabelText('TANF')).not.toBeInTheDocument()
       expect(screen.queryByLabelText('TANF/SSP')).not.toBeInTheDocument()
       expect(screen.queryByLabelText('FRA')).not.toBeInTheDocument()
