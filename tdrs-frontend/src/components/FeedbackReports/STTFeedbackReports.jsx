@@ -19,33 +19,32 @@ import {
 /**
  * Reference table data for each report type
  */
+const TANF_REPORTING_QUARTERS = [
+  { label: 'FY Q1', period: 'Oct 1 - Dec 31', deadline: 'February 14' },
+  { label: 'FY Q2', period: 'Jan 1 - Mar 31', deadline: 'May 15' },
+  { label: 'FY Q3', period: 'Apr 1 - Jun 30', deadline: 'August 14' },
+  { label: 'FY Q4', period: 'Jul 1 - Sep 30', deadline: 'November 14' },
+]
+
+const FRA_REPORTING_QUARTERS = [
+  { label: 'FY Q1', period: 'Oct 1 - Dec 31', deadline: 'May 15' },
+  { label: 'FY Q2', period: 'Jan 1 - Mar 31', deadline: 'August 14' },
+  { label: 'FY Q3', period: 'Apr 1 - Jun 30', deadline: 'November 14' },
+  { label: 'FY Q4', period: 'Jul 1 - Sep 30', deadline: 'February 14' },
+]
+
 const REFERENCE_TABLES = {
   TANF_SSP: {
     caption: 'TANF/SSP Data Reporting Reference',
-    quarters: [
-      { label: 'FY Q1', period: 'Oct 1 - Dec 31', deadline: 'February 14' },
-      { label: 'FY Q2', period: 'Jan 1 - Mar 31', deadline: 'May 15' },
-      { label: 'FY Q3', period: 'Apr 1 - Jun 30', deadline: 'August 14' },
-      { label: 'FY Q4', period: 'Jul 1 - Sep 30', deadline: 'November 14' },
-    ],
+    quarters: TANF_REPORTING_QUARTERS,
   },
   TRIBAL_TANF: {
     caption: 'TANF Data Reporting Reference',
-    quarters: [
-      { label: 'FY Q1', period: 'Oct 1 - Dec 31', deadline: 'February 14' },
-      { label: 'FY Q2', period: 'Jan 1 - Mar 31', deadline: 'May 15' },
-      { label: 'FY Q3', period: 'Apr 1 - Jun 30', deadline: 'August 14' },
-      { label: 'FY Q4', period: 'Jul 1 - Sep 30', deadline: 'November 14' },
-    ],
+    quarters: TANF_REPORTING_QUARTERS,
   },
   FRA: {
     caption: 'FRA Data Reporting Reference',
-    quarters: [
-      { label: 'FY Q1', period: 'Oct 1 - Dec 31', deadline: 'May 15' },
-      { label: 'FY Q2', period: 'Jan 1 - Mar 31', deadline: 'August 14' },
-      { label: 'FY Q3', period: 'Apr 1 - Jun 30', deadline: 'November 14' },
-      { label: 'FY Q4', period: 'Jul 1 - Sep 30', deadline: 'February 14' },
-    ],
+    quarters: FRA_REPORTING_QUARTERS,
   },
 }
 
