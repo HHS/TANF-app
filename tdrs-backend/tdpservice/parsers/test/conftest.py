@@ -214,6 +214,14 @@ def small_tanf_section2_file(stt_user, stt):
 
 
 @pytest.fixture
+def oasdi_age_first_tanf_section2_file(stt_user, stt):
+    """Fixture for TANF Section 2 OASDI AGE_FIRST validation."""
+    return util.create_test_datafile(
+        "oasdi_age_first_tanf_section2.txt", stt_user, stt, "Closed Case Data"
+    )
+
+
+@pytest.fixture
 def tanf_section2_file(stt_user, stt):
     """Fixture for ADS.E2J.FTP2.TS06."""
     return util.create_test_datafile(
@@ -278,6 +286,19 @@ def ssp_section2_rec_oadsi_file(stt_user, stt):
 
 
 @pytest.fixture
+def oasdi_age_first_ssp_section2_file(stt_user, stt):
+    """Fixture for SSP Section 2 OASDI AGE_FIRST validation."""
+    return util.create_test_datafile(
+        "oasdi_age_first_ssp_section2.txt",
+        stt_user,
+        stt,
+        "Closed Case Data",
+        DataFile.ProgramType.SSP,
+        year=2019,
+    )
+
+
+@pytest.fixture
 def ssp_section2_file(stt_user, stt):
     """Fixture for ADS.E2J.NDM2.MS24."""
     return util.create_test_datafile(
@@ -333,6 +354,18 @@ def tribal_section_2_file(stt_user, stt):
     """Fixture for ADS.E2J.FTP4.TS06."""
     return util.create_test_datafile(
         "ADS.E2J.FTP2.TS142.txt",
+        stt_user,
+        stt,
+        "Closed Case Data",
+        DataFile.ProgramType.TRIBAL,
+    )
+
+
+@pytest.fixture
+def oasdi_age_first_tribal_section2_file(stt_user, stt):
+    """Fixture for Tribal TANF Section 2 OASDI AGE_FIRST validation."""
+    return util.create_test_datafile(
+        "oasdi_age_first_tribal_section2.txt",
         stt_user,
         stt,
         "Closed Case Data",
