@@ -82,6 +82,7 @@ def bundle_stt_files(zip_file: zipfile.ZipFile, file_infos: list, stt_code: str)
     """
     # Create in-memory zip
     zip_buffer = io.BytesIO()
+    bundled_filenames = set()
 
     with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as bundle_zip:
         for file_info in file_infos:
@@ -93,6 +94,11 @@ def bundle_stt_files(zip_file: zipfile.ZipFile, file_infos: list, stt_code: str)
             if not relative_path_parts or any(part in ("", ".", "..") for part in relative_path_parts):
                 raise ValueError(f"Invalid file path in STT folder: {file_info.filename}")
             filename = "/".join(relative_path_parts)
+            if filename in bundled_filenames:
+                raise ValueError(
+                    f"Duplicate file path in STT folder '{stt_code}': {filename}"
+                )
+            bundled_filenames.add(filename)
 
             bundle_zip.writestr(filename, file_data)
 

@@ -154,6 +154,25 @@ class TestBundleSttFiles:
         assert "reports/february/summary.pdf" in names
         assert len(names) == 2
 
+    def test_bundle_fails_duplicate_relative_paths_across_regions(self):
+        """Should fail when files for an STT map to the same bundled path."""
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+            zf.writestr(
+                "FY2025_test/FY2025/RO4/F1/reports/january/summary.pdf",
+                b"region 4 content",
+            )
+            zf.writestr(
+                "FY2025_test/FY2025/RO5/F1/reports/january/summary.pdf",
+                b"region 5 content",
+            )
+        zip_buffer.seek(0)
+        report_source_zip = zipfile.ZipFile(zip_buffer)
+        file_infos = find_stt_folders(report_source_zip)["1"]
+
+        with pytest.raises(ValueError, match="Duplicate file path"):
+            bundle_stt_files(report_source_zip, file_infos, "1")
+
 
 @pytest.mark.django_db
 class TestProcessReportSource:

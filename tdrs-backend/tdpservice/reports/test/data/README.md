@@ -126,7 +126,25 @@ FY2025_invalid_empty_stt_folder/
 ```
 **Expected Error:** `"No STT folders found..."` (empty folders are skipped)
 
-### 9. `invalid_multiple_fiscal_years.zip`
+### 9. `FY2025_invalid_duplicate_stt_relative_paths.zip`
+**Structure:**
+```
+FY2025_invalid_duplicate_stt_relative_paths/
+  └── FY2025/
+      ├── RO4/
+      │   └── F12/
+      │       └── reports/
+      │           └── january/
+      │               └── summary.pdf
+      └── RO5/
+          └── F12/
+              └── reports/
+                  └── january/
+                      └── summary.pdf
+```
+**Expected Error:** `"Duplicate file path in STT folder '12': reports/january/summary.pdf"`
+
+### 10. `invalid_multiple_fiscal_years.zip`
 **Structure:**
 ```
 invalid_multiple_fiscal_years/
