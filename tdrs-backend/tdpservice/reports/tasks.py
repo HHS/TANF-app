@@ -3,6 +3,7 @@
 import io
 import logging
 import zipfile
+from pathlib import PurePosixPath
 
 from django.core.files.base import ContentFile
 from django.db.models import Q
@@ -16,6 +17,9 @@ from tdpservice.users.models import User, AccountApprovalStatusChoices
 
 
 logger = logging.getLogger(__name__)
+
+STT_FOLDER_INDEX = 3
+STT_RELATIVE_PATH_START_INDEX = STT_FOLDER_INDEX + 1
 
 
 def find_stt_folders(zip_file: zipfile.ZipFile) -> dict:
@@ -90,10 +94,11 @@ def bundle_stt_files(zip_file: zipfile.ZipFile, file_infos: list, stt_code: str)
             file_data = zip_file.read(file_info.filename)
 
             # Keep the folder hierarchy under the STT folder.
-            relative_path_parts = file_info.filename.split('/')[4:]
+            path_parts = PurePosixPath(file_info.filename).parts
+            relative_path_parts = path_parts[STT_RELATIVE_PATH_START_INDEX:]
             if not relative_path_parts or any(part in ("", ".", "..") for part in relative_path_parts):
                 raise ValueError(f"Invalid file path in STT folder: {file_info.filename}")
-            filename = "/".join(relative_path_parts)
+            filename = PurePosixPath(*relative_path_parts).as_posix()
             if filename in bundled_filenames:
                 raise ValueError(
                     f"Duplicate file path in STT folder '{stt_code}': {filename}"
