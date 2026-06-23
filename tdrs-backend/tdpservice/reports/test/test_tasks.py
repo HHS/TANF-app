@@ -74,6 +74,52 @@ class TestFindSttFolders:
         with pytest.raises(ValueError, match="No STT folders found"):
             find_stt_folders(zip_file)
 
+    def test_invalid_region_folder(self):
+        """Should ignore region folders that do not use the RO prefix."""
+        structure = {"FY2025": {"R04": {"F1": ["report1.pdf"]}}}
+        zip_buffer = create_nested_zip(structure, "FY2025_test")
+        zip_file = zipfile.ZipFile(zip_buffer)
+
+        with pytest.raises(ValueError, match="No STT folders found"):
+            find_stt_folders(zip_file)
+
+    def test_invalid_stt_folder(self):
+        """Should ignore STT folders that do not use the F prefix."""
+        structure = {"FY2025": {"RO4": {"130": ["report1.pdf"]}}}
+        zip_buffer = create_nested_zip(structure, "FY2025_test")
+        zip_file = zipfile.ZipFile(zip_buffer)
+
+        with pytest.raises(ValueError, match="No STT folders found"):
+            find_stt_folders(zip_file)
+
+    def test_invalid_nested_file_path(self):
+        """Should ignore extra directory levels below the STT folder."""
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w") as zf:
+            zf.writestr("FY2025_test/FY2025/RO4/F1/nested/report.pdf", b"content")
+        zip_buffer.seek(0)
+        zip_file = zipfile.ZipFile(zip_buffer)
+
+        with pytest.raises(ValueError, match="No STT folders found"):
+            find_stt_folders(zip_file)
+
+    def test_invalid_macos_metadata_path(self):
+        """Should ignore macOS metadata paths and parse valid report files."""
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w") as zf:
+            zf.writestr(
+                "__MACOSX/FY2025_test/FY2025/R04/._.DS_Store",
+                b"metadata",
+            )
+            zf.writestr("FY2025_test/FY2025/RO4/F1/report1.pdf", b"content")
+        zip_buffer.seek(0)
+        zip_file = zipfile.ZipFile(zip_buffer)
+
+        stt_files = find_stt_folders(zip_file)
+
+        assert set(stt_files) == {"1"}
+        assert len(stt_files["1"]) == 1
+
 
 class TestBundleSttFiles:
     """Tests for bundle_stt_files function."""

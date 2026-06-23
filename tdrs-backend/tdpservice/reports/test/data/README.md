@@ -61,11 +61,41 @@ FY2025_valid_multiple_regions/
 - Creates 3 ReportFiles across 3 different regions
 - Connecticut (Region 1), New Jersey (Region 2), Pennsylvania (Region 3)
 
+### 4. `FY2025_mixed_valid_and_invalid_dirs.zip`
+**Structure:**
+```
+FY2025_mixed_valid_and_invalid_dirs/
+  ├── .DS_Store
+  └── FY2025/
+      ├── R05/
+      │   └── F020/
+      │       └── invalid_region_report.pdf
+      └── RO5/
+          ├── 020/
+          │   └── invalid_stt_report.pdf
+          └── F020/
+              ├── .hidden_report.pdf
+              ├── blackfeet_nation_report.pdf
+              ├── blackfeet_nation_summary.pdf
+              └── nested/
+                  └── ignored_nested_report.pdf
+__MACOSX/
+  └── FY2025_mixed_valid_and_invalid_dirs/
+      ├── ._.DS_Store
+      └── FY2025/
+          └── R05/
+              └── ._invalid_region_report.pdf
+```
+**Expected Result:** Success
+- Creates 1 ReportFile for Blackfeet Nation (STT_CODE: 020, Region 5)
+- Ignores invalid folders and metadata paths (`R05`, `020`, nested files, hidden files, `.DS_Store`, and `__MACOSX`)
+- Useful for manual upload testing that invalid paths do not fail the entire upload
+
 ---
 
 ## Invalid Test Files (Should FAIL)
 
-### 4. `invalid_fiscal_year_bad_format.zip`
+### 5. `invalid_fiscal_year_bad_format.zip`
 **Structure:**
 ```
 invalid_fiscal_year_bad_format/
@@ -76,14 +106,14 @@ invalid_fiscal_year_bad_format/
 ```
 **Expected Error:** Invalid fiscal year format in folder name.
 
-### 5. `invalid_flat_structure.zip`
+### 6. `invalid_flat_structure.zip`
 **Structure:**
 ```
 report.pdf  (no folders)
 ```
 **Expected Error:** `"No STT folders found. Expected structure: {ZipName}/FY{YYYY}/RO{X}/F{X}/files"`
 
-### 6. `FY2025_invalid_stt_code_999.zip`
+### 7. `FY2025_invalid_stt_code_999.zip`
 **Structure:**
 ```
 FY2025_invalid_stt_code_999/
@@ -94,7 +124,7 @@ FY2025_invalid_stt_code_999/
 ```
 **Expected Error:** `"STT code '999' not found in system."`
 
-### 7. `FY2025_invalid_empty_stt_folder.zip`
+### 8. `FY2025_invalid_empty_stt_folder.zip`
 **Structure:**
 ```
 FY2025_invalid_empty_stt_folder/
@@ -104,7 +134,7 @@ FY2025_invalid_empty_stt_folder/
 ```
 **Expected Error:** `"No STT folders found..."` (empty folders are skipped)
 
-### 8. `invalid_multiple_fiscal_years.zip`
+### 9. `invalid_multiple_fiscal_years.zip`
 **Structure:**
 ```
 invalid_multiple_fiscal_years/
@@ -150,4 +180,3 @@ The `date_extracted_on` field indicates when the data was extracted from the dat
 - Copied from ReportSource to each ReportFile created
 - Displayed to STT users in the feedback reports table
 - Used in email notifications to indicate the data cutoff date
-
