@@ -65,13 +65,18 @@ update_frontend()
     cp nginx/cloud.gov/locations.conf deployment/locations.conf
     cp nginx/cloud.gov/basic_auth.conf deployment/basic_auth.conf
     if [ "$CF_SPACE" != "tanf-prod" ]; then
-        if [ -z "$FRONTEND_BASIC_AUTH_HTPASSWD" ]; then
-            echo "FRONTEND_BASIC_AUTH_HTPASSWD must be set for non-production frontend deployments"
+        if [ -z "$FRONTEND_BASIC_AUTH_USERNAME" ] || [ -z "$FRONTEND_BASIC_AUTH_PASSWORD" ]; then
+            echo "FRONTEND_BASIC_AUTH_USERNAME and FRONTEND_BASIC_AUTH_PASSWORD must be set for non-production frontend deployments"
+            exit 1
+        fi
+        if ! command -v openssl >/dev/null 2>&1; then
+            echo "openssl must be available to generate non-production basic auth credentials"
             exit 1
         fi
 
         umask 077
-        printf '%s\n' "$FRONTEND_BASIC_AUTH_HTPASSWD" > deployment/.htpasswd
+        password_hash=$(openssl passwd -apr1 "$FRONTEND_BASIC_AUTH_PASSWORD")
+        printf '%s:%s\n' "$FRONTEND_BASIC_AUTH_USERNAME" "$password_hash" > deployment/.htpasswd
         {
             printf '%s\n' 'auth_basic "TANF Data Portal non-production environment";'
             printf '%s\n' 'auth_basic_user_file /home/vcap/app/.htpasswd;'

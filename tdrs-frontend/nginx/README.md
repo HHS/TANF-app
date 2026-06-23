@@ -80,7 +80,7 @@ A list of IP addresses has been added to ```ip_whitelist.conf```. This means any
 ### Non-production Basic Auth
 Non-production cloud.gov frontend deployments require Nginx basic auth. Production deployments copy an empty ```basic_auth.conf```, so production remains publicly accessible.
 
-The deploy script writes ```deployment/.htpasswd``` from the ```FRONTEND_BASIC_AUTH_HTPASSWD``` environment variable for any frontend deployment outside ```tanf-prod```. Store the full htpasswd entry in CI secrets. The develop Cypress deployment test also expects ```FRONTEND_BASIC_AUTH_USERNAME``` and ```FRONTEND_BASIC_AUTH_PASSWORD``` so tests can authenticate against the protected frontend.
+The deploy script generates ```deployment/.htpasswd``` from the ```FRONTEND_BASIC_AUTH_USERNAME``` and ```FRONTEND_BASIC_AUTH_PASSWORD``` environment variables for any frontend deployment outside ```tanf-prod```. The develop Cypress deployment test uses the same credentials to authenticate against the protected frontend.
 
 To rotate the shared non-production password, update those CI secrets and redeploy the affected non-production frontend environments.
 
