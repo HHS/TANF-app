@@ -39,6 +39,12 @@ class FRAReportFileFactory(ReportFileFactory):
     report_type = ReportType.FRA
 
 
+class TribalTANFReportFileFactory(ReportFileFactory):
+    """Factory to generate Tribal TANF ReportFile instances."""
+
+    report_type = ReportType.TRIBAL_TANF
+
+
 class ReportSourceFactory(factory.django.DjangoModelFactory):
     """Factory to generate ReportSource instances."""
 
@@ -62,3 +68,9 @@ class FRAReportSourceFactory(ReportSourceFactory):
     """Factory to generate FRA ReportSource instances."""
 
     report_type = ReportType.FRA
+
+
+class TribalTANFReportSourceFactory(ReportSourceFactory):
+    """Factory to generate Tribal TANF ReportSource instances."""
+
+    report_type = ReportType.TRIBAL_TANF

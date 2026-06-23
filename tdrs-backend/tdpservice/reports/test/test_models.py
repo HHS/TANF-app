@@ -5,6 +5,8 @@ from tdpservice.reports.models import ReportFile, ReportType
 from tdpservice.reports.test.factories import (
     FRAReportFileFactory,
     FRAReportSourceFactory,
+    TribalTANFReportFileFactory,
+    TribalTANFReportSourceFactory,
 )
 
 
@@ -118,6 +120,22 @@ def test_unique_constraint_allows_different_report_types(report_file_instance):
     assert fra_report.report_type == ReportType.FRA
     assert base.report_type == ReportType.TANF_SSP
 
+    tribal_tanf_report = ReportFile.objects.create(
+        version=base.version,
+        date_extracted_on=base.date_extracted_on,
+        year=base.year,
+        stt=base.stt,
+        report_type=ReportType.TRIBAL_TANF,
+        original_filename=base.original_filename,
+        slug=base.slug,
+        extension=base.extension,
+        user=base.user,
+        file=base.file,
+    )
+
+    assert tribal_tanf_report.pk is not None
+    assert tribal_tanf_report.report_type == ReportType.TRIBAL_TANF
+
 
 @pytest.mark.django_db
 def test_create_new_version_respects_report_type(report_file_instance):
@@ -141,6 +159,23 @@ def test_create_new_version_respects_report_type(report_file_instance):
 
     assert fra_report.version == 1
     assert fra_report.report_type == ReportType.FRA
+
+    tribal_tanf_report = ReportFile.create_new_version(
+        {
+            "year": base.year,
+            "date_extracted_on": base.date_extracted_on,
+            "stt": base.stt,
+            "report_type": ReportType.TRIBAL_TANF,
+            "original_filename": base.original_filename,
+            "slug": base.slug,
+            "extension": base.extension,
+            "user": base.user,
+            "file": base.file,
+        }
+    )
+
+    assert tribal_tanf_report.version == 1
+    assert tribal_tanf_report.report_type == ReportType.TRIBAL_TANF
 
 
 @pytest.mark.django_db
@@ -171,6 +206,14 @@ def test_find_latest_version_number_filters_by_report_type(report_file_instance)
     )
     assert fra_version is None
 
+    tribal_tanf_version = ReportFile.find_latest_version_number(
+        year=base.year,
+        date_extracted_on=base.date_extracted_on,
+        stt=base.stt,
+        report_type=ReportType.TRIBAL_TANF,
+    )
+    assert tribal_tanf_version is None
+
     # TANF_SSP should have version 2
     tanf_version = ReportFile.find_latest_version_number(
         year=base.year,
@@ -197,3 +240,21 @@ def test_fra_report_source_factory():
 
     assert fra_source.pk is not None
     assert fra_source.report_type == ReportType.FRA
+
+
+@pytest.mark.django_db
+def test_tribal_tanf_report_file_factory():
+    """Test TribalTANFReportFileFactory creates a ReportFile with report_type=TRIBAL_TANF."""
+    tribal_tanf_report = TribalTANFReportFileFactory.create()
+
+    assert tribal_tanf_report.pk is not None
+    assert tribal_tanf_report.report_type == ReportType.TRIBAL_TANF
+
+
+@pytest.mark.django_db
+def test_tribal_tanf_report_source_factory():
+    """Test TribalTANFReportSourceFactory creates a ReportSource with report_type=TRIBAL_TANF."""
+    tribal_tanf_source = TribalTANFReportSourceFactory.create()
+
+    assert tribal_tanf_source.pk is not None
+    assert tribal_tanf_source.report_type == ReportType.TRIBAL_TANF

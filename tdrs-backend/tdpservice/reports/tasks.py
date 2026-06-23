@@ -2,6 +2,7 @@
 
 import io
 import logging
+import re
 import zipfile
 
 from django.core.files.base import ContentFile
@@ -16,6 +17,34 @@ from tdpservice.users.models import User, AccountApprovalStatusChoices
 
 
 logger = logging.getLogger(__name__)
+
+
+def _is_report_file_path(parts: list[str]) -> bool:
+    """Return whether a zip path follows root/FY####/RO#/F#/filename."""
+    if any(part == "__MACOSX" or part.startswith("._") for part in parts):
+        return False
+
+    if any(part in ("", ".", "..") for part in parts):
+        return False
+
+    if len(parts) != 5:
+        return False
+
+    _, fiscal_year_folder, region_folder, stt_folder, filename = parts
+
+    if not re.fullmatch(r"FY\d{4}", fiscal_year_folder):
+        return False
+
+    if not re.fullmatch(r"RO\d+", region_folder):
+        return False
+
+    if not re.fullmatch(r"F\d+", stt_folder):
+        return False
+
+    if filename.startswith("."):
+        return False
+
+    return True
 
 
 def find_stt_folders(zip_file: zipfile.ZipFile) -> dict:
@@ -42,6 +71,9 @@ def find_stt_folders(zip_file: zipfile.ZipFile) -> dict:
 
         # Must have at least 5 parts: {ZipName}/FY{YYYY}/RO{X}/F{X}/filename
         if len(parts) < 5:
+            continue
+
+        if not _is_report_file_path(parts):
             continue
 
         # Extract STT code from 4th level folder (index 3) (e.g., "F1" -> "1")
