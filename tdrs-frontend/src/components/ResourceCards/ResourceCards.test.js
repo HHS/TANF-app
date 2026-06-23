@@ -33,7 +33,8 @@ describe('ResourceCards', () => {
   it('redirects to TDP Knowledge Center when View Knowledge Center clicked', async () => {
     const store = mockStore(initialState)
 
-    const url = 'http://tdp-project-updates.tanfdata.acf.hhs.gov/knowledge-center/'
+    const url =
+      'http://tdp-project-updates.tanfdata.acf.hhs.gov/knowledge-center/'
 
     render(
       <Provider store={store}>
