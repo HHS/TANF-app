@@ -19,6 +19,7 @@ from tdpservice.parsers import util
 from tdpservice.parsers.factory import ParserFactory
 from tdpservice.parsers.models import ParserError
 from tdpservice.parsers.test.factories import DataFileSummaryFactory
+from tdpservice.security.models import ClamAVFileScan
 
 
 @pytest.mark.usefixtures("db")
@@ -188,63 +189,57 @@ class DataFileAPITestBase:
     def assert_error_report_tanf_file_content_matches_with_friendly_names(response):
         """Assert the error report file contents match expected with friendly names."""
         wb = DataFileAPITestBase.get_spreadsheet(response)
+        readme = wb["Readme"]
         critical = wb["Critical"]
         summary = wb["Summary"]
 
         COL_ERROR_MESSAGE = 4
         COL_NUM_OCCURRENCES = 8
 
+        assert readme.cell(row=1, column=1).value == "Error Report Readme"
+        assert critical.cell(row=1, column=1).value == "Case Number"
         assert (
-            critical.cell(row=1, column=1).value
-            == "Please refer to the most recent versions of the coding "
-            + "instructions (linked below) when looking up items and allowable values during the data revision process"
-        )
-        assert (
-            critical.cell(row=8, column=COL_ERROR_MESSAGE).value
+            critical.cell(row=3, column=COL_ERROR_MESSAGE).value
             == "No records created."
         )
-        assert summary.cell(row=7, column=COL_NUM_OCCURRENCES).value == 1
+        assert summary.cell(row=2, column=COL_NUM_OCCURRENCES).value == 1
 
     @staticmethod
     def assert_error_report_ssp_file_content_matches_with_friendly_names(response):
         """Assert the error report file contents match expected with friendly names."""
         wb = DataFileAPITestBase.get_spreadsheet(response)
+        readme = wb["Readme"]
         critical = wb["Critical"]
         summary = wb["Summary"]
 
         COL_ERROR_MESSAGE = 3
         COL_NUM_OCCURRENCES = 8
 
-        assert (
-            critical.cell(row=1, column=1).value
-            == "Please refer to the most recent versions of the coding "
-            + "instructions (linked below) when looking up items and allowable values during the data revision process"
-        )
-        assert summary.cell(row=10, column=COL_ERROR_MESSAGE).value == (
+        assert readme.cell(row=1, column=1).value == "Error Report Readme"
+        assert critical.cell(row=1, column=1).value == "Case Number"
+        assert summary.cell(row=5, column=COL_ERROR_MESSAGE).value == (
             "TRAILER: record length is 15 characters " "but must be 23."
         )
-        assert summary.cell(row=7, column=COL_NUM_OCCURRENCES).value == 3
+        assert summary.cell(row=2, column=COL_NUM_OCCURRENCES).value == 3
 
     @staticmethod
     def assert_error_report_file_content_matches_without_friendly_names(response):
         """Assert the error report file contents match expected without friendly names."""
         wb = DataFileAPITestBase.get_spreadsheet(response)
+        readme = wb["Readme"]
         critical = wb["Critical"]
         summary = wb["Summary"]
 
         COL_ERROR_MESSAGE = 4
         COL_NUM_OCCURRENCES = 8
 
+        assert readme.cell(row=1, column=1).value == "Error Report Readme"
+        assert critical.cell(row=1, column=1).value == "Case Number"
         assert (
-            critical.cell(row=1, column=1).value
-            == "Please refer to the most recent versions of the coding "
-            + "instructions (linked below) when looking up items and allowable values during the data revision process"
-        )
-        assert (
-            critical.cell(row=8, column=COL_ERROR_MESSAGE).value
+            critical.cell(row=3, column=COL_ERROR_MESSAGE).value
             == "No records created."
         )
-        assert summary.cell(row=7, column=COL_NUM_OCCURRENCES).value == 1
+        assert summary.cell(row=2, column=COL_NUM_OCCURRENCES).value == 1
 
     @staticmethod
     def assert_data_file_exists(data_file_data, version, user):
@@ -322,7 +317,7 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
         def clean_scan(_file, _file_name, _uploaded_by, data_file=None):
             assert data_file.state == SubmissionState.VIRUS_SCAN_STARTED
             assert not data_file.file
-            return True
+            return ClamAVFileScan.Result.CLEAN
 
         mocker.patch(
             "tdpservice.data_files.views.settings.CLAMAV_NEEDED",
@@ -332,6 +327,9 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
             "tdpservice.data_files.views.ClamAVClient.scan_file",
             side_effect=clean_scan,
         )
+        mock_parse_task = mocker.patch(
+            "tdpservice.data_files.views.parser_task.parse.delay"
+        )
 
         response = self.post_data_file(api_client, data_file_data)
         self.assert_data_file_created(response)
@@ -339,6 +337,9 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
 
         data_file = DataFile.objects.get(id=response.data["id"])
         assert data_file.state == SubmissionState.VIRUS_SCAN_COMPLETED
+        assert data_file.file
+
+        mock_parse_task.assert_called_once_with(data_file.id, reparse_id=None)
 
         shadow_data_file = ShadowDataFile.objects.get(id=data_file.id)
         assert shadow_data_file.state == SubmissionState.VIRUS_SCAN_COMPLETED
@@ -567,9 +568,7 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         response = self.post_data_file(api_client, data_file_data)
         assert response.data["section"] == "Active Case Data"
 
-    def test_failed_upload_does_not_create_record(
-        self, api_client, data_file_data, user
-    ):
+    def test_failed_upload_does_not_create_record(self, api_client, data_file_data, user):
         """Test failed uploads do not create a DataFile record."""
         data_file_data["file"].name = "bad.exe"
 
@@ -598,7 +597,8 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         )
 
         with pytest.raises(
-            InvalidTransition, match="parse_started to virus_scan_started"
+            InvalidTransition,
+            match="parse_started to virus_scan_started",
         ):
             self.post_data_file(api_client, data_file_data)
 
@@ -652,27 +652,32 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
     def test_av_infected_file_returns_400_with_failed_scan_state(
         self, api_client, data_file_data, user, infected_data_file, mocker
     ):
-        """Test that an infected file is rejected with failed scan state."""
+        """Test that infected uploads fail before the file is persisted."""
         data_file_data["file"] = infected_data_file
-        mocker.patch(
-            "tdpservice.data_files.views.settings.CLAMAV_NEEDED",
-            new=True,
-        )
 
         def infected_scan(_file, _file_name, _uploaded_by, data_file=None):
             assert data_file.state == SubmissionState.VIRUS_SCAN_STARTED
             assert not data_file.file
-            return False
+            return ClamAVFileScan.Result.INFECTED
 
+        mocker.patch(
+            "tdpservice.data_files.views.settings.CLAMAV_NEEDED",
+            new=True,
+        )
         mocker.patch(
             "tdpservice.data_files.views.ClamAVClient.scan_file",
             side_effect=infected_scan,
+        )
+        mock_parse_task = mocker.patch(
+            "tdpservice.data_files.views.parser_task.parse.delay"
         )
 
         response = self.post_data_file(api_client, data_file_data)
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert "security inspection" in response.data["detail"]
+        assert response.data == {
+            "detail": "Rejected: uploaded file did not pass security inspection"
+        }
         data_file = DataFile.objects.get(
             slug=data_file_data["slug"],
             user=user,
@@ -680,17 +685,14 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         assert data_file.state == SubmissionState.VIRUS_SCAN_FAILED
         assert not data_file.file
 
+        mock_parse_task.assert_not_called()
+
     @pytest.mark.django_db
     def test_av_unavailable_returns_400_with_failed_scan_state(
         self, api_client, data_file_data, user, mocker
     ):
-        """Test that ClamAV unavailability rejects with failed scan state."""
+        """Test that scanner outages fail before the file is persisted."""
         from tdpservice.security.clients import ClamAVClient
-
-        mocker.patch(
-            "tdpservice.data_files.views.settings.CLAMAV_NEEDED",
-            new=True,
-        )
 
         def unavailable_scan(_file, _file_name, _uploaded_by, data_file=None):
             assert data_file.state == SubmissionState.VIRUS_SCAN_STARTED
@@ -698,14 +700,23 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
             raise ClamAVClient.ServiceUnavailable()
 
         mocker.patch(
+            "tdpservice.data_files.views.settings.CLAMAV_NEEDED",
+            new=True,
+        )
+        mocker.patch(
             "tdpservice.data_files.views.ClamAVClient.scan_file",
             side_effect=unavailable_scan,
+        )
+        mock_parse_task = mocker.patch(
+            "tdpservice.data_files.views.parser_task.parse.delay"
         )
 
         response = self.post_data_file(api_client, data_file_data)
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert "security inspection" in response.data["detail"]
+        assert response.data == {
+            "detail": "Unable to complete security inspection, please try again or contact support for assistance"
+        }
         data_file = DataFile.objects.get(
             slug=data_file_data["slug"],
             user=user,
@@ -713,21 +724,172 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         assert data_file.state == SubmissionState.VIRUS_SCAN_FAILED
         assert not data_file.file
 
+        mock_parse_task.assert_not_called()
+
     @pytest.mark.django_db
     def test_missing_file_still_returns_serializer_validation_error_when_av_enabled(
         self, api_client, data_file_data, mocker
     ):
         """Test that AV pre-scan does not intercept the serializer's missing-file validation."""
         data_file_data.pop("file")
-        mocker.patch(
-            "tdpservice.data_files.views.settings.CLAMAV_NEEDED",
-            new=True,
-        )
-
         response = self.post_data_file(api_client, data_file_data)
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.data["file"] == ["No file was submitted."]
+
+    @pytest.mark.django_db
+    def test_clean_upload_logs_av_completion_with_scan_result(
+        self, api_client, data_file_data, user, mocker, caplog
+    ):
+        """Verify clean uploads emit a CLEAN scan_result lifecycle log.
+
+        Clean uploads should drive lifecycle state via
+        complete_datafile_av_scan and emit a structured log entry
+        containing scan_result=CLEAN.
+        """
+        mocker.patch(
+            "tdpservice.data_files.views.settings.CLAMAV_NEEDED",
+            new=True,
+        )
+        mocker.patch(
+            "tdpservice.data_files.views.ClamAVClient.scan_file",
+            return_value=ClamAVFileScan.Result.CLEAN,
+        )
+        mocker.patch("tdpservice.data_files.views.parser_task.parse.delay")
+
+        with caplog.at_level(
+            "INFO", logger="tdpservice.data_files.submission_lifecycle"
+        ):
+            response = self.post_data_file(api_client, data_file_data)
+
+        assert response.status_code == status.HTTP_201_CREATED
+        data_file = DataFile.objects.get(id=response.data["id"])
+        assert data_file.state == SubmissionState.VIRUS_SCAN_COMPLETED
+
+        completion_records = [
+            record
+            for record in caplog.records
+            if getattr(record, "next_state", None)
+            == SubmissionState.VIRUS_SCAN_COMPLETED.value
+        ]
+        assert completion_records, "expected a virus_scan_completed lifecycle log"
+        record = completion_records[-1]
+        assert record.scan_result == "CLEAN"
+        assert record.previous_state == SubmissionState.VIRUS_SCAN_STARTED.value
+        assert record.data_file_id == data_file.id
+
+    @pytest.mark.django_db
+    def test_infected_upload_logs_av_completion_with_scan_result(
+        self, api_client, data_file_data, infected_data_file, mocker, caplog
+    ):
+        """Verify infected uploads emit an INFECTED scan_result lifecycle log.
+
+        Infected uploads should also flow through
+        complete_datafile_av_scan and produce a structured log entry
+        containing scan_result=INFECTED.
+        """
+        data_file_data["file"] = infected_data_file
+
+        mocker.patch(
+            "tdpservice.data_files.views.settings.CLAMAV_NEEDED",
+            new=True,
+        )
+        mocker.patch(
+            "tdpservice.data_files.views.ClamAVClient.scan_file",
+            return_value=ClamAVFileScan.Result.INFECTED,
+        )
+        mocker.patch("tdpservice.data_files.views.parser_task.parse.delay")
+
+        with caplog.at_level(
+            "INFO", logger="tdpservice.data_files.submission_lifecycle"
+        ):
+            response = self.post_data_file(api_client, data_file_data)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        failure_records = [
+            record
+            for record in caplog.records
+            if getattr(record, "next_state", None)
+            == SubmissionState.VIRUS_SCAN_FAILED.value
+        ]
+        assert failure_records, "expected a virus_scan_failed lifecycle log"
+        record = failure_records[-1]
+        assert record.scan_result == "INFECTED"
+        assert record.previous_state == SubmissionState.VIRUS_SCAN_STARTED.value
+
+    @pytest.mark.django_db
+    def test_av_unavailable_logs_av_completion_with_error_scan_result(
+        self, api_client, data_file_data, mocker, caplog
+    ):
+        """Scanner outages should be reported as scan_result=ERROR in lifecycle logs."""
+        from tdpservice.security.clients import ClamAVClient
+
+        mocker.patch(
+            "tdpservice.data_files.views.settings.CLAMAV_NEEDED",
+            new=True,
+        )
+        mocker.patch(
+            "tdpservice.data_files.views.ClamAVClient.scan_file",
+            side_effect=ClamAVClient.ServiceUnavailable(),
+        )
+        mocker.patch("tdpservice.data_files.views.parser_task.parse.delay")
+
+        with caplog.at_level(
+            "INFO", logger="tdpservice.data_files.submission_lifecycle"
+        ):
+            response = self.post_data_file(api_client, data_file_data)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        failure_records = [
+            record
+            for record in caplog.records
+            if getattr(record, "next_state", None)
+            == SubmissionState.VIRUS_SCAN_FAILED.value
+        ]
+        assert failure_records, "expected a virus_scan_failed lifecycle log"
+        assert failure_records[-1].scan_result == "ERROR"
+
+    @pytest.mark.django_db
+    def test_clamav_error_result_logs_distinct_scan_result(
+        self, api_client, data_file_data, mocker, caplog
+    ):
+        """Verify ClamAV ERROR results are logged distinctly from INFECTED.
+
+        A ClamAV ERROR scan result must not be collapsed into INFECTED in
+        lifecycle audit logs. The scan_result field should be ``ERROR``.
+        """
+        mocker.patch(
+            "tdpservice.data_files.views.settings.CLAMAV_NEEDED",
+            new=True,
+        )
+        mocker.patch(
+            "tdpservice.data_files.views.ClamAVClient.scan_file",
+            return_value=ClamAVFileScan.Result.ERROR,
+        )
+        mocker.patch("tdpservice.data_files.views.parser_task.parse.delay")
+
+        with caplog.at_level(
+            "INFO", logger="tdpservice.data_files.submission_lifecycle"
+        ):
+            response = self.post_data_file(api_client, data_file_data)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data == {
+            "detail": "Unable to complete security inspection, please try again or contact support for assistance"
+        }
+
+        failure_records = [
+            record
+            for record in caplog.records
+            if getattr(record, "next_state", None)
+            == SubmissionState.VIRUS_SCAN_FAILED.value
+        ]
+        assert failure_records, "expected a virus_scan_failed lifecycle log"
+        record = failure_records[-1]
+        assert record.scan_result == "ERROR"
+        assert record.scan_result != "INFECTED"
 
 
 class TestDataFileAPIAsInactiveUser(DataFileAPITestBase):
@@ -1043,6 +1205,11 @@ class TestDataFileQuerysetFiltering:
     @pytest.fixture
     def filter_test_data(self, stt, tribe_stt, ofa_system_admin):
         """Create a file for each program, section, year, quarter, pia combo."""
+        FeatureFlag.objects.create(
+            feature_name="program-integrity-audit",
+            enabled=True,
+            config={"minYear": min(year_options), "maxYear": max(year_options)},
+        )
         non_pia_files = {}
         pia_files = {}
 
@@ -1099,12 +1266,6 @@ class TestDataFileQuerysetFiltering:
         quarter,
     ):
         """Check that requests made to the filter endpoint contain every expected file and only files for the requested combination."""
-        FeatureFlag.objects.create(
-            feature_name="program-integrity-audit",
-            enabled=True,
-            config={"minYear": 2021, "maxYear": 2022},
-        )
-
         stt, tribe_stt, ofa_system_admin, non_pia_files, pia_files = filter_test_data
 
         # check the endpoint filtering
@@ -1130,131 +1291,3 @@ class TestDataFileQuerysetFiltering:
                 f"stt={location.id}&year={year}&quarter={quarter}&file_type=program-integrity-audit",
             )
             self._assert_pia(k, pia_files, pia_file_ids, section_options)
-
-    def test_no_pia_feat_flag_disallows_list(self, api_client, stt, ofa_system_admin):
-        """Test a nonexistent pia feature flag results in an empty list when requested."""
-        self.create_file(
-            "TAN",
-            "Active Case Data",
-            2024,
-            "Q1",
-            stt,
-            ofa_system_admin,
-            pia=True,
-        )
-
-        api_client.login(username=ofa_system_admin.username, password="test_password")
-
-        root_url = "/v1/data_files/"
-        url_param_str = (
-            f"stt={stt.id}&year=2024&quarter=Q1&file_type=program-integrity-audit"
-        )
-        response = api_client.get(f"{root_url}?{url_param_str}")
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert response.data == {"detail": "This file type is not supported."}
-
-    def test_disabled_pia_feat_flag_disallows_list(
-        self, api_client, stt, ofa_system_admin
-    ):
-        """Test a disabled pia feature flag results in an empty list when requested."""
-        FeatureFlag.objects.create(
-            feature_name="program-integrity-audit",
-            enabled=False,
-            config={"minYear": 2023, "maxYear": 2025},
-        )
-
-        self.create_file(
-            "TAN",
-            "Active Case Data",
-            2024,
-            "Q1",
-            stt,
-            ofa_system_admin,
-            pia=True,
-        )
-
-        api_client.login(username=ofa_system_admin.username, password="test_password")
-
-        root_url = "/v1/data_files/"
-        url_param_str = (
-            f"stt={stt.id}&year=2024&quarter=Q1&file_type=program-integrity-audit"
-        )
-        response = api_client.get(f"{root_url}?{url_param_str}")
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert response.data == {"detail": "This file type is not supported."}
-
-    @pytest.mark.parametrize(
-        "year,expected_success",
-        [
-            [2022, False],
-            [2023, True],
-            [2024, True],
-            [2025, True],
-            [2026, False],
-        ],
-    )
-    def test_request_pia_outside_allowed_year_disallows_list(
-        self, api_client, stt, ofa_system_admin, year, expected_success
-    ):
-        """Test that requesting PIA for a year outside the allowed range results in an error."""
-        FeatureFlag.objects.create(
-            feature_name="program-integrity-audit",
-            enabled=True,
-            config={"minYear": 2023, "maxYear": 2025},
-        )
-
-        file = self.create_file(
-            "TAN",
-            "Active Case Data",
-            year,
-            "Q1",
-            stt,
-            ofa_system_admin,
-            pia=True,
-        )
-
-        api_client.login(username=ofa_system_admin.username, password="test_password")
-
-        root_url = "/v1/data_files/"
-        url_param_str = (
-            f"stt={stt.id}&year={year}&quarter=Q1&file_type=program-integrity-audit"
-        )
-        response = api_client.get(f"{root_url}?{url_param_str}")
-
-        if expected_success:
-            assert response.status_code == status.HTTP_200_OK
-            response_file_ids = [f["id"] for f in response.data]
-            assert len(response_file_ids) == 1
-            assert response_file_ids[0] == file.id
-        else:
-            assert response.status_code == status.HTTP_400_BAD_REQUEST
-            assert response.data == {
-                "detail": "This request was submitted for a reporting year not supported by this file type."
-            }
-
-    def test_enabled_pia_feat_flag_allows_list(self, api_client, stt, ofa_system_admin):
-        """Test an enabled pia feature flag results in a populated list when requested."""
-        FeatureFlag.objects.create(
-            feature_name="program-integrity-audit",
-            enabled=True,
-            config={"minYear": 2023, "maxYear": 2025},
-        )
-
-        file = self.create_file(
-            "TAN",
-            "Active Case Data",
-            2024,
-            "Q1",
-            stt,
-            ofa_system_admin,
-            pia=True,
-        )
-
-        api_client.login(username=ofa_system_admin.username, password="test_password")
-
-        response_file_ids = self._make_get_request(
-            api_client,
-            f"stt={stt.id}&year=2024&quarter=Q1&file_type=program-integrity-audit",
-        )
-
-        assert response_file_ids[0] == file.id

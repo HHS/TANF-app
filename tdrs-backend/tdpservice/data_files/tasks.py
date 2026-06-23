@@ -43,8 +43,7 @@ def get_stuck_files():
         )
         .filter(
             # where there is NO summary or the summary is in PENDING status
-            Q(summary=None)
-            | Q(summary__status=DataFileSummary.Status.PENDING)
+            Q(summary=None) | Q(summary__status=DataFileSummary.Status.PENDING)
         )
     )
 
