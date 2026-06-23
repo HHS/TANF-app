@@ -168,6 +168,9 @@ Cypress.Commands.add(
     return getCsrfToken().then((csrfToken) => {
       if (csrfToken) {
         options.headers['X-CSRFToken'] = csrfToken
+        return cy
+          .setCookie('csrftoken', csrfToken)
+          .then(() => cy.request(options))
       }
 
       return cy.request(options)
