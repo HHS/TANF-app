@@ -269,12 +269,12 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "${KC_TDP_DJANGO_CLIENT_SECRET}",
       "redirectUris": [
-        "https://staging.acf.hhs.gov/*",
-        "https://develop.acf.hhs.gov/*"
+        "https://staging.tanfdata.acf.hhs.gov/*",
+        "https://develop.tanfdata.acf.hhs.gov/*"
       ],
       "webOrigins": [
-        "https://staging.acf.hhs.gov",
-        "https://develop.acf.hhs.gov"
+        "https://staging.tanfdata.acf.hhs.gov",
+        "https://develop.tanfdata.acf.hhs.gov"
       ],
       "protocol": "openid-connect",
       "publicClient": false,
