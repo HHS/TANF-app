@@ -165,11 +165,12 @@ describe('AdminFeedbackReports', () => {
   })
 
   describe('Report Type Selection', () => {
-    it('renders report type radio selector with TANF/SSP and FRA options', () => {
+    it('renders report type radio selector with TANF/SSP, Tribal TANF, and FRA options', () => {
       renderComponent()
 
       expect(screen.getByText('Feedback Report Type*')).toBeInTheDocument()
       expect(screen.getByLabelText('TANF/SSP')).toBeInTheDocument()
+      expect(screen.getByLabelText('Tribal TANF')).toBeInTheDocument()
       expect(screen.getByLabelText('FRA')).toBeInTheDocument()
     })
 
@@ -198,6 +199,24 @@ describe('AdminFeedbackReports', () => {
       })
     })
 
+    it('updates header when Tribal TANF is selected', async () => {
+      renderComponent()
+
+      const tribalTanfRadio = screen.getByLabelText('Tribal TANF')
+      fireEvent.click(tribalTanfRadio)
+
+      const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
+      fireEvent.change(fiscalYearSelect, { target: { value: '2025' } })
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(
+            'Fiscal Year 2025 — Upload Tribal TANF Feedback Reports'
+          )
+        ).toBeInTheDocument()
+      })
+    })
+
     it('updates description text based on selected report type', () => {
       renderComponent()
 
@@ -213,6 +232,15 @@ describe('AdminFeedbackReports', () => {
       expect(
         screen.getByText(/FRA submission history pages/)
       ).toBeInTheDocument()
+
+      // Switch to Tribal TANF
+      const tribalTanfRadio = screen.getByLabelText('Tribal TANF')
+      fireEvent.click(tribalTanfRadio)
+
+      expect(
+        screen.getByText(/Tribal TANF submission history pages/)
+      ).toBeInTheDocument()
+      expect(screen.getByText(/each STT/)).toBeInTheDocument()
     })
 
     it('resets form state when report type changes', async () => {
@@ -253,6 +281,26 @@ describe('AdminFeedbackReports', () => {
       })
     })
 
+    it('fetches history with TRIBAL_TANF when Tribal TANF is selected', async () => {
+      renderComponent()
+
+      await selectFiscalYear('2025')
+
+      get.mockClear()
+
+      const tribalTanfRadio = screen.getByLabelText('Tribal TANF')
+      fireEvent.click(tribalTanfRadio)
+
+      await waitFor(() => {
+        expect(get).toHaveBeenCalledWith(
+          expect.stringContaining('/reports/report-sources/'),
+          expect.objectContaining({
+            params: { year: '2025', report_type: 'TRIBAL_TANF' },
+          })
+        )
+      })
+    })
+
     it('includes report_type in upload POST', async () => {
       post.mockResolvedValue({
         data: { id: 1, status: 'PENDING' },
@@ -281,7 +329,7 @@ describe('AdminFeedbackReports', () => {
       setDateInputValue('2025-02-28')
 
       const uploadButton = screen.getByRole('button', {
-        name: /Upload & Notify States/i,
+        name: /Upload & Notify STTs/i,
       })
       fireEvent.click(uploadButton)
 
@@ -289,6 +337,45 @@ describe('AdminFeedbackReports', () => {
         expect(post).toHaveBeenCalled()
         const formData = post.mock.calls[0][1]
         expect(formData.get('report_type')).toBe('FRA')
+      })
+    })
+
+    it('includes TRIBAL_TANF in upload POST when Tribal TANF is selected', async () => {
+      post.mockResolvedValue({
+        data: { id: 1, status: 'PENDING' },
+        ok: true,
+        status: 200,
+        error: null,
+      })
+
+      renderComponent()
+
+      const tribalTanfRadio = screen.getByLabelText('Tribal TANF')
+      fireEvent.click(tribalTanfRadio)
+
+      const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
+      fireEvent.change(fiscalYearSelect, { target: { value: '2025' } })
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(
+            'Fiscal Year 2025 — Upload Tribal TANF Feedback Reports'
+          )
+        ).toBeInTheDocument()
+      })
+
+      await selectFile('FY2025.zip')
+      setDateInputValue('2025-02-28')
+
+      const uploadButton = screen.getByRole('button', {
+        name: /Upload & Notify STTs/i,
+      })
+      fireEvent.click(uploadButton)
+
+      await waitFor(() => {
+        expect(post).toHaveBeenCalled()
+        const formData = post.mock.calls[0][1]
+        expect(formData.get('report_type')).toBe('TRIBAL_TANF')
       })
     })
 
@@ -384,7 +471,7 @@ describe('AdminFeedbackReports', () => {
       })
 
       const uploadButton = screen.getByRole('button', {
-        name: /Upload & Notify States/i,
+        name: /Upload & Notify STTs/i,
       })
       fireEvent.click(uploadButton)
 
@@ -403,7 +490,7 @@ describe('AdminFeedbackReports', () => {
       await selectFiscalYear('2025')
 
       const uploadButton = screen.getByRole('button', {
-        name: /Upload & Notify States/i,
+        name: /Upload & Notify STTs/i,
       })
       fireEvent.click(uploadButton)
 
@@ -443,7 +530,7 @@ describe('AdminFeedbackReports', () => {
 
       // Click upload
       const uploadButton = screen.getByRole('button', {
-        name: /Upload & Notify States/i,
+        name: /Upload & Notify STTs/i,
       })
       fireEvent.click(uploadButton)
 
@@ -483,7 +570,7 @@ describe('AdminFeedbackReports', () => {
       setDateInputValue('2025-02-28')
 
       const uploadButton = screen.getByRole('button', {
-        name: /Upload & Notify States/i,
+        name: /Upload & Notify STTs/i,
       })
       fireEvent.click(uploadButton)
 
@@ -514,7 +601,7 @@ describe('AdminFeedbackReports', () => {
       setDateInputValue('2025-02-28')
 
       const uploadButton = screen.getByRole('button', {
-        name: /Upload & Notify States/i,
+        name: /Upload & Notify STTs/i,
       })
       fireEvent.click(uploadButton)
 
@@ -718,7 +805,7 @@ describe('AdminFeedbackReports', () => {
       setDateInputValue('2025-02-28')
 
       const uploadButton = screen.getByRole('button', {
-        name: /Upload & Notify States/i,
+        name: /Upload & Notify STTs/i,
       })
       fireEvent.click(uploadButton)
 
@@ -811,7 +898,7 @@ describe('AdminFeedbackReports', () => {
       setDateInputValue('2025-02-28')
 
       const uploadButton = screen.getByRole('button', {
-        name: /Upload & Notify States/i,
+        name: /Upload & Notify STTs/i,
       })
       fireEvent.click(uploadButton)
 
@@ -931,7 +1018,7 @@ describe('AdminFeedbackReports', () => {
 
       // First, trigger error by submitting without date
       const uploadButton = screen.getByRole('button', {
-        name: /Upload & Notify States/i,
+        name: /Upload & Notify STTs/i,
       })
       fireEvent.click(uploadButton)
 

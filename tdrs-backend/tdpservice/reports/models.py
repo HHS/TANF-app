@@ -16,6 +16,7 @@ class ReportType(models.TextChoices):
     """Report program type for feedback reports."""
 
     TANF_SSP = "TANF_SSP", "TANF/SSP"
+    TRIBAL_TANF = "TRIBAL_TANF", "Tribal TANF"
     FRA = "FRA", "FRA"
 
 
