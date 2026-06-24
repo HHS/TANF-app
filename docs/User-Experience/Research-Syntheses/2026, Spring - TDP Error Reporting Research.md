@@ -4,7 +4,8 @@
 * [Background & Motivation](#background--motivation)
 * [Methods & Approach](#methods--approach)
 * [Core Findings & Research Questions Addressed]([#core-findings--research-questions-addressed)
-* [Next Steps: Research and Design Priorities](#research-and-design-priorities)
+* [Research and Design Priorities](#research-and-design-priorities)
+* [Next Steps Documentation](#next-steps-documentation)
 * [Index, Supporting Documents and Artifiacts](#index-supporting-documentation-and-artifacts)
 
 ## Background & Motivation 
@@ -122,6 +123,12 @@ Our research points to one high-level conclusion: the opportunity is not simply 
 5.  **Preserve confidence and audit signals.** Emails, timestamps, submission history and transmission-like summaries are not peripheral. They reassure users that the file truly went through, support audit requests and help people reconstruct what happened later. Design work should preserve that reassurance layer, make automated statuses unambiguous and consider whether a downloadable transmission summary or equivalent audit artifact should be easier to access in the current platform.
 
 6.  **More quality work upstream.** Several STTs have already built internal validations, pre-submission scans, quarterly review routines, or defect queries to catch issues before TDP surfaces them. That behavior is a strong signal that the long-term opportunity is larger than better post-submission reports alone. Better pre-submission validation, stronger structured guidance and deeper workflow support would reduce downstream rework, lower cognitive load and improve confidence before the file ever enters the portal.
+
+## Next Steps Documentation
+
+This writeup captures the research findings and initial design implications from the Spring/Summer 2026 Error Reporting Research effort. The most up-to-date documentation for next steps, including follow-on research questions, design exploration, development considerations, and related implementation planning, will be maintained in the linked [Next Steps document](https://gorafttech.sharepoint.com/:w:/r/sites/TDRSResearchDesign/Shared%20Documents/Research%20%26%20Design%20-%20Secure/Error%20Reporting%20Research/Error%20Reporting%20Research%20Write%20Up.docx?d=w92b3eaee11ed4d64b8c08933272566a2&csf=1&web=1&e=jK6mdG).
+
+Please refer to that document as the source of truth for ongoing planning and updates after this writeup.
 
 ## Index, Supporting Documentation and Artifacts
 
