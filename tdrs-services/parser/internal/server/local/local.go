@@ -35,6 +35,10 @@ func (local *Server) needsDatabase() bool {
 	return local.Config.Writer.Mode != "file"
 }
 
+func (local *Server) dataFileTableName() string {
+	return config.DataFileTableName(local.Config.Database.EffectiveTablePrefix())
+}
+
 // dbResources holds the database-related resources created for a local run.
 type dbResources struct {
 	pool       *pgxpool.Pool
@@ -56,7 +60,8 @@ func (local *Server) setupDatabase(ctx context.Context, dfCtx pipeline.DataFileC
 		return nil, noop, err
 	}
 
-	datafileID, err := testutil.CreateTestDatafile(ctx, pool, dfCtx.FiscalQuarter, dfCtx.FiscalYear, dfCtx.SectionName, dfCtx.Program)
+	dataFileTableName := local.dataFileTableName()
+	datafileID, err := testutil.CreateTestDatafileInTable(ctx, pool, dataFileTableName, dfCtx.FiscalQuarter, dfCtx.FiscalYear, dfCtx.SectionName, dfCtx.Program)
 	if err != nil {
 		pool.Close()
 		return nil, noop, fmt.Errorf("failed to create test datafile: %w", err)
@@ -67,7 +72,7 @@ func (local *Server) setupDatabase(ctx context.Context, dfCtx pipeline.DataFileC
 	)
 
 	cleanup := func() {
-		testutil.DeleteTestDatafile(ctx, pool, datafileID)
+		testutil.DeleteTestDatafileFromTable(ctx, pool, dataFileTableName, datafileID)
 		pool.Close()
 	}
 

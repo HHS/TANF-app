@@ -8,12 +8,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"go-parser/internal/config"
 )
 
-func dataFileTableName() string {
+func dataFileTableNameFromEnv() string {
 	if strings.EqualFold(os.Getenv("GO_PARSER_SHADOW_MODE"), "true") {
 		return config.DataFileTableName(config.DefaultTablePrefix)
 	}
@@ -24,6 +25,13 @@ func dataFileTableName() string {
 // It queries for an existing STT and user to satisfy foreign key constraints.
 // Returns the created datafile ID.
 func CreateTestDatafile(ctx context.Context, pool *pgxpool.Pool, quarter string, year int, sectionName string, programType string) (int32, error) {
+	return CreateTestDatafileInTable(ctx, pool, dataFileTableNameFromEnv(), quarter, year, sectionName, programType)
+}
+
+// CreateTestDatafileInTable creates a datafile record in the specified table.
+func CreateTestDatafileInTable(ctx context.Context, pool *pgxpool.Pool, tableName string, quarter string, year int, sectionName string, programType string) (int32, error) {
+	sanitizedTableName := pgx.Identifier{tableName}.Sanitize()
+
 	// Get an existing STT ID
 	var sttID int
 	err := pool.QueryRow(ctx, "SELECT id FROM stts_stt LIMIT 1").Scan(&sttID)
@@ -58,7 +66,7 @@ func CreateTestDatafile(ctx context.Context, pool *pgxpool.Pool, quarter string,
 			state
 		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
 		RETURNING id
-	`, dataFileTableName()),
+	`, sanitizedTableName),
 		"test_file.txt",
 		fmt.Sprintf("test-%d", time.Now().UnixNano()),
 		"txt",
@@ -83,6 +91,12 @@ func CreateTestDatafile(ctx context.Context, pool *pgxpool.Pool, quarter string,
 
 // DeleteTestDatafile removes a test datafile and its associated records.
 func DeleteTestDatafile(ctx context.Context, pool *pgxpool.Pool, datafileID int32) error {
-	_, err := pool.Exec(ctx, fmt.Sprintf("DELETE FROM %s WHERE id = $1", dataFileTableName()), datafileID)
+	return DeleteTestDatafileFromTable(ctx, pool, dataFileTableNameFromEnv(), datafileID)
+}
+
+// DeleteTestDatafileFromTable removes a test datafile from the specified table.
+func DeleteTestDatafileFromTable(ctx context.Context, pool *pgxpool.Pool, tableName string, datafileID int32) error {
+	sanitizedTableName := pgx.Identifier{tableName}.Sanitize()
+	_, err := pool.Exec(ctx, fmt.Sprintf("DELETE FROM %s WHERE id = $1", sanitizedTableName), datafileID)
 	return err
 }
