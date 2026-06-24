@@ -47,7 +47,7 @@ function ResourceCards() {
                 buttonId="viewKnowledgeCenterButton"
                 title="Need help with TDP?"
                 body="The knowledge center contains resources on all things TDP from account creation to data submission."
-                link="http://tdp-project-updates.tanfdata.acf.hhs.gov/knowledge-center/"
+                link="http://tdp-project-updates.app.cloud.gov/knowledge-center/"
                 linkText="View Knowledge Center"
               />
             </li>

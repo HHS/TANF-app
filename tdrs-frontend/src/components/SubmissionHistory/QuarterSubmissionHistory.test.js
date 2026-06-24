@@ -81,7 +81,7 @@ describe('QuarterSubmissionHistory', () => {
       expect(link).toBeInTheDocument()
       expect(link).toHaveAttribute(
         'href',
-        'https://tdp-project-updates.tanfdata.acf.hhs.gov/knowledge-center/viewing-error-reports.html'
+        'https://tdp-project-updates.app.cloud.gov/knowledge-center/viewing-error-reports.html'
       )
       expect(link).toHaveAttribute('target', '_blank')
       expect(link).toHaveAttribute('rel', 'noreferrer')

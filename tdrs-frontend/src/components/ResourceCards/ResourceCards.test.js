@@ -34,7 +34,7 @@ describe('ResourceCards', () => {
     const store = mockStore(initialState)
 
     const url =
-      'http://tdp-project-updates.tanfdata.acf.hhs.gov/knowledge-center/'
+      'http://tdp-project-updates.app.cloud.gov/knowledge-center/'
 
     render(
       <Provider store={store}>
