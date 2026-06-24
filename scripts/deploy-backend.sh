@@ -232,7 +232,7 @@ elif [ "$CF_SPACE" = "tanf-prod" ]; then
   BASE_URL="https://tanfdata.acf.hhs.gov/v1"
 elif [ "$CF_SPACE" = "tanf-staging" ]; then
   # use .acf.hss.gov domain for develop and staging.
-  BASE_URL="https://$CGHOSTNAME_FRONTEND.acf.hhs.gov/v1"
+  BASE_URL="https://$CGHOSTNAME_FRONTEND.tanfdata.acf.hhs.gov/v1"
 else
   # Default to the route formed with the cloud.gov env for the lower environments.
   BASE_URL="$DEFAULT_ROUTE/v1"
@@ -246,7 +246,7 @@ elif [ "$CF_SPACE" = "tanf-prod" ]; then
   FRONTEND_BASE_URL="https://tanfdata.acf.hhs.gov"
 elif [ "$CF_SPACE" = "tanf-staging" ]; then
    # use .acf.hss.gov domain for develop and staging.
-  FRONTEND_BASE_URL="https://$CGHOSTNAME_FRONTEND.acf.hhs.gov"
+  FRONTEND_BASE_URL="https://$CGHOSTNAME_FRONTEND.tanfdata.acf.hhs.gov"
 else
   # Default to the route formed with the cloud.gov env for the lower environments.
   FRONTEND_BASE_URL="$DEFAULT_FRONTEND_ROUTE"
