@@ -356,8 +356,8 @@ def _finalize_reparse(data_file_id, reparse_id, file_meta, dfs, reparse_success)
         file_id=data_file_id,
         error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY,
     ).count()
-    ReparseMeta.set_total_num_records_post(ReparseMeta.objects.get(pk=reparse_id))
     set_reparse_file_meta_model_state(reparse_id, file_meta, reparse_success)
+    ReparseMeta.set_total_num_records_post(ReparseMeta.objects.get(pk=reparse_id))
 
 
 def _add_unexpected_error(data_file):
