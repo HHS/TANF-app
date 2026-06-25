@@ -177,7 +177,7 @@ class CloudGov(Common):
     )
 
     # Keycloak Sync
-    KEYCLOAK_SYNC_ENABLED = bool(os.getenv("KEYCLOAK_SYNC_ENABLED", ""))
+    KEYCLOAK_SYNC_ENABLED = bool(strtobool(os.getenv("KEYCLOAK_SYNC_ENABLED", "yes")))
     KEYCLOAK_SERVER_URL = os.getenv(
         "KEYCLOAK_SERVER_URL", "http://keycloak.apps.internal:8080"
     )
@@ -216,6 +216,7 @@ class CloudGov(Common):
     OIDC_OP_TOKEN_ENDPOINT = f"{_KC_REALM_URL}/protocol/openid-connect/token"
     OIDC_OP_USER_ENDPOINT = f"{_KC_REALM_URL}/protocol/openid-connect/userinfo"
     OIDC_OP_JWKS_ENDPOINT = f"{_KC_REALM_URL}/protocol/openid-connect/certs"
+
 
 class Development(CloudGov):
     """Settings for applications deployed in the Cloud.gov dev space."""

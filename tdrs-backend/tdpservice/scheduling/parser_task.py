@@ -274,7 +274,7 @@ def _transition_parse_outcome(data_file, dfs):
 
 
 def _notify_data_analysts(data_file, dfs, file_meta=None, reparse_id=None):
-    """Send submission email to relevant data analysts (initial submissions only)."""
+    """Send submission email to relevant data analysts."""
     qs = User.objects.filter(
         stt=data_file.stt,
         account_approval_status=AccountApprovalStatusChoices.APPROVED,
@@ -292,7 +292,7 @@ def _notify_data_analysts(data_file, dfs, file_meta=None, reparse_id=None):
 
 
 def _handle_parse_failure(data_file, note):
-    """Transition to PARSE_FAILED after parser startup."""
+    """Transition to failed parser state after parser startup."""
     transition_datafile(
         data_file,
         SubmissionState.PARSE_FAILED,
@@ -356,8 +356,8 @@ def _finalize_reparse(data_file_id, reparse_id, file_meta, dfs, reparse_success)
         file_id=data_file_id,
         error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY,
     ).count()
-    ReparseMeta.set_total_num_records_post(ReparseMeta.objects.get(pk=reparse_id))
     set_reparse_file_meta_model_state(reparse_id, file_meta, reparse_success)
+    ReparseMeta.set_total_num_records_post(ReparseMeta.objects.get(pk=reparse_id))
 
 
 def _add_unexpected_error(data_file):
