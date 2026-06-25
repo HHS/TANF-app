@@ -29,12 +29,16 @@ from tdpservice.data_files.models import (
 )
 from tdpservice.data_files.s3_client import S3Client
 from tdpservice.data_files.serializers import DataFileSerializer
-from tdpservice.data_files.submission_lifecycle import transition_datafile
+from tdpservice.data_files.submission_lifecycle import (
+    complete_datafile_av_scan,
+    transition_datafile,
+)
 from tdpservice.log_handler import S3FileHandler
 from tdpservice.parsers.models import ParserError
 from tdpservice.scheduling import parser_task
 from tdpservice.scheduling.parser_task import set_error_report
 from tdpservice.security.clients import ClamAVClient
+from tdpservice.security.models import ClamAVFileScan
 from tdpservice.users.permissions import DataFilePermissions, IsApprovedPermission
 
 logger = logging.getLogger(__name__)
@@ -102,7 +106,7 @@ class DataFileViewSet(ModelViewSet):
     )
 
     def _validate_pia_request(self, request):
-        """Validate PIA feature flag and year range. Return a Response on failure, or None on success."""
+        """Validate PIA feature flag/year range and return a failure response."""
         is_program_audit = False
         try:
             is_program_audit = strtobool(request.POST.get("is_program_audit", "false"))
@@ -140,44 +144,63 @@ class DataFileViewSet(ModelViewSet):
         return None
 
     def _scan_uploaded_file(self, uploaded_file, user, data_file):
-        """Run ClamAV scan and return a failure Response if scan cannot pass."""
-        if not settings.CLAMAV_NEEDED:
-            return None
+        """Run ClamAV before saving the uploaded file to persistent storage.
 
-        if uploaded_file is None:
-            return None
+        Returns a ``(failure_response, scan_result)`` tuple. ``failure_response``
+        is ``None`` when the file is clean (or scanning is disabled);,
+        derived from the underlying :class:`ClamAVFileScan.Result` so that
+        scanner ERRORs are not collapsed into INFECTED in lifecycle audit logs.
+        """
+        if not settings.CLAMAV_NEEDED or uploaded_file is None:
+            return None, "clean"
 
         try:
-            is_clean = ClamAVClient().scan_file(
+            scan_result = ClamAVClient().scan_file(
                 uploaded_file,
                 uploaded_file.name,
                 user,
                 data_file=data_file,
             )
         except ClamAVClient.ServiceUnavailable:
-            return Response(
-                {
-                    "detail": "Unable to complete security inspection, "
-                    "please try again or contact support for assistance"
-                },
-                status=HTTP_400_BAD_REQUEST,
+            return (
+                Response(
+                    {
+                        "detail": "Unable to complete security inspection, please try again or contact support for assistance"
+                    },
+                    status=HTTP_400_BAD_REQUEST,
+                ),
+                "error",
             )
 
-        if not is_clean:
-            return Response(
-                {
-                    "detail": "Rejected: uploaded file did not pass "
-                    "security inspection"
-                },
-                status=HTTP_400_BAD_REQUEST,
-            )
-
-        # Reset file cursor so the serializer can read it for saving
+        # Reset the stream because saving to storage will read the file again.
         uploaded_file.seek(0)
-        return None
+
+        if scan_result == ClamAVFileScan.Result.CLEAN:
+            return None, "clean"
+
+        if scan_result == ClamAVFileScan.Result.ERROR:
+            return (
+                Response(
+                    {
+                        "detail": "Unable to complete security inspection, please try again or contact support for assistance"
+                    },
+                    status=HTTP_400_BAD_REQUEST,
+                ),
+                "error",
+            )
+
+        return (
+            Response(
+                {
+                    "detail": "Rejected: uploaded file did not pass security inspection"
+                },
+                status=HTTP_400_BAD_REQUEST,
+            ),
+            "infected",
+        )
 
     def create(self, request, *args, **kwargs):
-        """Override create to upload in case of successful scan."""
+        """Create a DataFile and persist the file only after a successful AV scan."""
         logger.debug(f"{self.__class__.__name__}: {request}")
 
         pia_error = self._validate_pia_request(request)
@@ -190,33 +213,30 @@ class DataFileViewSet(ModelViewSet):
         uploaded_file = serializer.validated_data.get("file")
         data_file = serializer.save(file=None)
 
-        # The DataFile starts in UPLOADED state (model default), then records
-        # the actual AV scan lifecycle before the file is persisted to storage.
         transition_datafile(
             data_file,
             SubmissionState.VIRUS_SCAN_STARTED,
             note="virus scan started",
         )
 
-        scan_failure_response = self._scan_uploaded_file(
-            uploaded_file, request.user, data_file
+        scan_failure_response, scan_result = self._scan_uploaded_file(
+            uploaded_file,
+            request.user,
+            data_file,
         )
         if scan_failure_response is not None:
-            # Unsafe files and unavailable scanner errors stop here. The
-            # DataFile remains for lifecycle visibility, but the file is not
-            # persisted to storage or submitted for parsing.
-            transition_datafile(
+            complete_datafile_av_scan(
                 data_file,
-                SubmissionState.VIRUS_SCAN_FAILED,
+                scan_result=scan_result,
                 note=scan_failure_response.data["detail"],
             )
             if settings.GO_PARSER_SHADOW_MODE:
                 create_or_update_shadow_data_file(data_file)
             return scan_failure_response
 
-        transition_datafile(
+        complete_datafile_av_scan(
             data_file,
-            SubmissionState.VIRUS_SCAN_COMPLETED,
+            scan_result=scan_result,
             note="file passed virus scan",
         )
 

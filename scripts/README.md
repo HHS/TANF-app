@@ -165,6 +165,35 @@ Mostly for use in our CircleCI pipelines, this script ensures the desired codeba
 
 `deploy-frontend.sh` is used in [CircleCI config](../.circleci/config.yml)'s job `deploy-frontend` which is used by `deploy-cloud-dot-gov` command. This script is primarily via in CircleCI but with CloudFoundry set up and logged in locally, this can also be used by a developer manually. Please also see our [CircleCI documentation](../docs/Technical-Documentation/circle-ci.md#deploy-frontend).
 
+## toggle-maintenance-route.sh
+
+### Usage
+
+```
+# Single-app in-place toggle (no restart)
+scripts/toggle-maintenance-route.sh <enable|disable> <app>
+```
+
+### Examples
+
+```
+# Production/custom-domain style: single-app in-place toggle
+scripts/toggle-maintenance-route.sh enable tdp-frontend
+scripts/toggle-maintenance-route.sh disable tdp-frontend
+
+# app.cloud.gov style: single-app in-place toggle
+scripts/toggle-maintenance-route.sh enable tdp-frontend-a11y
+scripts/toggle-maintenance-route.sh disable tdp-frontend-a11y
+```
+
+### Description
+
+Single-app in-place mode uses `cf ssh` to copy/remove `503.html` in each running app instance without restart.
+
+Single-app mode is fast and avoids restart, but is ephemeral: changes are lost on app restart/restage/redeploy.
+
+In single-app mode, the script auto-detects common `503.html` source locations in the running container and writes to the active document root path used by Cloud.gov nginx buildpack.
+
 ## deploy-infrastructure-dev.sh
 
 ### Usage

@@ -5,6 +5,11 @@ import closeIcon from '@uswds/uswds/img/usa-icons/close.svg'
 import '../../assets/feedback/Feedback.scss'
 import { REPORT_TYPES, REPORT_TYPE_LABELS } from './FeedbackReportsConstants'
 
+const ALERT_REPORT_TYPE_LABELS = {
+  ...REPORT_TYPE_LABELS,
+  [REPORT_TYPES.TRIBAL_TANF]: 'TANF',
+}
+
 // Local storage key prefix for dismissed alerts
 const DISMISSED_KEY_PREFIX = 'feedbackAlertDismissed_'
 
@@ -108,7 +113,7 @@ const FeedbackReportAlert = ({
     year: 'numeric',
   })
 
-  const reportTypeLabel = REPORT_TYPE_LABELS[reportType]
+  const reportTypeLabel = ALERT_REPORT_TYPE_LABELS[reportType]
 
   return (
     <div
