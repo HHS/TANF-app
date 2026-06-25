@@ -124,6 +124,35 @@ func TestPositionalDecoder_Rows(t *testing.T) {
 	}
 }
 
+func TestPositionalDecoder_Rows_ReturnsFinalLineWithoutNewline(t *testing.T) {
+	content := "HEADER202401 data\nTRAILER0000000         "
+	dec := newTestPositionalDecoder(content)
+	defer dec.Close()
+
+	_, err := dec.ReadFirst()
+	if err != nil {
+		t.Fatalf("ReadFirst() error: %v", err)
+	}
+
+	var rows []Row
+	for row, err := range dec.Rows() {
+		if err != nil {
+			t.Fatalf("Rows() error: %v", err)
+		}
+		rows = append(rows, row)
+	}
+
+	if len(rows) != 1 {
+		t.Fatalf("got %d rows, want 1", len(rows))
+	}
+	if rows[0].LineNum() != 2 {
+		t.Errorf("LineNum() = %d, want 2", rows[0].LineNum())
+	}
+	if rows[0].RecordType() != "TRAILER" {
+		t.Errorf("RecordType() = %q, want TRAILER", rows[0].RecordType())
+	}
+}
+
 func TestPositionalDecoder_Rows_WithoutReadFirst(t *testing.T) {
 	content := "HEADER202401 data\nT1202401CASE001    rest\n"
 	dec := newTestPositionalDecoder(content)

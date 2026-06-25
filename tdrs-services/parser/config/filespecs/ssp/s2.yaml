@@ -74,12 +74,13 @@ accumulator:
   # These byte positions are used BEFORE full parsing to quickly
   # determine which case a record belongs to.
   key_fields:
-    rpt_month_year:
-      start: 2
-      end: 8
-    case_number:
-      start: 8
-      end: 19
+    fields:
+      - name: rpt_month_year
+        start: 2
+        end: 8
+      - name: case_number
+        start: 8
+        end: 19
 
   batch_size: 1
 
@@ -124,17 +125,17 @@ validation_orchestrator:
 
 group_validators:
   # M4 records require at least one M5 record in the same case
-  - id: requires_corresponding_record
+  - id: requires_related_record
     params:
       record_type: M4
-      required_record_type: M5
+      related_record_types: [M5]
     message: "Every M4 record should have at least one corresponding M5 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
 
   # M5 records require at least one M4 record in the same case
-  - id: requires_corresponding_record
+  - id: requires_related_record
     params:
       record_type: M5
-      required_record_type: M4
+      related_record_types: [M4]
     message: "Every M5 record should have at least one corresponding M4 record with the same RPT_MONTH_YEAR and CASE_NUMBER"
 
   # --- Exact duplicate detection ---

@@ -13,7 +13,7 @@ require (
 	github.com/expr-lang/expr v1.17.7
 	github.com/gocelery/gocelery v0.0.0-20201111034804-825d89059344
 	github.com/gomodule/redigo v2.0.0+incompatible
-	github.com/jackc/pgx/v5 v5.8.0
+	github.com/jackc/pgx/v5 v5.9.2
 	github.com/xuri/excelize/v2 v2.10.0
 	gopkg.in/yaml.v3 v3.0.1
 )

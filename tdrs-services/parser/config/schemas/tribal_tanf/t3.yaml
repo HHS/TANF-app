@@ -11,6 +11,103 @@ section: 1
 document: "Tribal TANF Active Case Data"
 format: positional
 
+record_validators:
+  - id: case_number_not_empty
+  - id: rpt_month_year_is_valid
+  - id: rpt_month_year_matches_header_year_quarter
+
+  # Record validators with VALUE_CONSISTENCY error type (cross-field validation)
+  # Race fields when FAMILY_AFFILIATION is 1-2
+  - id: ifthenalso_range_to_range
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 2
+      target_field: RACE_HISPANIC
+      target_min: 1
+      target_max: 2
+  - id: ifthenalso_range_to_range
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 2
+      target_field: RACE_AMER_INDIAN
+      target_min: 1
+      target_max: 2
+  - id: ifthenalso_range_to_range
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 2
+      target_field: RACE_ASIAN
+      target_min: 1
+      target_max: 2
+  - id: ifthenalso_range_to_range
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 2
+      target_field: RACE_BLACK
+      target_min: 1
+      target_max: 2
+  - id: ifthenalso_range_to_range
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 2
+      target_field: RACE_HAWAIIAN
+      target_min: 1
+      target_max: 2
+  - id: ifthenalso_range_to_range
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 2
+      target_field: RACE_WHITE
+      target_min: 1
+      target_max: 2
+  # RELATIONSHIP_HOH when FAMILY_AFFILIATION is 1-2
+  - id: ifthenalso_range_to_range
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 2
+      target_field: RELATIONSHIP_HOH
+      target_min: 4
+      target_max: 9
+  # PARENT_MINOR_CHILD when FAMILY_AFFILIATION is 1-2
+  - id: ifthenalso_range_to_values
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 2
+      target_field: PARENT_MINOR_CHILD
+      values: [2, 3]
+  # EDUCATION_LEVEL when FAMILY_AFFILIATION is 1 must not be 99
+  - id: ifthenalso_range_to_not_values
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 1
+      target_field: EDUCATION_LEVEL
+      excluded_values: [99]
+  # CITIZENSHIP_STATUS when FAMILY_AFFILIATION is 1
+  - id: ifthenalso_range_to_values
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 1
+      condition_max: 1
+      target_field: CITIZENSHIP_STATUS
+      values: [1, 2]
+  # CITIZENSHIP_STATUS when FAMILY_AFFILIATION is 2
+  - id: ifthenalso_range_to_values
+    params:
+      condition_field: FAMILY_AFFILIATION
+      condition_min: 2
+      condition_max: 2
+      target_field: CITIZENSHIP_STATUS
+      values: [1, 2, 9]
+
 # Fields shared across all segments (included in every output row)
 shared:
   - name: RecordType
@@ -49,6 +146,10 @@ segments:
         end: 20
         type: integer
         required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2, 4]
 
       - name: DATE_OF_BIRTH
         friendly_name: Date of Birth
@@ -57,6 +158,14 @@ segments:
         end: 28
         type: string
         required: true
+        field_validators:
+          - id: length
+            params:
+              n: 8
+          - id: valid_year
+          - id: valid_month
+          - id: valid_day
+          - id: is_numeric
 
       - name: SSN
         friendly_name: Social Security Number
@@ -65,6 +174,8 @@ segments:
         end: 37
         type: string
         required: true
+        field_validators:
+          - id: is_numeric
         transform:
           name: ssn_decrypt
 
@@ -75,6 +186,8 @@ segments:
         end: 38
         type: integer
         required: false
+        field_validators:
+          - id: validate_race
 
       - name: RACE_AMER_INDIAN
         friendly_name: American Indian or Alaska Native
@@ -83,6 +196,8 @@ segments:
         end: 39
         type: integer
         required: false
+        field_validators:
+          - id: validate_race
 
       - name: RACE_ASIAN
         friendly_name: Asian
@@ -91,6 +206,8 @@ segments:
         end: 40
         type: integer
         required: false
+        field_validators:
+          - id: validate_race
 
       - name: RACE_BLACK
         friendly_name: Black or African American
@@ -99,6 +216,8 @@ segments:
         end: 41
         type: integer
         required: false
+        field_validators:
+          - id: validate_race
 
       - name: RACE_HAWAIIAN
         friendly_name: Native Hawaiian or Pacific Islander
@@ -107,6 +226,8 @@ segments:
         end: 42
         type: integer
         required: false
+        field_validators:
+          - id: validate_race
 
       - name: RACE_WHITE
         friendly_name: White
@@ -115,6 +236,8 @@ segments:
         end: 43
         type: integer
         required: false
+        field_validators:
+          - id: validate_race
 
       - name: SEX
         friendly_name: Sex
@@ -123,6 +246,11 @@ segments:
         end: 44
         type: integer
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9
 
       - name: RECEIVE_NONSSA_BENEFITS
         friendly_name: Receives Federal Disability Benefits
@@ -131,6 +259,10 @@ segments:
         end: 45
         type: integer
         required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: RECEIVE_SSI
         friendly_name: Receives SSI
@@ -139,6 +271,10 @@ segments:
         end: 46
         type: integer
         required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: RELATIONSHIP_HOH
         friendly_name: Relationship to Head-of-Household
@@ -147,6 +283,11 @@ segments:
         end: 48
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 10
 
       - name: PARENT_MINOR_CHILD
         friendly_name: Parent with Minor Child in the Family
@@ -155,6 +296,10 @@ segments:
         end: 49
         type: integer
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: [0, 2, 3]
 
       - name: EDUCATION_LEVEL
         friendly_name: Educational Level
@@ -163,6 +308,8 @@ segments:
         end: 51
         type: string
         required: true
+        field_validators:
+          - id: education_level
 
       - name: CITIZENSHIP_STATUS
         friendly_name: Citizenship/Alienage
@@ -171,6 +318,10 @@ segments:
         end: 52
         type: integer
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2, 9]
 
       - name: UNEARNED_SSI
         friendly_name: Amount of Unearned Income SSI
@@ -179,6 +330,11 @@ segments:
         end: 56
         type: string
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: OTHER_UNEARNED_INCOME
         friendly_name: Amount of Unearned Income Other
@@ -187,7 +343,11 @@ segments:
         end: 60
         type: string
         required: true
-
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
   # Child 2 (optional - only if present in the line)
   - fields:
       - name: FAMILY_AFFILIATION
@@ -197,6 +357,10 @@ segments:
         end: 61
         type: integer
         required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2, 4]
 
       - name: DATE_OF_BIRTH
         friendly_name: Date of Birth
@@ -205,6 +369,14 @@ segments:
         end: 69
         type: string
         required: true
+        field_validators:
+          - id: length
+            params:
+              n: 8
+          - id: valid_year
+          - id: valid_month
+          - id: valid_day
+          - id: is_numeric
 
       - name: SSN
         friendly_name: Social Security Number
@@ -213,6 +385,8 @@ segments:
         end: 78
         type: string
         required: true
+        field_validators:
+          - id: is_numeric
         transform:
           name: ssn_decrypt
 
@@ -223,6 +397,8 @@ segments:
         end: 79
         type: integer
         required: false
+        field_validators:
+          - id: validate_race
 
       - name: RACE_AMER_INDIAN
         friendly_name: American Indian or Alaska Native
@@ -231,6 +407,8 @@ segments:
         end: 80
         type: integer
         required: false
+        field_validators:
+          - id: validate_race
 
       - name: RACE_ASIAN
         friendly_name: Asian
@@ -239,6 +417,8 @@ segments:
         end: 81
         type: integer
         required: false
+        field_validators:
+          - id: validate_race
 
       - name: RACE_BLACK
         friendly_name: Black or African American
@@ -247,6 +427,8 @@ segments:
         end: 82
         type: integer
         required: false
+        field_validators:
+          - id: validate_race
 
       - name: RACE_HAWAIIAN
         friendly_name: Native Hawaiian or Pacific Islander
@@ -255,6 +437,8 @@ segments:
         end: 83
         type: integer
         required: false
+        field_validators:
+          - id: validate_race
 
       - name: RACE_WHITE
         friendly_name: White
@@ -263,6 +447,8 @@ segments:
         end: 84
         type: integer
         required: false
+        field_validators:
+          - id: validate_race
 
       - name: SEX
         friendly_name: Sex
@@ -271,6 +457,11 @@ segments:
         end: 85
         type: integer
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9
 
       - name: RECEIVE_NONSSA_BENEFITS
         friendly_name: Receives Federal Disability Benefits
@@ -279,6 +470,10 @@ segments:
         end: 86
         type: integer
         required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: RECEIVE_SSI
         friendly_name: Receives SSI
@@ -287,6 +482,10 @@ segments:
         end: 87
         type: integer
         required: true
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2]
 
       - name: RELATIONSHIP_HOH
         friendly_name: Relationship to Head-of-Household
@@ -295,6 +494,11 @@ segments:
         end: 89
         type: string
         required: false
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 10
 
       - name: PARENT_MINOR_CHILD
         friendly_name: Parent with Minor Child in the Family
@@ -303,6 +507,10 @@ segments:
         end: 90
         type: integer
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: [0, 2, 3]
 
       - name: EDUCATION_LEVEL
         friendly_name: Educational Level
@@ -311,6 +519,8 @@ segments:
         end: 92
         type: string
         required: true
+        field_validators:
+          - id: education_level
 
       - name: CITIZENSHIP_STATUS
         friendly_name: Citizenship/Alienage
@@ -319,6 +529,10 @@ segments:
         end: 93
         type: integer
         required: false
+        field_validators:
+          - id: in_values
+            params:
+              values: [1, 2, 9]
 
       - name: UNEARNED_SSI
         friendly_name: Amount of Unearned Income SSI
@@ -327,6 +541,11 @@ segments:
         end: 97
         type: string
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999
 
       - name: OTHER_UNEARNED_INCOME
         friendly_name: Amount of Unearned Income Other
@@ -335,3 +554,8 @@ segments:
         end: 101
         type: string
         required: true
+        field_validators:
+          - id: in_range_int
+            params:
+              min: 0
+              max: 9999

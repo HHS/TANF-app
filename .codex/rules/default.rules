@@ -1,0 +1,395 @@
+# Codex rules for the TANF-app repository.
+# Derived from the global CLAUDE.md security and access guidelines.
+# Reference: https://developers.openai.com/codex/rules
+
+# ---------------------------------------------------------------------------
+# Sensitive file access — forbidden
+# "Never hardcode secrets, credentials, or API keys"
+# "Use environment variables for configuration"
+# ---------------------------------------------------------------------------
+
+# Root and backend .env files — forbidden for common direct readers
+prefix_rule(
+    pattern = [["cat", "head", "tail"], [".env", ".env.local", "tdrs-backend/.env"]],
+    decision = "forbidden",
+    justification = "Do not read .env files — they may contain secrets",
+    match = [
+        "cat .env",
+        "head .env.local",
+        "tail tdrs-backend/.env",
+    ],
+)
+
+prefix_rule(
+    pattern = ["rg", ".", [".env", ".env.local", "tdrs-backend/.env"]],
+    decision = "forbidden",
+    justification = "Do not search .env files — they may contain secrets",
+    match = [
+        "rg . .env",
+        "rg . .env.local",
+        "rg . tdrs-backend/.env",
+    ],
+)
+
+prefix_rule(
+    pattern = ["grep", ".", [".env", ".env.local", "tdrs-backend/.env"]],
+    decision = "forbidden",
+    justification = "Do not search .env files — they may contain secrets",
+    match = [
+        "grep . .env",
+        "grep . .env.local",
+        "grep . tdrs-backend/.env",
+    ],
+)
+
+# Frontend .env files — allowed (public build-time config only)
+prefix_rule(
+    pattern = ["cat", "tdrs-frontend/.env"],
+    decision = "allow",
+    justification = "Frontend .env files contain public build-time config, safe to read",
+)
+
+prefix_rule(
+    pattern = ["cat", ".env.example"],
+    decision = "allow",
+    justification = ".env.example is safe to read for reference",
+)
+
+# Private keys and certificates — forbidden
+prefix_rule(
+    pattern = ["cat", [".pem", ".rsa", ".key"]],
+    decision = "forbidden",
+    justification = "Never read private key or certificate files",
+)
+
+# Terraform variable files — forbidden (may contain secrets)
+prefix_rule(
+    pattern = ["cat", [".tfvars"]],
+    decision = "forbidden",
+    justification = "Terraform variable files may contain infrastructure secrets",
+)
+
+# Cloud.gov deployment var files — forbidden
+prefix_rule(
+    pattern = ["cat", "tdrs-backend/vars-backend.yml"],
+    decision = "forbidden",
+    justification = "Backend vars file contains deployment secrets",
+)
+
+prefix_rule(
+    pattern = ["cat", "tdrs-frontend/vars-frontend.yml"],
+    decision = "forbidden",
+    justification = "Frontend vars file contains deployment secrets",
+)
+
+# ---------------------------------------------------------------------------
+# Linting and testing — allow
+# "Run linters and tests before considering work complete"
+# ---------------------------------------------------------------------------
+
+prefix_rule(
+    pattern = ["task", "backend-lint"],
+    decision = "allow",
+    justification = "Linting is safe and encouraged before completing work",
+)
+
+prefix_rule(
+    pattern = ["task", "frontend-lint"],
+    decision = "allow",
+    justification = "Linting is safe and encouraged before completing work",
+)
+
+prefix_rule(
+    pattern = ["task", "backend-pytest"],
+    decision = "allow",
+    justification = "Running tests is safe and encouraged",
+)
+
+prefix_rule(
+    pattern = ["task", "backend-test-all"],
+    decision = "allow",
+    justification = "Running lint + tests is safe and encouraged",
+)
+
+prefix_rule(
+    pattern = ["task", "frontend-test"],
+    decision = "allow",
+    justification = "Running frontend tests is safe",
+)
+
+prefix_rule(
+    pattern = ["task", "frontend-test-cov"],
+    decision = "allow",
+    justification = "Running frontend tests with coverage is safe",
+)
+
+prefix_rule(
+    pattern = ["task", "frontend-e2e-ci-local"],
+    decision = "allow",
+    justification = "Running headless E2E tests locally is safe",
+)
+
+prefix_rule(
+    pattern = ["pre-commit", "run"],
+    decision = "allow",
+    justification = "Pre-commit hooks enforce formatting and are safe to run",
+)
+
+# ---------------------------------------------------------------------------
+# Go parser — allow build and test commands
+# ---------------------------------------------------------------------------
+
+prefix_rule(
+    pattern = ["make", "build"],
+    decision = "allow",
+    justification = "Building the Go parser is safe",
+)
+
+prefix_rule(
+    pattern = ["make", "test"],
+    decision = "allow",
+    justification = "Running Go parser tests is safe",
+)
+
+prefix_rule(
+    pattern = ["make", "test-coverage"],
+    decision = "allow",
+    justification = "Running Go parser coverage is safe",
+)
+
+prefix_rule(
+    pattern = ["go", "vet"],
+    decision = "allow",
+    justification = "Go vet is a safe static analysis tool",
+)
+
+prefix_rule(
+    pattern = ["go", "test"],
+    decision = "allow",
+    justification = "Running go test directly is safe",
+)
+
+prefix_rule(
+    pattern = ["go", "build"],
+    decision = "allow",
+    justification = "Building Go code is safe",
+)
+
+# ---------------------------------------------------------------------------
+# Container management — prompt before starting/stopping
+# ---------------------------------------------------------------------------
+
+prefix_rule(
+    pattern = ["task", "up"],
+    decision = "prompt",
+    justification = "Starting containers changes system state — confirm first",
+)
+
+prefix_rule(
+    pattern = ["task", "down"],
+    decision = "prompt",
+    justification = "Stopping containers changes system state — confirm first",
+)
+
+prefix_rule(
+    pattern = ["task", "init-backend"],
+    decision = "prompt",
+    justification = "DB initialization is destructive on first run — confirm first",
+)
+
+prefix_rule(
+    pattern = ["docker", "compose"],
+    decision = "allow",
+    justification = "Docker compose commands affect running containers — confirm first",
+)
+
+prefix_rule(
+    pattern = ["docker", "rm"],
+    decision = "forbidden",
+    justification = "Removing containers is destructive — not allowed",
+)
+
+prefix_rule(
+    pattern = ["docker", "rmi"],
+    decision = "forbidden",
+    justification = "Removing images is destructive — not allowed",
+)
+
+# ---------------------------------------------------------------------------
+# Git — safe reads, prompt on writes, forbid destructive operations
+# ---------------------------------------------------------------------------
+
+prefix_rule(
+    pattern = ["git", ["status", "log", "diff", "branch", "show", "blame"]],
+    decision = "allow",
+    justification = "Read-only git operations are safe",
+)
+
+prefix_rule(
+    pattern = ["git", ["add", "commit", "checkout", "switch", "stash", "rebase", "merge"]],
+    decision = "prompt",
+    justification = "Git write operations should be confirmed",
+)
+
+prefix_rule(
+    pattern = ["git", "push"],
+    decision = "prompt",
+    justification = "Pushing affects the remote — confirm first",
+)
+
+prefix_rule(
+    pattern = ["git", "push", "--force"],
+    decision = "forbidden",
+    justification = "Force pushing can destroy remote history",
+)
+
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "forbidden",
+    justification = "Hard reset destroys uncommitted work",
+)
+
+prefix_rule(
+    pattern = ["git", "clean", "-f"],
+    decision = "forbidden",
+    justification = "git clean -f permanently deletes untracked files",
+)
+
+# ---------------------------------------------------------------------------
+# GitHub CLI — safe reads, prompt on mutations
+# ---------------------------------------------------------------------------
+
+prefix_rule(
+    pattern = ["gh", ["pr", "issue"], ["view", "list", "status"]],
+    decision = "allow",
+    justification = "Reading PR/issue info is safe",
+)
+
+prefix_rule(
+    pattern = ["gh", ["pr", "issue"], ["create", "comment", "close", "merge", "edit"]],
+    decision = "prompt",
+    justification = "Mutating PRs/issues is visible to others — confirm first",
+)
+
+# ---------------------------------------------------------------------------
+# Terraform — always prompt, forbid destructive operations
+# ---------------------------------------------------------------------------
+
+prefix_rule(
+    pattern = ["terraform", ["plan", "validate", "fmt"]],
+    decision = "prompt",
+    justification = "Terraform reads may access remote state — confirm first",
+)
+
+prefix_rule(
+    pattern = ["terraform", ["apply", "destroy", "import"]],
+    decision = "forbidden",
+    justification = "Terraform mutations affect live infrastructure",
+)
+
+# ---------------------------------------------------------------------------
+# Destructive shell commands — forbidden
+# "Follow the principle of least privilege"
+# ---------------------------------------------------------------------------
+
+prefix_rule(
+    pattern = ["rm", "-rf"],
+    decision = "forbidden",
+    justification = "Recursive forced deletion is too dangerous to allow",
+)
+
+prefix_rule(
+    pattern = ["rm", "-r"],
+    decision = "prompt",
+    justification = "Recursive deletion should be confirmed",
+)
+
+# ---------------------------------------------------------------------------
+# Forbidden network commands
+# ---------------------------------------------------------------------------
+
+prefix_rule(
+    pattern = ["curl"],
+    decision = "forbidden",
+    justification = "Arbitrary network requests are not allowed",
+)
+
+prefix_rule(
+    pattern = ["wget"],
+    decision = "forbidden",
+    justification = "Arbitrary network requests are not allowed",
+)
+
+# ---------------------------------------------------------------------------
+# Development tools requiring review
+# ---------------------------------------------------------------------------
+
+prefix_rule(
+    pattern = ["npm"],
+    decision = "prompt",
+    justification = "npm can run arbitrary scripts or mutate workspace files — confirm first",
+)
+
+prefix_rule(
+    pattern = ["python"],
+    decision = "prompt",
+    justification = "Python can read sensitive files or mutate workspace files — confirm first",
+)
+
+prefix_rule(
+    pattern = ["pytest"],
+    decision = "allow",
+    justification = "Running pytest directly is safe",
+)
+
+prefix_rule(
+    pattern = ["flake8"],
+    decision = "allow",
+    justification = "Flake8 linting is safe",
+)
+
+# ---------------------------------------------------------------------------
+# Read-only exploration
+# ---------------------------------------------------------------------------
+
+prefix_rule(
+    pattern = ["ls"],
+    decision = "allow",
+    justification = "Listing files is safe",
+)
+
+prefix_rule(
+    pattern = ["find"],
+    decision = "allow",
+    justification = "Finding files is safe",
+)
+
+prefix_rule(
+    pattern = ["grep"],
+    decision = "allow",
+    justification = "grep can expose sensitive file contents — our rules above cover our potential leaks.",
+)
+
+prefix_rule(
+    pattern = ["rg"],
+    decision = "allow",
+    justification = "rg can expose sensitive file contents — our rules above cover our potential leaks.",
+)
+
+prefix_rule(
+    pattern = ["wc"],
+    decision = "allow",
+    justification = "Counting lines/words is safe",
+)
+
+prefix_rule(
+    pattern = ["head"],
+    decision = "prompt",
+    justification = "head can expose sensitive file contents — confirm first",
+)
+
+prefix_rule(
+    pattern = ["tail"],
+    decision = "prompt",
+    justification = "tail can expose sensitive file contents — confirm first",
+)

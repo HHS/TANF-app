@@ -10,6 +10,9 @@ from tdpservice.data_files.models import DataFile
 from tdpservice.parsers.dataclasses import FieldType, ValidationErrorArgs
 from tdpservice.parsers.fields import Field
 from tdpservice.parsers.row_schema import TanfDataReportSchema
+from tdpservice.parsers.schema_defs.ssp.m5 import m5 as ssp_m5
+from tdpservice.parsers.schema_defs.tanf.t5 import t5 as tanf_t5
+from tdpservice.parsers.schema_defs.tribal_tanf.t5 import t5 as tribal_tanf_t5
 from tdpservice.parsers.validators import category3
 from tdpservice.parsers.validators.util import deprecate_call
 from tdpservice.stts.models import STT
@@ -304,6 +307,178 @@ def test_isOlderThan(val, min_age, kwargs, exp_result, exp_message):
     """Test isOlderThan validator error messages."""
     _validator = category3.isOlderThan(min_age, **kwargs)
     _validate_and_assert(_validator, val, exp_result, exp_message)
+
+
+@pytest.mark.parametrize(
+    "date_of_birth, rpt_month_year, exp_age",
+    [
+        ("20060901", "202410", 18.1),
+        ("20061002", "202410", 18.0),
+        ("20061001", "202410", 18.0),
+    ],
+)
+def test_calculate_age_first(date_of_birth, rpt_month_year, exp_age):
+    """Test AGE_FIRST calculation against reporting month boundaries."""
+    assert category3.calculate_age_first(date_of_birth, rpt_month_year) == exp_age
+
+
+@pytest.mark.parametrize(
+    "record, oasdi_item, exp_result, exp_message",
+    [
+        (
+            {
+                "DATE_OF_BIRTH": "20060901",
+                "RPT_MONTH_YEAR": "202410",
+                "REC_OASDI_INSURANCE": 0,
+            },
+            "19A",
+            False,
+            "Since person is older than 18, then 19A "
+            "(Received Disability Benefits: OASDI Program) must be 1 or 2",
+        ),
+        (
+            {
+                "DATE_OF_BIRTH": "20060901",
+                "RPT_MONTH_YEAR": "202410",
+                "REC_OASDI_INSURANCE": 1,
+            },
+            "19A",
+            True,
+            None,
+        ),
+        (
+            {
+                "DATE_OF_BIRTH": "20061002",
+                "RPT_MONTH_YEAR": "202410",
+                "REC_OASDI_INSURANCE": 0,
+            },
+            "19A",
+            True,
+            None,
+        ),
+        (
+            {
+                "DATE_OF_BIRTH": "20060901",
+                "RPT_MONTH_YEAR": "202410",
+                "REC_OASDI_INSURANCE": 0,
+            },
+            "18A",
+            False,
+            "Since person is older than 18, then 18A "
+            "(Received Disability Benefits: OASDI Program) must be 1 or 2",
+        ),
+        (
+            {
+                "DATE_OF_BIRTH": "bad-date",
+                "RPT_MONTH_YEAR": "202410",
+                "REC_OASDI_INSURANCE": 0,
+            },
+            "19A",
+            True,
+            None,
+        ),
+    ],
+)
+def test_validate__REC_OASDI_INSURANCE__AGE_FIRST(
+    record, oasdi_item, exp_result, exp_message
+):
+    """Test REC_OASDI_INSURANCE validator using AGE_FIRST semantics."""
+    schema = TanfDataReportSchema(
+        fields=[
+            Field(
+                item="15",
+                name="DATE_OF_BIRTH",
+                friendly_name="Date of Birth",
+                type=FieldType.ALPHA_NUMERIC,
+                startIndex=20,
+                endIndex=28,
+                required=True,
+                validators=[],
+            ),
+            Field(
+                item="4",
+                name="RPT_MONTH_YEAR",
+                friendly_name="Reporting Year and Month",
+                type=FieldType.NUMERIC,
+                startIndex=2,
+                endIndex=8,
+                required=True,
+                validators=[],
+            ),
+            Field(
+                item=oasdi_item,
+                name="REC_OASDI_INSURANCE",
+                friendly_name="Received Disability Benefits: OASDI Program",
+                type=FieldType.NUMERIC,
+                startIndex=44,
+                endIndex=45,
+                required=False,
+                validators=[],
+            ),
+        ]
+    )
+
+    result = category3.validate__REC_OASDI_INSURANCE__AGE_FIRST()(record, schema)
+
+    assert result.valid == exp_result
+    assert result.error_message == exp_message
+    assert result.deprecated is False
+    assert result.field_names == [
+        "DATE_OF_BIRTH",
+        "RPT_MONTH_YEAR",
+        "REC_OASDI_INSURANCE",
+    ]
+
+
+@pytest.mark.parametrize(
+    "schema, oasdi_item",
+    [
+        (tanf_t5[0], "19A"),
+        (ssp_m5[0], "18A"),
+        (tribal_tanf_t5[0], "19A"),
+    ],
+)
+def test_t5_m5_schemas_validate_rec_oasdi_insurance_age_first(schema, oasdi_item):
+    """Test T5/M5 schemas use AGE_FIRST semantics for OASDI validation."""
+    record = {
+        "DATE_OF_BIRTH": "20060901",
+        "RPT_MONTH_YEAR": "202410",
+        "REC_OASDI_INSURANCE": 0,
+    }
+
+    oasdi_errors = [
+        result
+        for validator in schema.postparsing_validators
+        for result in [validator(record, schema)]
+        if not result.valid and "REC_OASDI_INSURANCE" in result.field_names
+    ]
+
+    assert len(oasdi_errors) == 1
+    assert oasdi_errors[0].error_message == (
+        f"Since person is older than 18, then {oasdi_item} "
+        "(Received Disability Benefits: OASDI Program) must be 1 or 2"
+    )
+
+
+@pytest.mark.parametrize("schema", [tanf_t5[0], ssp_m5[0], tribal_tanf_t5[0]])
+def test_t5_m5_schemas_do_not_validate_oasdi_when_turning_18_after_month_first(
+    schema,
+):
+    """Test schemas do not trigger OASDI rule before age is older than 18."""
+    record = {
+        "DATE_OF_BIRTH": "20061002",
+        "RPT_MONTH_YEAR": "202410",
+        "REC_OASDI_INSURANCE": 0,
+    }
+
+    oasdi_errors = [
+        result
+        for validator in schema.postparsing_validators
+        for result in [validator(record, schema)]
+        if not result.valid and "REC_OASDI_INSURANCE" in result.field_names
+    ]
+
+    assert oasdi_errors == []
 
 
 @pytest.mark.parametrize(
@@ -629,9 +804,8 @@ def test_sumIsLarger():
     assert result.field_names == ["TestField1", "TestField3"]
 
 
-def test_suppress_for_fra_pilot_state():
-    """Test `suppress_for_fra_pilot_state` suppresses validation logic."""
-    stt = STT(type="state", postal_code="AZ")
+def _fra_pilot_validator_schema(stt_type="state", postal_code="AZ"):
+    stt = STT(type=stt_type, postal_code=postal_code)
     datafile = DataFile(stt=stt)
     schema = TanfDataReportSchema(
         fields=[
@@ -654,13 +828,11 @@ def test_suppress_for_fra_pilot_state():
         ],
     )
     schema.prepare(datafile)
+    return schema
 
-    record = {
-        "WORK_ELIGIBLE_INDICATOR": "1",
-        "WORK_PART_STATUS": "99",
-    }
 
-    validate = category3.suppress_for_fra_pilot_state(
+def _fra_pilot_validator():
+    return category3.suppress_for_fra_pilot_state(
         "WORK_ELIGIBLE_INDICATOR",
         "WORK_PART_STATUS",
         category3.ifThenAlso(
@@ -671,11 +843,57 @@ def test_suppress_for_fra_pilot_state():
         ),
     )
 
-    settings.FRA_PILOT_STATES = ["AZ"]
+
+@pytest.mark.parametrize("postal_code", ["AZ", "IA", "NE", "OH", "VA"])
+def test_suppress_for_fra_pilot_state(postal_code):
+    """Test `suppress_for_fra_pilot_state` suppresses FY2026 pilot state validation logic."""
+    schema = _fra_pilot_validator_schema(postal_code=postal_code)
+
+    record = {
+        "WORK_ELIGIBLE_INDICATOR": "1",
+        "WORK_PART_STATUS": "99",
+    }
+
+    validate = _fra_pilot_validator()
+    settings.FRA_PILOT_STATES = ["AZ", "IA", "NE", "OH", "VA"]
 
     result = validate(record, schema)
     assert result.valid
     assert result.error_message is None
+
+
+@pytest.mark.parametrize("postal_code", ["CA", "KY", "ME", "MN"])
+def test_suppress_for_fra_pilot_state_no_longer_suppresses_old_pilots(postal_code):
+    """Test FY2025-only pilot states use normal WPR validation under the FY2026 list."""
+    schema = _fra_pilot_validator_schema(postal_code=postal_code)
+    record = {
+        "WORK_ELIGIBLE_INDICATOR": "1",
+        "WORK_PART_STATUS": "99",
+    }
+
+    validate = _fra_pilot_validator()
+    settings.FRA_PILOT_STATES = ["AZ", "IA", "NE", "OH", "VA"]
+
+    result = validate(record, schema)
+    assert result.valid is False
+    assert result.error_message is not None
+
+
+@pytest.mark.parametrize("stt_type", ["territory", "tribe"])
+def test_suppress_for_fra_pilot_state_only_suppresses_states(stt_type):
+    """Test matching postal codes are only suppressed for state STTs."""
+    schema = _fra_pilot_validator_schema(stt_type=stt_type, postal_code="AZ")
+    record = {
+        "WORK_ELIGIBLE_INDICATOR": "1",
+        "WORK_PART_STATUS": "99",
+    }
+
+    validate = _fra_pilot_validator()
+    settings.FRA_PILOT_STATES = ["AZ", "IA", "NE", "OH", "VA"]
+
+    result = validate(record, schema)
+    assert result.valid is False
+    assert result.error_message is not None
 
 
 def test_validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():

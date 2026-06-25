@@ -12,7 +12,6 @@ from tdpservice.email.tasks import send_data_submission_reminder
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
 
-
 QUARTERLY_PARAMS = pytest.mark.parametrize(
     "due_date, reporting_period, fiscal_quarter",
     [
@@ -24,9 +23,9 @@ QUARTERLY_PARAMS = pytest.mark.parametrize(
 )
 
 
-def _create_stt_with_analyst(name, filenames, ssp=False):
+def _create_stt_with_analyst(name, filenames, ssp=False, stt_type=STT.EntityType.STATE):
     """Create an STT and an approved Data Analyst assigned to it."""
-    stt = STT.objects.create(name=name, filenames=filenames, ssp=ssp)
+    stt = STT.objects.create(name=name, filenames=filenames, ssp=ssp, type=stt_type)
     data_analyst = User.objects.create(
         username=f"{name.lower().replace(' ', '')}@test.com",
         stt=stt,
@@ -61,8 +60,8 @@ def test_upcoming_deadline_sends_no_sections_submitted(
     stt, _ = _create_stt_with_analyst(
         "Arkansas",
         {
-            "TAN Active Case Data": "test-filename.txt",
-            "TAN Closed Case Data": "test-filename-closed.txt",
+            "Active Case Data": "test-filename.txt",
+            "Closed Case Data": "test-filename-closed.txt",
         },
     )
 
@@ -70,8 +69,7 @@ def test_upcoming_deadline_sends_no_sections_submitted(
 
     assert len(mail.outbox) == 1
     assert (
-        mail.outbox[0].subject
-        == "Action Requested: Please submit your TANF data files"
+        mail.outbox[0].subject == "Action Requested: Please submit your TANF data files"
     )
 
 
@@ -84,8 +82,8 @@ def test_upcoming_deadline_sends_some_sections_submitted(
     stt, analyst = _create_stt_with_analyst(
         "Arkansas",
         {
-            "TAN Active Case Data": "test-filename.txt",
-            "TAN Closed Case Data": "test-filename-closed.txt",
+            "Active Case Data": "test-filename.txt",
+            "Closed Case Data": "test-filename-closed.txt",
         },
     )
 
@@ -95,8 +93,7 @@ def test_upcoming_deadline_sends_some_sections_submitted(
 
     assert len(mail.outbox) == 1
     assert (
-        mail.outbox[0].subject
-        == "Action Requested: Please submit your TANF data files"
+        mail.outbox[0].subject == "Action Requested: Please submit your TANF data files"
     )
 
 
@@ -109,8 +106,8 @@ def test_upcoming_deadline_no_send_when_all_sections_complete(
     stt, analyst = _create_stt_with_analyst(
         "Arkansas",
         {
-            "TAN Active Case Data": "test-filename.txt",
-            "TAN Closed Case Data": "test-filename-closed.txt",
+            "Active Case Data": "test-filename.txt",
+            "Closed Case Data": "test-filename-closed.txt",
         },
     )
 
@@ -128,8 +125,8 @@ def test_q1_files_found_using_current_year():
     stt, analyst = _create_stt_with_analyst(
         "TestState",
         {
-            "TAN Active Case Data": "file1.txt",
-            "TAN Closed Case Data": "file2.txt",
+            "Active Case Data": "file1.txt",
+            "Closed Case Data": "file2.txt",
         },
     )
 
@@ -149,8 +146,8 @@ def test_q1_files_with_previous_year_are_not_matched():
     stt, analyst = _create_stt_with_analyst(
         "TestState",
         {
-            "TAN Active Case Data": "file1.txt",
-            "TAN Closed Case Data": "file2.txt",
+            "Active Case Data": "file1.txt",
+            "Closed Case Data": "file2.txt",
         },
     )
 
@@ -195,8 +192,8 @@ def test_tribal_submission_does_not_satisfy_tanf_requirement():
     stt, analyst = _create_stt_with_analyst(
         "TestState",
         {
-            "TAN Active Case Data": "file1.txt",
-            "TAN Closed Case Data": "file2.txt",
+            "Active Case Data": "file1.txt",
+            "Closed Case Data": "file2.txt",
         },
     )
 
@@ -216,10 +213,11 @@ def test_tanf_submission_does_not_satisfy_tribal_requirement():
     stt, analyst = _create_stt_with_analyst(
         "TestTribe",
         {
-            "Tribal Active Case Data": "file1.txt",
-            "Tribal Closed Case Data": "file2.txt",
-            "Tribal Aggregate Data": "file3.txt",
+            "Active Case Data": "file1.txt",
+            "Closed Case Data": "file2.txt",
+            "Aggregate Data": "file3.txt",
         },
+        stt_type=STT.EntityType.TRIBE,
     )
 
     # Submit TANF files — wrong program type for a tribal STT
@@ -239,10 +237,11 @@ def test_tribal_stt_no_reminder_when_all_tribal_sections_submitted():
     stt, analyst = _create_stt_with_analyst(
         "TestTribe",
         {
-            "Tribal Active Case Data": "file1.txt",
-            "Tribal Closed Case Data": "file2.txt",
-            "Tribal Aggregate Data": "file3.txt",
+            "Active Case Data": "file1.txt",
+            "Closed Case Data": "file2.txt",
+            "Aggregate Data": "file3.txt",
         },
+        stt_type=STT.EntityType.TRIBE,
     )
 
     _submit_file(stt, analyst, "TRIBAL", "Active Case Data", "Q1")
@@ -265,12 +264,9 @@ def test_ssp_stt_requires_both_tanf_and_ssp_submissions():
     stt, analyst = _create_stt_with_analyst(
         "RhodeIsland",
         {
-            "TAN Active Case Data": "tanf1.txt",
-            "TAN Closed Case Data": "tanf2.txt",
-            "TAN Aggregate Data": "tanf3.txt",
-            "SSP Active Case Data": "ssp1.txt",
-            "SSP Closed Case Data": "ssp2.txt",
-            "SSP Aggregate Data": "ssp3.txt",
+            "Active Case Data": "tanf1.txt",
+            "Closed Case Data": "tanf2.txt",
+            "Aggregate Data": "tanf3.txt",
         },
         ssp=True,
     )
@@ -293,12 +289,9 @@ def test_ssp_stt_no_reminder_when_all_programs_submitted():
     stt, analyst = _create_stt_with_analyst(
         "RhodeIsland",
         {
-            "TAN Active Case Data": "tanf1.txt",
-            "TAN Closed Case Data": "tanf2.txt",
-            "TAN Aggregate Data": "tanf3.txt",
-            "SSP Active Case Data": "ssp1.txt",
-            "SSP Closed Case Data": "ssp2.txt",
-            "SSP Aggregate Data": "ssp3.txt",
+            "Active Case Data": "tanf1.txt",
+            "Closed Case Data": "tanf2.txt",
+            "Aggregate Data": "tanf3.txt",
         },
         ssp=True,
     )

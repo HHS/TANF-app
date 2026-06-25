@@ -18,16 +18,34 @@ func TestCSVDecoder_Format(t *testing.T) {
 	}
 }
 
-func TestCSVDecoder_ReadFirst_ReturnsNil(t *testing.T) {
-	dec := newTestCSVDecoder("a,b,c\n", "TE1")
+func TestCSVDecoder_ReadFirst_BuffersFirstRow(t *testing.T) {
+	dec := newTestCSVDecoder("a,b,c\nd,e,f\n", "TE1")
 	defer dec.Close()
 
 	row, err := dec.ReadFirst()
 	if err != nil {
 		t.Fatalf("ReadFirst() error: %v", err)
 	}
-	if row != nil {
-		t.Errorf("ReadFirst() = %v, want nil for CSV decoder", row)
+	cr := row.(*ColumnarRow)
+	if cr.ColumnCount() != 3 {
+		t.Fatalf("ReadFirst() ColumnCount() = %d, want 3", cr.ColumnCount())
+	}
+	if got := cr.Column(0); got != "a" {
+		t.Errorf("ReadFirst() Column(0) = %v, want %q", got, "a")
+	}
+
+	var rows []Row
+	for row, err := range dec.Rows() {
+		if err != nil {
+			t.Fatalf("Rows() error: %v", err)
+		}
+		rows = append(rows, row)
+	}
+	if len(rows) != 2 {
+		t.Fatalf("Rows() got %d rows, want 2", len(rows))
+	}
+	if got := rows[0].(*ColumnarRow).Column(0); got != "a" {
+		t.Errorf("Rows() first row Column(0) = %v, want buffered first row", got)
 	}
 }
 

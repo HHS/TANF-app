@@ -142,14 +142,6 @@ shared:
     field:
       - id: not_empty
 
-  - name: FIPS_CODE
-    friendly_name: State FIPS Code
-    item: "1"
-    start: 19
-    end: 21
-    type: string
-    required: true
-
 # Each segment produces one output row (combined with shared fields)
 # M3 has 2 segments: Child 1 and Child 2
 segments:

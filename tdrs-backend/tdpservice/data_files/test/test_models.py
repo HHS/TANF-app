@@ -109,6 +109,55 @@ def test_data_files_filename_is_expected(user):
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
+    "program_type, filenames, expected_filename",
+    [
+        (
+            DataFile.ProgramType.SSP,
+            {"Active Case Data": "section-based-ssp.txt"},
+            "section-based-ssp.txt",
+        ),
+        (
+            DataFile.ProgramType.TRIBAL,
+            {"Active Case Data": "section-based-tribal.txt"},
+            "section-based-tribal.txt",
+        ),
+        (
+            DataFile.ProgramType.SSP,
+            {"SSP Active Case Data": "legacy-ssp.txt"},
+            "legacy-ssp.txt",
+        ),
+        (
+            DataFile.ProgramType.TRIBAL,
+            {"Tribal Active Case Data": "legacy-tribal.txt"},
+            "legacy-tribal.txt",
+        ),
+    ],
+)
+def test_data_files_filename_prefers_section_key_with_legacy_fallback(
+    user, program_type, filenames, expected_filename
+):
+    """File name lookup supports section keys and legacy prefixed keys."""
+    stt = STT.objects.create(
+        name=f"Filename Lookup {program_type} {expected_filename}",
+        filenames=filenames,
+    )
+    data_file = DataFile.create_new_version(
+        {
+            "year": 2020,
+            "quarter": "Q1",
+            "section": "Active Case Data",
+            "program_type": program_type,
+            "user": user,
+            "stt": stt,
+            "is_program_audit": False,
+        }
+    )
+
+    assert data_file.filename == expected_filename
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
     "section, program_type",
     [
         ("Closed Case Data", "TRIBAL"),

@@ -57,12 +57,35 @@ record_type_detection:
 #
 # Tribal TANF Section 3 files contain aggregate data (not case-level data).
 # T6 records are file-level summaries without case numbers,
-# so no key-based grouping is needed.
+# but still require grouping for duplicate checks.
 accumulator:
-
-  # No key_fields for aggregate data - records don't belong to cases
+  key_fields:
+    fields:
+      - name: record_type
+        start: 0
+        end: 2
 
   batch_size: 1
 
-  # All record types are processed individually (no grouping needed)
-  grouped_schemas: []
+  grouped_schemas:
+    - tribal_tanf/t6
+
+group_validators:
+  - id: exact_duplicates
+    params:
+      record_type: T6
+
+validation_orchestrator:
+  categories:
+  - id: 1
+    name: Record pre-check
+    default_error_type: RECORD_PRE_CHECK
+  - id: 2
+    name: Field validation
+    default_error_type: FIELD_VALUE
+  - id: 3
+    name: Cross-field
+    default_error_type: VALUE_CONSISTENCY
+  - id: 4
+    name: Group validation
+    default_error_type: CASE_CONSISTENCY

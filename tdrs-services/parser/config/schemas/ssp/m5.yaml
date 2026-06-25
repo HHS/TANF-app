@@ -97,7 +97,7 @@ record_validators:
       condition_max: 1
       target_field: CITIZENSHIP_STATUS
       values: [1, 2, 3]
-  # REC_OASDI_INSURANCE when age >= 18
+  # REC_OASDI_INSURANCE when age > 18
   - id: t5_age_oasdi
   # REC_FEDERAL_DISABILITY when FAMILY_AFFILIATION is 1
   - id: ifthenalso_range_to_range
@@ -258,7 +258,7 @@ segments:
               max: 9
 
       - name: REC_OASDI_INSURANCE
-        friendly_name: Received OASDI Insurance
+        friendly_name: "Received Disability Benefits: OASDI Program"
         item: "18A"
         start: 44
         end: 45

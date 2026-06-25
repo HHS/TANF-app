@@ -1,19 +1,18 @@
 package writer
 
 import (
-	"encoding/binary"
-	"math/rand/v2"
+	"crypto/rand"
+	"io"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-// newUUID generates a new v4 UUID for the record ID using math/rand.
-// These are database primary keys and do not require cryptographic randomness,
-// just uniqueness.
+// newUUID generates a new v4 UUID for the record ID.
 func newUUID() pgtype.UUID {
 	var id [16]byte
-	binary.LittleEndian.PutUint64(id[:8], rand.Uint64())
-	binary.LittleEndian.PutUint64(id[8:], rand.Uint64())
+	if _, err := io.ReadFull(rand.Reader, id[:]); err != nil {
+		panic(err)
+	}
 	// Set version 4 (random) bits
 	id[6] = (id[6] & 0x0f) | 0x40
 	// Set variant bits (RFC 9562)
