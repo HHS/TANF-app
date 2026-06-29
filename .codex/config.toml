@@ -3,7 +3,6 @@
 
 model                  = "gpt-5.5"
 model_provider         = "openai"
-model_reasoning_effort = "high"
 
 # Sandbox: allow writing within the workspace but not outside it.
 sandbox_mode         = "workspace-write"

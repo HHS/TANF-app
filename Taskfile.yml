@@ -555,7 +555,7 @@ tasks:
       - make sqlc-verify
 
   parser:validate-config:
-    desc: Load parser config and compile validator expressions
+    desc: Load parser config, compile validator expressions, and verify native executor coverage
     dir: tdrs-services/parser
     cmds:
       - make validate-config

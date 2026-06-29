@@ -198,7 +198,7 @@ func TestProductionValidators_T5M5OASDIAgeValidatorBehavior(t *testing.T) {
 			}
 
 			rec := testutil.NewTestRecord(cs, 1, tt.values)
-			result := Execute(oasdiValidator, NewRecordEnv(rec))
+			result := Execute(oasdiValidator, NewRecordValidationState(rec, nil))
 			if result.Valid != tt.valid {
 				t.Fatalf("expected valid=%v, got %v", tt.valid, result.Valid)
 			}
