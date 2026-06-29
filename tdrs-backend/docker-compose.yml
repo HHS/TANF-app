@@ -304,7 +304,7 @@ services:
       - CGAPPNAME_BACKEND
       - SENTRY_DSN
       # Keycloak sync
-      - KEYCLOAK_SYNC_ENABLED=true
+      - KEYCLOAK_SYNC_ENABLED=True
       - KEYCLOAK_SERVER_URL=http://keycloak:8080
       - KEYCLOAK_REALM=tdp
       - KEYCLOAK_ADMIN_CLIENT_ID=tdp-django
@@ -416,7 +416,7 @@ services:
       - AWS_S3_BUCKET_NAME
       - AWS_S3_LOGS_PREFIX
       # Keycloak sync
-      - KEYCLOAK_SYNC_ENABLED=true
+      - KEYCLOAK_SYNC_ENABLED=True
       - KEYCLOAK_SERVER_URL=http://keycloak:8080
       - KEYCLOAK_REALM=tdp
       - KEYCLOAK_ADMIN_CLIENT_ID=tdp-django
