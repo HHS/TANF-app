@@ -458,9 +458,9 @@ tasks:
       - env -u ELECTRON_RUN_AS_NODE npx cypress verify || env -u ELECTRON_RUN_AS_NODE npx cypress install --force
       - |
         if command -v corepack >/dev/null 2>&1; then
-          env -u ELECTRON_RUN_AS_NODE yarn test:e2e-ci
+          CYPRESS_TOKEN={{.CYPRESS_TOKEN}} env -u ELECTRON_RUN_AS_NODE yarn test:e2e-ci
         else
-          env -u ELECTRON_RUN_AS_NODE npx --yes @yarnpkg/cli-dist@4.6.0 test:e2e-ci
+          CYPRESS_TOKEN={{.CYPRESS_TOKEN}} env -u ELECTRON_RUN_AS_NODE npx --yes @yarnpkg/cli-dist@4.6.0 test:e2e-ci
         fi
 
   frontend-e2e-cmd:

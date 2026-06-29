@@ -171,7 +171,7 @@ const FeedbackReportsUpload = forwardRef(function FeedbackReportsUpload(
         disabled={loading}
         className="margin-top-3"
       >
-        {loading ? 'Uploading...' : 'Upload & Notify States'}
+        {loading ? 'Uploading...' : 'Upload & Notify STTs'}
       </Button>
     </div>
   )
