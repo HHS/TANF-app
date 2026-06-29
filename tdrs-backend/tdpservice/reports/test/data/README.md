@@ -4,12 +4,13 @@ This directory contains test zip files for manually testing the report source wo
 
 ## File Structure
 
-All valid files follow the structure: `{ZipName}/FY{YYYY}/RO{X}/F{X}/files`
+All valid files follow the structure: `{ZipName}/FY{YYYY}/RO{X}/F{X}/files`, where files may be at any depth under the STT folder.
 
 - **{ZipName}**: Root folder matching the zip filename (e.g., `FY2025_07312025`)
 - **FY{YYYY}**: Fiscal year folder with "FY" prefix (e.g., `FY2025`)
 - **RO{X}**: Regional Office folder with "RO" prefix (e.g., `RO1`, `RO4`)
 - **F{X}**: STT folder with "F" prefix representing FIPS code (e.g., `F1`, `F12`)
+- **files**: Report files directly under the STT folder or in nested subfolders. Generated STT zip files preserve paths relative to the STT folder.
 
 ## Valid Test Files (Should PASS)
 
@@ -27,7 +28,28 @@ FY2025_valid_single_stt/
 - Creates 1 ReportFile for Alabama (STT_CODE: 1, Region 4)
 - Files bundled into `stt_1_reports.zip`
 
-### 2. `FY2025_valid_multiple_stts_same_region.zip`
+### 2. `FY2025_valid_nested_stt.zip`
+**Structure:**
+```
+FY2025_valid_nested_stt/
+  └── FY2025/
+      └── RO4/
+          └── F12/
+              ├── reports/
+              │   ├── january/
+              │   │   └── summary.pdf
+              │   └── february/
+              │       └── summary.pdf
+              └── readme.txt
+```
+**Expected bundled `stt_12_reports.zip` contents:**
+```
+reports/january/summary.pdf
+reports/february/summary.pdf
+readme.txt
+```
+
+### 3. `FY2025_valid_multiple_stts_same_region.zip`
 **Structure:**
 ```
 FY2025_valid_multiple_stts_same_region/
@@ -42,7 +64,7 @@ FY2025_valid_multiple_stts_same_region/
 - Creates 2 ReportFiles (Alabama and Florida, both Region 4)
 - Each STT gets its own bundled zip
 
-### 3. `FY2025_valid_multiple_regions.zip`
+### 4. `FY2025_valid_multiple_regions.zip`
 **Structure:**
 ```
 FY2025_valid_multiple_regions/
@@ -61,7 +83,7 @@ FY2025_valid_multiple_regions/
 - Creates 3 ReportFiles across 3 different regions
 - Connecticut (Region 1), New Jersey (Region 2), Pennsylvania (Region 3)
 
-### 4. `FY2025_mixed_valid_and_invalid_dirs.zip`
+### 5. `FY2025_mixed_valid_and_invalid_dirs.zip`
 **Structure:**
 ```
 FY2025_mixed_valid_and_invalid_dirs/
@@ -88,14 +110,14 @@ __MACOSX/
 ```
 **Expected Result:** Success
 - Creates 1 ReportFile for Blackfeet Nation (STT_CODE: 020, Region 5)
-- Ignores invalid folders and metadata paths (`R05`, `020`, nested files, hidden files, `.DS_Store`, and `__MACOSX`)
+- Ignores invalid folders and metadata paths (`R05`, `020`, hidden files, `.DS_Store`, and `__MACOSX`)
 - Useful for manual upload testing that invalid paths do not fail the entire upload
 
 ---
 
 ## Invalid Test Files (Should FAIL)
 
-### 5. `invalid_fiscal_year_bad_format.zip`
+### 6. `invalid_fiscal_year_bad_format.zip`
 **Structure:**
 ```
 invalid_fiscal_year_bad_format/
@@ -106,14 +128,14 @@ invalid_fiscal_year_bad_format/
 ```
 **Expected Error:** Invalid fiscal year format in folder name.
 
-### 6. `invalid_flat_structure.zip`
+### 7. `invalid_flat_structure.zip`
 **Structure:**
 ```
 report.pdf  (no folders)
 ```
 **Expected Error:** `"No STT folders found. Expected structure: {ZipName}/FY{YYYY}/RO{X}/F{X}/files"`
 
-### 7. `FY2025_invalid_stt_code_999.zip`
+### 8. `FY2025_invalid_stt_code_999.zip`
 **Structure:**
 ```
 FY2025_invalid_stt_code_999/
@@ -124,7 +146,7 @@ FY2025_invalid_stt_code_999/
 ```
 **Expected Error:** `"STT code '999' not found in system."`
 
-### 8. `FY2025_invalid_empty_stt_folder.zip`
+### 9. `FY2025_invalid_empty_stt_folder.zip`
 **Structure:**
 ```
 FY2025_invalid_empty_stt_folder/
@@ -134,7 +156,25 @@ FY2025_invalid_empty_stt_folder/
 ```
 **Expected Error:** `"No STT folders found..."` (empty folders are skipped)
 
-### 9. `invalid_multiple_fiscal_years.zip`
+### 10. `FY2025_invalid_duplicate_stt_relative_paths.zip`
+**Structure:**
+```
+FY2025_invalid_duplicate_stt_relative_paths/
+  └── FY2025/
+      ├── RO4/
+      │   └── F12/
+      │       └── reports/
+      │           └── january/
+      │               └── summary.pdf
+      └── RO5/
+          └── F12/
+              └── reports/
+                  └── january/
+                      └── summary.pdf
+```
+**Expected Error:** `"Duplicate file path in STT folder '12': reports/january/summary.pdf"`
+
+### 11. `invalid_multiple_fiscal_years.zip`
 **Structure:**
 ```
 invalid_multiple_fiscal_years/
