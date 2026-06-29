@@ -26,6 +26,7 @@ type WriterConfig struct {
 // ValidationConfig controls validation behavior.
 type ValidationConfig struct {
 	ShortCircuit   bool     `yaml:"short_circuit"`   // Skip field/consistency validators when precheck or group validators fail
+	Engine         string   `yaml:"engine"`          // "expr", "hybrid", or "native"
 	ValidatorFiles []string `yaml:"validator_files"` // Glob patterns for validator definition files (resolved relative to config_dir)
 }
 
@@ -166,6 +167,7 @@ func DefaultConfig() *Config {
 		},
 		Validation: ValidationConfig{
 			ShortCircuit:   true,
+			Engine:         "expr",
 			ValidatorFiles: []string{"validation/validators.yaml"},
 		},
 		Database: DatabaseConfig{
