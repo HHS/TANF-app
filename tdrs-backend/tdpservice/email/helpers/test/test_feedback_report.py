@@ -136,8 +136,21 @@ class TestSendFeedbackReportAvailableEmail:
         assert "FRA Feedback Report Available" in mail.outbox[0].subject
         assert "FRA feedback report" in mail.outbox[0].body
 
-    def test_non_fra_report_type_uses_tanf_ssp_label_in_subject(self, mock_report_file):
-        """Test that non-FRA report type produces 'TANF/SSP' label in subject and body."""
+    def test_tribal_tanf_report_type_uses_tribal_tanf_label_in_subject(
+        self, mock_report_file
+    ):
+        """Test that TRIBAL_TANF report type produces 'Tribal TANF' label in subject and body."""
+        mock_report_file.report_type = "TRIBAL_TANF"
+        recipients = ["user@example.com"]
+
+        send_feedback_report_available_email(mock_report_file, recipients)
+
+        assert len(mail.outbox) == 1
+        assert "Tribal TANF Feedback Report Available" in mail.outbox[0].subject
+        assert "Tribal TANF feedback report" in mail.outbox[0].body
+
+    def test_unknown_report_type_uses_tanf_ssp_label_in_subject(self, mock_report_file):
+        """Test that unknown report types fall back to 'TANF/SSP' label in subject and body."""
         mock_report_file.report_type = "TANF"
         recipients = ["user@example.com"]
 
@@ -169,3 +182,16 @@ class TestSendFeedbackReportAvailableEmail:
             context = call_kwargs["email_context"]
             assert context["report_type"] == "FRA"
             assert context["report_type_label"] == "FRA"
+
+    def test_tribal_tanf_email_context_includes_report_type(self, mock_report_file):
+        """Test that TRIBAL_TANF report type is correctly passed in email context."""
+        mock_report_file.report_type = "TRIBAL_TANF"
+        recipients = ["user@example.com"]
+
+        with patch("tdpservice.email.helpers.feedback_report.automated_email") as mock_email:
+            send_feedback_report_available_email(mock_report_file, recipients)
+
+            call_kwargs = mock_email.call_args[1]
+            context = call_kwargs["email_context"]
+            assert context["report_type"] == "TRIBAL_TANF"
+            assert context["report_type_label"] == "Tribal TANF"

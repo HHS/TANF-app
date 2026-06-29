@@ -74,6 +74,54 @@ class TestFindSttFolders:
         with pytest.raises(ValueError, match="No STT folders found"):
             find_stt_folders(zip_file)
 
+    def test_invalid_region_folder(self):
+        """Should ignore region folders that do not use the RO prefix."""
+        structure = {"FY2025": {"R04": {"F1": ["report1.pdf"]}}}
+        zip_buffer = create_nested_zip(structure, "FY2025_test")
+        zip_file = zipfile.ZipFile(zip_buffer)
+
+        with pytest.raises(ValueError, match="No STT folders found"):
+            find_stt_folders(zip_file)
+
+    def test_invalid_stt_folder(self):
+        """Should ignore STT folders that do not use the F prefix."""
+        structure = {"FY2025": {"RO4": {"130": ["report1.pdf"]}}}
+        zip_buffer = create_nested_zip(structure, "FY2025_test")
+        zip_file = zipfile.ZipFile(zip_buffer)
+
+        with pytest.raises(ValueError, match="No STT folders found"):
+            find_stt_folders(zip_file)
+
+    def test_nested_file_path(self):
+        """Should find files in extra directory levels below the STT folder."""
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w") as zf:
+            zf.writestr("FY2025_test/FY2025/RO4/F1/nested/report.pdf", b"content")
+        zip_buffer.seek(0)
+        zip_file = zipfile.ZipFile(zip_buffer)
+
+        stt_files = find_stt_folders(zip_file)
+
+        assert set(stt_files) == {"1"}
+        assert len(stt_files["1"]) == 1
+
+    def test_invalid_macos_metadata_path(self):
+        """Should ignore macOS metadata paths and parse valid report files."""
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w") as zf:
+            zf.writestr(
+                "__MACOSX/FY2025_test/FY2025/R04/._.DS_Store",
+                b"metadata",
+            )
+            zf.writestr("FY2025_test/FY2025/RO4/F1/report1.pdf", b"content")
+        zip_buffer.seek(0)
+        zip_file = zipfile.ZipFile(zip_buffer)
+
+        stt_files = find_stt_folders(zip_file)
+
+        assert set(stt_files) == {"1"}
+        assert len(stt_files["1"]) == 1
+
 
 class TestBundleSttFiles:
     """Tests for bundle_stt_files function."""
@@ -548,6 +596,52 @@ class TestProcessReportSourceReportType:
 
         report_file = ReportFile.objects.filter(source=source).first()
         assert report_file.report_type == ReportType.TANF_SSP
+
+    @patch("tdpservice.reports.tasks.timezone.now")
+    def test_tribal_tanf_source_creates_tribal_tanf_report_files(
+        self, mock_now, ofa_admin
+    ):
+        """Verify ReportSource with report_type=TRIBAL_TANF produces ReportFiles with report_type=TRIBAL_TANF."""
+        from tdpservice.stts.models import STT, Region
+
+        region = Region.objects.create(id=9023, name="Test Region RT4")
+        STT.objects.create(
+            id=8024,
+            stt_code="101",
+            name="Test Tribal STT RT4",
+            region=region,
+            postal_code="R5",
+            type="TRIBE",
+        )
+
+        mock_now.return_value = timezone.make_aware(datetime(2025, 2, 1))
+
+        structure = {"FY2025": {"RO1": {"F101": ["report1.pdf"]}}}
+        zip_buffer = create_nested_zip(structure, "FY2025_test")
+
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        uploaded_file = SimpleUploadedFile(
+            "report_source.zip", zip_buffer.read(), content_type="application/zip"
+        )
+
+        source = ReportSource.objects.create(
+            uploaded_by=ofa_admin,
+            original_filename="report_source.zip",
+            slug="report_source.zip",
+            file=uploaded_file,
+            year=2025,
+            date_extracted_on=date(2025, 1, 31),
+            report_type=ReportType.TRIBAL_TANF,
+        )
+
+        process_report_source(source.id)
+
+        source.refresh_from_db()
+        assert source.status == ReportSource.Status.SUCCEEDED
+
+        report_file = ReportFile.objects.filter(source=source).first()
+        assert report_file.report_type == ReportType.TRIBAL_TANF
 
     @patch("tdpservice.reports.tasks.timezone.now")
     def test_fra_source_multiple_stts_all_inherit_report_type(self, mock_now, ofa_admin):

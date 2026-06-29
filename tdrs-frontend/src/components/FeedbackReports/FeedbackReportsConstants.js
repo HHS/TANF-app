@@ -1,14 +1,17 @@
 export const REPORT_TYPES = {
   TANF_SSP: 'TANF_SSP',
+  TRIBAL_TANF: 'TRIBAL_TANF',
   FRA: 'FRA',
 }
 
 export const REPORT_TYPE_LABELS = {
   TANF_SSP: 'TANF/SSP',
+  TRIBAL_TANF: 'Tribal TANF',
   FRA: 'FRA',
 }
 
 export const REPORT_TYPE_OPTIONS = [
   { value: REPORT_TYPES.TANF_SSP, label: REPORT_TYPE_LABELS.TANF_SSP },
+  { value: REPORT_TYPES.TRIBAL_TANF, label: REPORT_TYPE_LABELS.TRIBAL_TANF },
   { value: REPORT_TYPES.FRA, label: REPORT_TYPE_LABELS.FRA },
 ]
