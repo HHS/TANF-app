@@ -1,12 +1,27 @@
 package validation
 
 import (
+	"os"
+	"strings"
 	"testing"
 
 	"go-parser/internal/testutil"
 )
 
 var defaultTestDataFileContext = &DataFileContext{}
+
+func TestOrchestratorDoesNotConstructExprEnvs(t *testing.T) {
+	source, err := os.ReadFile("orchestrator.go")
+	if err != nil {
+		t.Fatalf("ReadFile(orchestrator.go) failed: %v", err)
+	}
+
+	for _, token := range []string{"FieldEnv", "RecordEnv", "GroupEnv", "NewFieldEnv", "NewRecordEnv", "NewGroupEnv"} {
+		if strings.Contains(string(source), token) {
+			t.Fatalf("orchestrator.go should construct ValidationState only; found %q", token)
+		}
+	}
+}
 
 // TestOrchestratorMultiGroupValidation tests validating multiple groups
 func TestOrchestratorMultiGroupValidation(t *testing.T) {
@@ -19,7 +34,7 @@ func TestOrchestratorMultiGroupValidation(t *testing.T) {
 		{ID: "group_pass", Scope: ScopeGroup, ErrorType: ErrorTypeCaseConsistency, Expr: groupExpr},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry, true)
+	orchestrator := newTestValidationOrchestrator(t, registry, true)
 
 	// Create and validate multiple groups
 	var results []*GroupValidationResult
@@ -52,7 +67,7 @@ func TestOrchestratorFieldValidation(t *testing.T) {
 		"AMOUNT": {{ID: "positive_amount", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry, true)
+	orchestrator := newTestValidationOrchestrator(t, registry, true)
 
 	rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": -10}) // Negative - should fail
 	group := testutil.NewTestGroup(rec)
@@ -82,7 +97,7 @@ func TestOrchestratorNilRequiredFieldSkipsValidators(t *testing.T) {
 		"AMOUNT": {{ID: "positive_amount", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry, true)
+	orchestrator := newTestValidationOrchestrator(t, registry, true)
 
 	// Record with nil required field — use a separate schema so Required=true
 	reqSchema := testutil.NewTestSchema("T1", "AMOUNT")
@@ -119,7 +134,7 @@ func TestOrchestratorNilOptionalFieldSkipsValidators(t *testing.T) {
 		"AMOUNT": {{ID: "not_empty", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry, true)
+	orchestrator := newTestValidationOrchestrator(t, registry, true)
 
 	optionalSchema := testutil.NewTestSchema("T1", "AMOUNT")
 	rec := testutil.NewTestRecord(optionalSchema, 1, map[string]any{"AMOUNT": nil})
@@ -142,7 +157,7 @@ func TestOrchestratorOptionalFieldWithValueSkipsValidators(t *testing.T) {
 		"AMOUNT": {{ID: "positive_amount", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry, true)
+	orchestrator := newTestValidationOrchestrator(t, registry, true)
 
 	optionalSchema := testutil.NewTestSchema("T1", "AMOUNT")
 	rec := testutil.NewTestRecord(optionalSchema, 1, map[string]any{"AMOUNT": -10})
@@ -164,7 +179,7 @@ func TestOrchestratorBlankOptionalFieldSkipsValidators(t *testing.T) {
 		"AMOUNT": {{ID: "not_empty", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry, true)
+	orchestrator := newTestValidationOrchestrator(t, registry, true)
 
 	optionalSchema := testutil.NewTestSchema("T1", "AMOUNT")
 	rec := testutil.NewTestRecord(optionalSchema, 1, map[string]any{"AMOUNT": "   "})
@@ -195,7 +210,7 @@ func TestOrchestratorShortCircuitSkipsFieldValidation(t *testing.T) {
 		"AMOUNT": {{ID: "positive_amount", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry, true)
+	orchestrator := newTestValidationOrchestrator(t, registry, true)
 
 	rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": -10})
 	group := testutil.NewTestGroup(rec)
@@ -234,7 +249,7 @@ func TestOrchestratorNoShortCircuitRunsAllValidation(t *testing.T) {
 		"AMOUNT": {{ID: "positive_amount", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry, false)
+	orchestrator := newTestValidationOrchestrator(t, registry, false)
 
 	rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": -10})
 	group := testutil.NewTestGroup(rec)
@@ -273,7 +288,7 @@ func TestOrchestratorNoShortCircuitWithGroupBlock(t *testing.T) {
 		"AMOUNT": {{ID: "positive_amount", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry, false)
+	orchestrator := newTestValidationOrchestrator(t, registry, false)
 
 	rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": -10})
 	group := testutil.NewTestGroup(rec)
@@ -306,7 +321,7 @@ func TestOrchestratorRecordConsistencyValidation(t *testing.T) {
 		{ID: "consistency_check", Scope: ScopeRecord, ErrorType: ErrorTypeValueConsistency, Expr: consistencyExpr},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry, true)
+	orchestrator := newTestValidationOrchestrator(t, registry, true)
 
 	t.Run("consistency check passes", func(t *testing.T) {
 		rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": 100, "CASE_NUMBER": "12345"})
@@ -348,7 +363,7 @@ func TestOrchestratorShortCircuitSkipsConsistencyValidation(t *testing.T) {
 		{ID: "consistency_fail", Scope: ScopeRecord, ErrorType: ErrorTypeValueConsistency, Expr: consistencyExpr},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry, true)
+	orchestrator := newTestValidationOrchestrator(t, registry, true)
 
 	rec := testutil.NewTestRecord(t1Schema, 1, nil)
 	group := testutil.NewTestGroup(rec)
@@ -380,7 +395,7 @@ func TestValidateHeaderDoesNotShortCircuitOnFieldOrConsistencyErrors(t *testing.
 		{ID: "consistency_fail", Scope: ScopeRecord, ErrorType: ErrorTypeValueConsistency, Expr: consistencyExpr},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry, true)
+	orchestrator := newTestValidationOrchestrator(t, registry, true)
 
 	headerRec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": -10, "CASE_NUMBER": ""})
 	result := orchestrator.ValidateHeader(headerRec, &DataFileContext{})
@@ -408,7 +423,7 @@ func TestValidateHeaderOptionalFieldWithValueSkipsValidators(t *testing.T) {
 		"AMOUNT": {{ID: "positive_amount", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: fieldExpr}},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry, true)
+	orchestrator := newTestValidationOrchestrator(t, registry, true)
 
 	optionalSchema := testutil.NewTestSchema("T1", "AMOUNT")
 	headerRec := testutil.NewTestRecord(optionalSchema, 1, map[string]any{"AMOUNT": -10})
@@ -438,7 +453,7 @@ func TestValidateGroup_RecordValidatorUsesDataFileContext(t *testing.T) {
 		},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry, true)
+	orchestrator := newTestValidationOrchestrator(t, registry, true)
 	recordSchema := testutil.NewTestSchema("T1", "RPT_MONTH_YEAR")
 	dfCtx := &DataFileContext{FiscalYear: 2024, FiscalQuarter: "Q2"}
 
@@ -482,7 +497,7 @@ func TestOrchestratorGroupBlockingWithShortCircuit(t *testing.T) {
 		{ID: "consistency_fail", Scope: ScopeRecord, ErrorType: ErrorTypeValueConsistency, Expr: consistencyExpr},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry, true)
+	orchestrator := newTestValidationOrchestrator(t, registry, true)
 
 	rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": -10})
 	group := testutil.NewTestGroup(rec)
@@ -516,7 +531,7 @@ func TestOrchestratorPerRecordGroupValidation(t *testing.T) {
 		{ID: "exact_duplicates", Scope: ScopeGroup, ErrorType: ErrorTypeCaseConsistency, ResultMode: "per_record", Expr: dupExpr},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry, true)
+	orchestrator := newTestValidationOrchestrator(t, registry, true)
 
 	t.Run("no duplicates", func(t *testing.T) {
 		group := testutil.NewTestGroup(
@@ -584,7 +599,7 @@ func TestOrchestratorRequiresRelatedRecordReportsEachMissingRecord(t *testing.T)
 		},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry, true)
+	orchestrator := newTestValidationOrchestrator(t, registry, true)
 	group := testutil.NewTestGroup(
 		testutil.NewTestRecord(t1Schema, 2, map[string]any{"CASE_NUMBER": "1", "AMOUNT": 10}),
 		testutil.NewTestRecord(t1Schema, 3, map[string]any{"CASE_NUMBER": "1", "AMOUNT": 10}),
@@ -635,7 +650,7 @@ func TestOrchestratorRequiresRelatedRecordPassesWhenAnyRelatedTypeExists(t *test
 		},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry, true)
+	orchestrator := newTestValidationOrchestrator(t, registry, true)
 	group := testutil.NewTestGroup(
 		testutil.NewTestRecord(t1Schema, 2, map[string]any{"CASE_NUMBER": "1", "AMOUNT": 10}),
 		testutil.NewTestRecord(t3Schema, 3, map[string]any{"FAMILY_AFFILIATION": 1}),
@@ -676,7 +691,7 @@ func TestOrchestratorRequiresRelatedRecordWithIntValueReportsEachMissingRecord(t
 		},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry, true)
+	orchestrator := newTestValidationOrchestrator(t, registry, true)
 	group := testutil.NewTestGroup(
 		testutil.NewTestRecord(t1Schema, 2, map[string]any{"CASE_NUMBER": "1", "AMOUNT": 10}),
 		testutil.NewTestRecord(t1Schema, 3, map[string]any{"CASE_NUMBER": "1", "AMOUNT": 10}),
@@ -734,7 +749,7 @@ func TestOrchestratorRequiresRelatedRecordWithIntValuePassesWhenAnyRelatedTypeHa
 		},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry, true)
+	orchestrator := newTestValidationOrchestrator(t, registry, true)
 	group := testutil.NewTestGroup(
 		testutil.NewTestRecord(t1Schema, 2, map[string]any{"CASE_NUMBER": "1", "AMOUNT": 10}),
 		testutil.NewTestRecord(t3Schema, 3, map[string]any{"FAMILY_AFFILIATION": 1}),
@@ -761,7 +776,7 @@ func TestOrchestratorMultipleFieldValidators(t *testing.T) {
 		},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry, true)
+	orchestrator := newTestValidationOrchestrator(t, registry, true)
 
 	t.Run("both pass", func(t *testing.T) {
 		rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": 50})
@@ -811,7 +826,7 @@ func TestOrchestratorMultiRecordGroup(t *testing.T) {
 		"SSN": {{ID: "ssn_required", Scope: ScopeField, ErrorType: ErrorTypeFieldValue, Expr: t2FieldExpr}},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry, true)
+	orchestrator := newTestValidationOrchestrator(t, registry, true)
 
 	rec1 := testutil.NewTestRecord(t1Schema, 1, map[string]any{"CASE_NUMBER": "12345"})
 	rec2 := testutil.NewTestRecord(t2Schema, 2, map[string]any{"SSN": ""}) // empty - should fail
@@ -854,7 +869,7 @@ func TestOrchestratorPrecheckAlwaysRuns(t *testing.T) {
 		{ID: "precheck", Scope: ScopeRecord, ErrorType: ErrorTypeRecordPreCheck, Expr: precheckExpr},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry, true)
+	orchestrator := newTestValidationOrchestrator(t, registry, true)
 
 	rec := testutil.NewTestRecord(t1Schema, 1, nil)
 	group := testutil.NewTestGroup(rec)
@@ -880,7 +895,7 @@ func TestOrchestratorEmptyGroup(t *testing.T) {
 		{ID: "min_records", Scope: ScopeGroup, ErrorType: ErrorTypeCaseConsistency, Expr: groupExpr},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry, true)
+	orchestrator := newTestValidationOrchestrator(t, registry, true)
 
 	group := testutil.NewTestGroup() // empty group
 	result := orchestrator.ValidateGroup(group, "TEST:1", defaultTestDataFileContext)
@@ -894,7 +909,7 @@ func TestOrchestratorEmptyGroup(t *testing.T) {
 }
 
 func TestOrchestratorCreateNoRecordsCreatedError(t *testing.T) {
-	orchestrator := NewValidationOrchestrator(newValidatorRegistry(), true)
+	orchestrator := newTestValidationOrchestrator(t, newValidatorRegistry(), true)
 
 	result := orchestrator.CreateNoRecordsCreatedError()
 	if result == nil {
@@ -937,13 +952,12 @@ func TestExecuteGroupEdgeCases(t *testing.T) {
 	t.Run("per_record expression returning nil", func(t *testing.T) {
 		// Compile an expression that returns an empty list (no duplicates)
 		ce, _ := registry.getOrCompileExpr(ScopeGroup, "getExactDuplicates(Group, 'T2')", "per_record")
-		cv := &CompiledValidator{ID: "dups", Expr: ce, ResultMode: "per_record"}
+		cv := mustExprValidator(t, "dups", ScopeGroup, ce, "per_record")
 
 		group := testutil.NewTestGroup(
 			testutil.NewTestRecord(t2Schema, 1, map[string]any{"SSN": "111111111", "FAMILY_AFFILIATION": 1}),
 		)
-		env := NewGroupEnv(group)
-		results := ExecuteGroup(cv, env)
+		results := ExecuteGroup(cv, NewGroupValidationState(group, nil))
 		if len(results) != 0 {
 			t.Errorf("expected 0 results, got %d", len(results))
 		}
@@ -951,14 +965,13 @@ func TestExecuteGroupEdgeCases(t *testing.T) {
 
 	t.Run("per_record expression returning exact duplicate matches", func(t *testing.T) {
 		ce, _ := registry.getOrCompileExpr(ScopeGroup, "getExactDuplicates(Group, 'T2')", "per_record")
-		cv := &CompiledValidator{ID: "dups", Expr: ce, ResultMode: "per_record"}
+		cv := mustExprValidator(t, "dups", ScopeGroup, ce, "per_record")
 
 		group := testutil.NewTestGroup(
 			testutil.NewTestRecord(t2Schema, 1, map[string]any{"SSN": "111111111", "FAMILY_AFFILIATION": 1}),
 			testutil.NewTestRecord(t2Schema, 2, map[string]any{"SSN": "111111111", "FAMILY_AFFILIATION": 1}),
 		)
-		env := NewGroupEnv(group)
-		results := ExecuteGroup(cv, env)
+		results := ExecuteGroup(cv, NewGroupValidationState(group, nil))
 		if len(results) != 1 {
 			t.Fatalf("expected 1 result, got %d", len(results))
 		}
@@ -972,14 +985,13 @@ func TestExecuteGroupEdgeCases(t *testing.T) {
 
 	t.Run("per_record expression returning duplicate matches", func(t *testing.T) {
 		ce, _ := registry.getOrCompileExpr(ScopeGroup, "getPartialDuplicates(Group, 'T2', ['SSN'])", "per_record")
-		cv := &CompiledValidator{ID: "partial_duplicates", Expr: ce, ResultMode: "per_record"}
+		cv := mustExprValidator(t, "partial_duplicates", ScopeGroup, ce, "per_record")
 
 		group := testutil.NewTestGroup(
 			testutil.NewTestRecord(t2Schema, 1, map[string]any{"SSN": "111111111", "FAMILY_AFFILIATION": 1}),
 			testutil.NewTestRecord(t2Schema, 2, map[string]any{"SSN": "111111111", "FAMILY_AFFILIATION": 2}),
 		)
-		env := NewGroupEnv(group)
-		results := ExecuteGroup(cv, env)
+		results := ExecuteGroup(cv, NewGroupValidationState(group, nil))
 		if len(results) != 1 {
 			t.Fatalf("expected 1 result, got %d", len(results))
 		}
@@ -996,13 +1008,12 @@ func TestExecuteGroupEdgeCases(t *testing.T) {
 
 	t.Run("single mode delegates to Execute", func(t *testing.T) {
 		ce, _ := registry.getOrCompileExpr(ScopeGroup, "RecordCounts['T2'] > 0", "single")
-		cv := &CompiledValidator{ID: "has_t2", Expr: ce, ResultMode: "single"}
+		cv := mustExprValidator(t, "has_t2", ScopeGroup, ce, "single")
 
 		group := testutil.NewTestGroup(
 			testutil.NewTestRecord(t1Schema, 1, nil),
 		)
-		env := NewGroupEnv(group)
-		results := ExecuteGroup(cv, env)
+		results := ExecuteGroup(cv, NewGroupValidationState(group, nil))
 		if len(results) != 1 {
 			t.Fatalf("expected 1 failure result, got %d", len(results))
 		}
@@ -1028,7 +1039,7 @@ func TestOrchestratorFieldValidatorWithParams(t *testing.T) {
 		}},
 	}
 
-	orchestrator := NewValidationOrchestrator(registry, true)
+	orchestrator := newTestValidationOrchestrator(t, registry, true)
 
 	t.Run("value in range", func(t *testing.T) {
 		rec := testutil.NewTestRecord(t1Schema, 1, map[string]any{"AMOUNT": 50})

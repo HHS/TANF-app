@@ -16,7 +16,7 @@ def create_nested_zip(structure, root_folder="FY2025_test"):
         structure: dict like {
             "FY2025": {
                 "RO1": {
-                    "F1": ["report1.pdf", "report2.pdf"],
+                    "F1": ["report1.pdf", "reports/january/report2.pdf"],
                     "F2": ["report3.pdf"]
                 }
             }
@@ -27,8 +27,8 @@ def create_nested_zip(structure, root_folder="FY2025_test"):
     -------
         BytesIO containing the zip file
 
-    The actual structure is: {root_folder}/FY{YYYY}/RO{X}/F{X}/filename
-    Example: FY2025_test/FY2025/RO1/F1/report1.pdf
+    The actual structure is: {root_folder}/FY{YYYY}/RO{X}/F{X}/path/to/file
+    Example: FY2025_test/FY2025/RO1/F1/reports/january/report.pdf
     """
     zip_buffer = io.BytesIO()
 

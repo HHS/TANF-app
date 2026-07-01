@@ -1,0 +1,20 @@
+services:
+  tdp-admin:
+    stdin_open: true
+    tty: true
+    build:
+      context: .
+      target: runtime
+    ports:
+      - 3001:3000
+    environment:
+      - NEXT_PUBLIC_AUTH_URL=${NEXT_PUBLIC_AUTH_URL:-http://localhost:8989}
+      - NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL:-http://localhost:8989/v1}
+      - NEXT_PUBLIC_BACKEND_HOST=${NEXT_PUBLIC_BACKEND_HOST:-http://localhost:8989}
+    networks:
+      - default
+
+networks:
+  default:
+    name: external-net
+    external: true

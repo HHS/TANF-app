@@ -46,9 +46,9 @@ sqlc-diff:
 sqlc-vet:
 	sqlc vet
 
-# Load parser config and compile validator expressions to catch YAML/expr syntax issues
+# Load parser config, compile validator expressions, and verify native executor coverage
 validate-config:
-	go test -count=1 ./internal/validation -run TestProductionValidators_LoadAndCompile
+	go test -count=1 ./internal/validation -run 'TestProductionValidators_LoadAndCompile|TestProductionValidators_LoadHybridAndNative'
 
 # Aggregate CI checks that don't require the full test suite
 ci-checks: compile-check lint sqlc-diff sqlc-vet sqlc-verify validate-config

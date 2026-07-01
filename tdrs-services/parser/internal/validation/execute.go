@@ -3,31 +3,28 @@ package validation
 import (
 	"fmt"
 
-	"github.com/expr-lang/expr/vm"
-
 	"go-parser/internal/parser"
 )
 
-// runProgram extracts the vm.Program from a CompiledValidator and runs it.
-// Returns the raw output and any error from program extraction or execution.
-func runProgram(cv *CompiledValidator, env any) (any, error) {
-	program, ok := cv.Expr.Program.(*vm.Program)
-	if !ok {
-		return nil, fmt.Errorf("invalid program type for validator %s", cv.ID)
+func executeOutcome(cv *CompiledValidator, state *ValidationState) (ValidationOutcome, error) {
+	if cv.Executor == nil {
+		return ValidationOutcome{}, fmt.Errorf("validator %s is not compiled", cv.ID)
 	}
-
-	output, err := vm.Run(program, env)
+	if state == nil {
+		state = &ValidationState{}
+	}
+	state.Scope = cv.Scope
+	state.Params = cv.Params
+	outcome, err := cv.Executor.Execute(state)
 	if err != nil {
-		return nil, fmt.Errorf("validator %s: %w", cv.ID, err)
+		return ValidationOutcome{}, fmt.Errorf("validator %s: %w", cv.ID, err)
 	}
-
-	return output, nil
+	return outcome, nil
 }
 
-// Execute runs a compiled validator against an environment.
-// The expression must return a bool.
-func Execute(cv *CompiledValidator, env any) *ValidationResult {
-	output, err := runProgram(cv, env)
+// Execute runs a compiled validator against validation state.
+func Execute(cv *CompiledValidator, state *ValidationState) *ValidationResult {
+	outcome, err := executeOutcome(cv, state)
 	if err != nil {
 		return &ValidationResult{
 			Valid:       false,
@@ -36,16 +33,7 @@ func Execute(cv *CompiledValidator, env any) *ValidationResult {
 		}
 	}
 
-	valid, ok := output.(bool)
-	if !ok {
-		return &ValidationResult{
-			Valid:       false,
-			ValidatorID: cv.ID,
-			Error:       fmt.Errorf("expression did not return bool"),
-		}
-	}
-
-	if valid {
+	if outcome.Valid {
 		return validResultSingleton
 	}
 
@@ -60,16 +48,15 @@ func Execute(cv *CompiledValidator, env any) *ValidationResult {
 // For single mode (bool expressions), it delegates to Execute and returns 0 or 1 results.
 // For per_record mode, it runs the expression and converts each failing record
 // into a ValidationResult with LineNumber and RecordType populated.
-func ExecuteGroup(cv *CompiledValidator, env any) []*ValidationResult {
+func ExecuteGroup(cv *CompiledValidator, state *ValidationState) []*ValidationResult {
 	if cv.ResultMode != "per_record" {
-		if vr := Execute(cv, env); !vr.Valid {
+		if vr := Execute(cv, state); !vr.Valid {
 			return []*ValidationResult{vr}
 		}
 		return nil
 	}
 
-	// Per-record mode: expression returns a list of failing records
-	output, err := runProgram(cv, env)
+	outcome, err := executeOutcome(cv, state)
 	if err != nil {
 		return []*ValidationResult{{
 			Valid:       false,
@@ -78,42 +65,18 @@ func ExecuteGroup(cv *CompiledValidator, env any) []*ValidationResult {
 		}}
 	}
 
-	return toPerRecordResults(output, cv)
+	return toPerRecordResults(outcome, cv)
 }
 
-func toPerRecordResults(output any, cv *CompiledValidator) []*ValidationResult {
-	if output == nil {
+func toPerRecordResults(outcome ValidationOutcome, cv *CompiledValidator) []*ValidationResult {
+	if outcome.Valid {
 		return nil
 	}
 
-	if records, ok := output.([]*parser.ParsedRecord); ok {
-		return resultsFromRecords(records, cv)
+	if len(outcome.DuplicateMatches) > 0 {
+		return resultsFromDuplicateMatches(outcome.DuplicateMatches, cv)
 	}
-
-	if matches, ok := output.([]*DuplicateMatch); ok {
-		return resultsFromDuplicateMatches(matches, cv)
-	}
-
-	// The expr engine may wrap results as []any
-	if anySlice, ok := output.([]any); ok {
-		var records []*parser.ParsedRecord
-		var matches []*DuplicateMatch
-		for _, item := range anySlice {
-			if rec, ok := item.(*parser.ParsedRecord); ok {
-				records = append(records, rec)
-				continue
-			}
-			if match, ok := item.(*DuplicateMatch); ok {
-				matches = append(matches, match)
-			}
-		}
-		if len(matches) > 0 {
-			return resultsFromDuplicateMatches(matches, cv)
-		}
-		return resultsFromRecords(records, cv)
-	}
-
-	return nil
+	return resultsFromRecords(outcome.Records, cv)
 }
 
 func resultsFromRecords(records []*parser.ParsedRecord, cv *CompiledValidator) []*ValidationResult {
