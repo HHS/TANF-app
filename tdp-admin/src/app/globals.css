@@ -1,0 +1,267 @@
+:root {
+  --background: #ffffff;
+  --foreground: #1b1b1b;
+  --primary-acf-blue: #264a64;
+  --primary-light-pale-blue: #e2eff7;
+  --primary-medium-blue: #336a90;
+  --primary-graphite: #212121;
+  --border-subtle: #dfe1e2;
+}
+
+html {
+  height: 100%;
+  background: var(--background);
+}
+
+html,
+body {
+  min-height: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.admin-login-page {
+  min-height: 100vh;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-login-page__shell {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.admin-hero > .grid-container {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.admin-gov-banner {
+  background: #162e51;
+  color: #fff;
+  font-size: 0.7rem;
+  line-height: 1.1;
+}
+
+.admin-gov-banner__inner {
+  padding: 0.2rem 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.admin-header {
+  background: #fff;
+  border-bottom: 1px solid #dfe1e2;
+}
+
+.admin-header .usa-logo__text a {
+  color: var(--primary-acf-blue);
+  text-decoration: none;
+}
+
+.admin-hero {
+  padding: 20px;
+  background: url("/hero1.jpg") center center / cover no-repeat;
+}
+
+.admin-login-page__lede {
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.5;
+}
+
+.admin-login-page__callout .usa-hero__heading--alt {
+  color: var(--primary-acf-blue);
+}
+
+.admin-login-page__callout .admin-login-page__lede {
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.5;
+}
+
+.admin-login-page__callout {
+  background-color: var(--primary-light-pale-blue);
+  box-shadow: 0 0 29px 0 rgb(0 0 0 / 50%);
+  border-radius: 0.25rem;
+  max-width: 20rem;
+}
+
+.admin-login-page__login-button-content {
+  display: block;
+  text-align: center;
+}
+
+.admin-login-page__login-gov-logo {
+  display: inline-block;
+  width: 7.5rem;
+  height: auto;
+  padding-left: 0.5rem;
+  vertical-align: middle;
+}
+
+.usa-hero__heading--alt {
+  color: var(--primary-acf-blue);
+}
+
+.admin-login-page .sign-in-button,
+.admin-login-page .sign-in-button:hover,
+.admin-login-page .sign-in-button:visited {
+  background-color: var(--primary-medium-blue);
+  color: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.admin-login-page .sign-in-button:hover,
+.admin-login-page .sign-in-button:focus {
+  background-color: #005f92;
+}
+
+.admin-login-page__details {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-subtle);
+  display: grid;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.admin-login-page__inline-link {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+
+.resources-header {
+  color: var(--primary-graphite);
+}
+
+.admin-login-page__resources {
+  padding-left: 0;
+}
+
+.usa-card__footer .usa-button,
+.usa-card__footer .usa-button:hover {
+  background-color: var(--primary-medium-blue);
+  color: #fff;
+}
+
+.usa-card__footer .usa-button:focus {
+  background-color: #005f92;
+}
+
+.admin-login-page__resources .usa-card__container {
+  border: 1px solid #dfe1e2;
+  border-radius: 0.25rem;
+  background: #fff;
+}
+
+.admin-login-page__resources .usa-card-group {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.admin-login-page__resources .usa-card__heading {
+  font-weight: 700;
+  font-family: "Merriweather Web", Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+.admin-login-page__resources .usa-card__body p {
+  line-height: 1.6;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.admin-login-page__resources .usa-card__footer .usa-button,
+.admin-login-page__resources .usa-card__footer .usa-button:hover {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+}
+
+.admin-login-page__resources .desktop\:grid-col-3 p {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.admin-footer {
+  margin-top: auto;
+}
+
+.usa-footer__logo img {
+  max-width: 320px;
+  width: 100%;
+}
+
+.usa-footer__primary-section,
+.usa-footer__secondary-section {
+  background-color: var(--primary-light-pale-blue);
+}
+
+.usa-footer__primary-link {
+  color: var(--primary-acf-blue);
+  font-family: Arial, Helvetica, sans-serif;
+  text-decoration: underline;
+}
+
+.margin-left-neg-205 {
+  margin-left: -1.25rem;
+}
+
+@media (max-width: 640px) {
+  .admin-login-page__shell {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .admin-gov-banner__inner {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.1rem;
+  }
+
+  .admin-login-page__callout {
+    max-width: 100%;
+    margin-left: 0;
+  }
+
+  .admin-login-page__resources {
+    padding: 0.75rem 1rem 1.5rem;
+  }
+
+  .admin-login-page__actions .usa-button,
+  .admin-login-page__actions .usa-button:visited {
+    width: 100%;
+  }
+
+  .admin-login-page .sign-in-button {
+    flex-direction: column;
+  }
+
+  .admin-login-page__login-gov-logo {
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 0.5rem;
+    padding-left: 0;
+  }
+}

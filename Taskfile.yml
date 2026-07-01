@@ -359,6 +359,56 @@ tasks:
       - task: frontend-up
       - task: clamav-up
 
+  admin-init:
+    desc: Initialize the admin project (localdev image with node_modules)
+    dir: tdp-admin
+    cmds:
+      - docker compose -f docker-compose.local.yml up -d --build tdp-admin
+      - docker compose -f docker-compose.local.yml exec tdp-admin sh -c "corepack prepare yarn@4.6.0 && corepack yarn install"
+      - docker compose -f docker-compose.local.yml down
+
+  admin-up:
+    desc: Start admin web server (Next.js localdev image)
+    dir: tdp-admin
+    cmds:
+      - docker compose -f docker-compose.local.yml up -d --build tdp-admin
+
+  admin-down:
+    desc: Stop admin web server
+    dir: tdp-admin
+    cmds:
+      - docker compose -f docker-compose.local.yml down
+
+  admin-logs:
+    desc: Show and follow admin web server logs
+    dir: tdp-admin
+    cmds:
+      - docker compose -f docker-compose.local.yml logs -f
+
+  admin-restart:
+    desc: Restart admin web server
+    dir: tdp-admin
+    cmds:
+      - docker compose -f docker-compose.local.yml restart
+
+  admin-bash:
+    desc: Open a shell in the admin container
+    dir: tdp-admin
+    cmds:
+      - docker compose -f docker-compose.local.yml exec tdp-admin sh
+
+  admin-test:
+    desc: Run admin unit tests (Vitest)
+    dir: tdp-admin
+    cmds:
+      - yarn test
+
+  admin-test-watch:
+    desc: Run admin unit tests in watch mode
+    dir: tdp-admin
+    cmds:
+      - yarn test:watch
+
   frontend-init:
     desc: Initialize the frontend project (localdev image with node_modules)
     dir: tdrs-frontend
@@ -487,17 +537,38 @@ tasks:
       - task: backend-up
       - task: frontend-up
 
+  up-with-admin:
+    desc: Start backend, frontend, and admin web servers
+    cmds:
+      - task: backend-up
+      - task: frontend-up
+      - task: admin-up
+
   update-deps:
     desc: Rebuild backend/frontend and apply dependency updates (no data wipe)
     cmds:
       - task: backend-update
       - task: frontend-update
 
+  update-all:
+    desc: Rebuild backend, frontend, and admin without wiping data
+    cmds:
+      - task: backend-update
+      - task: frontend-update
+      - task: admin-up
+
   down:
     desc: Stop both frontend and backend web servers
     cmds:
       - task: backend-down
       - task: frontend-down
+
+  down-with-admin:
+    desc: Stop backend, frontend, and admin web servers
+    cmds:
+      - task: backend-down
+      - task: frontend-down
+      - task: admin-down
 
   create-infected-test-file:
     desc: Create a test file with a valid TANF header that ClamAV will flag as infected
