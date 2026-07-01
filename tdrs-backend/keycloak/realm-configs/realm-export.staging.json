@@ -269,12 +269,12 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "${KC_TDP_DJANGO_CLIENT_SECRET}",
       "redirectUris": [
-        "https://tdp-frontend-staging.acf.hhs.gov/*",
-        "https://tdp-frontend-develop.acf.hhs.gov/*"
+        "https://staging.tanfdata.acf.hhs.gov/*",
+        "https://develop.tanfdata.acf.hhs.gov/*"
       ],
       "webOrigins": [
-        "https://tdp-frontend-staging.acf.hhs.gov",
-        "https://tdp-frontend-develop.acf.hhs.gov"
+        "https://staging.tanfdata.acf.hhs.gov",
+        "https://develop.tanfdata.acf.hhs.gov"
       ],
       "protocol": "openid-connect",
       "publicClient": false,
@@ -299,10 +299,10 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "${KC_TDP_GRAFANA_CLIENT_SECRET}",
       "redirectUris": [
-        "https://grafana.app.cloud.gov/login/generic_oauth"
+        "https://grafana.tanfdata.acf.hhs.gov/login/generic_oauth"
       ],
       "webOrigins": [
-        "https://grafana.app.cloud.gov"
+        "https://grafana.tanfdata.acf.hhs.gov"
       ],
       "protocol": "openid-connect",
       "publicClient": false,
@@ -320,7 +320,7 @@
       ],
       "optionalClientScopes": [],
       "attributes": {
-        "post.logout.redirect.uris": "https://grafana.app.cloud.gov/*"
+        "post.logout.redirect.uris": "https://grafana.tanfdata.acf.hhs.gov/*"
       }
     },
     {
