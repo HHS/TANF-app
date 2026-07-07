@@ -20,7 +20,7 @@ update()
         cf push "$CGHOSTNAME" --no-route -f manifest.yml
     fi
 
-    cf map-route "$CGHOSTNAME" tanfdata.acf.hhs.gov --hostname "${CGHOSTNAME}"
+    cf map-route "$CGHOSTNAME" app.cloud.gov --hostname "${CGHOSTNAME}"
 }
 
 if [ "$DEPLOY_STRATEGY" = "rolling" ] ; then
