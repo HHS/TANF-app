@@ -248,28 +248,32 @@ def set_error_report(dfs, error_report):
     dfs.save()
 
 
-def _transition_parse_outcome(data_file, dfs):
+def _transition_parse_outcome(data_file, dfs, reparse_id=None):
     """Transition DataFile state based on parse outcome."""
+    parse_context = {
+        "section": data_file.section,
+        "program_type": data_file.program_type,
+        "parse_summary_status": dfs.status,
+        "reparse_id": reparse_id,
+    }
+
     if dfs.status == DataFileSummary.Status.ACCEPTED:
         transition_datafile(
             data_file,
             SubmissionState.PARSE_COMPLETED,
             note="parsing completed successfully",
+            log_fields=parse_context,
         )
     elif dfs.status in (
         DataFileSummary.Status.ACCEPTED_WITH_ERRORS,
         DataFileSummary.Status.PARTIALLY_ACCEPTED,
+        DataFileSummary.Status.REJECTED,
     ):
         transition_datafile(
             data_file,
             SubmissionState.PARSED_WITH_ERRORS,
             note="parsing completed with errors",
-        )
-    elif dfs.status == DataFileSummary.Status.REJECTED:
-        transition_datafile(
-            data_file,
-            SubmissionState.PARSE_FAILED,
-            note="file rejected during parsing",
+            log_fields=parse_context,
         )
 
 
@@ -291,12 +295,17 @@ def _notify_data_analysts(data_file, dfs, file_meta=None, reparse_id=None):
         )
 
 
-def _handle_parse_failure(data_file, note):
+def _handle_parse_failure(data_file, note, reparse_id=None):
     """Transition to failed parser state after parser startup."""
     transition_datafile(
         data_file,
         SubmissionState.PARSE_FAILED,
         note=note,
+        log_fields={
+            "section": data_file.section,
+            "program_type": data_file.program_type,
+            "reparse_id": reparse_id,
+        },
     )
 
 
@@ -335,12 +344,17 @@ def _finalize_parse(
     set_error_report(dfs, error_report)
     if roll_log:
         logger.handlers[2].doRollover(data_file)
+
+    explicit_status = dfs.status
     update_dfs(
         dfs,
         data_file,
         parser_error_model=parser_error_model,
         record_model_resolver=record_model_resolver,
     )
+    if explicit_status == DataFileSummary.Status.REJECTED:
+        dfs.status = explicit_status
+        dfs.save(update_fields=["status"])
 
 
 def _finalize_reparse(data_file_id, reparse_id, file_meta, dfs, reparse_success):
@@ -444,7 +458,10 @@ def parse(data_file_id, reparse_id=None):
     # passing the data file FileField across redis was rendering non-serializable failures, doing the below lookup
     # to avoid those. I suppose good practice to not store/serializer large file contents in memory when stored in redis
     # for undetermined amount of time.
+    data_file = None
     dfs = None
+    file_meta = None
+    reparse_success = True
     try:
         data_file = DataFile.objects.get(id=data_file_id)
         change_log_filename(logger, data_file)
@@ -452,8 +469,6 @@ def parse(data_file_id, reparse_id=None):
             f"\n\n\n __ Starting to {'re-' if reparse_id else ''}parse datafile {data_file.filename}__ \n\n\n"
         )
 
-        file_meta = None
-        reparse_success = True
         if reparse_id:
             file_meta = ReparseFileMeta.objects.get(
                 data_file_id=data_file_id, reparse_meta_id=reparse_id
@@ -464,7 +479,12 @@ def parse(data_file_id, reparse_id=None):
         transition_datafile(
             data_file,
             SubmissionState.PARSE_STARTED,
-            note="parser worker started",
+            note="parsing started",
+            log_fields={
+                "section": data_file.section,
+                "program_type": data_file.program_type,
+                "reparse_id": reparse_id,
+            },
         )
 
         dfs = DataFileSummary.objects.create(
@@ -482,12 +502,21 @@ def parse(data_file_id, reparse_id=None):
 
         logger.info(f"Parsing finished for file -> {repr(data_file)}.")
 
-        _transition_parse_outcome(data_file, dfs)
+        _transition_parse_outcome(data_file, dfs, reparse_id)
         _notify_data_analysts(data_file, dfs, file_meta, reparse_id)
 
     except DecoderUnknownException:
         _reject_dfs(dfs)
-        _handle_parse_failure(data_file, "decoder unknown exception")
+        logger.warning(
+            "DecoderUnknownException during parse",
+            extra={
+                "data_file_id": data_file_id,
+                "section": getattr(data_file, "section", None),
+                "program_type": getattr(data_file, "program_type", None),
+                "reparse_id": reparse_id,
+            },
+        )
+        _handle_parse_failure(data_file, "decoder unknown exception", reparse_id)
         reparse_success = False
     except DatabaseError as e:
         log_parser_exception(
@@ -495,7 +524,16 @@ def parse(data_file_id, reparse_id=None):
             f"Encountered Database exception in parser_task.py: \n{e}",
             "error",
         )
-        _handle_parse_failure(data_file, "database error during parsing")
+        logger.error(
+            "DatabaseError during parse",
+            extra={
+                "data_file_id": data_file_id,
+                "section": getattr(data_file, "section", None),
+                "program_type": getattr(data_file, "program_type", None),
+                "reparse_id": reparse_id,
+            },
+        )
+        _handle_parse_failure(data_file, "database error during parsing", reparse_id)
         reparse_success = False
     except Exception:
         if dfs is None:
@@ -511,8 +549,18 @@ def parse(data_file_id, reparse_id=None):
             ),
             "exception",
         )
-        _handle_parse_failure(data_file, "unexpected error during parsing")
+        logger.exception(
+            "Unexpected exception during parse",
+            extra={
+                "data_file_id": data_file_id,
+                "section": getattr(data_file, "section", None),
+                "program_type": getattr(data_file, "program_type", None),
+                "reparse_id": reparse_id,
+            },
+        )
+        _handle_parse_failure(data_file, "unexpected error during parsing", reparse_id)
         reparse_success = False
     finally:
-        _finalize_parse(data_file, dfs)
+        if data_file is not None:
+            _finalize_parse(data_file, dfs)
         _finalize_reparse(data_file_id, reparse_id, file_meta, dfs, reparse_success)

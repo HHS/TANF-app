@@ -82,6 +82,7 @@ def setup_parse_mocks(monkeypatch, dfs=None):
     monkeypatch.setattr(parser_task, "change_log_filename", lambda *a, **k: None)
 
     def fake_update_dfs(dfs, data_file, **kwargs):
+        dfs.status = DataFileSummary.Status.ACCEPTED
         dfs.save()
 
     monkeypatch.setattr(parser_task, "update_dfs", fake_update_dfs)
@@ -581,7 +582,7 @@ def test_parse_success_sends_email(monkeypatch, data_analyst):
     assert handlers[2].called is True
 
     datafile.refresh_from_db()
-    assert datafile.state == SubmissionState.PARSE_STARTED
+    assert datafile.state == SubmissionState.PARSE_COMPLETED
 
 
 @pytest.mark.django_db
@@ -949,7 +950,7 @@ def test_parse_transitions_to_parse_failed_on_exception(monkeypatch, data_analys
 
 @pytest.mark.django_db
 def test_reparse_transitions_to_parsing(monkeypatch, stt):
-    """Reparse runs should mark the DataFile as parsing when the worker starts."""
+    """Reparse runs should complete in parse-completed state for clean parses."""
     datafile = DataFileFactory(
         stt=stt, version=13, state=SubmissionState.PARSE_COMPLETED
     )
@@ -975,7 +976,93 @@ def test_reparse_transitions_to_parsing(monkeypatch, stt):
     parser_task.parse(datafile.id, reparse_id=meta_model.pk)
 
     datafile.refresh_from_db()
-    assert datafile.state == SubmissionState.PARSE_STARTED
+    assert datafile.state == SubmissionState.PARSE_COMPLETED
+
+
+@pytest.mark.django_db
+def test_parse_rejected_outcome_maps_to_parsed_with_errors(monkeypatch, data_analyst):
+    """Rejected DFS status maps to PARSED_WITH_ERRORS lifecycle state."""
+    datafile = DataFileFactory(
+        stt=data_analyst.stt,
+        version=15,
+        state=SubmissionState.VIRUS_SCAN_COMPLETED,
+    )
+    ensure_stt_filenames(datafile.stt)
+    dfs = DataFileSummary.objects.create(
+        datafile=datafile, status=DataFileSummary.Status.PENDING
+    )
+
+    def fake_update_dfs(dfs, data_file, **kwargs):
+        dfs.status = DataFileSummary.Status.REJECTED
+        dfs.save()
+
+    setup_parse_mocks(monkeypatch, dfs=dfs)
+    monkeypatch.setattr(parser_task, "update_dfs", fake_update_dfs)
+    monkeypatch.setattr(
+        parser_task.ParserFactory, "get_instance", lambda **kwargs: DummyParser()
+    )
+    monkeypatch.setattr(parser_task, "send_data_submitted_email", lambda *a, **k: None)
+
+    parser_task.parse(datafile.id)
+
+    datafile.refresh_from_db()
+    assert datafile.state == SubmissionState.PARSED_WITH_ERRORS
+
+
+@pytest.mark.django_db
+def test_parse_transitions_include_parse_context(monkeypatch, data_analyst):
+    """Parse transitions emit lifecycle context through transition_datafile."""
+    datafile = DataFileFactory(
+        stt=data_analyst.stt,
+        version=16,
+        state=SubmissionState.VIRUS_SCAN_COMPLETED,
+    )
+    ensure_stt_filenames(datafile.stt)
+
+    transitions = []
+    real_transition = parser_task.transition_datafile
+
+    def recording_transition(data_file, next_state, note="", logger_hook=None, log_fields=None):
+        transitions.append(
+            {
+                "next_state": next_state,
+                "note": note,
+                "log_fields": log_fields or {},
+            }
+        )
+        return real_transition(
+            data_file,
+            next_state,
+            note=note,
+            logger_hook=logger_hook,
+            log_fields=log_fields,
+        )
+
+    setup_parse_mocks(monkeypatch)
+    monkeypatch.setattr(
+        parser_task.ParserFactory, "get_instance", lambda **kwargs: DummyParser()
+    )
+    monkeypatch.setattr(parser_task, "send_data_submitted_email", lambda *a, **k: None)
+    monkeypatch.setattr(parser_task, "transition_datafile", recording_transition)
+
+    parser_task.parse(datafile.id)
+
+    start_transition = transitions[0]
+    assert start_transition["next_state"] == SubmissionState.PARSE_STARTED
+    assert start_transition["note"] == "parsing started"
+    assert start_transition["log_fields"]["section"] == datafile.section
+    assert start_transition["log_fields"]["program_type"] == datafile.program_type
+    assert start_transition["log_fields"]["reparse_id"] is None
+
+    completion_transition = transitions[1]
+    assert completion_transition["next_state"] == SubmissionState.PARSE_COMPLETED
+    assert completion_transition["note"] == "parsing completed successfully"
+    assert completion_transition["log_fields"]["section"] == datafile.section
+    assert completion_transition["log_fields"]["program_type"] == datafile.program_type
+    assert completion_transition["log_fields"]["parse_summary_status"] == (
+        DataFileSummary.Status.ACCEPTED
+    )
+    assert completion_transition["log_fields"]["reparse_id"] is None
 
 
 @pytest.mark.django_db
