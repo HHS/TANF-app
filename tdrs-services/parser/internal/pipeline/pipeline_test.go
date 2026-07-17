@@ -3,6 +3,7 @@ package pipeline
 import (
 	"context"
 	"iter"
+	"log/slog"
 	"testing"
 
 	"go-parser/internal/config"
@@ -18,8 +19,10 @@ type stubSink struct{}
 func (s *stubSink) Flush(_ context.Context, _ string, _ []string, _ [][]any) (int64, error) {
 	return 0, nil
 }
-func (s *stubSink) RollbackDatafile(_ context.Context, _ int32, _ []string) error { return nil }
-func (s *stubSink) Close() error                                      { return nil }
+func (s *stubSink) RollbackDatafile(_ context.Context, _ int32, _ []string, _ string) error {
+	return nil
+}
+func (s *stubSink) Close() error { return nil }
 
 // Verify writer.Sink interface is satisfied by stubSink at compile time.
 var _ writer.Sink = (*stubSink)(nil)
@@ -27,12 +30,12 @@ var _ writer.Sink = (*stubSink)(nil)
 // stubDecoder implements decoder.Decoder minimally for testing.
 type stubDecoder struct{}
 
-func (d *stubDecoder) Format() filespec.Format            { return filespec.FormatPositional }
-func (d *stubDecoder) ReadFirst() (decoder.Row, error)    { return nil, nil }
+func (d *stubDecoder) Format() filespec.Format         { return filespec.FormatPositional }
+func (d *stubDecoder) ReadFirst() (decoder.Row, error) { return nil, nil }
 func (d *stubDecoder) Rows() iter.Seq2[decoder.Row, error] {
 	return func(yield func(decoder.Row, error) bool) {}
 }
-func (d *stubDecoder) Sort(_ *decoder.RecordTypeDetector, _ decoder.KeyExtractor, _ []string) error {
+func (d *stubDecoder) Sort(_ *decoder.RecordTypeDetector, _ []filespec.KeyFieldDef, _ []string) error {
 	return nil
 }
 func (d *stubDecoder) Close() error { return nil }
@@ -137,5 +140,47 @@ func TestDataFileContext_Fields(t *testing.T) {
 	}
 	if params.DatafileID != 42 {
 		t.Errorf("DatafileID = %d, want 42", params.DatafileID)
+	}
+}
+
+func TestDataFileContext_LogAttrsWithStage(t *testing.T) {
+	dfCtx := DataFileContext{
+		Program:       "TANF",
+		Section:       1,
+		DatafileID:    42,
+		FiscalYear:    2024,
+		FiscalQuarter: "Q1",
+		SectionName:   "Active Case Data",
+	}
+
+	attrs := dfCtx.LogAttrsWithStage("complete", slog.Int64("duration_ms", 123))
+	got := map[string]any{}
+	for _, attr := range attrs {
+		got[attr.Key] = attr.Value.Any()
+	}
+
+	if got["file_id"] != int64(42) {
+		t.Errorf("file_id = %v, want 42", got["file_id"])
+	}
+	if got["program"] != "TANF" {
+		t.Errorf("program = %v, want TANF", got["program"])
+	}
+	if got["section"] != int64(1) {
+		t.Errorf("section = %v, want 1", got["section"])
+	}
+	if got["section_name"] != "Active Case Data" {
+		t.Errorf("section_name = %v, want Active Case Data", got["section_name"])
+	}
+	if got["fiscal_year"] != int64(2024) {
+		t.Errorf("fiscal_year = %v, want 2024", got["fiscal_year"])
+	}
+	if got["fiscal_quarter"] != "Q1" {
+		t.Errorf("fiscal_quarter = %v, want Q1", got["fiscal_quarter"])
+	}
+	if got["stage"] != "complete" {
+		t.Errorf("stage = %v, want complete", got["stage"])
+	}
+	if got["duration_ms"] != int64(123) {
+		t.Errorf("duration_ms = %v, want 123", got["duration_ms"])
 	}
 }

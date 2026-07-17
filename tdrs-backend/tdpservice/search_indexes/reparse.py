@@ -50,7 +50,7 @@ def handle_datafiles(files, meta_model, log_context, previous_summary_statuses=N
                 reparse_meta=meta_model,
                 previous_summary_status=previous_summary_statuses.get(file.pk),
             )
-            parser_task.parse.delay(file.pk, reparse_id=meta_model.pk)
+            parser_task.queue_parse(file.pk, reparse_id=meta_model.pk)
         except DatabaseError as e:
             log(
                 "Encountered a DatabaseError while re-creating datafiles. The database "

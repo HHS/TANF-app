@@ -3,8 +3,9 @@ package decoder
 import (
 	"fmt"
 	"iter"
-	"log"
 	"slices"
+
+	"go-parser/internal/config/filespec"
 )
 
 // Sortable provides shared sorting logic for embedding in decoder implementations.
@@ -13,7 +14,6 @@ type Sortable struct {
 	sorted      bool
 	sortedRows  []Row
 	unkeyedRows []Row
-	trailer     Row
 }
 
 // IsSorted returns true if DoSort has been called.
@@ -24,9 +24,12 @@ func (s *Sortable) IsSorted() bool { return s.sorted }
 func (s *Sortable) DoSort(
 	rows iter.Seq2[Row, error],
 	detector *RecordTypeDetector,
-	keyExtractor KeyExtractor,
+	keyFields []filespec.KeyFieldDef,
 	groupedSchemas []string,
 ) error {
+	s.sortedRows = nil
+	s.unkeyedRows = nil
+
 	groupedSet := make(map[string]bool, len(groupedSchemas))
 	for _, name := range groupedSchemas {
 		groupedSet[name] = true
@@ -54,21 +57,12 @@ func (s *Sortable) DoSort(
 
 		// Check if this schema participates in grouping
 		if !groupedSet[sch.Path] {
-			// Non-grouped record: HEADER or TRAILER
-			switch sch.RecordType {
-			case "HEADER":
-				// Add the extra HEADER record(s) to the unkeyedRows which are processed after keyedRows
-				s.unkeyedRows = append(s.unkeyedRows, row)
-			case "TRAILER":
-				s.trailer = row
-			default:
-				s.unkeyedRows = append(s.unkeyedRows, row)
-			}
+			s.unkeyedRows = append(s.unkeyedRows, row)
 			continue
 		}
 
 		// Extract sort key
-		key, err := keyExtractor.ExtractKey(row)
+		key, err := row.ExtractKey(keyFields)
 		if err != nil {
 			// Key extraction failed — collect for error reporting
 			s.unkeyedRows = append(s.unkeyedRows, row)
@@ -96,12 +90,6 @@ func (s *Sortable) DoSort(
 	}
 
 	s.sorted = true
-
-	log.Printf("Presort complete: %d data rows sorted, %d unkeyed rows",
-		len(s.sortedRows), len(s.unkeyedRows))
-	if s.trailer != nil {
-		log.Printf("Line %d: TRAILER (not accumulated)", s.trailer.LineNum())
-	}
 
 	return nil
 }

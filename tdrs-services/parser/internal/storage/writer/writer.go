@@ -3,7 +3,6 @@ package writer
 import (
 	"context"
 	"fmt"
-	"log"
 	"sync"
 	"sync/atomic"
 
@@ -196,7 +195,6 @@ func (tw *TableWriter) flush(ctx context.Context) error {
 	}
 
 	tw.totalWritten.Add(count)
-	log.Printf("Flushed %d %s records", count, tw.tableName)
 	return nil
 }
 

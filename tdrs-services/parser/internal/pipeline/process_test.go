@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
 	"testing"
 
 	"go-parser/internal/config"
@@ -80,8 +81,20 @@ func testSSPContext() DataFileContext {
 	}
 }
 
+func testFRAContext() DataFileContext {
+	return DataFileContext{
+		Program:       "FRA",
+		Section:       1,
+		DatafileID:    1,
+		FiscalYear:    2024,
+		FiscalQuarter: "Q2",
+		SectionName:   "FRA Work Outcome TANF Exiters",
+	}
+}
+
 // capturingSink captures all flushed data for assertions.
 type capturingSink struct {
+	mu             sync.Mutex
 	tables         map[string][][]any // tableName -> rows
 	rollbackCalls  int
 	rollbackErr    error
@@ -96,18 +109,22 @@ func newCapturingSink() *capturingSink {
 func (s *capturingSink) Flush(_ context.Context, tableName string, _ []string, rows [][]any) (int64, error) {
 	copied := make([][]any, len(rows))
 	copy(copied, rows)
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.tables[tableName] = append(s.tables[tableName], copied...)
 	return int64(len(rows)), nil
 }
 
-func (s *capturingSink) RollbackDatafile(_ context.Context, datafileID int32, tables []string) error {
+func (s *capturingSink) RollbackDatafile(_ context.Context, datafileID int32, tables []string, errorTableName string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.rollbackCalls++
 	s.rollbackID = datafileID
 	s.rollbackTables = slices.Clone(tables)
 	if s.rollbackErr != nil {
 		return s.rollbackErr
 	}
-	delete(s.tables, "parser_error")
+	delete(s.tables, errorTableName)
 	for _, table := range tables {
 		delete(s.tables, table)
 	}
@@ -116,13 +133,27 @@ func (s *capturingSink) RollbackDatafile(_ context.Context, datafileID int32, ta
 func (s *capturingSink) Close() error { return nil }
 
 func (s *capturingSink) rowCount(tableName string) int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	return len(s.tables[tableName])
 }
 
+func parserErrorTableName(pipelineCfg PipelineConfig) string {
+	return config.ParserErrorTableName(pipelineCfg.TablePrefix)
+}
+
+func (s *capturingSink) errorRows(pipelineCfg PipelineConfig) [][]any {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return slices.Clone(s.tables[parserErrorTableName(pipelineCfg)])
+}
+
 func (s *capturingSink) totalRecords() int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	total := 0
 	for name, rows := range s.tables {
-		if name != "parser_error" {
+		if name != config.ParserErrorTableName("") && name != config.ParserErrorTableName(config.DefaultTablePrefix) {
 			total += len(rows)
 		}
 	}
@@ -130,7 +161,9 @@ func (s *capturingSink) totalRecords() int {
 }
 
 func (s *capturingSink) errorCount() int {
-	return len(s.tables["parser_error"])
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return len(s.tables["shadow_parser_error"]) + len(s.tables["parser_error"])
 }
 
 // --- Helper to create a test data file in a temp dir ---
@@ -152,7 +185,166 @@ func writeTempFile(t *testing.T, content string) string {
 	return f.Name()
 }
 
+func processContentForTest(
+	t *testing.T,
+	reg *config.Registry,
+	validators *validation.ValidatorRegistry,
+	content string,
+	dfCtx DataFileContext,
+) (*ParsingResult, *capturingSink) {
+	t.Helper()
+
+	filePath := writeTempFile(t, content)
+	f, err := os.Open(filePath)
+	if err != nil {
+		t.Fatalf("failed to open file: %v", err)
+	}
+	defer f.Close()
+
+	spec := reg.GetFileSpec(dfCtx.Program, dfCtx.Section)
+	if spec == nil {
+		t.Fatalf("GetFileSpec(%s, %d) returned nil", dfCtx.Program, dfCtx.Section)
+	}
+
+	dec, err := decoder.CreateDecoder(f, spec)
+	if err != nil {
+		t.Fatalf("CreateDecoder failed: %v", err)
+	}
+	defer dec.Close()
+
+	sink := newCapturingSink()
+	pipelineCfg := TestConfig()
+	pipelineCfg.IncludeRecords = false
+	pipelineCfg.IncludeErrors = true
+	p := NewPipeline(sink, reg, validators, pipelineCfg)
+
+	result, err := p.Process(context.Background(), dec, dfCtx)
+	if err != nil {
+		t.Fatalf("Process failed: %v", err)
+	}
+
+	return result, sink
+}
+
 // --- End-to-end Process tests ---
+
+func TestProcess_FRAInvalidFirstRowWritesPreCheckError(t *testing.T) {
+	reg := loadRegistry(t)
+	validators := loadValidators(t, reg)
+
+	tests := []struct {
+		name    string
+		content string
+	}{
+		{
+			name:    "comment row",
+			content: "# This line represents a header which is not allowed in fra files.\n202401,946412419\n",
+		},
+		{
+			name:    "empty first row",
+			content: "\n202401,946412419\n",
+		},
+		{
+			name:    "missing column value",
+			content: "202401,\n",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			filePath := writeTempFile(t, tt.content)
+			f, err := os.Open(filePath)
+			if err != nil {
+				t.Fatalf("failed to open file: %v", err)
+			}
+			defer f.Close()
+
+			spec := reg.GetFileSpec("FRA", 1)
+			if spec == nil {
+				t.Fatal("GetFileSpec(FRA, 1) returned nil")
+			}
+
+			dec, err := decoder.CreateDecoder(f, spec)
+			if err != nil {
+				t.Fatalf("CreateDecoder failed: %v", err)
+			}
+			defer dec.Close()
+
+			sink := newCapturingSink()
+			pipelineCfg := TestConfig()
+			pipelineCfg.IncludeRecords = true
+			pipelineCfg.IncludeErrors = true
+			p := NewPipeline(sink, reg, validators, pipelineCfg)
+
+			result, err := p.Process(context.Background(), dec, testFRAContext())
+			if err != nil {
+				t.Fatalf("Process failed: %v", err)
+			}
+
+			if result.ErrorCount != 1 {
+				t.Errorf("ErrorCount = %d, want 1", result.ErrorCount)
+			}
+			if sink.totalRecords() != 0 {
+				t.Errorf("totalRecords = %d, want 0", sink.totalRecords())
+			}
+			if sink.errorCount() != 1 {
+				t.Fatalf("sink error count = %d, want 1", sink.errorCount())
+			}
+
+			row := sink.tables["shadow_parser_error"][0]
+			if got := row[0]; got != int32(1) {
+				t.Errorf("row_number = %v, want %d", got, 1)
+			}
+			if got := row[6]; got != "File does not begin with FRA data." {
+				t.Errorf("error_message = %v, want %q", got, "File does not begin with FRA data.")
+			}
+			if got := row[7]; got != "1" {
+				t.Errorf("error_type = %v, want %q", got, "1")
+			}
+		})
+	}
+}
+
+func TestProcess_FRAValidFileDoesNotRequireTrailer(t *testing.T) {
+	reg := loadRegistry(t)
+	validators := loadValidators(t, reg)
+
+	filePath := writeTempFile(t, "202401,946412419\n")
+	f, err := os.Open(filePath)
+	if err != nil {
+		t.Fatalf("failed to open file: %v", err)
+	}
+	defer f.Close()
+
+	spec := reg.GetFileSpec("FRA", 1)
+	if spec == nil {
+		t.Fatal("GetFileSpec(FRA, 1) returned nil")
+	}
+
+	dec, err := decoder.CreateDecoder(f, spec)
+	if err != nil {
+		t.Fatalf("CreateDecoder failed: %v", err)
+	}
+	defer dec.Close()
+
+	sink := newCapturingSink()
+	pipelineCfg := TestConfig()
+	pipelineCfg.IncludeRecords = true
+	pipelineCfg.IncludeErrors = true
+	p := NewPipeline(sink, reg, validators, pipelineCfg)
+
+	result, err := p.Process(context.Background(), dec, testFRAContext())
+	if err != nil {
+		t.Fatalf("Process failed: %v", err)
+	}
+
+	if result.ErrorCount != 0 {
+		t.Errorf("ErrorCount = %d, want 0", result.ErrorCount)
+	}
+	if sink.errorCount() != 0 {
+		t.Fatalf("sink error count = %d, want 0; errors=%v", sink.errorCount(), sink.errorRows(pipelineCfg))
+	}
+}
 
 func TestProcess_TANF_S1_ValidData(t *testing.T) {
 	reg := loadRegistry(t)
@@ -172,7 +364,7 @@ func TestProcess_TANF_S1_ValidData(t *testing.T) {
 	// T3 record: starts with "T3", same RPT_MONTH_YEAR and CASE_NUMBER
 	t3Line := "T3" + "202401" + "12345678901" + strings.Repeat(" ", 50)
 
-	trailer := "TRAILER0000001"
+	trailer := "TRAILER0000003         "
 
 	content := strings.Join([]string{header, t1Line, t2Line, t3Line, trailer}, "\n") + "\n"
 	filePath := writeTempFile(t, content)
@@ -226,6 +418,99 @@ func TestProcess_TANF_S1_ValidData(t *testing.T) {
 	}
 }
 
+func TestProcess_HeaderProgramTypeMismatchWritesPreCheckError(t *testing.T) {
+	reg := loadRegistry(t)
+	validators := loadValidators(t, reg)
+
+	tests := []struct {
+		name            string
+		header          string
+		dfCtx           DataFileContext
+		expectedMessage string
+	}{
+		{
+			name:   "submitted SSP with TAN header",
+			header: "HEADER20241A06000TAN1ED",
+			dfCtx:  testSSPContext(),
+			expectedMessage: "Submitted program type (SSP) does not match file program type (TAN).",
+		},
+		{
+			name:   "submitted TAN with SSP header",
+			header: "HEADER20241A06000SSP1ED",
+			dfCtx:  testTANFContext(),
+			expectedMessage: "Submitted program type (TAN) does not match file program type (SSP).",
+		},
+		{
+			name:   "submitted TAN with Tribal header",
+			header: "HEADER20241A00142TAN1ED",
+			dfCtx:  testTANFContext(),
+			expectedMessage: "Submitted program type (TAN) does not match file program type (TRIBAL).",
+		},
+		{
+			name:   "submitted Tribal with TAN header and empty tribe code",
+			header: "HEADER20241A06000TAN1ED",
+			dfCtx: DataFileContext{
+				Program:       "TRIBAL",
+				Section:       1,
+				DatafileID:    1,
+				FiscalYear:    2024,
+				FiscalQuarter: "Q2",
+				SectionName:   "Active Case Data",
+			},
+			expectedMessage: "Submitted program type (TRIBAL) does not match file program type (TAN).",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			content := tt.header + "\n"
+			result, sink := processContentForTest(t, reg, validators, content, tt.dfCtx)
+
+			if result.ErrorCount != 1 {
+				t.Errorf("ErrorCount = %d, want 1", result.ErrorCount)
+			}
+			if sink.errorCount() != 1 {
+				t.Fatalf("sink error count = %d, want 1", sink.errorCount())
+			}
+			if sink.totalRecords() != 0 {
+				t.Errorf("totalRecords = %d, want 0", sink.totalRecords())
+			}
+
+			row := sink.errorRows(TestConfig())[0]
+			if got := row[0]; got != int32(1) {
+				t.Errorf("row_number = %v, want %d", got, 1)
+			}
+			if got := row[6]; got != tt.expectedMessage {
+				t.Errorf("error_message = %v, want %q", got, tt.expectedMessage)
+			}
+			if got := row[7]; got != "1" {
+				t.Errorf("error_type = %v, want %q", got, "1")
+			}
+		})
+	}
+}
+
+func TestProcess_TribalHeaderMatchesTribalContext(t *testing.T) {
+	reg := loadRegistry(t)
+	validators := loadValidators(t, reg)
+
+	dfCtx := testTANFContext()
+	dfCtx.Program = "TRIBAL"
+	content := "HEADER20241A00142TAN1ED\n"
+	_, sink := processContentForTest(t, reg, validators, content, dfCtx)
+
+	parserErrorRows := sink.errorRows(TestConfig())
+	for _, row := range parserErrorRows {
+		message, ok := row[6].(string)
+		if !ok {
+			t.Fatalf("error_message type = %T, want string", row[6])
+		}
+		if strings.Contains(message, "Submitted program type") {
+			t.Fatalf("parser errors = %v, want no program mismatch error", parserErrorRows)
+		}
+	}
+}
+
 func TestProcess_TANF_S1_MissingHeader(t *testing.T) {
 	reg := loadRegistry(t)
 	validators := loadValidators(t, reg)
@@ -267,8 +552,11 @@ func TestProcess_TANF_S1_MissingHeader(t *testing.T) {
 	if sink.errorCount() != 2 {
 		t.Errorf("sink error count = %d, want 2", sink.errorCount())
 	}
-	if got := sink.tables["parser_error"][1][6]; got != "No records created." {
+	if got := sink.errorRows(pipelineCfg)[1][6]; got != "No records created." {
 		t.Errorf("second error_message = %v, want %q", got, "No records created.")
+	}
+	if got := sink.tables["shadow_parser_error"][1][0]; got != int32(0) {
+		t.Errorf("second row_number = %v, want %d", got, 0)
 	}
 }
 
@@ -278,7 +566,7 @@ func TestProcess_TANF_MultipleHeaders_RollbacksAndWritesOffendingRow(t *testing.
 
 	header := "HEADER20241A06000TAN1ED"
 	t1Line := "T1" + "202401" + "12345678901" + strings.Repeat(" ", 100)
-	trailer := "TRAILER0000001"
+	trailer := "TRAILER0000001         "
 	content := strings.Join([]string{header, t1Line, header, trailer}, "\n") + "\n"
 	filePath := writeTempFile(t, content)
 
@@ -321,7 +609,7 @@ func TestProcess_TANF_MultipleHeaders_RollbacksAndWritesOffendingRow(t *testing.
 		t.Fatalf("sink error count = %d, want 1", sink.errorCount())
 	}
 
-	errRow := sink.tables["parser_error"][0]
+	errRow := sink.errorRows(pipelineCfg)[0]
 	if got := errRow[0]; got != int32(3) {
 		t.Errorf("row_number = %v, want 3", got)
 	}
@@ -406,7 +694,7 @@ func TestProcess_RollbackDoesNotPoisonLaterProcess(t *testing.T) {
 	}
 
 	t1Line := "T1" + "202401" + "12345678901" + strings.Repeat(" ", 100)
-	trailer := "TRAILER0000001"
+	trailer := "TRAILER0000001         "
 	goodPath := writeTempFile(t, strings.Join([]string{header, t1Line, trailer}, "\n")+"\n")
 	goodFile, err := os.Open(goodPath)
 	if err != nil {
@@ -463,7 +751,7 @@ func TestProcess_EmptyFile(t *testing.T) {
 	if sink.errorCount() != 2 {
 		t.Errorf("sink error count = %d, want 2", sink.errorCount())
 	}
-	if got := sink.tables["parser_error"][1][6]; got != "No records created." {
+	if got := sink.errorRows(pipelineCfg)[1][6]; got != "No records created." {
 		t.Errorf("second error_message = %v, want %q", got, "No records created.")
 	}
 }
@@ -552,25 +840,169 @@ func TestProcess_HeaderOnlyWritesNoRecordsCreatedError(t *testing.T) {
 		t.Fatalf("Process failed: %v", err)
 	}
 
-	if result.ErrorCount != 1 {
-		t.Errorf("ErrorCount = %d, want 1", result.ErrorCount)
+	if result.ErrorCount != 2 {
+		t.Errorf("ErrorCount = %d, want 2", result.ErrorCount)
 	}
-	if result.RecordCounts["parser_error"] != 1 {
-		t.Errorf("RecordCounts[parser_error] = %d, want 1", result.RecordCounts["parser_error"])
+	if result.RecordCounts["parser_error"] != 2 {
+		t.Errorf("RecordCounts[parser_error] = %d, want 2", result.RecordCounts["parser_error"])
 	}
-	if sink.errorCount() != 1 {
-		t.Errorf("sink error count = %d, want 1", sink.errorCount())
+	if sink.errorCount() != 2 {
+		t.Errorf("sink error count = %d, want 2", sink.errorCount())
 	}
 	if sink.totalRecords() != 0 {
 		t.Errorf("totalRecords = %d, want 0", sink.totalRecords())
 	}
 
-	row := sink.tables["parser_error"][0]
-	if got := row[6]; got != "No records created." {
-		t.Errorf("error_message = %v, want %q", got, "No records created.")
+	rows := sink.errorRows(pipelineCfg)
+	if got := rows[0][6]; got != "Your file does not end with a TRAILER record." {
+		t.Errorf("first error_message = %v, want missing trailer", got)
 	}
-	if got := row[7]; got != "1" {
+	if got := rows[1][6]; got != "No records created." {
+		t.Errorf("second error_message = %v, want %q", got, "No records created.")
+	}
+	if got := rows[1][7]; got != "1" {
 		t.Errorf("error_type = %v, want %q", got, "1")
+	}
+}
+
+func TestProcess_TANFZeroRecordSectionsAccepted(t *testing.T) {
+	reg := loadRegistry(t)
+	validators := loadValidators(t, reg)
+
+	tests := []struct {
+		name    string
+		section int
+		header  string
+		ctx     DataFileContext
+	}{
+		{
+			name:    "active",
+			section: 1,
+			header:  "HEADER20241A06000TAN1ED",
+			ctx:     testTANFContext(),
+		},
+		{
+			name:    "aggregate",
+			section: 3,
+			header:  "HEADER20241G06000TAN1ED",
+			ctx: DataFileContext{
+				Program:       "TAN",
+				Section:       3,
+				DatafileID:    1,
+				FiscalYear:    2024,
+				FiscalQuarter: "Q2",
+				SectionName:   "Aggregate Data",
+			},
+		},
+		{
+			name:    "stratum",
+			section: 4,
+			header:  "HEADER20241S06000TAN1ED",
+			ctx: DataFileContext{
+				Program:       "TAN",
+				Section:       4,
+				DatafileID:    1,
+				FiscalYear:    2024,
+				FiscalQuarter: "Q2",
+				SectionName:   "Stratum Data",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			content := strings.Join([]string{tt.header, "TRAILER0000000         "}, "\n") + "\n"
+			filePath := writeTempFile(t, content)
+
+			f, err := os.Open(filePath)
+			if err != nil {
+				t.Fatalf("failed to open file: %v", err)
+			}
+			defer f.Close()
+
+			spec := reg.GetFileSpec("TAN", tt.section)
+			if spec == nil {
+				t.Fatalf("GetFileSpec(TAN, %d) returned nil", tt.section)
+			}
+
+			dec, err := decoder.CreateDecoder(f, spec)
+			if err != nil {
+				t.Fatalf("CreateDecoder failed: %v", err)
+			}
+			defer dec.Close()
+
+			sink := newCapturingSink()
+			pipelineCfg := TestConfig()
+			pipelineCfg.IncludeRecords = true
+			pipelineCfg.IncludeErrors = true
+			p := NewPipeline(sink, reg, validators, pipelineCfg)
+
+			result, err := p.Process(context.Background(), dec, tt.ctx)
+			if err != nil {
+				t.Fatalf("Process failed: %v", err)
+			}
+
+			if result.ErrorCount != 0 {
+				t.Errorf("ErrorCount = %d, want 0", result.ErrorCount)
+			}
+			if result.DetailRecordCount != 0 {
+				t.Errorf("DetailRecordCount = %d, want 0", result.DetailRecordCount)
+			}
+			if sink.errorCount() != 0 {
+				t.Errorf("sink error count = %d, want 0", sink.errorCount())
+			}
+			if sink.totalRecords() != 0 {
+				t.Errorf("totalRecords = %d, want 0", sink.totalRecords())
+			}
+		})
+	}
+}
+
+func TestProcess_TANFZeroRecordBadTrailerCountRejected(t *testing.T) {
+	reg := loadRegistry(t)
+	validators := loadValidators(t, reg)
+
+	content := strings.Join([]string{"HEADER20241A06000TAN1ED", "TRAILER0000001         "}, "\n") + "\n"
+	filePath := writeTempFile(t, content)
+
+	f, err := os.Open(filePath)
+	if err != nil {
+		t.Fatalf("failed to open file: %v", err)
+	}
+	defer f.Close()
+
+	spec := reg.GetFileSpec("TAN", 1)
+	dec, err := decoder.CreateDecoder(f, spec)
+	if err != nil {
+		t.Fatalf("CreateDecoder failed: %v", err)
+	}
+	defer dec.Close()
+
+	sink := newCapturingSink()
+	pipelineCfg := TestConfig()
+	pipelineCfg.IncludeRecords = true
+	pipelineCfg.IncludeErrors = true
+	p := NewPipeline(sink, reg, validators, pipelineCfg)
+
+	result, err := p.Process(context.Background(), dec, testTANFContext())
+	if err != nil {
+		t.Fatalf("Process failed: %v", err)
+	}
+
+	if result.ErrorCount != 2 {
+		t.Errorf("ErrorCount = %d, want 2", result.ErrorCount)
+	}
+	messages := make([]string, 0, sink.errorCount())
+	for _, row := range sink.errorRows(pipelineCfg) {
+		if msg, ok := row[6].(string); ok {
+			messages = append(messages, msg)
+		}
+	}
+	if !slices.Contains(messages, "The number of records in the TRAILER row count: 1, does not match the number of records detected in the file: 0.") {
+		t.Fatalf("parser errors = %v, want trailer count mismatch", messages)
+	}
+	if !slices.Contains(messages, "No records created.") {
+		t.Fatalf("parser errors = %v, want no records created", messages)
 	}
 }
 
@@ -623,11 +1055,11 @@ func TestProcess_HeaderValidationFailureAlsoWritesNoRecordsCreatedError(t *testi
 		t.Errorf("sink error count = %d, want 2", sink.errorCount())
 	}
 
-	firstMessage := sink.tables["parser_error"][0][6]
+	firstMessage := sink.errorRows(pipelineCfg)[0][6]
 	if !strings.Contains(firstMessage.(string), "doesn't match file reporting year") {
 		t.Errorf("first error_message = %v, want mismatch message", firstMessage)
 	}
-	if got := sink.tables["parser_error"][1][6]; got != "No records created." {
+	if got := sink.errorRows(pipelineCfg)[1][6]; got != "No records created." {
 		t.Errorf("second error_message = %v, want %q", got, "No records created.")
 	}
 }
@@ -638,7 +1070,7 @@ func TestProcess_NonBlockingHeaderErrorWritesParserError(t *testing.T) {
 
 	header := "HEADER20241A06000TAN3ED"
 	t1Line := "T1" + "202401" + "12345678901" + strings.Repeat(" ", 100)
-	trailer := "TRAILER0000001"
+	trailer := "TRAILER0000001         "
 	content := strings.Join([]string{header, t1Line, trailer}, "\n") + "\n"
 	filePath := writeTempFile(t, content)
 
@@ -681,7 +1113,7 @@ func TestProcess_NonBlockingHeaderErrorWritesParserError(t *testing.T) {
 	}
 
 	found := false
-	for _, row := range sink.tables["parser_error"] {
+	for _, row := range sink.errorRows(pipelineCfg) {
 		if got := row[6]; got == "HEADER Item 8 (Edit Indicator): 3 is not in [1, 2]." {
 			found = true
 			if rowNum := row[0]; rowNum != int32(1) {
@@ -691,7 +1123,7 @@ func TestProcess_NonBlockingHeaderErrorWritesParserError(t *testing.T) {
 		}
 	}
 	if !found {
-		t.Fatalf("parser errors = %v, want header validation message", sink.tables["parser_error"])
+		t.Fatalf("parser errors = %v, want header validation message", sink.errorRows(pipelineCfg))
 	}
 }
 
@@ -749,7 +1181,7 @@ func TestProcess_BlankRequiredCountyFIPSWritesRequiredFieldError(t *testing.T) {
 	}
 
 	messages := make([]string, 0, sink.errorCount())
-	for _, row := range sink.tables["parser_error"] {
+	for _, row := range sink.errorRows(pipelineCfg) {
 		if msg, ok := row[6].(string); ok {
 			messages = append(messages, msg)
 		}
@@ -767,7 +1199,7 @@ func TestProcess_UnknownRecordTypeWritesParserError(t *testing.T) {
 
 	header := "HEADER20241A06000TAN1ED"
 	unknown := "ThisLineShouldError"
-	trailer := "TRAILER0000001"
+	trailer := "TRAILER0000000         "
 	content := strings.Join([]string{header, unknown, trailer}, "\n") + "\n"
 	filePath := writeTempFile(t, content)
 
@@ -801,14 +1233,19 @@ func TestProcess_UnknownRecordTypeWritesParserError(t *testing.T) {
 	if sink.errorCount() != 2 {
 		t.Errorf("sink error count = %d, want 2", sink.errorCount())
 	}
-	if got := sink.tables["parser_error"][0][0]; got != int32(2) {
+	if got := sink.errorRows(pipelineCfg)[0][0]; got != int32(2) {
 		t.Errorf("first row_number = %v, want %d", got, 2)
 	}
-	if got := sink.tables["parser_error"][0][6]; got != "Unknown record type was found." {
+	if got := sink.errorRows(pipelineCfg)[0][6]; got != "Unknown record type was found." {
 		t.Errorf("first error_message = %v, want %q", got, "Unknown record type was found.")
 	}
-	if got := sink.tables["parser_error"][1][6]; got != "No records created." {
+	if got := sink.errorRows(pipelineCfg)[1][6]; got != "No records created." {
 		t.Errorf("second error_message = %v, want %q", got, "No records created.")
+	}
+	for _, row := range sink.errorRows(pipelineCfg) {
+		if msg, ok := row[6].(string); ok && strings.HasPrefix(msg, "TRAILER record count") {
+			t.Fatalf("parser errors = %v, want no trailer count mismatch", sink.errorRows(pipelineCfg))
+		}
 	}
 }
 
@@ -818,7 +1255,7 @@ func TestProcess_TANF_S1_WithRecordWriting(t *testing.T) {
 
 	header := "HEADER20241A06000TAN1ED"
 	t1Line := "T1" + "202401" + "12345678901" + strings.Repeat(" ", 100)
-	trailer := "TRAILER0000001"
+	trailer := "TRAILER0000001         "
 	content := strings.Join([]string{header, t1Line, trailer}, "\n") + "\n"
 	filePath := writeTempFile(t, content)
 
@@ -871,7 +1308,7 @@ func TestProcess_TANF_MultipleRecordTypes(t *testing.T) {
 	t2a := "T2" + "202401" + "11111111111" + strings.Repeat(" ", 100)
 	t1b := "T1" + "202401" + "22222222222" + strings.Repeat(" ", 100)
 	t2b := "T2" + "202401" + "22222222222" + strings.Repeat(" ", 100)
-	trailer := "TRAILER0000004"
+	trailer := "TRAILER0000004         "
 
 	content := strings.Join([]string{header, t1a, t2a, t1b, t2b, trailer}, "\n") + "\n"
 	filePath := writeTempFile(t, content)
@@ -914,7 +1351,7 @@ func TestProcess_SSP_S1(t *testing.T) {
 	// SSP files use M1/M2/M3 record types with same header format
 	header := "HEADER20241A06000SSP1ED"
 	m1Line := "M1" + "202401" + "12345678901" + strings.Repeat(" ", 100)
-	trailer := "TRAILER0000001"
+	trailer := "TRAILER0000001         "
 	content := strings.Join([]string{header, m1Line, trailer}, "\n") + "\n"
 	filePath := writeTempFile(t, content)
 
@@ -958,7 +1395,7 @@ func TestProcess_ErrorsDisabled(t *testing.T) {
 
 	header := "HEADER20241A06000TAN1ED"
 	t1Line := "T1" + "202401" + "12345678901" + strings.Repeat(" ", 100)
-	trailer := "TRAILER0000001"
+	trailer := "TRAILER0000001         "
 	content := strings.Join([]string{header, t1Line, trailer}, "\n") + "\n"
 	filePath := writeTempFile(t, content)
 
@@ -1004,7 +1441,7 @@ func TestProcess_ParsingResult_HasExpectedFields(t *testing.T) {
 
 	header := "HEADER20241A06000TAN1ED"
 	t1Line := "T1" + "202401" + "12345678901" + strings.Repeat(" ", 100)
-	trailer := "TRAILER0000001"
+	trailer := "TRAILER0000001         "
 	content := strings.Join([]string{header, t1Line, trailer}, "\n") + "\n"
 	filePath := writeTempFile(t, content)
 
@@ -1057,7 +1494,7 @@ func TestProcess_FileSink_Integration(t *testing.T) {
 
 	header := "HEADER20241A06000TAN1ED"
 	t1Line := "T1" + "202401" + "12345678901" + strings.Repeat(" ", 100)
-	trailer := "TRAILER0000001"
+	trailer := "TRAILER0000001         "
 	content := strings.Join([]string{header, t1Line, trailer}, "\n") + "\n"
 	filePath := writeTempFile(t, content)
 

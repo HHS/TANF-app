@@ -1,9 +1,11 @@
 package parser
 
 import (
-	"log"
+	"context"
+	"log/slog"
 
 	"go-parser/internal/config/filespec"
+	"go-parser/internal/logging"
 )
 
 // ParsingOrchestrator coordinates parsing logic for decoded batches.
@@ -39,16 +41,14 @@ func (o *ParsingOrchestrator) ParseBatch(batch *DecodedBatch) *ParsedBatch {
 // processGroup parses all records in a single group.
 func (o *ParsingOrchestrator) processGroup(decodedGroup *DecodedGroup) *ParsedGroup {
 	result := &ParsedGroup{
-		Key:          decodedGroup.Key,
-		RptMonthYear: decodedGroup.RptMonthYear,
-		CaseNumber:   decodedGroup.CaseNumber,
-		Records:      make([]*ParsedRecord, 0, len(decodedGroup.DecodedRecords)),
+		Key:     decodedGroup.Key,
+		Records: make([]*ParsedRecord, 0, len(decodedGroup.DecodedRecords)),
 	}
 
 	for _, line := range decodedGroup.DecodedRecords {
 		records, err := o.parseRow(line)
 		if err != nil {
-			log.Printf("Failed to parse line %d: %v", line.Row.LineNum(), err)
+			logging.Error(context.Background(), "Failed to parse line", slog.Int("line_number", line.Row.LineNum()))
 			continue
 		}
 		result.Records = append(result.Records, records...)
@@ -76,7 +76,6 @@ func (o *ParsingOrchestrator) parseRow(decodedRecord DecodedRecord) ([]*ParsedRe
 		field := &schema.Shared[i]
 		value, err := o.extractor.Extract(decodedRecord.Row, field, o.parseCtx, sharedCache)
 		if err != nil {
-			log.Printf("Failed to extract shared field %s: %v", field.Name, err)
 			continue
 		}
 		sharedCache[field.Name] = ParsedField{Def: field, Value: value}
@@ -108,7 +107,6 @@ func (o *ParsingOrchestrator) parseRow(decodedRecord DecodedRecord) ([]*ParsedRe
 			// The extractor expects a FieldGetter for lookups (e.g., source_field resolution)
 			value, err := o.extractor.Extract(decodedRecord.Row, field, o.parseCtx, record)
 			if err != nil {
-				log.Printf("Failed to extract field %s: %v", field.Name, err)
 				continue
 			}
 			record.SetField(field, value)

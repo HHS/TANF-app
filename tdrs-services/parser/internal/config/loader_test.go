@@ -25,6 +25,8 @@ func TestLoadConfig_DefaultsOnly(t *testing.T) {
 func TestLoadConfig_ParsesParserYAML(t *testing.T) {
 	dir := t.TempDir()
 	content := `
+global:
+  log_level: debug
 pipeline:
   num_workers: 42
   work_buffer_size: 512
@@ -32,6 +34,8 @@ server:
   mode: grpc
 database:
   max_conns: 20
+  shadow_mode: false
+  table_prefix: "custom_"
 `
 	path := filepath.Join(dir, "parser.yaml")
 	if err := os.WriteFile(path, []byte(content), 0644); err != nil {
@@ -46,6 +50,9 @@ database:
 	if cfg.Pipeline.NumWorkers != 42 {
 		t.Errorf("NumWorkers = %d, want 42", cfg.Pipeline.NumWorkers)
 	}
+	if cfg.Global.LogLevel != "debug" {
+		t.Errorf("Global.LogLevel = %q, want debug", cfg.Global.LogLevel)
+	}
 	if cfg.Pipeline.WorkBufferSize != 512 {
 		t.Errorf("WorkBufferSize = %d, want 512", cfg.Pipeline.WorkBufferSize)
 	}
@@ -54,6 +61,15 @@ database:
 	}
 	if cfg.Database.MaxConns != 20 {
 		t.Errorf("Database.MaxConns = %d, want 20", cfg.Database.MaxConns)
+	}
+	if cfg.Database.ShadowMode {
+		t.Error("Database.ShadowMode = true, want false")
+	}
+	if cfg.Database.TablePrefix != "custom_" {
+		t.Errorf("Database.TablePrefix = %q, want custom_", cfg.Database.TablePrefix)
+	}
+	if cfg.Database.EffectiveTablePrefix() != "" {
+		t.Errorf("EffectiveTablePrefix = %q, want empty production prefix", cfg.Database.EffectiveTablePrefix())
 	}
 }
 

@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"sync"
 
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"go-parser/internal/config"
 	"go-parser/internal/config/filespec"
+	"go-parser/internal/logging"
 	"go-parser/internal/parser"
 )
 
@@ -32,6 +33,8 @@ type Router struct {
 	contentTypeIDs map[string]*int32
 
 	errorWriter *TableWriter
+
+	errorTableName string
 }
 
 // Error table columns (same for all file types)
@@ -64,6 +67,9 @@ type RouterConfig struct {
 
 	// IncludeErrors controls whether errors are written. Default true.
 	IncludeErrors bool
+
+	// TablePrefix is applied to Go parser-owned output tables.
+	TablePrefix string
 }
 
 // NewRouter creates a manager based on the FileSpec.
@@ -87,6 +93,7 @@ func NewRouter(
 		writers:        make(map[string]*TableWriter),
 		serializers:    make(map[string]RowSerializer),
 		contentTypeIDs: make(map[string]*int32),
+		errorTableName: config.ParserErrorTableName(cfg.TablePrefix),
 	}
 
 	// Create a writer for each data record type in the FileSpec
@@ -120,7 +127,6 @@ func NewRouter(
 
 		// Apply schema filter if configured
 		if len(includeSet) > 0 && !includeSet[schemaPath] {
-			log.Printf("Skipping writer for %s (not in include_schemas)", schemaPath)
 			continue
 		}
 
@@ -134,7 +140,10 @@ func NewRouter(
 		// Schema path (e.g., "tanf/t1") distinguishes TANF vs Tribal T1
 		conv := GetSerializer(schemaPath)
 		if conv == nil {
-			log.Printf("Warning: no serializer for schema %s", schemaPath)
+			logging.Error(context.Background(), "no serializer for schema",
+				slog.Int(logging.KeyFileID, int(datafileID)),
+				slog.String("schema_path", schemaPath),
+			)
 			continue
 		}
 
@@ -150,24 +159,23 @@ func NewRouter(
 			meta.Columns,
 			cfg.FlushThreshold,
 		)
-
-		log.Printf("Created writer for %s -> %s (%d columns)",
-			schemaPath, meta.TableName, len(meta.Columns))
 	}
 
 	// Create error writer with higher threshold for error volume
 	if cfg.IncludeErrors {
 		router.errorWriter = NewTableWriter(
-			"parser_error",
+			router.errorTableName,
 			parserErrorColumns,
 			cfg.ErrorFlushThreshold,
 		)
-		log.Printf("Created error writer for parser_error (%d columns)", len(parserErrorColumns))
-	} else {
-		log.Printf("Error writing disabled (include_errors=false)")
 	}
 
 	return router
+}
+
+// ErrorTableName returns the database table used for parser errors.
+func (router *Router) ErrorTableName() string {
+	return router.errorTableName
 }
 
 // Start launches all writer goroutines.
@@ -279,7 +287,6 @@ func (router *Router) SendRecordRowsByPath(ctx context.Context, schemaPath strin
 		// No writer for this schema (e.g., header/trailer) - skip silently
 		return nil
 	}
-
 	for _, row := range rows {
 		if err := writer.SendRow(ctx, row); err != nil {
 			return err

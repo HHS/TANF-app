@@ -57,15 +57,22 @@ record_type_detection:
 #
 # SSP Section 3 files contain aggregate data (not case-level data).
 # M6 records are file-level summaries without case numbers,
-# so no key-based grouping is needed.
+# but still require grouping for duplicate checks.
 #
-# Each record is processed independently.
 accumulator:
 
-  # No key_fields for aggregate data - records don't belong to cases
-  # key_fields: (none)
+  key_fields:
+    fields:
+      - name: record_type
+        start: 0
+        end: 2
 
   batch_size: 1
 
-  # All record types are processed individually (no grouping needed)
-  grouped_schemas: []
+  grouped_schemas:
+    - ssp/m6
+
+group_validators:
+  - id: exact_duplicates
+    params:
+      record_type: M6

@@ -14,7 +14,7 @@ from botocore.exceptions import ClientError
 
 from tdpservice.core.utils import ReadOnlyAdminMixin
 from tdpservice.data_files.admin.filters import LatestReparseEvent, VersionFilter
-from tdpservice.data_files.models import DataFile, LegacyFileTransfer
+from tdpservice.data_files.models import DataFile, LegacyFileTransfer, ShadowDataFile
 from tdpservice.data_files.s3_client import S3Client
 from tdpservice.data_files.submission_lifecycle import (
     ReparsePreparationError,
@@ -514,6 +514,35 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         elif not user.has_fra_access and self.FRA_AccessFilter in list_filter:
             list_filter.remove(self.FRA_AccessFilter)
         return list_filter
+
+
+@admin.register(ShadowDataFile)
+class ShadowDataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
+    """Shadow admin model for convenience."""
+
+    inlines = []
+    list_display = [
+        "id",
+        "stt",
+        # "parsing_state",
+        "year",
+        "quarter",
+        "program_type",
+        "section",
+        "is_program_audit",
+        "version",
+    ]
+    list_filter = [
+        "stt",
+        "year",
+        "quarter",
+        "program_type",
+        "section",
+        "is_program_audit",
+        "stt__type",
+        "stt__region",
+        "user",
+    ]
 
 
 @admin.register(LegacyFileTransfer)
