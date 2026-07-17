@@ -84,7 +84,7 @@ describe('FeedbackReportsUpload', () => {
     it('renders button with correct text', () => {
       renderComponent()
 
-      expect(screen.getByText('Upload & Notify States')).toBeInTheDocument()
+      expect(screen.getByText('Upload & Notify STTs')).toBeInTheDocument()
     })
 
     it('applies error class when fileError is set', () => {
@@ -174,10 +174,10 @@ describe('FeedbackReportsUpload', () => {
       expect(screen.getByText('Uploading...')).toBeInTheDocument()
     })
 
-    it('button shows "Upload & Notify States" when not loading', () => {
+    it('button shows "Upload & Notify STTs" when not loading', () => {
       renderComponent({ loading: false })
 
-      expect(screen.getByText('Upload & Notify States')).toBeInTheDocument()
+      expect(screen.getByText('Upload & Notify STTs')).toBeInTheDocument()
     })
   })
 
@@ -208,7 +208,7 @@ describe('FeedbackReportsUpload', () => {
       })
       renderComponent({ selectedFile: mockFile, loading: false })
 
-      const button = screen.getByText('Upload & Notify States')
+      const button = screen.getByText('Upload & Notify STTs')
       fireEvent.click(button)
 
       expect(mockOnUpload).toHaveBeenCalledTimes(1)

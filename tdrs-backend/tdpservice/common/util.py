@@ -8,7 +8,7 @@ def get_cloudgov_broker_db_numbers(cloudgov_name):
     Returns an object of {"celery": str, "caches": {"cache_name": str}}
     """
     spaces = {
-        "dev": ["raft", "qasp", "a11y"],
+        "dev": ["test", "qasp", "a11y"],
         "staging": ["develop", "staging"],
         "prod": ["prod"],
     }
