@@ -4,6 +4,7 @@ import io
 import logging
 import re
 import zipfile
+from pathlib import PurePosixPath
 
 from django.core.files.base import ContentFile
 from django.db.models import Q
@@ -18,19 +19,22 @@ from tdpservice.users.models import User, AccountApprovalStatusChoices
 
 logger = logging.getLogger(__name__)
 
+STT_FOLDER_INDEX = 3
+STT_RELATIVE_PATH_START_INDEX = STT_FOLDER_INDEX + 1
+
 
 def _is_report_file_path(parts: list[str]) -> bool:
-    """Return whether a zip path follows root/FY####/RO#/F#/filename."""
+    """Return whether a zip path follows root/FY####/RO#/F#/path/to/file."""
     if any(part == "__MACOSX" or part.startswith("._") for part in parts):
         return False
 
     if any(part in ("", ".", "..") for part in parts):
         return False
 
-    if len(parts) != 5:
+    if len(parts) < 5:
         return False
 
-    _, fiscal_year_folder, region_folder, stt_folder, filename = parts
+    _, fiscal_year_folder, region_folder, stt_folder, *file_path_parts = parts
 
     if not re.fullmatch(r"FY\d{4}", fiscal_year_folder):
         return False
@@ -41,7 +45,7 @@ def _is_report_file_path(parts: list[str]) -> bool:
     if not re.fullmatch(r"F\d+", stt_folder):
         return False
 
-    if filename.startswith("."):
+    if any(part.startswith(".") for part in file_path_parts):
         return False
 
     return True
@@ -114,16 +118,25 @@ def bundle_stt_files(zip_file: zipfile.ZipFile, file_infos: list, stt_code: str)
     """
     # Create in-memory zip
     zip_buffer = io.BytesIO()
+    bundled_filenames = set()
 
     with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as bundle_zip:
         for file_info in file_infos:
             # Read file from report source zip
             file_data = zip_file.read(file_info.filename)
 
-            # Get just the filename (not the full path)
-            filename = file_info.filename.split('/')[-1]
+            # Keep the folder hierarchy under the STT folder.
+            path_parts = PurePosixPath(file_info.filename).parts
+            relative_path_parts = path_parts[STT_RELATIVE_PATH_START_INDEX:]
+            if not relative_path_parts or any(part in ("", ".", "..") for part in relative_path_parts):
+                raise ValueError(f"Invalid file path in STT folder: {file_info.filename}")
+            filename = PurePosixPath(*relative_path_parts).as_posix()
+            if filename in bundled_filenames:
+                raise ValueError(
+                    f"Duplicate file path in STT folder '{stt_code}': {filename}"
+                )
+            bundled_filenames.add(filename)
 
-            # Add to bundle with just the filename (flatten structure)
             bundle_zip.writestr(filename, file_data)
 
     # Rewind buffer

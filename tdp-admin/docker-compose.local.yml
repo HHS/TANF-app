@@ -1,0 +1,25 @@
+services:
+  tdp-admin:
+    stdin_open: true
+    tty: true
+    user: "0:0"
+    build:
+      context: .
+      target: localdev
+    command: sh -c "corepack prepare yarn@4.6.0 && corepack yarn dev --hostname 0.0.0.0 --port 3000"
+    ports:
+      - 3001:3000
+    environment:
+      - NEXT_PUBLIC_AUTH_URL=http://host.docker.internal:8989
+      - NEXT_PUBLIC_BACKEND_URL=http://host.docker.internal:8989/v1
+      - NEXT_PUBLIC_BACKEND_HOST=http://host.docker.internal:8989
+    volumes:
+      - ./:/home/node/app
+      - /home/node/app/node_modules
+      - /home/node/app/.next
+    networks:
+      - local
+
+networks:
+  local:
+    driver: bridge

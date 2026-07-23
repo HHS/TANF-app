@@ -1,14 +1,14 @@
 #!/bin/bash
 set -e
 
-DEV_BACKEND_APPS=("tdp-backend-raft" "tdp-backend-qasp" "tdp-backend-a11y")
-DEV_CELERY_APPS=("tdp-celery-raft" "tdp-celery-qasp" "tdp-celery-a11y")
+DEV_BACKEND_APPS=("tdp-backend-test" "tdp-backend-qasp" "tdp-backend-a11y")
+DEV_CELERY_APPS=("tdp-celery-test" "tdp-celery-qasp" "tdp-celery-a11y")
 STAGING_BACKEND_APPS=("tdp-backend-develop" "tdp-backend-staging")
 STAGING_CELERY_APPS=("tdp-celery-develop" "tdp-celery-staging")
 PROD_BACKEND="tdp-backend-prod"
 PROD_CELERY="tdp-celery-prod"
 
-PUBLIC_DOMAIN="app.cloud.gov"
+PUBLIC_DOMAIN="tanfdata.acf.hhs.gov"
 
 # Environment variables that must be set in the deployer's shell.
 # These are injected into the CF app's environment via the manifest.
@@ -128,7 +128,7 @@ deploy_keycloak() {
     cf map-route "$app_name" apps.internal --hostname "$app_name"
 
     # Public route for browser redirects and admin console access
-    cf map-route "$app_name" "$PUBLIC_DOMAIN" --hostname "$public_hostname"
+    cf map-route "$app_name" "$public_hostname"."$PUBLIC_DOMAIN"
 
     rm $MANIFEST
 }

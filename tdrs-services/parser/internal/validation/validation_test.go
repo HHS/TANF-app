@@ -787,7 +787,11 @@ func TestGroupValidatorParameterizedExpression(t *testing.T) {
 
 	countPerRecordResults := func(t *testing.T, output any) int {
 		t.Helper()
-		return len(toPerRecordResults(output, &CompiledValidator{ID: "test_group_validator"}))
+		outcome, err := outcomeFromOutput(output, "per_record")
+		if err != nil {
+			t.Fatal(err)
+		}
+		return len(toPerRecordResults(outcome, &CompiledValidator{ID: "test_group_validator"}))
 	}
 
 	t.Run("no T1 records - should pass", func(t *testing.T) {
@@ -2009,10 +2013,9 @@ func TestExecuteFunction(t *testing.T) {
 
 	t.Run("passing validation", func(t *testing.T) {
 		ce, _ := registry.getOrCompileExpr(ScopeField, "Value > 0", "single")
-		cv := &CompiledValidator{ID: "positive", Expr: ce}
-		env := &FieldEnv{Value: 42}
+		cv := mustExprValidator(t, "positive", ScopeField, ce, "single")
 
-		result := Execute(cv, env)
+		result := Execute(cv, fieldState(42))
 		if !result.Valid {
 			t.Error("expected valid result")
 		}
@@ -2020,10 +2023,9 @@ func TestExecuteFunction(t *testing.T) {
 
 	t.Run("failing validation", func(t *testing.T) {
 		ce, _ := registry.getOrCompileExpr(ScopeField, "Value > 0", "single")
-		cv := &CompiledValidator{ID: "positive", Expr: ce}
-		env := &FieldEnv{Value: -1}
+		cv := mustExprValidator(t, "positive", ScopeField, ce, "single")
 
-		result := Execute(cv, env)
+		result := Execute(cv, fieldState(-1))
 		if result.Valid {
 			t.Error("expected invalid result")
 		}
@@ -2069,8 +2071,7 @@ func TestExecuteFunction(t *testing.T) {
 			"PART_A": 3,
 			"PART_B": "4",
 		})
-		validEnv := NewRecordEnvWithParams(validRec, cv.Params)
-		if result := Execute(cv, validEnv); !result.Valid {
+		if result := Execute(cv, NewRecordValidationState(validRec, nil)); !result.Valid {
 			t.Fatalf("expected valid sum_equals result, got error: %v", result.Error)
 		}
 
@@ -2079,8 +2080,7 @@ func TestExecuteFunction(t *testing.T) {
 			"PART_A": 3,
 			"PART_B": "4",
 		})
-		invalidEnv := NewRecordEnvWithParams(invalidRec, cv.Params)
-		if result := Execute(cv, invalidEnv); result.Valid {
+		if result := Execute(cv, NewRecordValidationState(invalidRec, nil)); result.Valid {
 			t.Fatal("expected invalid sum_equals result")
 		}
 	})

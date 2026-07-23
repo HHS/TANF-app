@@ -284,7 +284,7 @@ func buildFieldDoc(field schema.FieldDef, recordType string, schemaPath string, 
 	// validators once per segment, producing duplicates for the same field name.
 	seen := make(map[string]bool)
 	for _, cv := range validators.GetFieldValidators(schemaPath, field.Name) {
-		key := cv.ID + "|" + cv.Expr.Expr
+		key := cv.ID + "|" + cv.Expression
 		if seen[key] {
 			continue
 		}

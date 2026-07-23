@@ -259,7 +259,10 @@ type CompiledValidator struct {
 	Scope       string             // "field", "record", or "group"
 	ErrorType   string             // The declared error type (or default based on scope)
 	ResultMode  string             // "single" (default) or "per_record" (for group validators)
-	Expr        *CompiledExpr      // Pointer to shared compiled expr
+	Engine      string             // Resolved executor engine: "expr" or "native"
+	Expression  string             // Source expression for documentation and semantic keys
+	Executor    ValidatorExecutor  // Compiled runtime executor
+	Expr        *CompiledExpr      // Compile-time expression metadata for direct test construction
 	Message     *template.Template // Pre-resolved (default or override)
 	Fields      []string           // Fields involved (for record/group validators)
 	Params      map[string]any     // Runtime params for expressions (e.g., {n: 9})

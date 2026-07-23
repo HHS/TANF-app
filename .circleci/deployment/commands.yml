@@ -27,7 +27,7 @@
       cf-username:
         default: CF_USERNAME_DEV
         type: env_var_name
-      frontend-appname:
+      frontend-hostname:
         default: tdp-frontend
         type: string
     steps:
@@ -38,12 +38,12 @@
           cf-username: <<parameters.cf-username>>
       - deploy-backend:
           backend-appname: <<parameters.backend-appname>>
-          frontend-appname: <<parameters.frontend-appname>>
+          frontend-hostname: <<parameters.frontend-hostname>>
           cf-space: <<parameters.cf-space>>
       - deploy-frontend:
           environment: <<parameters.environment>>
           backend-appname: <<parameters.backend-appname>>
-          frontend-appname: <<parameters.frontend-appname>>
+          frontend-hostname: <<parameters.frontend-hostname>>
           cf-space: <<parameters.cf-space>>
 
   clamav-cloud-dot-gov:
@@ -79,7 +79,7 @@
       backend-appname:
         default: tdp-backend
         type: string
-      frontend-appname:
+      frontend-hostname:
         default: tdp-frontend
         type: string
       cf-space:
@@ -104,7 +104,7 @@
           command: |
             bash ./scripts/deploy-backend.sh \
               $DEPLOY_STRATEGY \
-              <<parameters.frontend-appname>> \
+              <<parameters.frontend-hostname>> \
               <<parameters.backend-appname>> \
               <<parameters.cf-space>>
 
@@ -126,7 +126,7 @@
       backend-appname:
         default: tdp-backend
         type: string
-      frontend-appname:
+      frontend-hostname:
         default: tdp-frontend
         type: string
 # So the frontend knows what space its in for the banner.
@@ -144,13 +144,13 @@
       - install-yarn-packages:
           app-dir: tdrs-frontend
       - get-app-deploy-strategy:
-          appname: <<parameters.frontend-appname>>
+          appname: <<parameters.frontend-hostname>>
       - run:
           name: Deploy frontend application
           command: |
             bash ./scripts/deploy-frontend.sh \
               $DEPLOY_STRATEGY \
-              <<parameters.frontend-appname>> \
+              <<parameters.frontend-hostname>> \
               <<parameters.backend-appname>> \
               <<parameters.cf-space>> \
               <<parameters.environment>>
@@ -165,7 +165,7 @@
           command: |
             # NOTE: The || true is a no-op included to suppress exit codes which
             #       would cause the step to exit early due to use of pipefail
-            APP_GUID=$(cf app <<parameters.appname>> --guid || true)
+            APP_GUID=$(cf app tdp-frontend-<<parameters.appname>> --guid || true)
             if [ "$APP_GUID" == "FAILED" ]; then
               echo "export DEPLOY_STRATEGY=initial" >> $BASH_ENV
             else

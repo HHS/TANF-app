@@ -19,9 +19,9 @@
 #   LOGIN_GOV_JWT_KEY       - PEM or base64-encoded Login.gov private key
 #   LOGIN_GOV_ACR_VALUES    - ACR values for Login.gov (default: IAL1)
 #   KC_TDP_REDIRECT_URIS    - Comma-separated list of redirect URIs for the tdp-django client
-#                             (e.g. https://tdp-frontend.app.cloud.gov/*)
+#                             (e.g. https://tdp-frontend.tanfdata.acf.hhs.gov/*)
 #   KC_TDP_WEB_ORIGINS      - Comma-separated list of web origins for the tdp-django client
-#                             (e.g. https://tdp-frontend.app.cloud.gov)
+#                             (e.g. https://tdp-frontend.tanfdata.acf.hhs.gov)
 #   KC_CLI_REDIRECT_URI     - Additional redirect URI for the tdp-cli client
 #                             (default: http://localhost/*)
 #   KC_CLI_WEB_ORIGIN       - Additional web origin for the tdp-cli client

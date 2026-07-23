@@ -8,7 +8,7 @@
       - init-deploy
       - deploy-cloud-dot-gov:
           backend-appname: tdp-backend-<< parameters.target_env >>
-          frontend-appname: tdp-frontend-<< parameters.target_env >>
+          frontend-hostname: << parameters.target_env >>
 
   deploy-staging:
     executor: docker-executor
@@ -17,7 +17,7 @@
       - init-deploy
       - deploy-cloud-dot-gov:
           backend-appname: tdp-backend-staging
-          frontend-appname: tdp-frontend-staging
+          frontend-hostname: staging
           cf-password: CF_PASSWORD_STAGING
           cf-space: tanf-staging
           cf-username: CF_USERNAME_STAGING
@@ -29,7 +29,7 @@
       - init-deploy
       - deploy-cloud-dot-gov:
           backend-appname: tdp-backend-develop
-          frontend-appname: tdp-frontend-develop
+          frontend-hostname: develop
           cf-password: CF_PASSWORD_STAGING
           cf-space: tanf-staging
           cf-username: CF_USERNAME_STAGING
@@ -125,7 +125,7 @@
           app-dir: tdrs-frontend
       - run:
           name: Run Cypress e2e tests
-          command: cd tdrs-frontend; yarn test:e2e-ci --config baseUrl="https://tdp-frontend-develop.acf.hhs.gov" --env cypressToken=$CYPRESS_TOKEN,apiUrl="https://tdp-frontend-develop.acf.hhs.gov/v1",adminUrl="https://tdp-frontend-develop.acf.hhs.gov/admin",basicAuthUsername=$FRONTEND_BASIC_AUTH_USERNAME,basicAuthPassword=$FRONTEND_BASIC_AUTH_PASSWORD
+          command: cd tdrs-frontend; yarn test:e2e-ci --config baseUrl="https://develop.tanfdata.acf.hhs.gov" --env cypressToken=$CYPRESS_TOKEN,apiUrl="https://develop.tanfdata.acf.hhs.gov/v1",adminUrl="https://develop.tanfdata.acf.hhs.gov/admin",basicAuthUsername=$FRONTEND_BASIC_AUTH_USERNAME,basicAuthPassword=$FRONTEND_BASIC_AUTH_PASSWORD
       - store_artifacts:
           path: tdrs-frontend/cypress/screenshots/
       - store_artifacts:
@@ -139,7 +139,7 @@
       - deploy-cloud-dot-gov:
           environment: production
           backend-appname: tdp-backend-prod
-          frontend-appname: tdp-frontend-prod
+          frontend-hostname: prod
           cf-password: CF_PASSWORD_PROD
           cf-space: tanf-prod
           cf-username: CF_USERNAME_PROD

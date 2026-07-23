@@ -75,7 +75,7 @@ The primary config file is `config/parser.yaml`. Key sections:
 | `server`     | How the parser receives work (`local`, `celery`, `grpc`, `http`) |
 | `pipeline`   | Worker pool sizes and buffer depths                              |
 | `writer`     | Output mode (`database` or `file`), flush thresholds             |
-| `validation` | Short-circuit behavior, validator file paths                     |
+| `validation` | Short-circuit behavior, validation engine, validator file paths   |
 | `database`   | PostgreSQL connection pool settings                              |
 | `storage`    | File acquisition (`local` or `s3`)                               |
 
@@ -238,6 +238,61 @@ go tool pprof cpu.prof
 go run ./cmd/parser --memprofile=mem.prof ...
 go tool pprof mem.prof
 ```
+
+Validation supports three execution engines:
+
+| Engine   | Behavior                                                                 |
+| -------- | ------------------------------------------------------------------------ |
+| `expr`   | Runs every validator through the compiled expr program. This is default. |
+| `hybrid` | Runs native validators when present and falls back to expr otherwise.    |
+| `native` | Requires every configured production validator to have a native executor. |
+
+Select the engine in `config/parser.yaml`, with `GO_PARSER_VALIDATION_ENGINE`, or with `--validation.engine=expr|hybrid|native`.
+
+Use the validation benchmarks to compare isolated validator cost:
+
+```sh
+go test -run '^$' -bench '^BenchmarkValidation' -benchmem -count=10 ./internal/validation
+```
+
+Use the large backend fixture to compare full dry-run parser profiles:
+
+```sh
+go run ./cmd/parser \
+  --dry-run \
+  --validation.engine=expr \
+  --cpuprofile=/tmp/parser-expr.pprof \
+  --server.local.file-path=../../tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.NDM1.TS53_fake.txt \
+  --server.local.program=TAN \
+  --server.local.section=1 \
+  --server.local.fiscal-year=2023 \
+  --server.local.quarter=2 \
+  --writer.output-dir=/tmp/parser-expr
+
+go run ./cmd/parser \
+  --dry-run \
+  --validation.engine=hybrid \
+  --cpuprofile=/tmp/parser-hybrid.pprof \
+  --server.local.file-path=../../tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.NDM1.TS53_fake.txt \
+  --server.local.program=TAN \
+  --server.local.section=1 \
+  --server.local.fiscal-year=2023 \
+  --server.local.quarter=2 \
+  --writer.output-dir=/tmp/parser-hybrid
+
+go run ./cmd/parser \
+  --dry-run \
+  --validation.engine=native \
+  --cpuprofile=/tmp/parser-native.pprof \
+  --server.local.file-path=../../tdrs-backend/tdpservice/parsers/test/data/ADS.E2J.NDM1.TS53_fake.txt \
+  --server.local.program=TAN \
+  --server.local.section=1 \
+  --server.local.fiscal-year=2023 \
+  --server.local.quarter=2 \
+  --writer.output-dir=/tmp/parser-native
+```
+
+Inspect the profiles with `go tool pprof /tmp/parser-expr.pprof`, `go tool pprof /tmp/parser-hybrid.pprof`, and `go tool pprof /tmp/parser-native.pprof`.
 
 ---
 
