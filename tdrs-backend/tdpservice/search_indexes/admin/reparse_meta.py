@@ -44,4 +44,6 @@ class ReparseMetaAdmin(ReadOnlyAdminMixin):
         "num_files_succeeded",
         "num_files_failed",
         "num_records_created",
+        "total_num_records_initial",
+        "total_num_records_post",
     ]

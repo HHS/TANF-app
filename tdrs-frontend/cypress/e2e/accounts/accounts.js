@@ -15,18 +15,27 @@ const loginGovRequestAccessFlow = (
   cy.get('#lastName').type(lastName)
 
   if (stt) {
-    cy.wait('@getSttSearchList', { timeout: 30000 }).then(() => {
-      cy.get('#stt').type(`${stt}{enter}`)
-    })
+    // Wait for the STT list to load before interacting with the combo box.
+    cy.wait('@getSttSearchList', { timeout: 30000 })
+    // Type to filter, then click the matching option explicitly. Pressing
+    // `{enter}` can race the async option rendering and silently no-op on
+    // slower CI machines, leaving the STT unselected and failing submit.
+    cy.get('#stt').should('be.visible').clear().type(stt)
+    cy.get('.usa-combo-box [role="option"]')
+      .contains(new RegExp(`^${stt}$`, 'i'))
+      .click()
+    cy.get('#stt').should('have.value', stt)
   }
 
   if (fra) {
     cy.get('label[for="fra-yes"]').click()
+    cy.get('#fra-yes').should('be.checked')
   } else {
     cy.get('label[for="fra-no"]').click()
+    cy.get('#fra-no').should('be.checked')
   }
 
-  cy.get('button').contains('Request Access').should('exist').click()
+  cy.contains('button', 'Request Access').should('be.enabled').click()
   cy.contains('Request Submitted', { timeout: 10000 }).should('exist')
 }
 

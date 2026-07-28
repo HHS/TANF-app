@@ -26,7 +26,7 @@ Then(
 
 Then('no upload form is visible', () => {
   cy.get('#feedback_reports').should('not.exist')
-  cy.contains('Upload & Notify States').should('not.exist')
+  cy.contains('Upload & Notify STTs').should('not.exist')
 })
 
 // ──────────────────────────────────────────────────────────
@@ -46,7 +46,7 @@ Then('{string} sees the upload form for fiscal year {string}', (_actor, year) =>
   cy.contains('Feedback Reports ZIP').should('exist')
   cy.get('#feedback_reports').should('exist')
   cy.contains('Data extracted from database on').should('exist')
-  cy.contains('button', 'Upload & Notify States').should('exist')
+  cy.contains('button', 'Upload & Notify STTs').should('exist')
 })
 
 Then('{string} sees the upload history section', () => {
@@ -96,11 +96,12 @@ Then('the report is processed successfully', () => {
 // ──────────────────────────────────────────────────────────
 
 Then(
-  '{string} sees the report type selector with {string} and {string}',
-  (_actor, option1, option2) => {
+  '{string} sees the report type selector with {string}, {string}, and {string}',
+  (_actor, option1, option2, option3) => {
     cy.contains('Feedback Report Type').should('exist')
     cy.contains('label', option1).should('exist')
     cy.contains('label', option2).should('exist')
+    cy.contains('label', option3).should('exist')
   }
 )
 
@@ -153,4 +154,3 @@ When('{string} selects {string} but no date', (_actor, fileName) => {
 Then('{string} sees the error about missing date', () => {
   cy.contains(fr.ERROR_MESSAGES.NO_DATE).should('exist')
 })
-

@@ -134,6 +134,36 @@ func TestCLI_OverrideServerCeleryQueueName(t *testing.T) {
 	}
 }
 
+func TestCLI_OverrideValidationEngine(t *testing.T) {
+	cli, ctx, err := ParseCLI([]string{"--validation.engine=hybrid"})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	cfg := DefaultConfig()
+	cli.ApplyTo(cfg, ctx)
+
+	if cfg.Validation.Engine != "hybrid" {
+		t.Errorf("Validation.Engine = %q, want hybrid", cfg.Validation.Engine)
+	}
+}
+
+func TestCLI_OverrideValidationEngineFromEnv(t *testing.T) {
+	t.Setenv("GO_PARSER_VALIDATION_ENGINE", "native")
+
+	cli, ctx, err := ParseCLI([]string{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	cfg := DefaultConfig()
+	cli.ApplyTo(cfg, ctx)
+
+	if cfg.Validation.Engine != "native" {
+		t.Errorf("Validation.Engine = %q, want native from GO_PARSER_VALIDATION_ENGINE", cfg.Validation.Engine)
+	}
+}
+
 func TestCLI_ProfileFlags(t *testing.T) {
 	cli, _, err := ParseCLI([]string{"--cpuprofile=/tmp/cpu.prof", "--memprofile=/tmp/mem.prof"})
 	if err != nil {

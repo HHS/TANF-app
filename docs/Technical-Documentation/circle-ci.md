@@ -121,5 +121,5 @@ The Frontend and Backend deploy Workflows are triggered automatically on pushes 
 * PRs given the explicit label `Deploy with CircleCI` will deploy to the tanf-dev environment selected
     * `Deploy with CircleCI` is the prefix part of the label which triggers the build. It needs the environment added as a suffix
     * To select the environment, add the name after a hyphen following the `Deploy with CircleCI` prefix
-    * e.g. `Deploy with CircleCI-raft` will deploy your branch build to the tanf-dev Cloud Foundry space, tdp-raft environment
-        * tdp-frontend-raft & tdp-backend-raft
+    * e.g. `Deploy with CircleCI-test` will deploy your branch build to the tanf-dev Cloud Foundry space, tdp-test environment
+        * tdp-frontend-test & tdp-backend-test

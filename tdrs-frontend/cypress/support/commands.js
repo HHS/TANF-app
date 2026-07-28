@@ -2,6 +2,23 @@
 
 const getSessionId = (scope, username) => [scope, username]
 
+const getBasicAuth = () => {
+  const username = Cypress.env('basicAuthUsername')
+  const password = Cypress.env('basicAuthPassword')
+
+  if (!username || !password) return null
+
+  return { username, password }
+}
+
+const addBasicAuth = (options = {}) => {
+  const auth = getBasicAuth()
+
+  if (!auth || options.auth) return options
+
+  return { ...options, auth }
+}
+
 // ***********************************************
 // This example commands.js shows you how to
 // create various custom commands and overwrite
@@ -27,6 +44,30 @@ const getSessionId = (scope, username) => [scope, username]
 //
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
+
+Cypress.Commands.overwrite('visit', (originalFn, url, options = {}) =>
+  originalFn(url, addBasicAuth(options))
+)
+
+Cypress.Commands.overwrite('request', (originalFn, ...args) => {
+  if (!getBasicAuth()) return originalFn(...args)
+
+  if (typeof args[0] === 'object') {
+    return originalFn(addBasicAuth(args[0]))
+  }
+
+  if (args.length === 1) {
+    return originalFn(addBasicAuth({ url: args[0] }))
+  }
+
+  if (args.length === 2) {
+    return originalFn(addBasicAuth({ method: args[0], url: args[1] }))
+  }
+
+  return originalFn(
+    addBasicAuth({ method: args[0], url: args[1], body: args[2] })
+  )
+})
 
 Cypress.Commands.add('login', (username) =>
   cy.session(
@@ -127,6 +168,9 @@ Cypress.Commands.add(
     return getCsrfToken().then((csrfToken) => {
       if (csrfToken) {
         options.headers['X-CSRFToken'] = csrfToken
+        return cy
+          .setCookie('csrftoken', csrfToken)
+          .then(() => cy.request(options))
       }
 
       return cy.request(options)

@@ -4,7 +4,14 @@ from django.conf import settings
 
 from tdpservice.email.email import automated_email, log
 from tdpservice.email.email_enums import FeedbackReportEmail
-from tdpservice.reports.models import ReportFile
+from tdpservice.reports.models import ReportFile, ReportType
+
+
+REPORT_TYPE_LABELS = {
+    ReportType.TANF_SSP: ReportType.TANF_SSP.label,
+    ReportType.TRIBAL_TANF: ReportType.TRIBAL_TANF.label,
+    ReportType.FRA: ReportType.FRA.label,
+}
 
 
 def send_feedback_report_available_email(report_file: ReportFile, recipients):
@@ -37,7 +44,10 @@ def send_feedback_report_available_email(report_file: ReportFile, recipients):
         }
 
     template_path = FeedbackReportEmail.REPORT_AVAILABLE.value
-    report_type_label = "FRA" if getattr(report_file, "report_type", None) == "FRA" else "TANF/SSP"
+    report_type = getattr(report_file, "report_type", ReportType.TANF_SSP)
+    report_type_label = REPORT_TYPE_LABELS.get(
+        report_type, ReportType.TANF_SSP.label
+    )
     subject = f"{report_type_label} Feedback Report Available: {report_file.stt.name} - FY {report_file.year}"
     text_message = (
         f"A new {report_type_label} feedback report is available for {report_file.stt.name} "
@@ -49,7 +59,7 @@ def send_feedback_report_available_email(report_file: ReportFile, recipients):
         "fiscal_year": report_file.year,
         "date_extracted_on": date_extracted_str,
         "report_date": report_file.created_at.strftime("%m/%d/%Y"),
-        "report_type": getattr(report_file, "report_type", "TANF_SSP"),
+        "report_type": report_type,
         "report_type_label": report_type_label,
         "url": settings.FRONTEND_BASE_URL,
         "subject": subject,

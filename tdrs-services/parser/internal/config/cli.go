@@ -61,7 +61,8 @@ type CLI struct {
 	DryRun bool `kong:"name='dry-run',help='Run without database: output records/errors to local files'"`
 
 	// Validation
-	ValidationShortCircuit bool `kong:"name='validation.short-circuit',help='Skip field/consistency validators on precheck failure'"`
+	ValidationShortCircuit bool   `kong:"name='validation.short-circuit',help='Skip field/consistency validators on precheck failure'"`
+	ValidationEngine       string `kong:"name='validation.engine',env='GO_PARSER_VALIDATION_ENGINE',help='Validation engine: expr, hybrid, or native'"`
 
 	// Database
 	DatabaseURL               string        `kong:"name='database.url',env='DATABASE_URL',help='Database connection URL'"`
@@ -204,6 +205,9 @@ func (c *CLI) ApplyTo(cfg *Config, ctx *kong.Context) {
 
 	if set["validation.short-circuit"] {
 		cfg.Validation.ShortCircuit = c.ValidationShortCircuit
+	}
+	if set["validation.engine"] {
+		cfg.Validation.Engine = c.ValidationEngine
 	}
 
 	if set["database.url"] {

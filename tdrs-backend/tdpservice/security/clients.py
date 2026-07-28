@@ -47,7 +47,7 @@ class ClamAVClient:
 
     def scan_file(
         self, file: File, file_name: str, uploaded_by: User, data_file=None
-    ) -> bool:
+    ) -> "ClamAVFileScan.Result":
         """Scan a file for virus infections.
 
         :param file:
@@ -58,8 +58,11 @@ class ClamAVClient:
             The User that uploaded the given file.
         :param data_file:
             Optional DataFile associated with this scan.
-        :returns is_file_clean:
-            A boolean indicating whether or not the file passed the ClamAV scan
+        :returns scan_result:
+            The :class:`ClamAVFileScan.Result` value recorded for this scan.
+            Callers can compare against ``ClamAVFileScan.Result.CLEAN`` to
+            decide whether the file should be accepted, while ``INFECTED``
+            and ``ERROR`` remain distinguishable for audit/logging purposes.
         :raises ClamAVClient.ServiceUnavailable:
         """
         logger.debug(f"Initiating virus scan for file: {file_name}")
@@ -93,4 +96,4 @@ class ClamAVClient:
             file, file_name, msg, scan_result, uploaded_by, data_file=data_file
         )
 
-        return True if scan_result == ClamAVFileScan.Result.CLEAN else False
+        return scan_result

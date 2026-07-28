@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 from inflection import pluralize
 
 from tdpservice.security.clients import ClamAVClient
+from tdpservice.security.models import ClamAVFileScan
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +54,8 @@ def validate_file_infection(file, file_name, uploaded_by):
         is_file_clean = True
         if settings.CLAMAV_NEEDED is True:
             logger.debug("CLAMAV_NEEDED noted as True, proceeding with scan.")
-            is_file_clean = ClamAVClient().scan_file(file, file_name, uploaded_by)
+            scan_result = ClamAVClient().scan_file(file, file_name, uploaded_by)
+            is_file_clean = scan_result == ClamAVFileScan.Result.CLEAN
 
     except ClamAVClient.ServiceUnavailable:
         raise ValidationError(

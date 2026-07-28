@@ -56,9 +56,15 @@ Feature: Admin Feedback Reports
 
     # Report Type Selection tests
 
-    Scenario: Report type radio selector is visible with TANF/SSP and FRA options
+    Scenario: Report type radio selector is visible with TANF/SSP, Tribal TANF, and FRA options
         When 'DIGIT Diana' navigates to Feedback Reports
-        Then 'DIGIT Diana' sees the report type selector with 'TANF/SSP' and 'FRA'
+        Then 'DIGIT Diana' sees the report type selector with 'TANF/SSP', 'Tribal TANF', and 'FRA'
+
+    Scenario: Selecting Tribal TANF updates the upload header
+        When 'DIGIT Diana' navigates to Feedback Reports
+        And 'DIGIT Diana' selects report type 'Tribal TANF'
+        And 'DIGIT Diana' selects fiscal year '2025'
+        Then 'DIGIT Diana' sees the upload header 'Fiscal Year 2025 — Upload Tribal TANF Feedback Reports'
 
     Scenario: Selecting FRA updates the upload header
         When 'DIGIT Diana' navigates to Feedback Reports
@@ -78,4 +84,3 @@ Feature: Admin Feedback Reports
         When 'Admin Alex' navigates to Feedback Reports
         And 'Admin Alex' selects fiscal year '2025'
         Then 'Admin Alex' sees the upload form for fiscal year '2025'
-

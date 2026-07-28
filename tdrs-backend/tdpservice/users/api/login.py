@@ -104,8 +104,6 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 issuer=issuer,
                 audience=audience,
                 algorithms=["RS256"],
-                subject=None,
-                access_token=None,
                 options=options,
             )
             return decoded_payload

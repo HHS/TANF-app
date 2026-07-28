@@ -452,6 +452,11 @@ class TestReportFileReportTypeFiltering:
             stt=data_analyst.stt, user=data_analyst, report_type=ReportType.FRA,
             date_extracted_on=datetime.date(2024, 3, 31),
         )
+        tribal_tanf_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst,
+            report_type=ReportType.TRIBAL_TANF,
+            date_extracted_on=datetime.date(2024, 4, 30),
+        )
 
         resp = api_client_logged_in.get(f"{self.root_url}?report_type=TANF_SSP")
 
@@ -459,6 +464,7 @@ class TestReportFileReportTypeFiltering:
         returned_ids = [row["id"] for row in resp.data["results"]]
         assert tanf_report.id in returned_ids
         assert fra_report.id not in returned_ids
+        assert tribal_tanf_report.id not in returned_ids
 
     def test_filter_by_fra(self, api_client_logged_in, data_analyst):
         """report_type=FRA should return only FRA reports."""
@@ -473,6 +479,11 @@ class TestReportFileReportTypeFiltering:
             stt=data_analyst.stt, user=data_analyst, report_type=ReportType.FRA,
             date_extracted_on=datetime.date(2024, 3, 31),
         )
+        tribal_tanf_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst,
+            report_type=ReportType.TRIBAL_TANF,
+            date_extracted_on=datetime.date(2024, 4, 30),
+        )
 
         resp = api_client_logged_in.get(f"{self.root_url}?report_type=FRA")
 
@@ -480,6 +491,34 @@ class TestReportFileReportTypeFiltering:
         returned_ids = [row["id"] for row in resp.data["results"]]
         assert fra_report.id in returned_ids
         assert tanf_report.id not in returned_ids
+        assert tribal_tanf_report.id not in returned_ids
+
+    def test_filter_by_tribal_tanf(self, api_client_logged_in, data_analyst):
+        """report_type=TRIBAL_TANF should return only Tribal TANF reports."""
+        import datetime
+        from tdpservice.reports.test.factories import ReportFileFactory
+
+        tanf_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst, report_type=ReportType.TANF_SSP,
+            date_extracted_on=datetime.date(2024, 1, 31),
+        )
+        fra_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst, report_type=ReportType.FRA,
+            date_extracted_on=datetime.date(2024, 3, 31),
+        )
+        tribal_tanf_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst,
+            report_type=ReportType.TRIBAL_TANF,
+            date_extracted_on=datetime.date(2024, 4, 30),
+        )
+
+        resp = api_client_logged_in.get(f"{self.root_url}?report_type=TRIBAL_TANF")
+
+        assert resp.status_code == status.HTTP_200_OK
+        returned_ids = [row["id"] for row in resp.data["results"]]
+        assert tribal_tanf_report.id in returned_ids
+        assert tanf_report.id not in returned_ids
+        assert fra_report.id not in returned_ids
 
     def test_no_filter_returns_all_types(self, api_client_logged_in, data_analyst):
         """Without report_type param, both TANF/SSP and FRA reports should be returned."""
@@ -494,6 +533,11 @@ class TestReportFileReportTypeFiltering:
             stt=data_analyst.stt, user=data_analyst, report_type=ReportType.FRA,
             date_extracted_on=datetime.date(2024, 3, 31),
         )
+        tribal_tanf_report = ReportFileFactory.create(
+            stt=data_analyst.stt, user=data_analyst,
+            report_type=ReportType.TRIBAL_TANF,
+            date_extracted_on=datetime.date(2024, 4, 30),
+        )
 
         resp = api_client_logged_in.get(self.root_url)
 
@@ -501,6 +545,7 @@ class TestReportFileReportTypeFiltering:
         returned_ids = [row["id"] for row in resp.data["results"]]
         assert tanf_report.id in returned_ids
         assert fra_report.id in returned_ids
+        assert tribal_tanf_report.id in returned_ids
 
     def test_report_type_in_response(self, api_client_logged_in, report_file_instance):
         """report_type field should be included in the API response."""
@@ -525,10 +570,15 @@ class TestReportSourceReportTypeFiltering:
 
     def test_filter_report_sources_by_report_type(self, api_client_logged_in):
         """report_type param filters report sources to only that type."""
-        from tdpservice.reports.test.factories import ReportSourceFactory, FRAReportSourceFactory
+        from tdpservice.reports.test.factories import (
+            FRAReportSourceFactory,
+            ReportSourceFactory,
+            TribalTANFReportSourceFactory,
+        )
 
         tanf_source = ReportSourceFactory.create()
         fra_source = FRAReportSourceFactory.create()
+        tribal_tanf_source = TribalTANFReportSourceFactory.create()
 
         resp = api_client_logged_in.get(f"{self.root_url}?report_type=FRA")
 
@@ -536,3 +586,12 @@ class TestReportSourceReportTypeFiltering:
         returned_ids = [row["id"] for row in resp.data["results"]]
         assert fra_source.id in returned_ids
         assert tanf_source.id not in returned_ids
+        assert tribal_tanf_source.id not in returned_ids
+
+        resp = api_client_logged_in.get(f"{self.root_url}?report_type=TRIBAL_TANF")
+
+        assert resp.status_code == status.HTTP_200_OK
+        returned_ids = [row["id"] for row in resp.data["results"]]
+        assert tribal_tanf_source.id in returned_ids
+        assert tanf_source.id not in returned_ids
+        assert fra_source.id not in returned_ids

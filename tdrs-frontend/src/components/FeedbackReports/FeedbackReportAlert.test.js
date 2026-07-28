@@ -364,6 +364,34 @@ describe('FeedbackReportAlert', () => {
       })
     })
 
+    it('shows TANF in alert text when reportType is TRIBAL_TANF', async () => {
+      mockUseReportsContext.mockReturnValue({
+        yearInputValue: '2025',
+        quarterInputValue: 'Q1',
+      })
+
+      get.mockResolvedValue({
+        data: { results: [{ created_at: '2025-12-01T00:00:00Z' }] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
+
+      renderComponent({ reportType: 'TRIBAL_TANF' })
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/TANF Feedback Reports Available/)
+        ).toBeInTheDocument()
+        expect(
+          screen.queryByText(/Tribal TANF Feedback Reports Available/)
+        ).not.toBeInTheDocument()
+        expect(
+          screen.queryByText(/TANF\/SSP Feedback Reports Available/)
+        ).not.toBeInTheDocument()
+      })
+    })
+
     it('fetches with FRA report_type when reportType prop is FRA', async () => {
       mockUseReportsContext.mockReturnValue({
         yearInputValue: '2025',
@@ -391,6 +419,33 @@ describe('FeedbackReportAlert', () => {
       })
     })
 
+    it('fetches with TRIBAL_TANF report_type when reportType prop is TRIBAL_TANF', async () => {
+      mockUseReportsContext.mockReturnValue({
+        yearInputValue: '2025',
+        quarterInputValue: 'Q1',
+      })
+
+      get.mockResolvedValue({
+        data: { results: [{ created_at: '2025-12-01T00:00:00Z' }] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
+
+      renderComponent({ reportType: 'TRIBAL_TANF' })
+
+      await waitFor(() => {
+        expect(get).toHaveBeenCalledWith(
+          expect.stringContaining('/reports/'),
+          expect.objectContaining({
+            params: expect.objectContaining({
+              report_type: 'TRIBAL_TANF',
+            }),
+          })
+        )
+      })
+    })
+
     it('includes FRA type in link URL', async () => {
       mockUseReportsContext.mockReturnValue({
         yearInputValue: '2025',
@@ -411,6 +466,30 @@ describe('FeedbackReportAlert', () => {
         expect(link).toHaveAttribute(
           'href',
           '/feedback-reports?type=FRA&year=2025'
+        )
+      })
+    })
+
+    it('includes TRIBAL_TANF type in link URL', async () => {
+      mockUseReportsContext.mockReturnValue({
+        yearInputValue: '2025',
+        quarterInputValue: 'Q1',
+      })
+
+      get.mockResolvedValue({
+        data: { results: [{ created_at: '2025-12-01T00:00:00Z' }] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
+
+      renderComponent({ reportType: 'TRIBAL_TANF' })
+
+      await waitFor(() => {
+        const link = screen.getByRole('link', { name: /review the feedback/i })
+        expect(link).toHaveAttribute(
+          'href',
+          '/feedback-reports?type=TRIBAL_TANF&year=2025'
         )
       })
     })
@@ -536,6 +615,36 @@ describe('FeedbackReportAlert', () => {
 
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
         'feedbackAlertDismissed_FRA_2025',
+        createdAt
+      )
+    })
+
+    it('uses TRIBAL_TANF in localStorage key when reportType is TRIBAL_TANF', async () => {
+      mockUseReportsContext.mockReturnValue({
+        yearInputValue: '2025',
+        quarterInputValue: 'Q1',
+      })
+
+      const createdAt = '2025-12-01T00:00:00Z'
+      get.mockResolvedValue({
+        data: { results: [{ created_at: createdAt }] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
+
+      renderComponent({ reportType: 'TRIBAL_TANF' })
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/Feedback Reports Available/)
+        ).toBeInTheDocument()
+      })
+
+      fireEvent.click(screen.getByRole('button', { name: /dismiss alert/i }))
+
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+        'feedbackAlertDismissed_TRIBAL_TANF_2025',
         createdAt
       )
     })
@@ -741,6 +850,30 @@ describe('FeedbackReportAlert', () => {
         expect(link).toHaveAttribute(
           'href',
           '/feedback-reports?type=TANF_SSP&year=2025&stt=Wisconsin'
+        )
+      })
+    })
+
+    it('includes stt and TRIBAL_TANF type in feedback reports link when both are provided', async () => {
+      mockUseReportsContext.mockReturnValue({
+        yearInputValue: '2025',
+        quarterInputValue: 'Q1',
+      })
+
+      get.mockResolvedValue({
+        data: { results: [{ created_at: '2025-12-01T00:00:00Z' }] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
+
+      renderComponent({ stt: mockStt, reportType: 'TRIBAL_TANF' })
+
+      await waitFor(() => {
+        const link = screen.getByRole('link', { name: /review the feedback/i })
+        expect(link).toHaveAttribute(
+          'href',
+          '/feedback-reports?type=TRIBAL_TANF&year=2025&stt=Wisconsin'
         )
       })
     })

@@ -398,7 +398,7 @@ class Common(Configuration):
     # of API POST calls to prevent false negative authorization errors.
     # https://docs.djangoproject.com/en/2.2/ref/settings/#csrf-cookie-httponly
     CSRF_COOKIE_HTTPONLY = False
-    CSRF_TRUSTED_ORIGINS = ["https://*.app.cloud.gov", "https://*.acf.hhs.gov"]
+    CSRF_TRUSTED_ORIGINS = ["https://*.acf.hhs.gov"]
 
     # Django Rest Framework
     DEFAULT_RENDERER_CLASSES = ["rest_framework.renderers.JSONRenderer"]
@@ -779,7 +779,7 @@ class Common(Configuration):
     # Cloud.gov SET integration settings
     LOGIN_GOV_SET_AUDIENCE = os.getenv(
         "LOGIN_GOV_SET_AUDIENCE",
-        "https://tdp-frontend-raft.apps.cloud.gov/v1/security/event-token/",
+        "https://test.tanfdata.acf.hhs.gov/v1/security/event-token/",
     )
     LOGIN_GOV_WELL_KNOWN_CONFIG = os.getenv(
         "LOGIN_GOV_WELL_KNOWN_CONFIG",

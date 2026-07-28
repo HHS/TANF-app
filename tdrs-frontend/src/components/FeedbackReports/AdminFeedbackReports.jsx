@@ -235,7 +235,7 @@ function AdminFeedbackReports() {
         active: true,
         type: 'success',
         message:
-          'Feedback report uploaded successfully! Processing has begun and states will be notified once complete.',
+          'Feedback report uploaded successfully! Processing has begun and STTs will be notified once complete.',
       })
 
       // Clear the form
@@ -358,7 +358,7 @@ function AdminFeedbackReports() {
         <p className="margin-top-5 margin-bottom-0">
           Once submitted, TDP will distribute feedback reports to{' '}
           {REPORT_TYPE_LABELS[selectedReportType]} submission history pages of
-          each state and notify users that feedback reports are available. There
+          each STT and notify users that feedback reports are available. There
           may be several minutes between when the ZIP is uploaded and when all
           notifications have been sent as TDP processes the reports.
         </p>

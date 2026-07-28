@@ -2,8 +2,8 @@
 
 import pytest
 
+from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.models import DataFile
-from tdpservice.data_files.util import create_s3_log_file_path
 from tdpservice.stts.models import STT
 
 
@@ -220,55 +220,39 @@ def test_fiscal_year(data_file_instance):
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize(
-    "section, program_type",
-    [
-        ("Active Case Data", "TAN"),
-        ("Closed Case Data", "SSP"),
-        ("Aggregate Data", "TRIBAL"),
-        ("Work Outcomes of TANF Exiters", "FRA"),
-    ],
-)
-def test_create_s3_log_file_path_includes_program_type_and_id(
-    data_file_instance, section, program_type
-):
-    """Log file path includes program type and datafile ID for uniqueness."""
+def test_data_file_defaults_to_uploaded_submission_state(data_file_instance):
+    """Test new data files default to the uploaded submission state."""
     df = DataFile.create_new_version(
         {
             "year": data_file_instance.year,
             "quarter": data_file_instance.quarter,
-            "section": section,
-            "program_type": program_type,
+            "section": data_file_instance.section,
+            "program_type": data_file_instance.program_type,
             "stt": data_file_instance.stt,
             "original_filename": data_file_instance.original_filename,
             "slug": data_file_instance.slug,
             "extension": data_file_instance.extension,
             "user": data_file_instance.user,
-            "is_program_audit": False,
+            "is_program_audit": data_file_instance.is_program_audit,
         }
     )
 
-    path = create_s3_log_file_path(df)
-    expected = f"{df.year}/{df.quarter}/{df.stt}/{program_type}/{section}/{df.id}"
-    assert path == expected
+    assert df.state == SubmissionState.UPLOADED
 
 
-@pytest.mark.django_db
-def test_create_s3_log_file_path_unique_per_datafile(data_file_instance):
-    """Two DataFiles for the same STT/year/quarter/section produce different paths."""
-    common = {
-        "year": data_file_instance.year,
-        "quarter": data_file_instance.quarter,
-        "section": data_file_instance.section,
-        "program_type": data_file_instance.program_type,
-        "stt": data_file_instance.stt,
-        "original_filename": data_file_instance.original_filename,
-        "slug": data_file_instance.slug,
-        "extension": data_file_instance.extension,
-        "user": data_file_instance.user,
-        "is_program_audit": False,
-    }
-    df1 = DataFile.create_new_version(common)
-    df2 = DataFile.create_new_version(common)
-
-    assert create_s3_log_file_path(df1) != create_s3_log_file_path(df2)
+def test_submission_state_enum_matches_parsing_refactor_writeup():
+    """Test the durable submission lifecycle states are defined on the enum."""
+    assert list(SubmissionState.values) == [
+        "uploaded",
+        "virus_scan_started",
+        "virus_scan_failed",
+        "virus_scan_completed",
+        "reparse_requested",
+        "parse_started",
+        "parse_failed",
+        "parsed_with_errors",
+        "parse_completed",
+        "stuck",
+        "completed",
+        "canceled",
+    ]

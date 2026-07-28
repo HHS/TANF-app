@@ -297,10 +297,10 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "${KC_TDP_GRAFANA_CLIENT_SECRET}",
       "redirectUris": [
-        "https://grafana.app.cloud.gov/login/generic_oauth"
+        "https://grafana.tanfdata.acf.hhs.gov/login/generic_oauth"
       ],
       "webOrigins": [
-        "https://grafana.app.cloud.gov"
+        "https://grafana.tanfdata.acf.hhs.gov"
       ],
       "protocol": "openid-connect",
       "publicClient": false,
@@ -318,7 +318,7 @@
       ],
       "optionalClientScopes": [],
       "attributes": {
-        "post.logout.redirect.uris": "https://grafana.app.cloud.gov/*"
+        "post.logout.redirect.uris": "https://grafana.tanfdata.acf.hhs.gov/*"
       }
     },
     {
@@ -436,7 +436,7 @@
       "linkOnly": false,
       "firstBrokerLoginFlowAlias": "tdp-first-broker-login",
       "config": {
-        "clientId": "${LOGIN_GOV_CLIENT_ID:urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-dev}",
+        "clientId": "${LOGIN_GOV_CLIENT_ID:urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-prod}",
         "clientSecret": "unused-private-key-jwt-auth",
         "clientAuthMethod": "private_key_jwt",
         "authorizationUrl": "${LOGIN_GOV_AUTH_URL:https://idp.int.identitysandbox.gov/openid_connect/authorize}",

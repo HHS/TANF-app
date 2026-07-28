@@ -14,7 +14,7 @@ export const ERROR_MESSAGES = {
 }
 
 export const SUCCESS_MESSAGE =
-  'Feedback report uploaded successfully! Processing has begun and states will be notified once complete.'
+  'Feedback report uploaded successfully! Processing has begun and STTs will be notified once complete.'
 
 /**
  * Navigate to the Feedback Reports page and wait for it to load.
@@ -72,10 +72,10 @@ export const enterExtractionDate = (dateStr) => {
 }
 
 /**
- * Click the "Upload & Notify States" button.
+ * Click the "Upload & Notify STTs" button.
  */
 export const clickUploadAndNotify = () => {
-  cy.contains('button', 'Upload & Notify States').should('exist').click()
+  cy.contains('button', 'Upload & Notify STTs').should('exist').click()
 }
 
 /**

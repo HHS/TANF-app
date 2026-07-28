@@ -91,7 +91,7 @@ Note: `OIDC_OP_AUTHORIZATION_ENDPOINT` and `OIDC_OP_LOGOUT_ENDPOINT` use `KEYCLO
 
 | Variable | Default | Description |
 |---|---|---|
-| `LOGIN_GOV_CLIENT_ID` | `urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-dev` | Login.gov OIDC client ID |
+| `LOGIN_GOV_CLIENT_ID` | `urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-{space}` | Login.gov OIDC client ID |
 | `LOGIN_GOV_AUTH_URL` | `https://idp.int.identitysandbox.gov/openid_connect/authorize` | Login.gov authorization endpoint |
 | `LOGIN_GOV_TOKEN_URL` | `https://idp.int.identitysandbox.gov/api/openid_connect/token` | Login.gov token endpoint |
 | `LOGIN_GOV_JWKS_URL` | `https://idp.int.identitysandbox.gov/api/openid_connect/certs` | Login.gov JWKS endpoint |

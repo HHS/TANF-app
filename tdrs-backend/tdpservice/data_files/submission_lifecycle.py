@@ -22,6 +22,10 @@ class InvalidTransition(ValueError):
     """Raised when an invalid submission state transition is attempted."""
 
 
+class InvalidScanResult(ValueError):
+    """Raised when an AV scan result cannot be mapped to a submission state."""
+
+
 class ReparsePreparationError(ValueError):
     """Raised when a DataFile cannot be safely prepared for reparse."""
 
@@ -40,8 +44,8 @@ ALLOWED_TRANSITIONS: Dict[SubmissionState, Iterable[SubmissionState]] = {
         SubmissionState.CANCELED,
     },
     SubmissionState.VIRUS_SCAN_STARTED: {
-        SubmissionState.VIRUS_SCAN_FAILED,
         SubmissionState.VIRUS_SCAN_COMPLETED,
+        SubmissionState.VIRUS_SCAN_FAILED,
         SubmissionState.CANCELED,
     },
     SubmissionState.VIRUS_SCAN_FAILED: {
@@ -122,6 +126,7 @@ def transition_datafile(
     next_state,
     note="",
     logger_hook: Callable | None = None,
+    log_fields: dict | None = None,
 ):
     """Safely transition a DataFile.state value and persist the new state."""
     transition = validate_transition(data_file.state, next_state)
@@ -140,6 +145,8 @@ def transition_datafile(
         "next_state": transition.next_state.value,
         "note": note,
     }
+    if log_fields:
+        log_payload.update(log_fields)
 
     if logger_hook is not None:
         logger_hook(log_payload)
@@ -147,6 +154,95 @@ def transition_datafile(
         logger.info("DataFile submission state transition", extra=log_payload)
 
     return data_file
+
+
+def _normalize_scan_result(scan_result) -> str:
+    """Normalize a scan result value into an upper-case token."""
+    value = getattr(scan_result, "value", scan_result)
+    return str(value).strip().upper()
+
+
+def _next_state_for_scan_result(scan_result) -> SubmissionState:
+    """Map an AV scan result token to a submission lifecycle state."""
+    normalized = _normalize_scan_result(scan_result)
+
+    if normalized in {"CLEAN", "PASS", "PASSED", "OK"}:
+        return SubmissionState.VIRUS_SCAN_COMPLETED
+
+    if normalized in {"INFECTED", "FAIL", "FAILED", "FLAGGED", "ERROR"}:
+        return SubmissionState.VIRUS_SCAN_FAILED
+
+    raise InvalidScanResult(f"Unsupported AV scan result: {scan_result}")
+
+
+def _emit_av_completion_log(logger_hook, payload, level="info"):
+    """Emit AV completion logging through the optional hook or module logger."""
+    if logger_hook is not None:
+        logger_hook(payload)
+        return
+
+    log_method = logger.warning if level == "warning" else logger.info
+    log_method("DataFile AV scan completion", extra=payload)
+
+
+def complete_datafile_av_scan(
+    data_file,
+    scan_result,
+    note="",
+    logger_hook: Callable | None = None,
+    strict=False,
+):
+    """Apply an AV scan completion result to DataFile state.
+
+    Expected transitions:
+    - virus_scan_started -> virus_scan_completed for clean results
+    - virus_scan_started -> virus_scan_failed for infected, flagged, or error results
+
+    By default this function is idempotent and logs a no-op for duplicate or
+    out-of-order results. Set strict=True to raise InvalidTransition for
+    out-of-order states.
+    """
+    target_state = _next_state_for_scan_result(scan_result)
+    previous_state = coerce_submission_state(data_file.state)
+    normalized_scan_result = _normalize_scan_result(scan_result)
+
+    if previous_state == target_state:
+        payload = {
+            "data_file_id": data_file.id,
+            "previous_state": previous_state.value,
+            "next_state": target_state.value,
+            "scan_result": normalized_scan_result,
+            "note": note or "Duplicate AV completion result; no-op.",
+        }
+        _emit_av_completion_log(logger_hook, payload)
+        return data_file, False
+
+    if previous_state != SubmissionState.VIRUS_SCAN_STARTED:
+        if strict:
+            raise InvalidTransition(
+                f"Cannot apply AV scan completion while DataFile is in "
+                f"{previous_state.value}."
+            )
+
+        payload = {
+            "data_file_id": data_file.id,
+            "previous_state": previous_state.value,
+            "next_state": target_state.value,
+            "scan_result": normalized_scan_result,
+            "note": note
+            or "Ignoring out-of-order AV completion result for DataFile.",
+        }
+        _emit_av_completion_log(logger_hook, payload, level="warning")
+        return data_file, False
+
+    transitioned_file = transition_datafile(
+        data_file,
+        target_state,
+        note=note or "Applied AV scan completion result.",
+        logger_hook=logger_hook,
+        log_fields={"scan_result": normalized_scan_result},
+    )
+    return transitioned_file, True
 
 
 def prepare_datafile_for_reparse(

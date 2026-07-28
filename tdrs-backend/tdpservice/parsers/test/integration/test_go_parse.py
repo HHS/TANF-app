@@ -52,6 +52,7 @@ logger = logging.getLogger(__name__)
 
 GO_PARSE_TASK_NAME = "tdpservice.scheduling.parser_task.go_parse"
 GO_PARSE_TIMEOUT_SECONDS = 300
+GO_PARSE_LARGE_FILE_TIMEOUT_SECONDS = 300
 _GO_PARSER_DATAFILE_IDS = None
 
 os.environ["GO_PARSER_SHADOW_MODE"] = "False"
@@ -2223,7 +2224,6 @@ class TestGoParse:
         assert TANF_T3.objects.filter(datafile=case_aggregates_edge_case).count() == 6
 
     @pytest.mark.django_db(transaction=True)
-    @pytest.mark.skip(reason="long runtime")
     def test_go_parse_super_big_s1_file(self, super_big_s1_file, dfs):
         """Test parsing super_big_s1_file and validate all records are created."""
         super_big_s1_file.year = 2023
@@ -2234,7 +2234,11 @@ class TestGoParse:
         dfs.datafile = super_big_s1_file
         dfs.save()
 
-        parse_datafile(dfs, super_big_s1_file)
+        parse_datafile(
+            dfs,
+            super_big_s1_file,
+            timeout_seconds=GO_PARSE_LARGE_FILE_TIMEOUT_SECONDS,
+        )
         expected_t1_record_count = 96497
         expected_t2_record_count = 112622
         expected_t3_record_count = 172552

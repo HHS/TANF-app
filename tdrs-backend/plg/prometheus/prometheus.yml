@@ -28,17 +28,17 @@ scrape_configs:
           service: "prometheus"
           env: "production"
 
-  - job_name: "tdp-backend-raft"
+  - job_name: "tdp-backend-test"
     metrics_path: "/prometheus/metrics"
     static_configs:
-      - targets: ["tdp-backend-raft.apps.internal:8080"]
+      - targets: ["tdp-backend-test.apps.internal:8080"]
         labels:
           service: "tdp-backend"
           env: "dev"
 
-  - job_name: "tdp-celery-raft"
+  - job_name: "tdp-celery-test"
     static_configs:
-      - targets: ["tdp-celery-raft.apps.internal:9808"]
+      - targets: ["tdp-celery-test.apps.internal:9808"]
         labels:
           service: "tdp-celery"
           env: "dev"

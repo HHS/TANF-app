@@ -359,6 +359,56 @@ tasks:
       - task: frontend-up
       - task: clamav-up
 
+  admin-init:
+    desc: Initialize the admin project (localdev image with node_modules)
+    dir: tdp-admin
+    cmds:
+      - docker compose -f docker-compose.local.yml up -d --build tdp-admin
+      - docker compose -f docker-compose.local.yml exec tdp-admin sh -c "corepack prepare yarn@4.6.0 && corepack yarn install"
+      - docker compose -f docker-compose.local.yml down
+
+  admin-up:
+    desc: Start admin web server (Next.js localdev image)
+    dir: tdp-admin
+    cmds:
+      - docker compose -f docker-compose.local.yml up -d --build tdp-admin
+
+  admin-down:
+    desc: Stop admin web server
+    dir: tdp-admin
+    cmds:
+      - docker compose -f docker-compose.local.yml down
+
+  admin-logs:
+    desc: Show and follow admin web server logs
+    dir: tdp-admin
+    cmds:
+      - docker compose -f docker-compose.local.yml logs -f
+
+  admin-restart:
+    desc: Restart admin web server
+    dir: tdp-admin
+    cmds:
+      - docker compose -f docker-compose.local.yml restart
+
+  admin-bash:
+    desc: Open a shell in the admin container
+    dir: tdp-admin
+    cmds:
+      - docker compose -f docker-compose.local.yml exec tdp-admin sh
+
+  admin-test:
+    desc: Run admin unit tests (Vitest)
+    dir: tdp-admin
+    cmds:
+      - yarn test
+
+  admin-test-watch:
+    desc: Run admin unit tests in watch mode
+    dir: tdp-admin
+    cmds:
+      - yarn test:watch
+
   frontend-init:
     desc: Initialize the frontend project (localdev image with node_modules)
     dir: tdrs-frontend
@@ -458,9 +508,9 @@ tasks:
       - env -u ELECTRON_RUN_AS_NODE npx cypress verify || env -u ELECTRON_RUN_AS_NODE npx cypress install --force
       - |
         if command -v corepack >/dev/null 2>&1; then
-          env -u ELECTRON_RUN_AS_NODE yarn test:e2e-ci
+          CYPRESS_TOKEN={{.CYPRESS_TOKEN}} env -u ELECTRON_RUN_AS_NODE yarn test:e2e-ci
         else
-          env -u ELECTRON_RUN_AS_NODE npx --yes @yarnpkg/cli-dist@4.6.0 test:e2e-ci
+          CYPRESS_TOKEN={{.CYPRESS_TOKEN}} env -u ELECTRON_RUN_AS_NODE npx --yes @yarnpkg/cli-dist@4.6.0 test:e2e-ci
         fi
 
   frontend-e2e-cmd:
@@ -487,17 +537,38 @@ tasks:
       - task: backend-up
       - task: frontend-up
 
+  up-with-admin:
+    desc: Start backend, frontend, and admin web servers
+    cmds:
+      - task: backend-up
+      - task: frontend-up
+      - task: admin-up
+
   update-deps:
     desc: Rebuild backend/frontend and apply dependency updates (no data wipe)
     cmds:
       - task: backend-update
       - task: frontend-update
 
+  update-all:
+    desc: Rebuild backend, frontend, and admin without wiping data
+    cmds:
+      - task: backend-update
+      - task: frontend-update
+      - task: admin-up
+
   down:
     desc: Stop both frontend and backend web servers
     cmds:
       - task: backend-down
       - task: frontend-down
+
+  down-with-admin:
+    desc: Stop backend, frontend, and admin web servers
+    cmds:
+      - task: backend-down
+      - task: frontend-down
+      - task: admin-down
 
   create-infected-test-file:
     desc: Create a test file with a valid TANF header that ClamAV will flag as infected
@@ -507,13 +578,23 @@ tasks:
         msg: "clamav-rest container is not running. Start it first with: task backend-up"
     cmds:
       - |
-        printf 'HEADER20204A06   TAN1ED\nTDP-INFECTED-TEST-MARKER\nTRAILER0000001         \n' > infected_test.txt
+        cat > infected_test.txt <<'EOF'
+        HEADER20204A06   TAN1ED
+        X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*
+        TDP-INFECTED-TEST-MARKER
+        TRAILER0000001         
+        EOF
       - >-
         docker compose exec -T clamav-rest sh -c
         'echo "TDP.Test.Infected:0:*:5444502d494e4645435445442d544553542d4d41524b4552" > /var/lib/clamav/tdp-test.ndb
         && pkill -USR2 clamd
         && sleep 5
         && tail -1 /var/log/clamav/clamd.log'
+      - docker compose cp infected_test.txt clamav-rest:/tmp/infected_test.txt
+      - >-
+        docker compose exec -T clamav-rest sh -c
+        'clamscan /tmp/infected_test.txt | tee /tmp/tdp-infected-scan-result.txt
+        && if ! grep -q "FOUND" /tmp/tdp-infected-scan-result.txt; then echo "Infected marker file was not detected by clamav-rest test signature." >&2; exit 1; fi'
       - echo "Created tdrs-backend/infected_test.txt and loaded ClamAV test signature. Upload this file through the frontend to test AV rejection."
 
   parser:compile-check:
@@ -555,7 +636,7 @@ tasks:
       - make sqlc-verify
 
   parser:validate-config:
-    desc: Load parser config and compile validator expressions
+    desc: Load parser config, compile validator expressions, and verify native executor coverage
     dir: tdrs-services/parser
     cmds:
       - make validate-config

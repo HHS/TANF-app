@@ -5,6 +5,11 @@ With a few exceptions, we've tended to publish markdown research syntheses to su
 
 The syntheses included herein are organized reverse-chronologically from newest to oldest:
 
+### [2026, Summer - Error Reporting Research](https://github.com/raft-tech/TANF-app/docs/User-Experience/Research-Syntheses/2026%2C%20Spring%20-%20TDP%20Error%20Reporting%20Research.md)
+- Conducted 13 research sessions with STT users involved in TANF data submission and error correction workflows, with the TDP Office Hours Webinar used as an additional data point.
+- Explored how users currently review, interpret, share, and act on TDP error reports, including how workflows vary across teams.
+- Identified opportunities to make error reporting more actionable and easier to understand by improving report hierarchy, plain-language guidance, contextual error details, clearer sharing workflows and submission history records that support follow-up and audits.
+
 ### [2024, Summer - OFA Admin Experience](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2024,%20Summer%20-%20OFA%20Admin%20Experience.md)
 - Ran two workshops with the OFA DIGIT team focused on enhancement requests for the Django Admin Console (DAC) to achieve:
    - A clear understanding of current enhancement requests and described pain points

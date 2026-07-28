@@ -66,8 +66,8 @@ def test_clamav_endpoint_url(clamav_client, settings):
 def test_clamav_accepts_files(clamav_client, fake_file, fake_file_name, user):
     """Test that ClamAV is configured and accessible by this application."""
     # Send a fake file to ClamAV to ensure it is accessible and accepts files.
-    is_file_clean = clamav_client.scan_file(fake_file, fake_file_name, user)
-    assert is_file_clean is True
+    scan_result = clamav_client.scan_file(fake_file, fake_file_name, user)
+    assert scan_result == ClamAVFileScan.Result.CLEAN
 
     # Ensure that a CLEAN file scan result is recorded in the database.
     assert ClamAVFileScan.objects.filter(
@@ -81,8 +81,8 @@ def test_clamav_rejects_infected_files(
 ):
     """Test that ClamAV will reject files that match infection signatures."""
     # Send a test file that will be treated as "infected"
-    is_file_clean = clamav_client.scan_file(infected_file, fake_file_name, user)
-    assert is_file_clean is False
+    scan_result = clamav_client.scan_file(infected_file, fake_file_name, user)
+    assert scan_result == ClamAVFileScan.Result.INFECTED
 
     # Ensure that an INFECTED scan result is recorded in the database.
     assert ClamAVFileScan.objects.filter(
@@ -96,8 +96,8 @@ def test_clamav_rejects_infected_files(
 @pytest.mark.usefixtures("mock_clamav_response")
 def test_clamav_scan_error(clamav_client, fake_file, fake_file_name, user):
     """Test that ClamAV records scan errors caused by file/user errors."""
-    is_file_clean = clamav_client.scan_file(fake_file, fake_file_name, user)
-    assert is_file_clean is False
+    scan_result = clamav_client.scan_file(fake_file, fake_file_name, user)
+    assert scan_result == ClamAVFileScan.Result.ERROR
 
     # Ensure that an ERROR scan result is recorded in the database.
     assert ClamAVFileScan.objects.filter(

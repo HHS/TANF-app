@@ -9,6 +9,7 @@ import FiscalQuarterSelect from '../components/FisclaQuarterSelect'
 import FeedbackReportAlert from '../../FeedbackReports/FeedbackReportAlert'
 import { POLLING_TIMEOUT_MESSAGE } from '../constants'
 import { useReportsContext } from '../ReportsContext'
+import { REPORT_TYPES } from '../../FeedbackReports/FeedbackReportsConstants'
 
 const TanfSspReports = ({ stt, isRegionalStaff, isDataAnalyst }) => {
   const {
@@ -22,6 +23,10 @@ const TanfSspReports = ({ stt, isRegionalStaff, isDataAnalyst }) => {
     headerRef,
     localAlert,
   } = useReportsContext()
+  const feedbackReportType =
+    stt?.type?.toLowerCase() === 'tribe'
+      ? REPORT_TYPES.TRIBAL_TANF
+      : REPORT_TYPES.TANF_SSP
 
   return (
     <>
@@ -49,7 +54,7 @@ const TanfSspReports = ({ stt, isRegionalStaff, isDataAnalyst }) => {
           {(isDataAnalyst || isRegionalStaff) && (
             <FeedbackReportAlert
               stt={isRegionalStaff ? stt : null}
-              reportType="TANF_SSP"
+              reportType={feedbackReportType}
             />
           )}
 

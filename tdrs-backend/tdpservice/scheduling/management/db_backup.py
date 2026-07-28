@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 """Back up the database to S3 bucket."""
+
 # Need to run "export LD_LIBRARY_PATH=~/deps/1/python/lib/" before running python from ~/deps/1/python
 # which has boto3 available
 
@@ -340,7 +341,7 @@ def get_db_name(sys_values):
     Get the correct database name.
 
     In prod we use the default database name that AWS creates. In the Dev and Staging environments the databases are
-    named based off of their app; i.e. tdp_db_raft. The deploy script sets the APP_DB_NAME environment variable for all
+    named based off of their app; i.e. tdp_db_test. The deploy script sets the APP_DB_NAME environment variable for all
     apps except prod.
     """
     env_db_name = os.getenv("APP_DB_NAME", None)
