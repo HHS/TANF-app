@@ -229,8 +229,7 @@ def complete_datafile_av_scan(
             "previous_state": previous_state.value,
             "next_state": target_state.value,
             "scan_result": normalized_scan_result,
-            "note": note
-            or "Ignoring out-of-order AV completion result for DataFile.",
+            "note": note or "Ignoring out-of-order AV completion result for DataFile.",
         }
         _emit_av_completion_log(logger_hook, payload, level="warning")
         return data_file, False
@@ -251,7 +250,17 @@ def prepare_datafile_for_reparse(
     logger_hook: Callable | None = None,
 ):
     """Transition a safe DataFile into the requested reparse state."""
+    from tdpservice.etl.pipelines.sources import (
+        ActivePipelineDataFileOverlapError,
+        validate_no_active_pipeline_source_overlap,
+    )
+
     current_state = coerce_submission_state(data_file.state)
+
+    try:
+        validate_no_active_pipeline_source_overlap([data_file.id])
+    except ActivePipelineDataFileOverlapError as exc:
+        raise ReparsePreparationError(str(exc)) from exc
 
     if current_state == SubmissionState.REPARSE_REQUESTED:
         return data_file, False

@@ -19,6 +19,12 @@ jest.mock('./utils', () => ({
   removeOldPreviews: jest.fn(),
 }))
 
+jest.mock('@uswds/uswds/src/js/components', () => ({
+  fileInput: {
+    init: jest.fn(),
+  },
+}))
+
 const initialState = {
   reports: {
     submittedFiles: [
@@ -39,11 +45,11 @@ const makeTestFile = (name, contents = 'test content', type = 'text/plain') =>
   new File([contents], name, { type })
 
 describe('FileUpload', () => {
-  let mockSetLocalAlertState
+  let mockSetUploadAlertState
   let mockDispatch
 
   beforeEach(() => {
-    mockSetLocalAlertState = jest.fn()
+    mockSetUploadAlertState = jest.fn()
     jest.clearAllMocks()
 
     // Mock FileReader
@@ -87,7 +93,7 @@ describe('FileUpload', () => {
       quarter: 'Q1',
       fileType: 'tanf',
       label: 'Active Case Data',
-      setLocalAlertState: mockSetLocalAlertState,
+      setUploadAlertState: mockSetUploadAlertState,
     }
   ) => {
     const store = mockStore(storeState)
@@ -155,6 +161,13 @@ describe('FileUpload', () => {
       expect(getByRole('alert')).toBeInTheDocument()
       expect(getByText('Need help?')).toBeInTheDocument()
     })
+
+    it('initializes USWDS file input on mount', () => {
+      const { fileInput } = require('@uswds/uswds/src/js/components')
+      renderComponent()
+
+      expect(fileInput.init).toHaveBeenCalled()
+    })
   })
 
   describe('File Selection', () => {
@@ -167,7 +180,7 @@ describe('FileUpload', () => {
       fireEvent.change(input, { target: { files: [file] } })
 
       await waitFor(() => {
-        expect(mockSetLocalAlertState).toHaveBeenCalledWith({
+        expect(mockSetUploadAlertState).toHaveBeenCalledWith({
           active: false,
           type: null,
           message: null,
@@ -332,7 +345,9 @@ describe('FileUpload', () => {
             type: reportsActions.SET_FILE_ERROR,
             payload: expect.objectContaining({
               error: expect.objectContaining({
-                message: expect.stringContaining('File may correspond to SSP instead of TAN'),
+                message: expect.stringContaining(
+                  'File may correspond to SSP instead of TAN'
+                ),
               }),
             }),
           })
@@ -356,12 +371,19 @@ describe('FileUpload', () => {
 
       await waitFor(() => {
         // Check that the error message text is displayed
-        expect(getByText(/Could not determine the file type/i)).toBeInTheDocument()
+        expect(
+          getByText(/Could not determine the file type/i)
+        ).toBeInTheDocument()
 
         // Check that the help link is present
-        const helpLink = container.querySelector('a[aria-label="Need help? Read header record guidance"]')
+        const helpLink = container.querySelector(
+          'a[aria-label="Need help? Read header record guidance"]'
+        )
         expect(helpLink).toBeInTheDocument()
-        expect(helpLink).toHaveAttribute('href', 'https://acf.gov/sites/default/files/documents/ofa/transmission_file_header_trailer_record.pdf')
+        expect(helpLink).toHaveAttribute(
+          'href',
+          'https://acf.gov/sites/default/files/documents/ofa/transmission_file_header_trailer_record.pdf'
+        )
 
         // Verify the action was dispatched with the correct type
         expect(mockDispatch).toHaveBeenCalledWith(

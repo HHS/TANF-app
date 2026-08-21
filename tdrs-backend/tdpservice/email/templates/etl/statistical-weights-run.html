@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="color: #000000;">
+    <p>Hello,</p>
+
+    <p>
+        The <b>{{ pipeline_name }}</b> ETL run completed with status
+        <b>{{ status }}</b>.
+    </p>
+
+    <table
+        style="width: 100%; background-color: #ffffff; border-width: 1px; border-color: #000000; border-style: solid; color: #000000; text-align: left; margin-bottom: 16px; font-size: 10pt;">
+        <tbody>
+            <tr>
+                <th style="padding: 6px; border-style: solid; border-color: #000000; border-width: 1px;">Run ID</th>
+                <td style="padding: 6px; border-style: solid; border-color: #000000; border-width: 1px;">{{ run_id }}</td>
+            </tr>
+            <tr>
+                <th style="padding: 6px; border-style: solid; border-color: #000000; border-width: 1px;">Fiscal Year</th>
+                <td style="padding: 6px; border-style: solid; border-color: #000000; border-width: 1px;">{{ fiscal_year }}</td>
+            </tr>
+            <tr>
+                <th style="padding: 6px; border-style: solid; border-color: #000000; border-width: 1px;">Program</th>
+                <td style="padding: 6px; border-style: solid; border-color: #000000; border-width: 1px;">{{ program }}</td>
+            </tr>
+            <tr>
+                <th style="padding: 6px; border-style: solid; border-color: #000000; border-width: 1px;">Trigger Source</th>
+                <td style="padding: 6px; border-style: solid; border-color: #000000; border-width: 1px;">{{ trigger_source }}</td>
+            </tr>
+            <tr>
+                <th style="padding: 6px; border-style: solid; border-color: #000000; border-width: 1px;">Output Version</th>
+                <td style="padding: 6px; border-style: solid; border-color: #000000; border-width: 1px;">{{ output_version }}</td>
+            </tr>
+            <tr>
+                <th style="padding: 6px; border-style: solid; border-color: #000000; border-width: 1px;">Row Count</th>
+                <td style="padding: 6px; border-style: solid; border-color: #000000; border-width: 1px;">{{ row_count }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><b>QA Summary</b></p>
+    {% if qa_results %}
+    <table
+        style="width: 100%; background-color: #ffffff; border-width: 1px; border-color: #000000; border-style: solid; color: #000000; text-align: left; margin-bottom: 16px; font-size: 10pt;">
+        <thead style="border-style: solid; border-color: #000000; border-width: 1px; background-color: #e6e6e6;">
+            <tr>
+                <th style="padding: 6px; border-style: solid; border-color: #000000; border-width: 1px;">Node ID</th>
+                <th style="padding: 6px; border-style: solid; border-color: #000000; border-width: 1px;">Status</th>
+                <th style="padding: 6px; border-style: solid; border-color: #000000; border-width: 1px;">Error/Warning Message</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in qa_results %}
+            <tr>
+                <td style="padding: 6px; border-style: solid; border-color: #000000; border-width: 1px;">{{ result.node_id }}</td>
+                <td style="padding: 6px; border-style: solid; border-color: #000000; border-width: 1px;">{{ result.status }}</td>
+                <td style="padding: 6px; border-style: solid; border-color: #000000; border-width: 1px;">{{ result.message|default:"" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No QA results recorded.</p>
+    {% endif %}
+
+    <p>
+        <a
+            class="button"
+            href="{{ run_detail_url }}"
+            style="background-color:#336a90;border-radius:4px;color:#ffffff;display:inline-block;font-family:sans-serif;font-size:18px;font-weight:bold;line-height:60px;text-align:center;text-decoration:none;width: auto; padding-left: 24px; padding-right: 24px;-webkit-text-size-adjust:none;"
+        >
+            View ETL Run
+        </a>
+    </p>
+
+    <p>Thank you,</p>
+    TDP Team
+</div>
+{% endblock %}

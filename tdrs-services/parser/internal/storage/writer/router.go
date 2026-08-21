@@ -4,20 +4,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 	"sync"
 
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"go-parser/internal/config"
 	"go-parser/internal/config/filespec"
-	"go-parser/internal/logging"
 	"go-parser/internal/parser"
 )
 
 // Router coordinates writes for any file type.
 // Writers are created dynamically based on the FileSpec.
-// Router owns the serializers and handles the full pipeline:
+// Router handles the full pipeline:
 // ParsedRecord -> serialize -> release to pool -> send []any to writer
 type Router struct {
 	sink       Sink
@@ -25,9 +23,6 @@ type Router struct {
 
 	// Writers keyed by schema path (e.g., "tanf/t1", "tribal/t1")
 	writers map[string]*TableWriter
-
-	// Serializers keyed by schema path - manager owns serialization
-	serializers map[string]RowSerializer
 
 	// Content type IDs keyed by schema path - for error linking
 	contentTypeIDs map[string]*int32
@@ -91,7 +86,6 @@ func NewRouter(
 		sink:           sink,
 		datafileID:     datafileID,
 		writers:        make(map[string]*TableWriter),
-		serializers:    make(map[string]RowSerializer),
 		contentTypeIDs: make(map[string]*int32),
 		errorTableName: config.ParserErrorTableName(cfg.TablePrefix),
 	}
@@ -135,20 +129,6 @@ func NewRouter(
 		if meta == nil {
 			continue
 		}
-
-		// Get the serializer for this schema path
-		// Schema path (e.g., "tanf/t1") distinguishes TANF vs Tribal T1
-		conv := GetSerializer(schemaPath)
-		if conv == nil {
-			logging.Error(context.Background(), "no serializer for schema",
-				slog.Int(logging.KeyFileID, int(datafileID)),
-				slog.String("schema_path", schemaPath),
-			)
-			continue
-		}
-
-		// Store serializer in manager (serialization happens in RouteRecord)
-		router.serializers[schemaPath] = conv
 
 		// Store content type ID for error linking
 		router.contentTypeIDs[schemaPath] = meta.ContentTypeID
@@ -199,13 +179,8 @@ func (router *Router) RouteRecord(ctx context.Context, record *parser.ParsedReco
 		return nil
 	}
 
-	conv, ok := router.serializers[record.Schema.Path]
-	if !ok {
-		return fmt.Errorf("no serializer for schema: %s", record.Schema.Path)
-	}
-
 	// Serialize ParsedRecord to []any rows
-	rows := conv(record, router.datafileID)
+	rows, _ := serializeRecord(record, router.datafileID, writer.columns)
 
 	// Release record back to pool - it's no longer needed after serialization
 	record.Schema.ReleaseRecord(record)
@@ -254,29 +229,14 @@ func (router *Router) RouteErrorRows(ctx context.Context, rows [][]any) error {
 // SerializeRecord serializes a record to database rows and extracts the UUID.
 // Does NOT release the record or send rows - caller handles that.
 // Returns the serialized rows, the record's UUID, and any error.
-// The UUID is extracted from the serialized row at position len(row)-3 (third from end).
 func (router *Router) SerializeRecord(record *parser.ParsedRecord) ([][]any, *pgtype.UUID, error) {
-	conv, ok := router.serializers[record.Schema.Path]
+	writer, ok := router.writers[record.Schema.Path]
 	if !ok {
-		return nil, nil, fmt.Errorf("no serializer for schema: %s", record.Schema.Path)
+		return nil, nil, nil
 	}
 
-	rows := conv(record, router.datafileID)
-	if len(rows) == 0 {
-		return rows, nil, nil
-	}
-
-	// Extract UUID from first row at position len(row)-3
-	// All serializers place ID, DatafileID, LineNumber at the end
-	firstRow := rows[0]
-	uuidIdx := len(firstRow) - 3
-	if uuidIdx >= 0 {
-		if uuid, ok := firstRow[uuidIdx].(pgtype.UUID); ok {
-			return rows, &uuid, nil
-		}
-	}
-
-	return rows, nil, nil
+	rows, recordUUID := serializeRecord(record, router.datafileID, writer.columns)
+	return rows, recordUUID, nil
 }
 
 // SendRecordRowsByPath sends pre-serialized record rows to the writer for the given schema path.

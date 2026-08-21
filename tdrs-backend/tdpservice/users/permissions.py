@@ -98,7 +98,11 @@ def get_permission_ids_for_model(
 
 def get_requested_stt(request, view):
     """Get stt from a valid request."""
-    request_parameters = ChainMap(view.kwargs, request.query_params, request.data)
+    if request.method == "GET":
+        request_parameters = ChainMap(view.kwargs, request.query_params)
+    elif request.method == "POST":
+        request_parameters = ChainMap(view.kwargs, request.data)
+
     return request_parameters.get("stt")
 
 
@@ -173,9 +177,8 @@ class ReportFilePermissions(DjangoModelCRUDPermissions):
 
         # Only DIGIT Team and OFA System Admin are allowed to submit feedback reports
         if has_permission and hasattr(view, "action"):
-            if (
-                view.action in ["create"]
-                and not (request.user.is_ofa_sys_admin or request.user.is_digit_team)
+            if view.action in ["create"] and not (
+                request.user.is_ofa_sys_admin or request.user.is_digit_team
             ):
                 return False
 

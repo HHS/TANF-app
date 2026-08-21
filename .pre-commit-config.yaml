@@ -9,6 +9,7 @@ repos:
     -   id: check-yaml
         exclude: tdrs-backend/plg/.*|tdrs-backend/keycloak/.*
     -   id: check-added-large-files
+        args: ['--maxkb=25000']
 -   repo: https://github.com/psf/black
     rev: 23.10.1
     hooks:

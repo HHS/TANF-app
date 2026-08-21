@@ -685,12 +685,12 @@ class TestGoParse:
         dfs.status = dfs.get_status()
 
         # Go parser doesnt generate Trailer errors which is why the status is different
-        assert dfs.status == DataFileSummary.Status.PARTIALLY_ACCEPTED
+        assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
         dfs.case_aggregates = aggregates.case_aggregates_by_month(
             dfs.datafile, dfs.status
         )
 
-        assert dfs.case_aggregates["rejected"] == 1
+        assert dfs.case_aggregates["rejected"] == 0
         for month in dfs.case_aggregates["months"]:
             if month["month"] == "Oct":
                 assert month["accepted_without_errors"] == 0
@@ -700,7 +700,7 @@ class TestGoParse:
                 assert month["accepted_with_errors"] == 0
 
         parser_errors = ParserError.objects.filter(file=small_ssp_section1_datafile)
-        assert parser_errors.filter(file=small_ssp_section1_datafile).count() == 9
+        assert parser_errors.filter(file=small_ssp_section1_datafile).count() == 8
         assert (
             SSP_M1.objects.filter(datafile=small_ssp_section1_datafile).count()
             == expected_m1_record_count
@@ -761,7 +761,7 @@ class TestGoParse:
         # We have a few more errors because the go parser separates the the OR'd
         # category1.validate_fieldYearMonth_with_headerYearQuarter(). and
         # category1.validateRptMonthYear() into separate checks.
-        assert parser_errors.count() == 31739
+        assert parser_errors.count() == 31738
 
         assert (
             SSP_M1.objects.filter(datafile=ssp_section1_datafile).count()
@@ -937,7 +937,7 @@ class TestGoParse:
         )
         # Again we get more errors here because the Go parser splits the RPT_MONTH_YEAR Cat1 validator
         # into two validators
-        assert parser_errors.count() == 9
+        assert parser_errors.count() == 8
 
         row_2_error = parser_errors.get(
             row_number=2,
@@ -2216,7 +2216,7 @@ class TestGoParse:
                     "accepted_with_errors": 1,
                 },
             ],
-            "rejected": 2,
+            "rejected": 1,
         }
 
         assert TANF_T1.objects.filter(datafile=case_aggregates_edge_case).count() == 3

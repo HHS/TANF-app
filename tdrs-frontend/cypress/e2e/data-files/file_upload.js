@@ -17,13 +17,10 @@ Then(
         // Poll the API until the summary is populated
         df.waitForDataFileSummary(fileId)
         if (program === 'TANF') {
-          cy.get('button').contains('Submission History').click()
           df.validateSmallCorrectFile()
         } else if (program === 'SSP') {
-          cy.get('button').contains('Submission History').click()
           df.validateSmallSSPFile()
         } else if (program === 'FRA') {
-          cy.contains('Submission History').should('exist')
           df.validateFraCsv()
         }
       }
@@ -166,7 +163,6 @@ When(
 Then(
   '{string} sees the {string} Section {string} submission in Submission History',
   (actor, program, section) => {
-    df.openSubmissionHistory()
     df.getLatestSubmissionHistoryRow(section, program)
       .should('exist')
       .within(() => {
@@ -229,7 +225,6 @@ When('{string} selects a data file for the wrong section', (actor) => {
 })
 
 Then('{string} sees rejected status in submission history', (actor) => {
-  df.openSubmissionHistory()
   df.getLatestSubmissionHistoryRow(1)
     .should('exist')
     .within(() => {

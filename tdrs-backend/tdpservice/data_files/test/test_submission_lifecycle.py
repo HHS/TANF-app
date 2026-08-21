@@ -14,6 +14,22 @@ from tdpservice.data_files.submission_lifecycle import (
     validate_transition,
 )
 from tdpservice.data_files.test.factories import DataFileFactory
+from tdpservice.etl.models import ETLPipelineRun
+from tdpservice.etl.pipelines.sources import SOURCE_DATAFILE_IDS_KEY
+
+
+def _active_pipeline_run_for_datafile(data_file):
+    """Create an active ETL run that has snapshotted the DataFile."""
+    return ETLPipelineRun.objects.create(
+        pipeline_key="test_pipeline",
+        pipeline_version="1",
+        status=ETLPipelineRun.Status.RUNNING,
+        parameters={},
+        output_scope={"pipeline": "test_pipeline", "test_id": data_file.id},
+        output_scope_key=f"test-{data_file.id}",
+        metadata={SOURCE_DATAFILE_IDS_KEY: {"test": [data_file.id]}},
+        trigger_source=ETLPipelineRun.TriggerSource.ADMIN,
+    )
 
 
 def test_valid_transitions_succeed():
@@ -246,6 +262,19 @@ def test_prepare_datafile_for_reparse_rejects_uploaded_file():
 
     with pytest.raises(ReparsePreparationError, match="state uploaded"):
         prepare_datafile_for_reparse(data_file)
+
+
+@pytest.mark.django_db
+def test_prepare_datafile_for_reparse_rejects_active_pipeline_source():
+    """Reparse cannot take a DataFile already snapshotted by active ETL."""
+    data_file = DataFileFactory(state=SubmissionState.PARSE_COMPLETED)
+    _active_pipeline_run_for_datafile(data_file)
+
+    with pytest.raises(ReparsePreparationError, match="active ETL pipeline"):
+        prepare_datafile_for_reparse(data_file)
+
+    data_file.refresh_from_db()
+    assert data_file.state == SubmissionState.PARSE_COMPLETED
 
 
 @pytest.mark.parametrize(

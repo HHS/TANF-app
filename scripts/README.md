@@ -1,10 +1,10 @@
 # Scripts
 
-The TANF app uses several scripts through its lifecycle. 
+The TANF app uses several scripts through its lifecycle.
 These don't all get used by or interacted with by us too often,
-but some are mission critical during deployment and review of 
-the application. When a developer is working on these scripts, 
-they should update this documentation so future developers 
+but some are mission critical during deployment and review of
+the application. When a developer is working on these scripts,
+they should update this documentation so future developers
 understand the role of the scripts.
 
 # Table of Contents
@@ -31,9 +31,9 @@ understand the role of the scripts.
 
 # Interacting with Cloud.gov
 
-## [set-backend-env-vars.sh](./set-backend-env-vars.sh) 
+## [set-backend-env-vars.sh](./set-backend-env-vars.sh)
 
-### Usage 
+### Usage
 
 ```bash
 
@@ -64,7 +64,7 @@ provided Cloud.gov App Name.
   * `tanf-prod` space results in a Django configuration of `Production`.
   * `tanf-staging` uses the `Staging` configuration
   * All other spaces use the `Development` configuration
-  * This refers to the Django settings class that will be used within the `tdpservice.settings.cloudgov` module. 
+  * This refers to the Django settings class that will be used within the `tdpservice.settings.cloudgov` module.
 
 ### Where it's used
 The script `deploy-backend` invokes this script if the `DEPLOY_STRATEGY` is `initial`, `bind` or `rebuild`. Can optionally be run locally on its own.
@@ -99,8 +99,8 @@ This script is only a convenience tool for developers, it has no direct usage in
 ### Usage
 
 ```bash
-./scripts/deploy-backend.sh <strategy> <app-name>
-./scripts/deploy-backend.sh rolling raft-review
+./scripts/deploy-backend.sh <strategy> <frontend-hostname> <backend-app-name> <cf-space> [all|backend|celery]
+./scripts/deploy-backend.sh rolling raft tdp-backend-raft tanf-dev backend
 ```
 ### Arguments
 
@@ -130,11 +130,11 @@ The application name  defined via the manifest yml for the frontend
 APP_NAME=${2}
 
 ### Description
-Mostly for use in our CircleCI pipelines, this script ensures the desired codebase is deployed into a given Cloud.gov application space.
+Mostly for use in our CircleCI pipelines, this script deploys the Django backend or Python Celery worker into a Cloud.gov application space. The optional component argument allows CircleCI to run those deployments in parallel; omitting it retains the combined manual recovery behavior.
 
 ### Where it's used
 
-`deploy-backend.sh` is used in [CircleCI config](../.circleci/config.yml)'s job `deploy-backend` which is used by `deploy-cloud-dot-gov` command. This script is primarily via in CircleCI but with CloudFoundry set up and logged in locally, this can also be used by a developer manually. Please also see our [CircleCI documentation](../docs/Technical-Documentation/circle-ci.md#deploy-backend).
+`deploy-backend.sh` is used by the independent backend and Celery CircleCI jobs. Shared migrations run before both jobs, and networking is configured after all application deployments succeed. With Cloud Foundry set up and logged in locally, the script can also be used manually. See the [CircleCI documentation](../docs/Technical-Documentation/circle-ci.md#deploy-backend).
 
 ## deploy-frontend.sh
 
@@ -163,7 +163,7 @@ Mostly for use in our CircleCI pipelines, this script ensures the desired codeba
 
 ### Where it's used
 
-`deploy-frontend.sh` is used in [CircleCI config](../.circleci/config.yml)'s job `deploy-frontend` which is used by `deploy-cloud-dot-gov` command. This script is primarily via in CircleCI but with CloudFoundry set up and logged in locally, this can also be used by a developer manually. Please also see our [CircleCI documentation](../docs/Technical-Documentation/circle-ci.md#deploy-frontend).
+`deploy-frontend.sh` is used by the independent frontend CircleCI job. With Cloud Foundry set up and logged in locally, it can also be used manually. See the [CircleCI documentation](../docs/Technical-Documentation/circle-ci.md#deploy-frontend).
 
 ## toggle-maintenance-route.sh
 
@@ -231,7 +231,7 @@ scripts/deploy-infrastructure-staging.sh
 no args
 
 ### Description
-Script runs our CircleCI job `deploy-infrastructure-staging` using your CloudFoundry login credentials; it expects that you had run `cf login --sso` prior. 
+Script runs our CircleCI job `deploy-infrastructure-staging` using your CloudFoundry login credentials; it expects that you had run `cf login --sso` prior.
 Requires installation of jq - https://stedolan.github.io/jq/download/
 
 ### Where it's used
@@ -270,7 +270,7 @@ This script is only used locally and is not part of any CI pipeline. It is a dev
 
 <details>
 <summary>Details</summary>
-    
+
 ### usage
 ---
 ```
@@ -288,7 +288,7 @@ sudo-check.sh is used in the sudo-check [CircleCI command](../.circleci/config.y
 ## cf-checks.sh
 <details>
 <summary>Details</summary>
-    
+
 ### usage
 ---
 ```bash
@@ -301,7 +301,7 @@ no args
 ### Description
 This script installs the CloudFoundry `cf` command and all of its dependencies if it is not already present.
 
-### Where it's used 
+### Where it's used
 cf-check.sh is used in the [CircleCI command cf-check](../.circleci/config.yml#L22)
 </details>
 
@@ -309,49 +309,49 @@ cf-check.sh is used in the [CircleCI command cf-check](../.circleci/config.yml#L
 
 <details>
 <summary>Details</summary>
-    
+
 ### Usage
 ---
 ```bash
 ./scripts/docker-check.sh
 ```
 ---
-    
+
 ### Arguments
 no args
 
 ### Description
 This script installs the docker ecosytem and all of its dependencies if it is not already present. This is used by our CircleCI CI/CD pipelines.
 
-### Where it's used 
+### Where it's used
 docker-check.sh does not appear to be used in automation.
 </details>
-    
+
 ## docker-compose-check.sh
 
 <details>
 <summary>Details</summary>
-    
+
 ### Usage
 ---
 ```
 ./scripts/docker-compose-check.sh
 ```
 ---
-    
+
 ### Arguments
 no args
 
 ### Description
 This script installs the `docker-compose` command and all of its dependencies if it is not already present. This is used by our CircleCI CI/CD pipelines.
-### Where it's used 
+### Where it's used
 docker-compose-check.sh is used in the [CircleCI config docker-compose-check command](../.circleci/config.yml#L28).
 </details>
 
 ## git-secrets-check.sh
 <details>
 <summary>Details</summary>
-    
+
 ### Usage
 ---
 ```
@@ -366,7 +366,7 @@ no args
 
 This script ensures that no secrets have been committed to the TANF repo. We leverage [Awslab's git-secrets tool](https://github.com/awslabs/git-secrets.git) to scan code to be uploaded. Developers can set up a pre-commit hook locally so this scan will run before committing/pushing by checking the README on their github repo linked earlier.
 
-### Where it's used 
+### Where it's used
 git-secrets-check.sh is used in the [secrets-check command](../.circleci/config.yml#L329).
 </details>
 
@@ -374,7 +374,7 @@ git-secrets-check.sh is used in the [secrets-check command](../.circleci/config.
 
 <details>
 <summary>Details</summary>
-    
+
 ### Usage
 ---
 ```bash
@@ -388,18 +388,18 @@ git-secrets-check.sh is used in the [secrets-check command](../.circleci/config.
 ### Description
 
 Installs truffleHog in a python virtual environment and gets the hash of the latest commit in the target branch.
-Looks at all commits since the last merge into develop, and entropy checks on large git diffs. 
+Looks at all commits since the last merge into develop, and entropy checks on large git diffs.
 If there are issues, they will be listed then script will abort.
 
-### Where it's used 
+### Where it's used
 trufflehog-check.sh is also used in the [secrets-check command](../.circleci/config.yml#L329).
 </details>
 
 ## codecov-check.sh
-  
+
 <details>
 <summary>Details</summary>
-    
+
 ### Usage
 ---
 ```bash
@@ -413,7 +413,7 @@ no args
 
 Check if code cov is installed, and if it isn't, the script installs it, and checks the integrity of the binary.
 
-### Where it's used 
+### Where it's used
 codecov-check.sh is used in CircleCI `codecov-upload` [job](../.circleci/config.yml#L91).
 </details>
 
@@ -434,7 +434,7 @@ Enable object versioning on the bucket
 
 ### Where it's used
 This is used in `../tdrs-backend/docker-compose.yml` to setup your local docker connections to AWS.
-    
+
 ## zap-hook.py
 
 ### Usage
@@ -459,7 +459,7 @@ https://github.com/zaproxy/zaproxy/issues/5212
 
 ### Where it's used
 This script is used inside of `zap-scanner.sh`. It is not used directly.
-    
+
 ## zap-scanner.sh
 ### Usage
 ```bash
@@ -472,15 +472,15 @@ This script is used inside of `zap-scanner.sh`. It is not used directly.
 TARGET=$1
 ```
 TARGET is either frontend or backend.
-    
+
 ```bash
 ENVIRONMENT=$2
 ```
 ENVIRONMENT is either local or nightly.
-    
+
 ### Description
 This script is an easy-to-use wrapper around the OWASP ZAP python script, detailed above, which runs security scans against the desired target.
-    
+
 ### Where it's used
 Our CircleCI job `nightly-owasp-scan` utilizes this script to scan our stable deployment in Cloud.gov staging space.
 

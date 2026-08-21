@@ -171,9 +171,6 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     validatedParams.type
   )
   const [sttInputValue, setSttInputValue] = useState(validatedParams.stt)
-  const [selectedSubmissionTab, setSelectedSubmissionTab] = useState(
-    validatedParams.tab
-  )
 
   // Re-validate when STT list becomes available (only validates STT param) since it might not be available yet
   useEffect(() => {
@@ -213,16 +210,12 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     if (sttInputValue) {
       newParams.set('stt', sttInputValue)
     }
-    if (selectedSubmissionTab) {
-      newParams.set('tab', selectedSubmissionTab)
-    }
     setSearchParams(newParams)
   }, [
     yearInputValue,
     quarterInputValue,
     fileTypeInputValue,
     sttInputValue,
-    selectedSubmissionTab,
     setSearchParams,
   ])
 
@@ -245,15 +238,15 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   // Alert state — the `timestamp` field ensures React always sees a new object
   // even when the same message is set consecutively, so the useEffect that
   // focuses the alert re-fires and the screen reader announces it again.
-  const [localAlert, setLocalAlert] = useState({
+  const [uploadAlert, setUploadAlert] = useState({
     active: false,
     type: null,
     message: null,
   })
-  const setLocalAlertState = (alert) =>
-    setLocalAlert({ ...alert, timestamp: Date.now() })
+  const setUploadAlertState = (alert) =>
+    setUploadAlert({ ...alert, timestamp: Date.now() })
 
-  // Processing alert state (separate from localAlert for accessibility)
+  // Processing alert state (separate from uploadAlert for accessibility)
   const [processingAlert, setProcessingAlertState] = useState({
     active: false,
     type: null,
@@ -262,7 +255,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
 
   // Refs
   const headerRef = useRef(null)
-  const alertRef = useRef(null)
+  const uploadAlertRef = useRef(null)
   const processingAlertRef = useRef(null)
 
   // Redux selectors
@@ -387,7 +380,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
       setErrorModalVisible(true)
     } else {
       setFileTypeInputValue(value)
-      setLocalAlertState({ active: false, type: null, message: null })
+      setUploadAlertState({ active: false, type: null, message: null })
       setProcessingAlertState({ active: false, type: null, message: null })
       dispatch(clearFileList({ fileType: value }))
       dispatch(reinitializeSubmittedFiles(value))
@@ -407,7 +400,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
       setErrorModalVisible(true)
     } else {
       setYearInputValue(value)
-      setLocalAlertState({ active: false, type: null, message: null })
+      setUploadAlertState({ active: false, type: null, message: null })
       setProcessingAlertState({ active: false, type: null, message: null })
       dispatch(clearFileList({ fileType: fileTypeInputValue }))
       setFraSelectedFile(null)
@@ -424,7 +417,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
       setErrorModalVisible(true)
     } else {
       setQuarterInputValue(value)
-      setLocalAlertState({ active: false, type: null, message: null })
+      setUploadAlertState({ active: false, type: null, message: null })
       setProcessingAlertState({ active: false, type: null, message: null })
       dispatch(clearFileList({ fileType: fileTypeInputValue }))
       setFraSelectedFile(null)
@@ -442,7 +435,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     } else {
       setSttInputValue(value)
       dispatch(setStt(value))
-      setLocalAlertState({
+      setUploadAlertState({
         active: false,
         type: null,
         message: null,
@@ -581,15 +574,13 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     setReprocessedModalVisible,
     reprocessedDate,
     setReprocessedDate,
-    localAlert,
-    setLocalAlertState,
+    uploadAlert,
+    setUploadAlertState,
     processingAlert,
     setProcessingAlertState,
-    processingAlertRef,
-    selectedSubmissionTab,
-    setSelectedSubmissionTab,
     headerRef,
-    alertRef,
+    processingAlertRef,
+    uploadAlertRef,
 
     // FRA-specific state
     fraSelectedFile,
@@ -631,6 +622,28 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     // Program audit
     piaFeatureFlag,
   }
+
+  // Scroll to and focus alert when it becomes active
+  useEffect(() => {
+    if (uploadAlert.active && uploadAlertRef && uploadAlertRef.current) {
+      uploadAlertRef.current.scrollIntoView({ behavior: 'smooth' })
+      uploadAlertRef.current.focus({ preventScroll: true })
+    }
+  }, [uploadAlert, uploadAlertRef])
+
+  // Scroll to processing alert when it becomes active (uses aria-live="polite" for sequential reading)
+  useEffect(() => {
+    if (
+      processingAlert.active &&
+      processingAlertRef &&
+      processingAlertRef.current
+    ) {
+      processingAlertRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      })
+    }
+  }, [processingAlert, processingAlertRef])
 
   return (
     <ReportsContext.Provider value={value}>{children}</ReportsContext.Provider>

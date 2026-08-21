@@ -160,7 +160,7 @@ shared:
     field:
       - id: not_empty
 
-  - name: FIPS_CODE
+  - name: COUNTY_FIPS_CODE
     friendly_name: State FIPS Code
     item: "1"
     start: 19

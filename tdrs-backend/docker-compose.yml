@@ -314,6 +314,7 @@ services:
       - KEYCLOAK_AUTH_PERCENTAGE
     volumes:
       - .:/tdpapp
+      - ../tdrs-services/parser/config/schemas:/tdrs-services/parser/config/schemas:ro
       - logs:/tmp
 
     build:

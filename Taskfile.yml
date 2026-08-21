@@ -190,6 +190,34 @@ tasks:
 
         docker compose -f docker-compose.yml exec web sh -c "CELERY_GO_PARSER_QUEUE=${queue} DJANGO_SETTINGS_MODULE=tdpservice.settings.go_parser_integration DJANGO_CONFIGURATION=GoParserIntegration pytest -c pytest-go-parser.ini --basetemp=/home/tdpapp/ tdpservice/parsers/test/integration {{.PYTEST_ARGS}}"
 
+  backend-pytest-etl-integration:
+    desc: 'Run the live ETL integration suite. E.g: task backend-pytest-etl-integration PYTEST_ARGS="-k statistical_weights -vv"'
+    dir: tdrs-backend
+    vars:
+      PYTEST_ARGS: '{{.PYTEST_ARGS | default ""}}'
+    cmds:
+      - task: create-network
+      - |
+        set -e
+        db_name="tdrs_etl_integration_$(date +%s)_$$"
+
+        cleanup() {
+          docker compose -f docker-compose.yml exec -T postgres \
+            psql -U tdpuser -d postgres -v ON_ERROR_STOP=1 \
+            -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '${db_name}';" \
+            -c "DROP DATABASE IF EXISTS \"${db_name}\";" >/dev/null 2>&1 || true
+        }
+        trap cleanup EXIT
+
+        docker compose -f docker-compose.yml up -d postgres redis-server localstack web
+        docker compose -f docker-compose.yml exec -T postgres sh -c 'until pg_isready -U tdpuser -d postgres; do sleep 1; done'
+        docker compose -f docker-compose.yml exec -T postgres \
+          psql -U tdpuser -d postgres -v ON_ERROR_STOP=1 \
+          -c "CREATE DATABASE \"${db_name}\" OWNER tdpuser;"
+        docker compose -f docker-compose.yml exec web sh -c "DB_NAME=${db_name} DJANGO_SETTINGS_MODULE=tdpservice.settings.etl_integration DJANGO_CONFIGURATION=ETLIntegration python manage.py migrate --noinput"
+
+        docker compose -f docker-compose.yml exec web sh -c "DB_NAME=${db_name} DJANGO_SETTINGS_MODULE=tdpservice.settings.etl_integration DJANGO_CONFIGURATION=ETLIntegration pytest -c pytest-etl.ini --basetemp=/home/tdpapp/ tdpservice/etl/test/integration {{.PYTEST_ARGS}}"
+
   backend-pytest-cov:
     desc: 'Generate coverage.json file in the backend container. E.g: task backend-pytest-cov PYTEST_ARGS="tdpservice/test/ -s -vv"'
     dir: tdrs-backend
@@ -234,80 +262,6 @@ tasks:
       - docker compose -f docker-compose.yml up -d postgres
       - sleep 5
       - docker compose -f docker-compose.yml exec postgres sh -c "psql -U tdpuser -d tdrs_test"
-
-  dump-parser-schema:
-    desc: Dump selected parser table CREATE TABLE statements to parser schema.sql, including production and shadow tables
-    vars:
-      TABLE_PREFIX: '{{.TABLE_PREFIX | default ""}}'
-    cmds:
-      - |
-        set -e
-
-        table_prefix="{{.TABLE_PREFIX}}"
-        table_prefix="${table_prefix:-shadow_}"
-        schema_raw="$(mktemp)"
-        schema_tmp="$(mktemp)"
-        schema_shadow="$(mktemp)"
-        schema_out="$(mktemp)"
-        trap 'rm -f "$schema_raw" "$schema_tmp" "$schema_shadow" "$schema_out"' EXIT
-
-        docker compose -f tdrs-backend/docker-compose.yml exec -T postgres pg_dump \
-          -U tdpuser \
-          -d tdrs_test \
-          --schema-only \
-          --section=pre-data \
-          --no-owner \
-          --no-privileges \
-          --table=public.data_files_datafile \
-          --table=public.stts_stt \
-          --table=public.parser_error \
-          --table=public.parsers_datafilesummary \
-          --table=public.search_indexes_reparsemeta \
-          --table=public.search_indexes_ssp_m1 \
-          --table=public.search_indexes_ssp_m2 \
-          --table=public.search_indexes_ssp_m3 \
-          --table=public.search_indexes_ssp_m4 \
-          --table=public.search_indexes_ssp_m5 \
-          --table=public.search_indexes_ssp_m6 \
-          --table=public.search_indexes_ssp_m7 \
-          --table=public.search_indexes_tanf_t1 \
-          --table=public.search_indexes_tanf_t2 \
-          --table=public.search_indexes_tanf_t3 \
-          --table=public.search_indexes_tanf_t4 \
-          --table=public.search_indexes_tanf_t5 \
-          --table=public.search_indexes_tanf_t6 \
-          --table=public.search_indexes_tanf_t7 \
-          --table=public.search_indexes_tribal_tanf_t1 \
-          --table=public.search_indexes_tribal_tanf_t2 \
-          --table=public.search_indexes_tribal_tanf_t3 \
-          --table=public.search_indexes_tribal_tanf_t4 \
-          --table=public.search_indexes_tribal_tanf_t5 \
-          --table=public.search_indexes_tribal_tanf_t6 \
-          --table=public.search_indexes_tribal_tanf_t7 \
-          --table=public.search_indexes_programaudit_t1 \
-          --table=public.search_indexes_programaudit_t2 \
-          --table=public.search_indexes_programaudit_t3 \
-          --table=public.search_indexes_tanf_exiter1 \
-          > "$schema_raw"
-
-        awk ' \
-          /^SET / { next } \
-          /^SELECT pg_catalog\.set_config\(/ { next } \
-          { print } \
-        ' "$schema_raw" > "$schema_tmp"
-
-        perl -0ne 'while (/--\n-- Name: (?:data_files_datafile|parser_error|parsers_datafilesummary|search_indexes_(?:reparsemeta|ssp_m[1-7]|tanf_t[1-7]|tribal_tanf_t[1-7]|programaudit_t[1-3]|tanf_exiter1)); Type: TABLE;.*?\n--\n\nCREATE TABLE public\.(?:data_files_datafile|parser_error|parsers_datafilesummary|search_indexes_(?:reparsemeta|ssp_m[1-7]|tanf_t[1-7]|tribal_tanf_t[1-7]|programaudit_t[1-3]|tanf_exiter1)) \(.*?\n\);\n/sg) { print $& }' "$schema_tmp" > "$schema_shadow"
-        if [ ! -s "$schema_shadow" ]; then
-          echo "failed to extract parser-owned table definitions from schema dump" >&2
-          exit 1
-        fi
-
-        {
-          cat "$schema_tmp"
-          TABLE_PREFIX="$table_prefix" perl -pe 'BEGIN { $prefix = $ENV{"TABLE_PREFIX"} || "shadow_" } s/(data_files_datafile|reports_reportfile|parser_error|parsers_datafilesummary|search_indexes_(?:reparsemeta|ssp_m[1-7]|tanf_t[1-7]|tribal_tanf_t[1-7]|programaudit_t[1-3]|tanf_exiter1))/${prefix}$1/g' "$schema_shadow"
-        } > "$schema_out"
-
-        mv "$schema_out" ./tdrs-services/parser/schema.sql
 
   clean:
     desc: Remove ALL containers, images, and volumes (DANGEROUS)
@@ -608,32 +562,6 @@ tasks:
     dir: tdrs-services/parser
     cmds:
       - make lint
-
-  parser:sqlc-diff:
-    desc: Verify sqlc generated code matches the parser schema and queries
-    dir: tdrs-services/parser
-    cmds:
-      - |
-        if ! make sqlc-diff; then
-          echo ""
-          echo "sqlc generated code is out of sync."
-          echo "If model changes were made, update the definitions in:"
-          echo "  - tdrs-services/parser/config/schemas"
-          echo "  - tdrs-services/parser/internal/storage/writer"
-          exit 1
-        fi
-
-  parser:sqlc-vet:
-    desc: Run sqlc static analysis for the parser schema and queries
-    dir: tdrs-services/parser
-    cmds:
-      - make sqlc-vet
-
-  parser:sqlc-verify:
-    desc: Verify parser SQL queries against the configured engine and schema
-    dir: tdrs-services/parser
-    cmds:
-      - make sqlc-verify
 
   parser:validate-config:
     desc: Load parser config, compile validator expressions, and verify native executor coverage

@@ -5,6 +5,7 @@ import logging
 from django.core.management.base import BaseCommand
 
 from tdpservice.core.utils import log
+from tdpservice.etl.pipelines.sources import validate_no_active_pipeline_source_overlap
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 from tdpservice.search_indexes.reparse import handle_datafiles
 from tdpservice.search_indexes.utils import (
@@ -148,6 +149,9 @@ class Command(BaseCommand):
             )
             return
 
+        file_ids = list(files.values_list("id", flat=True).distinct())
+        validate_no_active_pipeline_source_overlap(file_ids)
+
         is_sequential = assert_sequential_execution(log_context)
         should_exit(not is_sequential)
         meta_model = ReparseMeta.objects.create(
@@ -166,7 +170,6 @@ class Command(BaseCommand):
         meta_model.save()
 
         # Delete records from Postgres if necessary
-        file_ids = files.values_list("id", flat=True).distinct()
         meta_model.total_num_records_initial = count_total_num_records(log_context)
         meta_model.save()
 

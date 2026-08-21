@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"strings"
 
-	"go-parser/internal/decoder"
 	"go-parser/internal/config/filespec"
 	"go-parser/internal/config/schema"
+	"go-parser/internal/decoder"
 )
 
 // FieldGetter provides access to previously extracted field values.
@@ -82,11 +82,16 @@ func (e *PositionalExtractor) Extract(
 				field.SourceField, field.Name)
 		}
 		rawValue = fmt.Sprintf("%v", src)
+	} else if field.Default != nil && field.End <= field.Start {
+		return field.Default, nil
 	} else {
 		// Regular field - extract from row position
 		pr, ok := row.(*decoder.PositionalRow)
 		if !ok {
 			return nil, fmt.Errorf("expected PositionalRow, got %T", row)
+		}
+		if field.End <= field.Start {
+			return nil, nil
 		}
 		rawValue = pr.Slice(field.Start, field.End)
 	}
@@ -128,6 +133,8 @@ func (e *ColumnarExtractor) Extract(
 				field.SourceField, field.Name)
 		}
 		rawValue = fmt.Sprintf("%v", src)
+	} else if field.Default != nil && !field.ColumnConfigured() {
+		return field.Default, nil
 	} else {
 		// Regular field - extract from column
 		cr, ok := row.(*decoder.ColumnarRow)

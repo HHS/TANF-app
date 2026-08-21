@@ -55,6 +55,7 @@ urlpatterns = [
     path("stts/", include("tdpservice.stts.urls")),
     path("data_files/", include("tdpservice.data_files.urls")),
     path("reports/", include("tdpservice.reports.urls")),
+    path("etl/", include("tdpservice.etl.urls")),
     path("logs/", write_logs),
     path("security/", include("tdpservice.security.urls")),
 ]

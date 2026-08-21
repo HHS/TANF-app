@@ -17,7 +17,7 @@ const feedbackRatingsList = [
       <VeryBadIcon
         data-testid="icon-very-bad"
         title="Very Dissatisfied"
-        role="svg"
+        role="img"
         aria-label="very bad svg icon"
       />
     ),

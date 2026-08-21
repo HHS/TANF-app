@@ -1,4 +1,4 @@
-export const selectFeatureFlags = (state) => state.featureFlags?.flags
+export const selectFeatureFlags = (state) => state.featureFlags?.flags || []
 
 export const getFlagOrDefault = (searchName, allFlags = []) =>
   allFlags.find((f) => f.feature_name === searchName) || {

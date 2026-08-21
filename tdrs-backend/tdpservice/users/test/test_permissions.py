@@ -1,6 +1,10 @@
 """Test appropriate permissions are assigned to each Group."""
 
+from types import SimpleNamespace
+
 import pytest
+
+from tdpservice.users.permissions import get_requested_stt, is_own_region, is_own_stt
 
 DEFAULT_NON_DELETE_ACTIONS = ["add", "change", "view"]
 
@@ -23,6 +27,40 @@ def default_permissions_for_models(app_models):
             for app_label, model_names in app_models.items()
         }
     )
+
+
+@pytest.mark.parametrize(
+    ("method", "view_kwargs", "query_params", "data", "expected_stt"),
+    [
+        ("GET", {}, {"stt": "1"}, {"stt": "2"}, "1"),
+        ("POST", {}, {"stt": "1"}, {"stt": "2"}, "2"),
+        ("GET", {"stt": "3"}, {"stt": "1"}, {"stt": "2"}, "3"),
+    ],
+)
+def test_get_requested_stt(method, view_kwargs, query_params, data, expected_stt):
+    """Get the STT from the method-specific parameters, preferring URL kwargs."""
+    request = SimpleNamespace(method=method, query_params=query_params, data=data)
+    view = SimpleNamespace(kwargs=view_kwargs)
+
+    assert get_requested_stt(request, view) == expected_stt
+
+
+def test_is_own_stt():
+    """Allow requests without an STT or for the user's STT only."""
+    user = SimpleNamespace(stt=SimpleNamespace(id=1))
+
+    assert is_own_stt(user, None)
+    assert is_own_stt(user, "1")
+    assert not is_own_stt(user, "2")
+    assert not is_own_stt(SimpleNamespace(), "1")
+
+
+@pytest.mark.django_db
+def test_is_own_region(regional_user, stt, other_stt):
+    """Allow requests without an STT or for an STT in the user's region only."""
+    assert is_own_region(regional_user, None)
+    assert is_own_region(regional_user, str(stt.id))
+    assert not is_own_region(regional_user, str(other_stt.id))
 
 
 OFA_SYSTEM_ADMIN_TABLE_PERMISSIONS = (
@@ -48,6 +86,14 @@ OFA_SYSTEM_ADMIN_TABLE_PERMISSIONS = (
                 "periodictask",
                 "periodictasks",
                 "solarschedule",
+            ],
+            "etl": [
+                "etlartifact",
+                "etlnoderun",
+                "etlpipelinerun",
+                "etlqaresult",
+                "statisticalweight",
+                "statisticalweightscasecount",
             ],
             "parsers": ["datafilesummary", "parsererror"],
             "reports": ["reportfile", "reportsource"],
@@ -219,6 +265,13 @@ def test_digit_team_permissions(digit_team):
         "reports.add_reportsource",
         "reports.view_reportfile",
         "reports.view_reportsource",
+        # ETL permissions added in migration 0001
+        "etl.view_etlartifact",
+        "etl.view_etlnoderun",
+        "etl.view_etlpipelinerun",
+        "etl.view_etlqaresult",
+        "etl.view_statisticalweight",
+        "etl.view_statisticalweightscasecount",
     }
     group_permissions = digit_team.get_group_permissions()
     assert group_permissions == expected_permissions

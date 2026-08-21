@@ -331,7 +331,7 @@ describe('FRA Reports Page', () => {
       await waitFor(() =>
         expect(
           getAllByText(
-            `Successfully submitted section: Work Outcomes of TANF Exiters on ${new Date().toDateString()}`
+            `Successfully uploaded section: Work Outcomes of TANF Exiters on ${new Date().toDateString()}`
           ).length
         ).toBeGreaterThanOrEqual(1)
       )
@@ -369,7 +369,7 @@ describe('FRA Reports Page', () => {
       await waitFor(() =>
         expect(
           getAllByText(
-            `Successfully submitted section: Work Outcomes of TANF Exiters on ${new Date().toDateString()}`
+            `Successfully uploaded section: Work Outcomes of TANF Exiters on ${new Date().toDateString()}`
           ).length
         ).toBeGreaterThanOrEqual(1)
       )
@@ -495,7 +495,7 @@ describe('FRA Reports Page', () => {
       await waitFor(() =>
         expect(
           getAllByText(
-            `Successfully submitted section: Work Outcomes of TANF Exiters on ${new Date().toDateString()}`
+            `Successfully uploaded section: Work Outcomes of TANF Exiters on ${new Date().toDateString()}`
           ).length
         ).toBeGreaterThanOrEqual(1)
       )
@@ -698,7 +698,7 @@ describe('FRA Reports Page', () => {
       await waitFor(() =>
         expect(
           getAllByText(
-            `Successfully submitted section: Work Outcomes of TANF Exiters on ${new Date().toDateString()}`
+            `Successfully uploaded section: Work Outcomes of TANF Exiters on ${new Date().toDateString()}`
           ).length
         ).toBeGreaterThanOrEqual(1)
       )

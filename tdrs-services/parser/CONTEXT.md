@@ -5,7 +5,7 @@ This context covers the Go parser service under `tdrs-services/parser/`.
 ## Boundaries
 
 - The Go parser replaces the Python parser for TANF, SSP, Tribal TANF, and FRA data files.
-- Parser implementation, parser-specific Go tests, parser configuration, SQLC inputs, generated DB access code, and parser service Docker assets live here.
+- Parser implementation, parser-specific Go tests, parser configuration, DB helper code, and parser service Docker assets live here.
 - The parser uses a YAML-driven pipeline to decode, parse, validate, and write records.
 - Production-like local integration runs the parser in Celery mode as the `go-parser` Docker Compose service from `tdrs-backend/docker-compose.yml`.
 - Parsing output, validation results, task status, and database writes are product behavior and may affect backend workflows.
@@ -21,8 +21,7 @@ This context covers the Go parser service under `tdrs-services/parser/`.
 - `internal/parser/`: parsing, transformation, sorting, accumulation, and orchestration.
 - `internal/pipeline/`: worker pool, routing, and pipeline execution.
 - `internal/validation/`: validation registry, execution, environment, and results.
-- `internal/db/`: SQLC-generated and DB-facing code.
-- `schema.sql`, `query.sql`, `sqlc.yaml`: SQLC schema/query/code generation inputs.
+- `internal/db/`: handwritten DB helper code for datafile, summary, and content-type queries.
 - `docs/architecture.md`: parser architecture overview.
 
 ## Read With

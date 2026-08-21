@@ -8,13 +8,13 @@ To maintain good security, we will periodically rotate the following secret keys
 - ACF AMS keys (_internal user auth_)
 - Django secret keys ([_cryptographic signing_](https://docs.djangoproject.com/en/4.0/topics/signing/#module-django.core.signing))
 
-This document outlines the process for doing this for each set of keys. 
+This document outlines the process for doing this for each set of keys.
 
 **Recommendation:** Create a new issue to track key rotation for team awareness.
 
-**Warning(s):** 
+**Warning(s):**
 - Production sites will need to be taken down for maintenance when rotating keys, as the rotation will automatically invalidate all current sessions.
-- As of June 2022, CircleCI supplies environment variable key-value pairs to multiple environments (e.g. Raft's CircleCI deploys applications to dev and staging environments). The values from CircleCI are expected to be unique per environment, so until [#1826](https://github.com/raft-tech/TANF-app/issues/1826) is researched and addressed, these values will need to be manually corrected in cloud.gov immediately following the execution of the [`<env>-deployment` CircleCI workflow](../../.circleci/config.yml). This workaround applies to backend applications in the TDP staging environment. 
+- As of June 2022, CircleCI supplies environment variable key-value pairs to multiple environments (e.g. Raft's CircleCI deploys applications to dev and staging environments). The values from CircleCI are expected to be unique per environment, so until [#1826](https://github.com/raft-tech/TANF-app/issues/1826) is researched and addressed, these values will need to be manually corrected in cloud.gov immediately following the execution of the [`<env>-deployment` CircleCI workflow](../../.circleci/config.yml). This workaround applies to backend applications in the TDP staging environment.
 
 ## Rotation procedures
 
@@ -45,7 +45,7 @@ cf delete-user <<insert USERNAME value for deployer key>>
 cf delete-service-key tanf-keys deployer
 
 # verify deletion
-cf service-keys tanf-keys 
+cf service-keys tanf-keys
 ```
 
 3. create new `deployer` service key within `tanf-keys` instance (reference link above)
@@ -67,15 +67,15 @@ cf set-org-role <<insert USERNAME value for deployer key>> hhs-acf-ofa OrgUser
 cf set-space-role <<insert USERNAME value for deployer key>> hhs-acf-ofa tanf-prod SpaceDeveloper
 ```
 
-5. Confirm that the new deployment credentials work in CircleCI (re-run deployment workflow after adding `CF_USERNAME_<env>` and `CF_PASSWORD_<env>` back to CircleCI with rotated values) 
+5. Confirm that the new deployment credentials work in CircleCI (re-run deployment workflow after adding `CF_USERNAME_<env>` and `CF_PASSWORD_<env>` back to CircleCI with rotated values)
 
 
 </details>
 
 **<details><summary>JWT Keys</summary>**
 
-#### The following steps are applicable for **lower environments (dev and staging) _only_**. See [here](#Production-Environment) for prod environment procedure. 
-    
+#### The following steps are applicable for **lower environments (dev and staging) _only_**. See [here](#Production-Environment) for prod environment procedure.
+
 ### 1. Generate New Keys
 
 In your Mac terminal (or bash terminal in Windows), enter the following command:
@@ -129,7 +129,7 @@ cf set-env $cgbackendappname JWT_CERT "$JWT_CERT_VALUE\
 The steps here will be the same as development but you will need to generate a separate key-value pair and upload them to the separate app listing in Login.gov's dashboard as linked above.
 
 #### CI/CD Environment
-1. Distribute the private key to development staff securely to copy to `.env` 
+1. Distribute the private key to development staff securely to copy to `.env`
 2. Update the variables `JWT_KEY` and `JWT_CERT_TEST` in CircleCI with the new keypair.
 
 ### Production Environment
@@ -140,25 +140,21 @@ Production environment key generation, change requests, and distribution will be
 2. Copy the public key to the login.gov production environment
 3. _In order for the key change to take effect, a change request must be submitted to the [login.gov support portal](https://logingov.zendesk.com/). These requests can take approx. 2 weeks to be completed._
 
-**References** 
+**References**
 - More information on `openssl` can be found at [openssl.org](https://www.openssl.org/docs/manmaster/man1/openssl.html)
 </details>
 
 **<details><summary>ACF AMS Keys</summary>**
-The ACF OCIO Ops team manages these credentials for all environments (dev, staging, and prod), so we will need to submit a service request ticket whenever we need keys rotated. 
+The ACF OCIO Ops team manages these credentials for all environments (dev, staging, and prod), so we will need to submit a service request ticket whenever we need keys rotated.
 
 Service requests tickets must be submitted by Government-authorized personnel with Government computers and PIV access (e.g. Raft tech lead for lower environments and TDP sys admins for production environment). Please follow the procedures below:
 
-1. Submit request tickets from government-issued email address and use the email template located on **page 2** of [this document.](https://hhsgov.sharepoint.com/:w:/r/sites/TANFDataPortalOFA/Shared%20Documents/compliance/Authentication%20%26%20Authorization/ACF%20AMS%20docs/OCIO%20OPERATIONS%20REQUEST%20TEMPLATES.docx?d=w5332585c1ecf49a4aeda17674f687154&csf=1&web=1&e=aQyIPz) cc OFA tech lead on lower environment requests. 
+1. Submit request tickets from government-issued email address and use the email template located on **page 2** of [this document.](https://hhsgov.sharepoint.com/:w:/r/sites/TANFDataPortalOFA/Shared%20Documents/compliance/Authentication%20%26%20Authorization/ACF%20AMS%20docs/OCIO%20OPERATIONS%20REQUEST%20TEMPLATES.docx?d=w5332585c1ecf49a4aeda17674f687154&csf=1&web=1&e=aQyIPz) cc OFA tech lead on lower environment requests.
 2. Update environment variables in CircleCI and relevant cloud.gov backend applications after ticket completed by OCIO. [Restage applications](https://cloud.gov/docs/deployment/app-maintenance/#restaging-your-app).
 </details>
 
 
 **<details><summary>Django secret keys</summary>**
 
-`DJANGO_SECRET_KEY` is dynamically generated since [#1151](https://github.com/raft-tech/TANF-app/pull/1151), so all that needs to be done to rotate this key in any environment is to re-run the relevant environment's deployment workflow in CircleCI. These are as follows:
-- dev environment workflow (`dev-deployment`) is run from CircleCI for _raft-tech/TANF-app_. 
-- staging environment workflow (`staging-deployment`) is run from CircleCI for _raft-tech/TANF-app_  via `deploy-develop`.
-- staging environment workflow  (`staging-deployment`) is run from CircleCI for _HHS/TANF-app_ via `deploy-staging`.
-- prod environment workflow (`production-deployment`) is run from CircleCI for _HHS/TANF-app_.     
+`DJANGO_SECRET_KEY` is dynamically generated since [#1151](https://github.com/raft-tech/TANF-app/pull/1151). Re-running the relevant CircleCI deployment rotates the shared key before the backend and Celery application jobs start. The deployment workflow selects the environment from its branch or `target_env` pipeline parameter and applies the same key to both applications.
 </details>

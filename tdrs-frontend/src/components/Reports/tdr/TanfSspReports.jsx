@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
+import classNames from 'classnames'
 import { quarters } from '../utils'
 import { FiscalQuarterExplainer } from '../components/Explainers'
 import SectionFileUploadForm from '../../FileUploadForms/SectionFileUploadForm'
@@ -16,13 +17,16 @@ const TanfSspReports = ({ stt, isRegionalStaff, isDataAnalyst }) => {
     yearInputValue,
     quarterInputValue,
     fileTypeInputValue,
-    selectedSubmissionTab,
     setSelectedSubmissionTab,
     setReprocessedModalVisible,
     setReprocessedDate,
     headerRef,
-    localAlert,
+    uploadAlert,
+    processingAlert,
+    uploadAlertRef,
+    processingAlertRef,
   } = useReportsContext()
+
   const feedbackReportType =
     stt?.type?.toLowerCase() === 'tribe'
       ? REPORT_TYPES.TRIBAL_TANF
@@ -58,59 +62,55 @@ const TanfSspReports = ({ stt, isRegionalStaff, isDataAnalyst }) => {
             />
           )}
 
-          {localAlert.active &&
-            localAlert.message === POLLING_TIMEOUT_MESSAGE &&
-            (isRegionalStaff || selectedSubmissionTab === 2) && (
-              <div
-                className="usa-alert usa-alert--slim usa-alert--warning margin-top-2"
-                role="alert"
-              >
-                <div className="usa-alert__body">
-                  <p className="usa-alert__text">{localAlert.message}</p>
-                </div>
+          {/* Visible alerts (not in accessibility tree, prevents duplicate screen reads */}
+          {uploadAlert.active && (
+            <div
+              className={classNames('usa-alert usa-alert--slim', {
+                [`usa-alert--${uploadAlert.type}`]: true,
+              })}
+              tabIndex={-1}
+              ref={uploadAlertRef}
+            >
+              <div className="usa-alert__body" role="alert">
+                <p className="usa-alert__text">{uploadAlert.message}</p>
               </div>
-            )}
-
-          {isRegionalStaff ? (
-            <h3 className="font-sans-lg margin-top-5 margin-bottom-2 text-bold">
-              Submission History
-            </h3>
-          ) : (
-            <SegmentedControl
-              buttons={[
-                {
-                  id: 1,
-                  label: 'Current Submission',
-                  onSelect: () => setSelectedSubmissionTab(1),
-                },
-                {
-                  id: 2,
-                  label: 'Submission History',
-                  onSelect: () => setSelectedSubmissionTab(2),
-                },
-              ]}
-              selected={selectedSubmissionTab}
-            />
+            </div>
           )}
 
-          {!isRegionalStaff && selectedSubmissionTab === 1 && (
-            <SectionFileUploadForm stt={stt} />
+          {!isRegionalStaff && <SectionFileUploadForm stt={stt} />}
+
+          <hr />
+
+          <h3 className="font-sans-lg margin-top-5 margin-bottom-2 text-bold">
+            Submission &amp; Error Reports
+          </h3>
+
+          {processingAlert.active && (
+            <div
+              className={classNames('usa-alert usa-alert--slim', {
+                [`usa-alert--${processingAlert.type}`]: true,
+              })}
+              tabIndex={-1}
+              ref={processingAlertRef}
+            >
+              <div className="usa-alert__body" role="alert">
+                <p className="usa-alert__text">{processingAlert.message}</p>
+              </div>
+            </div>
           )}
 
-          {(isRegionalStaff || selectedSubmissionTab === 2) && (
-            <SectionSubmissionHistory
-              filterValues={{
-                quarter: quarterInputValue,
-                year: yearInputValue,
-                stt: stt,
-                file_type: fileTypeInputValue,
-              }}
-              reprocessedState={{
-                setModalVisible: setReprocessedModalVisible,
-                setDate: setReprocessedDate,
-              }}
-            />
-          )}
+          <SectionSubmissionHistory
+            filterValues={{
+              quarter: quarterInputValue,
+              year: yearInputValue,
+              stt: stt,
+              file_type: fileTypeInputValue,
+            }}
+            reprocessedState={{
+              setModalVisible: setReprocessedModalVisible,
+              setDate: setReprocessedDate,
+            }}
+          />
         </>
       )}
     </>

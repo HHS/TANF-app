@@ -607,12 +607,12 @@ class TestParse:
 
         parser_errors = ParserError.objects.filter(file=small_ssp_section1_datafile)
         dfs.status = dfs.get_status()
-        assert dfs.status == DataFileSummary.Status.PARTIALLY_ACCEPTED
+        assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
         dfs.case_aggregates = aggregates.case_aggregates_by_month(
             dfs.datafile, dfs.status
         )
 
-        assert dfs.case_aggregates["rejected"] == 1
+        assert dfs.case_aggregates["rejected"] == 0
         for month in dfs.case_aggregates["months"]:
             if month["month"] == "Oct":
                 assert month["accepted_without_errors"] == 0
@@ -2098,7 +2098,7 @@ class TestParse:
                     "accepted_with_errors": 1,
                 },
             ],
-            "rejected": 2,  # Rejected is 2 locally because of the trailer errors. We only generate trailer erros locally.
+            "rejected": 1,
         }
 
         assert TANF_T1.objects.count() == 3

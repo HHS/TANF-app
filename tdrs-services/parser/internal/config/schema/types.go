@@ -1,8 +1,11 @@
 package schema
 
 import (
-	"go-parser/internal/config/validation"
 	"sync"
+
+	"gopkg.in/yaml.v3"
+
+	"go-parser/internal/config/validation"
 )
 
 // TransformDef defines a field transformation with optional parameters.
@@ -39,6 +42,9 @@ type FieldDef struct {
 	// If set, the raw value comes from the named field instead of Start/End.
 	SourceField string `yaml:"source_field,omitempty"`
 
+	// Default is used when the field is persisted but not extracted from the row.
+	Default any `yaml:"default,omitempty"`
+
 	// === Positional Format Fields ===
 	// Used when the schema is for a positional (fixed-width) file
 
@@ -59,6 +65,32 @@ type FieldDef struct {
 
 	// Field configures the field-scope validators associated with this field.
 	Field []validation.ValidatorDef `yaml:"field_validators,omitempty"`
+
+	columnConfigured bool
+}
+
+// UnmarshalYAML records whether the column key was present so columnar schemas
+// can distinguish an omitted column from an explicit column 0.
+func (f *FieldDef) UnmarshalYAML(value *yaml.Node) error {
+	type fieldDef FieldDef
+	var raw fieldDef
+	if err := value.Decode(&raw); err != nil {
+		return err
+	}
+
+	*f = FieldDef(raw)
+	for i := 0; i+1 < len(value.Content); i += 2 {
+		if value.Content[i].Value == "column" {
+			f.columnConfigured = true
+			break
+		}
+	}
+	return nil
+}
+
+// ColumnConfigured returns true when a columnar field has an explicit row source.
+func (f *FieldDef) ColumnConfigured() bool {
+	return f.columnConfigured || f.Column != 0 || f.ColumnHeader != ""
 }
 
 // SegmentDef defines a segment within a record.

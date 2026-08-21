@@ -32,6 +32,8 @@ const baseContext = {
   getYearError: jest.fn(() => null),
   handleYearBlur: jest.fn(),
   selectYear: jest.fn(),
+  uploadAlert: { active: false, message: null },
+  processingAlert: { active: false, message: null },
 }
 
 const stt = { id: 1, name: 'Test STT' }
@@ -52,7 +54,7 @@ describe('ProgramIntegrityAuditReports', () => {
       getByText(/Program Integrity Audit - Fiscal Year 2024/i)
     ).toBeInTheDocument()
     expect(getByTestId('quarter-upload-form')).toBeInTheDocument()
-    expect(queryByTestId('quarter-submission-history')).not.toBeInTheDocument()
+    expect(queryByTestId('quarter-submission-history')).toBeInTheDocument()
   })
 
   it('renders submission history for regional staff', () => {
@@ -65,7 +67,7 @@ describe('ProgramIntegrityAuditReports', () => {
       <ProgramIntegrityAuditReports stt={stt} isRegionalStaff />
     )
 
-    expect(getByText(/Submission History/i)).toBeInTheDocument()
+    expect(getByText(/Submission & Error Reports/i)).toBeInTheDocument()
     expect(getByTestId('quarter-submission-history')).toBeInTheDocument()
     expect(queryByTestId('quarter-upload-form')).not.toBeInTheDocument()
   })

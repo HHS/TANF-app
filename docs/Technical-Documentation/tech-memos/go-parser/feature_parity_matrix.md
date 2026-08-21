@@ -67,10 +67,10 @@ See [architecture_and_integration_plan.md](architecture_and_integration_plan.md)
 | Record rollback on failure | Yes | No | Not Started | |
 | **Infrastructure** | | | | |
 | Celery/Redis task consumption | Yes | Stub | Not Started | gocelery WIP |
-| Dockerfile | N/A | No | Not Started | |
-| Docker-compose integration | N/A | No | Not Started | |
-| CI/CD pipeline (build, test, lint) | Yes | No | Not Started | |
-| SQLC schema validation in CI | N/A | No | Not Started | |
+| Dockerfile | N/A | Yes | Done | Used for local and CI integration |
+| Docker-compose integration | N/A | Yes | Done | Go parser runs in Celery mode with the backend stack |
+| CI/CD pipeline (build, test, lint) | Yes | Yes | Done | CircleCI also deploys the hosted worker through the Go buildpack |
+| SQLC schema validation in CI | N/A | Yes | Done | `sqlc diff`, `sqlc vet`, and schema verification run in CircleCI |
 | **Post-Parse Operations** | | | | |
 | Post-parse task enqueue to Python worker | Yes | No | Not Started | |
 | Email notifications | Yes | N/A | N/A | Python handles |

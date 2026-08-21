@@ -12,7 +12,31 @@ CGHOSTNAME_BACKEND=${3}
 CF_SPACE=${4}
 ENVIRONMENT=${5}
 
+if [ "$CF_SPACE" = "tanf-prod" ]; then
+    FRONTEND_ROUTE=tanfdata.acf.hhs.gov
+else
+    FRONTEND_ROUTE="${CGHOSTNAME_FRONTEND}.tanfdata.acf.hhs.gov"
+fi
+
 env=${CF_SPACE#"tanf-"}
+
+unmap_frontend_route_if_mapped()
+{
+    if APP_DETAILS=$(cf app "$CGAPPNAME_FRONTEND" 2>&1); then
+        :
+    else
+        APP_DETAILS_STATUS=$?
+        printf '%s\n' "$APP_DETAILS" >&2
+        return "$APP_DETAILS_STATUS"
+    fi
+
+    if ! printf '%s\n' "$APP_DETAILS" | grep -Fq "$FRONTEND_ROUTE"; then
+        echo "Frontend route $FRONTEND_ROUTE is already unmapped."
+        return 0
+    fi
+
+    cf unmap-route "$CGAPPNAME_FRONTEND" "$FRONTEND_ROUTE"
+}
 
 update_frontend()
 {
@@ -99,8 +123,10 @@ update_frontend()
     cd deployment || exit
 
     if [ "$1" = "rolling" ] ; then
-        # Do a zero downtime deploy.  This requires enough memory for
-        # two apps to exist in the org/space at one time.
+        # The rolling strategy requires enough memory for two app versions.
+        # Existing routes survive --no-route, so remove public access until
+        # the deployment's final networking step restores it.
+        unmap_frontend_route_if_mapped || exit 1
         cf push "$CGAPPNAME_FRONTEND" --no-route -f manifest.buildpack.yml --strategy rolling || exit 1
     else
         cf push "$CGAPPNAME_FRONTEND" --no-route -f manifest.buildpack.yml
@@ -108,14 +134,6 @@ update_frontend()
         cf set-env "$CGAPPNAME_FRONTEND" CONNECT_SRC '*.tanfdata.acf.hhs.gov'
         cf set-env "$CGAPPNAME_FRONTEND" BACKEND_HOST "$CGHOSTNAME_BACKEND"
         cf restage "$CGAPPNAME_FRONTEND"
-    fi
-
-    if [ "$CF_SPACE" = "tanf-prod" ]; then
-        cf map-route "$CGAPPNAME_FRONTEND" tanfdata.acf.hhs.gov
-    elif [ "$CF_SPACE" = "tanf-staging" ]; then
-        cf map-route "$CGAPPNAME_FRONTEND" "$CGHOSTNAME_FRONTEND".tanfdata.acf.hhs.gov
-    else
-        cf map-route "$CGAPPNAME_FRONTEND" "${CGHOSTNAME_FRONTEND}".tanfdata.acf.hhs.gov
     fi
 
     cd ../..

@@ -1,4 +1,3 @@
-import classNames from 'classnames'
 import Button from '../Button'
 import FileUpload from '../FileUpload'
 import {
@@ -47,7 +46,8 @@ const QuarterFileUploadForm = ({ stt }) => {
     year,
     formattedSections,
     logger,
-    setLocalAlertState,
+    setUploadAlertState,
+    setProcessingAlertState,
     stt,
     uploadedFiles,
     user,
@@ -57,7 +57,8 @@ const QuarterFileUploadForm = ({ stt }) => {
     year,
     formattedSections,
     logger,
-    setLocalAlertState,
+    setUploadAlertState,
+    setProcessingAlertState,
     stt,
     uploadedFiles,
     user,
@@ -68,15 +69,15 @@ const QuarterFileUploadForm = ({ stt }) => {
   const {
     yearInputValue,
     fileTypeInputValue,
-    localAlert,
+    uploadAlert,
     processingAlert,
     uploadedFiles,
     isSubmitting,
-    alertRef,
+    uploadAlertRef,
     processingAlertRef,
     onSubmit,
     handleCancel,
-    setLocalAlertState,
+    setUploadAlertState,
     setProcessingAlertState,
   } = useFileUploadForm({
     stt,
@@ -87,44 +88,6 @@ const QuarterFileUploadForm = ({ stt }) => {
 
   return (
     <>
-      {/* Screen-reader announcer */}
-      <div className="usa-sr-only">
-        <div role="status" aria-live="polite" aria-atomic="true">
-          {localAlert.active ? localAlert.message : ''}
-        </div>
-
-        <div role="status" aria-live="polite" aria-atomic="true">
-          {processingAlert.active ? processingAlert.message : ''}
-        </div>
-      </div>
-
-      {/* Visible alerts (not in accessibility tree, prevents duplicate screen reads */}
-      {localAlert.active && (
-        <div
-          className={classNames('usa-alert usa-alert--slim', {
-            [`usa-alert--${localAlert.type}`]: true,
-          })}
-          aria-hidden="true"
-        >
-          <div className="usa-alert__body">
-            <p className="usa-alert__text">{localAlert.message}</p>
-          </div>
-        </div>
-      )}
-
-      {processingAlert.active && (
-        <div
-          className={classNames('usa-alert usa-alert--slim', {
-            [`usa-alert--${processingAlert.type}`]: true,
-          })}
-          aria-hidden="true"
-        >
-          <div className="usa-alert__body">
-            <p className="usa-alert__text">{processingAlert.message}</p>
-          </div>
-        </div>
-      )}
-
       <form onSubmit={onSubmit}>
         {programIntegrityAuditLabels.map((quarterLabel, index) => (
           <FileUpload
@@ -134,7 +97,7 @@ const QuarterFileUploadForm = ({ stt }) => {
             quarter={`Q${index + 1}`}
             fileType={fileTypeInputValue}
             label={quarterLabel}
-            setLocalAlertState={setLocalAlertState}
+            setUploadAlertState={setUploadAlertState}
             setProcessingAlertState={setProcessingAlertState}
           />
         ))}

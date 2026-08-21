@@ -1,0 +1,17 @@
+version: 1
+applications:
+- name: ((app-name))
+  memory: 400M
+  instances: 1
+  disk_quota: 7G
+  no-route: true
+  health-check-type: process
+  command: ./cloudgov_start.sh --config-file=config/parser.yaml --server.mode=celery --storage.source=s3
+  buildpacks:
+  - binary_buildpack
+  services:
+  - ((database-service))
+  - ((datafiles-service))
+  - ((redis-service))
+  env:
+    CGAPPNAME_BACKEND: ((backend-app-name))

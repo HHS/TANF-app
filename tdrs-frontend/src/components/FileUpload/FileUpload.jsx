@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
 import fileTypeChecker from 'file-type-checker'
+import { fileInput } from '@uswds/uswds/src/js/components'
 
 import {
   clearError,
@@ -115,7 +116,7 @@ function FileUpload({
   quarter,
   fileType,
   label,
-  setLocalAlertState,
+  setUploadAlertState,
   setProcessingAlertState,
 }) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
@@ -178,7 +179,7 @@ function FileUpload({
   const inputRef = useRef(null)
 
   const validateAndUploadFile = async (event) => {
-    setLocalAlertState({
+    setUploadAlertState({
       active: false,
       type: null,
       message: null,
@@ -353,6 +354,13 @@ function FileUpload({
       inputRef.current.value = null
     }
   }
+
+  // Initialize USWDS file input component
+  useEffect(() => {
+    if (inputRef.current) {
+      fileInput.init(inputRef.current.parentNode)
+    }
+  }, [])
 
   return (
     <div

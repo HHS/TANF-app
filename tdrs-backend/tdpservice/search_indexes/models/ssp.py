@@ -29,7 +29,6 @@ class SSP_M1(RecordMixin):
     RecordType = models.CharField(max_length=156, null=True, blank=False)
     RPT_MONTH_YEAR = models.IntegerField(null=True, blank=False)
     CASE_NUMBER = models.CharField(max_length=11, null=True, blank=False)
-    FIPS_CODE = models.CharField(max_length=2, null=True, blank=False)
     COUNTY_FIPS_CODE = models.CharField(max_length=3, null=True, blank=False)
     STRATUM = models.CharField(max_length=2, null=True, blank=False)
     ZIP_CODE = models.CharField(max_length=5, null=True, blank=False)
@@ -92,7 +91,7 @@ class SSP_M2(RecordMixin):
     RecordType = models.CharField(max_length=156, null=True, blank=False)
     RPT_MONTH_YEAR = models.IntegerField(null=True, blank=False)
     CASE_NUMBER = models.CharField(max_length=11, null=True, blank=False)
-    FIPS_CODE = models.CharField(max_length=2, null=True, blank=False)
+    COUNTY_FIPS_CODE = models.CharField(max_length=2, null=True, blank=False)
 
     FAMILY_AFFILIATION = models.IntegerField(null=True, blank=False)
     NONCUSTODIAL_PARENT = models.IntegerField(null=True, blank=False)
@@ -180,7 +179,6 @@ class SSP_M3(RecordMixin):
     RecordType = models.CharField(max_length=156, null=True, blank=False)
     RPT_MONTH_YEAR = models.IntegerField(null=True, blank=False)
     CASE_NUMBER = models.CharField(max_length=11, null=True, blank=False)
-    FIPS_CODE = models.CharField(max_length=2, null=True, blank=False)
 
     FAMILY_AFFILIATION = models.IntegerField(null=True, blank=False)
     DATE_OF_BIRTH = models.CharField(max_length=8, null=True, blank=False)

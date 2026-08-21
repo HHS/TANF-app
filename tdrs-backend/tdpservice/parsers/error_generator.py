@@ -85,6 +85,18 @@ class ErrorGeneratorFactory:
             values_json[name] = value
         return values_json
 
+    def _handle_content_type(self, schema):
+        """Handle dict vs model based schemas."""
+        if schema.model is dict:
+            return None
+        return ContentType.objects.get_for_model(model=schema.model)
+
+    def _handle_id(self, record):
+        """Handle dict vs model based IDs."""
+        if isinstance(record, dict):
+            return None
+        return record.id
+
     def create_generate_case_consistency_error(self, row_number):
         """Create a case consistency error generator."""
 
@@ -187,10 +199,8 @@ class ErrorGeneratorFactory:
                 case_number=getattr(record, "CASE_NUMBER", None),
                 error_message=generator_args.error_message,
                 error_type=ParserErrorCategoryChoices.FIELD_VALUE,
-                content_type=ContentType.objects.get_for_model(
-                    model=generator_args.schema.model
-                ),
-                object_id=record.id,
+                content_type=self._handle_content_type(generator_args.schema),
+                object_id=self._handle_id(record),
                 fields_json=fields_json,
                 values_json=values_json,
                 deprecated=generator_args.deprecated,
@@ -243,10 +253,8 @@ class ErrorGeneratorFactory:
                 case_number=getattr(record, "CASE_NUMBER", None),
                 error_message=generator_args.error_message,
                 error_type=ParserErrorCategoryChoices.VALUE_CONSISTENCY,
-                content_type=ContentType.objects.get_for_model(
-                    model=generator_args.schema.model
-                ),
-                object_id=record.id,
+                content_type=self._handle_content_type(generator_args.schema),
+                object_id=self._handle_id(record),
                 fields_json=fields_json,
                 values_json=values_json,
                 deprecated=generator_args.deprecated,

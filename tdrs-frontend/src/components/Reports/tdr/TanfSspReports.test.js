@@ -53,7 +53,8 @@ describe('TanfSspReports feedback report alert', () => {
     setReprocessedModalVisible: jest.fn(),
     setReprocessedDate: jest.fn(),
     headerRef: React.createRef(),
-    localAlert: { active: false, message: null },
+    uploadAlert: { active: false, message: null },
+    processingAlert: { active: false, message: null },
   }
 
   beforeEach(() => {

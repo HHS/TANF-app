@@ -12,14 +12,16 @@ CGHOSTNAME_FRONTEND=${2}
 CGAPPNAME_FRONTEND="tdp-frontend-$CGHOSTNAME_FRONTEND"
 CGAPPNAME_BACKEND=${3}
 CF_SPACE=${4}
+DEPLOY_COMPONENT=${5:-all}
 
-strip() {
-    # Usage: strip "string" "pattern"
-    printf '%s\n' "${1##$2}"
-}
+if [[ ! "$DEPLOY_COMPONENT" =~ ^(all|backend|celery)$ ]]; then
+  echo "DEPLOY_COMPONENT must be one of: all, backend, celery"
+  exit 1
+fi
+
 # The cloud.gov space defined via environment variable (e.g., "tanf-dev", "tanf-staging")
-env=$(strip $CF_SPACE "tanf-")
-backend_app_name=$(echo $CGAPPNAME_BACKEND | cut -d"-" -f3)
+env=${CF_SPACE#tanf-}
+backend_app_name=${CGAPPNAME_BACKEND#tdp-backend-}
 
 CGAPPNAME_CELERY="tdp-celery-${backend_app_name}"
 
@@ -60,13 +62,14 @@ set_cf_envs()
   "KEYCLOAK_DJANGO_CLIENT_SECRET"
   "KEYCLOAK_BROWSER_URL"
   "KEYCLOAK_SERVER_URL"
+  "KEYCLOAK_SYNC_ENABLED"
   )
 
   APP=$1
 
   echo "Setting environment variables for $APP"
 
-  for var_name in ${var_list[@]}; do
+  for var_name in "${var_list[@]}"; do
     # Intentionally unsetting variable if empty
     if [[ -z "${!var_name}" ]]; then
         echo "WARNING: Empty value for $var_name. It will now be unset."
@@ -120,15 +123,21 @@ set_alloy_envs() {
 }
 
 add_service_bindings() {
-    yq eval -i ".applications[0].services[0] = \"tdp-db-${env}\"" ./tdrs-backend/manifest.buildpack.yml
-    yq eval -i ".applications[0].services[1] = \"tdp-staticfiles-${env}\"" ./tdrs-backend/manifest.buildpack.yml
-    yq eval -i ".applications[0].services[2] = \"tdp-datafiles-${env}\"" ./tdrs-backend/manifest.buildpack.yml
-    yq eval -i ".applications[0].services[3] = \"tdp-redis-${env}\"" ./tdrs-backend/manifest.buildpack.yml
+    COMPONENT=$1
 
-    yq eval -i ".applications[0].services[0] = \"tdp-db-${env}\"" ./tdrs-backend/manifest.celery.yml
-    yq eval -i ".applications[0].services[1] = \"tdp-staticfiles-${env}\"" ./tdrs-backend/manifest.celery.yml
-    yq eval -i ".applications[0].services[2] = \"tdp-datafiles-${env}\"" ./tdrs-backend/manifest.celery.yml
-    yq eval -i ".applications[0].services[3] = \"tdp-redis-${env}\"" ./tdrs-backend/manifest.celery.yml
+    if [[ "$COMPONENT" == "all" || "$COMPONENT" == "backend" ]]; then
+      yq eval -i ".applications[0].services[0] = \"tdp-db-${env}\"" ./tdrs-backend/manifest.buildpack.yml
+      yq eval -i ".applications[0].services[1] = \"tdp-staticfiles-${env}\"" ./tdrs-backend/manifest.buildpack.yml
+      yq eval -i ".applications[0].services[2] = \"tdp-datafiles-${env}\"" ./tdrs-backend/manifest.buildpack.yml
+      yq eval -i ".applications[0].services[3] = \"tdp-redis-${env}\"" ./tdrs-backend/manifest.buildpack.yml
+    fi
+
+    if [[ "$COMPONENT" == "all" || "$COMPONENT" == "celery" ]]; then
+      yq eval -i ".applications[0].services[0] = \"tdp-db-${env}\"" ./tdrs-backend/manifest.celery.yml
+      yq eval -i ".applications[0].services[1] = \"tdp-staticfiles-${env}\"" ./tdrs-backend/manifest.celery.yml
+      yq eval -i ".applications[0].services[2] = \"tdp-datafiles-${env}\"" ./tdrs-backend/manifest.celery.yml
+      yq eval -i ".applications[0].services[3] = \"tdp-redis-${env}\"" ./tdrs-backend/manifest.celery.yml
+    fi
 }
 
 update_backend()
@@ -213,7 +222,7 @@ update_backend_network()
       # Add network policy to allow backend to access tanf-prod services
       cf add-network-policy "$CGAPPNAME_BACKEND" clamav-rest --protocol tcp --port 9000
     else
-      cf add-network-policy "$CGAPPNAME_BACKEND" tdp-clamav-nginx-$env --protocol tcp --port 9000
+      cf add-network-policy "$CGAPPNAME_BACKEND" "tdp-clamav-nginx-$env" --protocol tcp --port 9000
     fi
 }
 
@@ -252,11 +261,48 @@ else
   FRONTEND_BASE_URL="$DEFAULT_FRONTEND_ROUTE"
 fi
 
-# Dynamically generate a new DJANGO_SECRET_KEY
-DJANGO_SECRET_KEY=$(python3 -c "from secrets import token_urlsafe; print(token_urlsafe(50))")
+load_backend_secret_key()
+{
+  BACKEND_GUID=$(cf app "$CGAPPNAME_BACKEND" --guid || true)
+  if [[ "$BACKEND_GUID" == "FAILED" ]]; then
+    return
+  fi
 
-# Dynamically set DJANGO_CONFIGURATION based on Cloud.gov Space
+  DJANGO_SECRET_KEY=$(cf curl "/v3/apps/$BACKEND_GUID/env" | jq -r '.environment_variables.DJANGO_SECRET_KEY // empty')
+}
+
+CONFIGURED_DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-}
+DJANGO_SECRET_KEY=
+load_backend_secret_key
+
+if [[ -z "$DJANGO_SECRET_KEY" ]]; then
+  DJANGO_SECRET_KEY=$CONFIGURED_DJANGO_SECRET_KEY
+fi
+
+if [[ -z "${DJANGO_SECRET_KEY:-}" && "$DEPLOY_COMPONENT" == "celery" ]]; then
+  for _ in {1..60}; do
+    echo "Waiting for the backend to publish its shared DJANGO_SECRET_KEY."
+    sleep 10
+    load_backend_secret_key
+    if [[ -n "${DJANGO_SECRET_KEY:-}" ]]; then
+      break
+    fi
+  done
+fi
+
+if [[ -z "${DJANGO_SECRET_KEY:-}" && "$DEPLOY_COMPONENT" == "celery" ]]; then
+  echo "Backend DJANGO_SECRET_KEY is unavailable; Celery cannot be deployed safely."
+  exit 1
+fi
+
+if [[ -z "${DJANGO_SECRET_KEY:-}" ]]; then
+  DJANGO_SECRET_KEY=$(python3 -c "from secrets import token_urlsafe; print(token_urlsafe(50))")
+fi
+
+# These variables are read indirectly by set_cf_envs.
+# shellcheck disable=SC2034
 DJANGO_SETTINGS_MODULE="tdpservice.settings.cloudgov"
+# shellcheck disable=SC2034
 if [ "$CF_SPACE" = "tanf-prod" ]; then
   DJANGO_CONFIGURATION="Production"
 elif [ "$CF_SPACE" = "tanf-staging" ]; then
@@ -264,7 +310,6 @@ elif [ "$CF_SPACE" = "tanf-staging" ]; then
 else
   DJANGO_CONFIGURATION="Development"
   DJANGO_DEBUG="Yes"
-  CYPRESS_TOKEN=$CYPRESS_TOKEN
 fi
 
 
@@ -289,26 +334,35 @@ if [[ $DEPLOY_STRATEGY == 'rolling' ]]; then
   fi
 fi
 
-if [[ $DEPLOY_STRATEGY == 'rebuild' ]]; then
+if [[ $DEPLOY_STRATEGY == 'rebuild' && ( "$DEPLOY_COMPONENT" == "all" || "$DEPLOY_COMPONENT" == "backend" ) ]]; then
   # You want to redeploy the instance under the same name
   # Delete the existing app (with out deleting the services)
   # and perform the initial deployment strategy.
   cf delete "$CGAPPNAME_BACKEND" -r -f
+fi
+
+if [[ $DEPLOY_STRATEGY == 'rebuild' && ( "$DEPLOY_COMPONENT" == "all" || "$DEPLOY_COMPONENT" == "celery" ) ]]; then
   cf delete "$CGAPPNAME_CELERY" -r -f
 fi
 
-add_service_bindings
+add_service_bindings "$DEPLOY_COMPONENT"
 
-if [[ $DEPLOY_STRATEGY == 'rebuild' ]]; then
-  update_backend "$CGAPPNAME_BACKEND" 'initial'
-else
-  update_backend "$CGAPPNAME_BACKEND" "$DEPLOY_STRATEGY"
+if [[ "$DEPLOY_COMPONENT" == "all" || "$DEPLOY_COMPONENT" == "backend" ]]; then
+  if [[ $DEPLOY_STRATEGY == 'rebuild' ]]; then
+    update_backend "$CGAPPNAME_BACKEND" 'initial'
+  else
+    update_backend "$CGAPPNAME_BACKEND" "$DEPLOY_STRATEGY"
+  fi
 fi
 
-if [[ $CELERY_DEPLOY_STRATEGY == 'rebuild' ]]; then
-  update_backend "$CGAPPNAME_CELERY" 'initial'
-else
-  update_backend "$CGAPPNAME_CELERY" "$CELERY_DEPLOY_STRATEGY"
+if [[ "$DEPLOY_COMPONENT" == "all" || "$DEPLOY_COMPONENT" == "celery" ]]; then
+  if [[ $CELERY_DEPLOY_STRATEGY == 'rebuild' ]]; then
+    update_backend "$CGAPPNAME_CELERY" 'initial'
+  else
+    update_backend "$CGAPPNAME_CELERY" "$CELERY_DEPLOY_STRATEGY"
+  fi
 fi
 
-update_backend_network
+if [[ "$DEPLOY_COMPONENT" == "all" ]]; then
+  update_backend_network
+fi

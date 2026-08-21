@@ -286,7 +286,10 @@ The Go parser writes to the same PostgreSQL tables as the Python parser:
 | `parser_error` | Validation errors | `COPY FROM` |
 | `parsers_datafilesummary` | Processing status | UPDATE via query |
 
-Schema compatibility is enforced by SQLC: `schema.sql` mirrors the Django model definitions, and `sqlc generate` produces Go structs that match the database columns exactly. The `writer/convert` package handles the translation from internal `ParsedRecord` types to these DB model structs.
+Schema compatibility is enforced by the backend Django/Go schema contract test.
+Active Django search index model fields are compared to Go YAML schema fields,
+while the Go writer derives table metadata and row serialization from the YAML
+schemas at runtime.
 
 ### Blob Storage
 
@@ -439,9 +442,9 @@ ENTRYPOINT ["/go-parser"]
 | Change | Description |
 |--------|-------------|
 | **Go build step** | Add `go build` and `go test` to the CI pipeline |
-| **SQLC validation** | Run `sqlc diff` to ensure generated code matches schema |
+| **Schema contract validation** | Run the backend Django/Go schema contract test to ensure active model fields match Go YAML schemas |
 | **Expression validation** | Compile all YAML validators at CI time to catch syntax errors |
-| **Docker image build** | Build and push the `go-parser` image alongside the existing `tdp` image |
+| **Hosted buildpack deployment** | Compile the `go-parser` worker in CircleCI and stage the resulting Linux executable with the Cloud Foundry binary buildpack; keep the Docker image for local and CI integration |
 | **Integration tests** | Run Go integration tests against a test database |
 
 ### Resource Requirements
@@ -557,7 +560,7 @@ Before widening the canary beyond the initial allowlist, the Go parser must hand
 
 | Risk | Impact | Likelihood | Mitigation |
 |------|--------|------------|------------|
-| **Schema drift** — Django model migrations diverge from SQLC schema | Go parser writes fail or corrupt data | Medium | CI step runs `sqlc diff`; integration tests run against migrated DB |
+| **Schema drift** — Django model migrations diverge from Go YAML schemas | Go parser writes fail or corrupt data | Medium | Backend contract test compares active Django model fields to Go YAML fields; integration tests run against migrated DB |
 | **Validation parity gaps** — Go parser misses edge cases in Python validators | Incorrect acceptance or rejection of records | Medium | Canary routing with narrow allowlist; automatic Python fallback; comprehensive integration test suite |
 | **Memory pressure** — Large files during presort exhaust container memory | OOM kill, failed parse | Low | Monitor container memory; set memory limits; most files are well under 100MB |
 | **gocelery compatibility** — `gocelery` library may not support all Celery protocol features | Task consumption failures | Low | Validate against actual Redis task payloads; the library is used only for basic task/result protocol |

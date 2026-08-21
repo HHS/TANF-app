@@ -212,14 +212,10 @@ class DataFileAPITestBase:
         critical = wb["Critical"]
         summary = wb["Summary"]
 
-        COL_ERROR_MESSAGE = 3
         COL_NUM_OCCURRENCES = 8
 
         assert readme.cell(row=1, column=1).value == "Error Report Readme"
         assert critical.cell(row=1, column=1).value == "Case Number"
-        assert summary.cell(row=5, column=COL_ERROR_MESSAGE).value == (
-            "TRAILER: record length is 15 characters " "but must be 23."
-        )
         assert summary.cell(row=2, column=COL_NUM_OCCURRENCES).value == 3
 
     @staticmethod
@@ -568,7 +564,9 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         response = self.post_data_file(api_client, data_file_data)
         assert response.data["section"] == "Active Case Data"
 
-    def test_failed_upload_does_not_create_record(self, api_client, data_file_data, user):
+    def test_failed_upload_does_not_create_record(
+        self, api_client, data_file_data, user
+    ):
         """Test failed uploads do not create a DataFile record."""
         data_file_data["file"].name = "bad.exe"
 

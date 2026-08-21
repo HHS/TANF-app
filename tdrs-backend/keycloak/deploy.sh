@@ -40,8 +40,8 @@ help() {
     echo "        WARNING: do NOT use -r when upgrading the Keycloak version — the rolling"
     echo "        strategy runs old and new instances simultaneously, which can cause DB"
     echo "        migration conflicts and authentication failures during the transition."
-    echo "  d     The Cloud Foundry service name of the RDS instance (e.g. tdp-keycloak-db-dev)."
-    echo "  p     The public hostname for Keycloak (e.g. tdp-keycloak-dev)."
+    echo "  d     The Cloud Foundry service name of the RDS instance (e.g. tdp-db-dev)."
+    echo "  p     The public hostname for Keycloak (e.g. dev.auth)."
     echo "        This will create a public route at <hostname>.${PUBLIC_DOMAIN}"
     echo "        and set KC_HOSTNAME so Keycloak generates correct redirect URIs."
     echo "  i     The Docker image URI for Keycloak (e.g. ghcr.io/hhs/tdp-keycloak:latest)."
@@ -58,7 +58,7 @@ help() {
     done
     echo ""
     echo "Example:"
-    echo "  ./deploy.sh -e dev -d tdp-db-dev -p tdp-keycloak-dev -i ghcr.io/raft-tech/keycloak_26:latest -u myuser"
+    echo "  ./deploy.sh -e dev -d tdp-db-dev -p dev.auth -i ghcr.io/raft-tech/keycloak_26:latest -u myuser"
     echo ""
 }
 

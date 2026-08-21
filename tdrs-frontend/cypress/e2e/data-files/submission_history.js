@@ -9,7 +9,6 @@ Then('Admin Alex can view the Illinois TANF Submission History', () => {
   cy.visit('/data-files')
   cy.get('h1').contains('TANF Data Files').should('exist')
   df.fillSttFyQNoProgramSelector('Illinois', '2023', 'Q1')
-  cy.get('button').contains('Submission History').click()
 })
 
 Then('Admin Alex can verify the Illinois TANF submission', () => {
@@ -22,7 +21,6 @@ Then('Admin Alex can view the Missouri SSP Submission History', () => {
   cy.visit('/data-files')
   cy.get('h1').contains('TANF Data Files').should('exist')
   df.fillSttFyQ('Missouri', '2024', 'Q1', false, false)
-  cy.get('button').contains('Submission History').click()
 })
 
 Then('Admin Alex can verify the Missouri SSP submission', () => {
@@ -48,7 +46,6 @@ When('Admin Alex views the California PIA Submission History', () => {
   cy.get('h1').contains('TANF Data Files').should('exist')
   df.fillStt('California')
   df.fillFyQProgram('2024', '', 'PIA')
-  cy.get('button').contains('Submission History').click()
 })
 
 Then('Admin Alex can verify the California PIA submission', () => {
@@ -105,7 +102,6 @@ Given('FRA Data Analyst Fred submits a file', () => {
 
       // Poll the API until the summary is populated
       df.waitForDataFileSummary(fileId)
-      cy.get('button').contains('Submission History').click()
       df.validateSmallCorrectFile()
     }
   })

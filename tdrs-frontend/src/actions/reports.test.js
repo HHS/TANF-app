@@ -152,7 +152,8 @@ describe('actions/reports', () => {
         formattedSections: '4',
         logger: { alert: jest.fn() },
         quarter: 'Q1',
-        setLocalAlertState: jest.fn(),
+        setUploadAlertState: jest.fn(),
+        setProcessingAlertState: jest.fn(),
         stt: { id: 10 },
         uploadedFiles: [
           {
@@ -205,14 +206,14 @@ describe('actions/reports', () => {
       )
       const store = mockStore()
 
-      const setLocalAlertState = jest.fn()
+      const setUploadAlertState = jest.fn()
 
       await store.dispatch(
         submit({
           formattedSections: '4',
           logger: { alert: jest.fn() },
           quarter: 'Q1',
-          setLocalAlertState: setLocalAlertState,
+          setUploadAlertState: setUploadAlertState,
           stt: { id: 10 },
           uploadedFiles: [
             {
@@ -228,7 +229,7 @@ describe('actions/reports', () => {
       )
 
       expect(post).toHaveBeenCalledTimes(1)
-      expect(setLocalAlertState).toHaveBeenCalledWith({
+      expect(setUploadAlertState).toHaveBeenCalledWith({
         active: true,
         message: msg || 'Error: Something went wrong',
         type: 'error',

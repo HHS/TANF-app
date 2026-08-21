@@ -3,7 +3,7 @@
 **Jump To:**
 * [Background & Motivation](#background--motivation)
 * [Methods & Approach](#methods--approach)
-* [Core Findings & Research Questions Addressed]([#core-findings--research-questions-addressed)
+* [Core Findings & Research Questions Addressed](#core-findings--research-questions-addressed)
 * [Research and Design Priorities](#research-and-design-priorities)
 * [Next Steps Documentation](#next-steps-documentation)
 * [Index, Supporting Documents and Artifiacts](#index-supporting-documentation-and-artifacts)

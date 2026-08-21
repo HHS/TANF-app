@@ -4,7 +4,7 @@
 * A set of rules for defining run order/conditions for a group of jobs
 * Without filters a workflow will run on every commit
 * We use filters within workflows to ensure certain jobs are only run on designated branches
-* Such as deploy-infrastructure-staging and deploy-staging - which only run when the branch being committed to is `develop`
+* Such as `deploy-infrastructure-staging` and the `*-develop` application jobs, which only run when the branch being committed to is `develop`
 * The `requires` tag allows us to make sure a certain job has completed before moving to the next step in the workflow
 * Additional vocab:
     * Commands: reusable steps for jobs
@@ -17,6 +17,19 @@
     * `nightly`: Runs every night at UTC midnight and performs an OWASP scan against the staging site for both backend and frontend then stores the results in Django using a Cloud Foundry task.
     * `owasp-scan`: Runs an OWASP scan against the backend and frontend for a given PR. Triggered by a GitHub action whenever the `QASP Review` label is assigned via an API call to Circle CI with the pipeline parameter `run_owasp_scan`.
     * `staging-deployment`: Deploys the main branch to the staging space in Cloud.gov. Triggered via merges to the branch `main`.
+
+## Application deployment order
+
+Each environment uses the same dependency graph:
+
+1. Deploy the environment infrastructure.
+2. Apply database migrations and rotate the shared Django secret.
+3. Deploy the Django backend, Python Celery worker, and Go parser worker in parallel.
+4. Deploy the frontend independently after infrastructure is ready.
+5. Configure application networking and verify that every application has a running process.
+6. Run environment-level end-to-end tests where configured.
+
+The Go parser deploy job compiles a statically linked Linux binary before pushing a no-route Cloud Foundry application with the binary buildpack. A startup script reads the PostgreSQL, Redis, and S3 service bindings with `jq`, exports the parser's standard environment variables, routes `post_parse` to the environment-specific Django Celery queue, and then executes the binary.
 * Manual deployment
     * Select the desired branch from the branch dropdown on the CircleCI project page
     * Click the "Trigger Pipeline" button
@@ -74,8 +87,8 @@ These all have defaults set in their respective settings modules, but may be ove
     * Store Artifacts - stores Pa11y screenshots taken
 
 ### deploy-frontend
-* Called as a step in the `deploy-cloud-dot-gov` command
-* Runs directly on the machine executor
+* Runs as an independent application job after infrastructure deployment.
+* Runs on its own Docker executor so CircleCI can schedule it concurrently with the other application jobs.
 * Installs Node.JS v22.13.0 and all project dependencies
 * Calls script `/scripts/deploy-frontend.sh`, which does the following:
     * Using cloud.gov application name as an input (`CGHOSTNAME_BACKEND`) it sets the environment variables needed to communicate with the Django backend:
@@ -84,8 +97,8 @@ These all have defaults set in their respective settings modules, but may be ove
         * Only difference in values is whether `/v1` is at the end
     * Runs `yarn build` which generates the HTML needed to serve to end users
     * Copies in the nginx configuration for build packs
-    * Uploads the build output to Cloud.gov using `cf push`
-    * Creates and maps the frontend route
+    * Unmaps the existing frontend route before a rolling deployment
+    * Uploads the build output to Cloud.gov using `cf push --no-route`
 
 ## Backend CI build process
 
@@ -95,19 +108,21 @@ These all have defaults set in their respective settings modules, but may be ove
     * Build and Spin-up Django API Service (using docker-compose)
     * Run Python Linting Test (flake8)
     * Run Pytest Unit Tests
+    * Run ETL integration tests through `task backend-pytest-etl-integration`. This job installs Task to `$HOME/.local/bin`, exports that directory onto `PATH`, verifies `task --version`, then runs the root `Taskfile.yml` target from `tdrs-backend`.
     * Upload code coverage - uses Codecov
 
 ### deploy-backend
-* Called as a step in the `deploy-cloud-dot-gov` command
+* Runs as an independent CircleCI deployment job after database configuration completes.
 * Runs directly on the machine executor
 * Calls script `/scripts/deploy-backend.sh`, which does the following:
-    * Uploads the backend application to Cloud.gov using `cf push`
-    * Creates and maps the backend route
+    * Uploads either the backend or Celery application to Cloud.gov using `cf push`.
     * Checks if the JWT_CERT has been generated and if not, creates a new one.
     * If DEPLOY_STRATEGY passed is `initial` or `rebuild` it will do the following:
         * Bind the backend application to the S3 and RDS services in Cloud.gov
         * Run `/scripts/set-backend-env-vars.sh` (detailed above)
         * Restage the application to make environment variable and bound services live.
+
+Networking is configured only after backend, Celery, Go parser, and frontend deployment jobs succeed. The frontend public route is mapped as the final networking action so a newly deployed frontend is not exposed before the other applications are ready.
 
 ## CI/CD Pipeline
 
@@ -123,3 +138,11 @@ The Frontend and Backend deploy Workflows are triggered automatically on pushes 
     * To select the environment, add the name after a hyphen following the `Deploy with CircleCI` prefix
     * e.g. `Deploy with CircleCI-test` will deploy your branch build to the tanf-dev Cloud Foundry space, tdp-test environment
         * tdp-frontend-test & tdp-backend-test
+
+## Partial deployment failures
+
+Each application has its own CircleCI job and log. A failed application does not cancel sibling deployment jobs that are already running. The final verification and environment-level tests remain blocked until all required applications succeed.
+
+Retry the failed application job with the same commit. Do not rerun database configuration unless it failed or the migration is known to be safe to repeat. If successful sibling deployments are incompatible with the previous application version, roll those applications back to their last known-good Cloud Foundry revisions. Disable Go parser task routing before rolling back the Go parser when parser behavior is implicated.
+
+For deployment-time comparisons, record the duration of the former environment deployment job and compare it with the new critical path: database configuration plus the slowest parallel application job plus verification.

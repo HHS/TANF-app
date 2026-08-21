@@ -15,6 +15,15 @@
           command: |
             cd tdrs-backend;
             docker-compose run --rm web bash -c "./wait_for_services.sh && pytest --cov-report=xml"
+      - run:
+          name: Run ETL integration tests
+          command: |
+            cd tdrs-backend
+            mkdir -p "$HOME/.local/bin"
+            sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b "$HOME/.local/bin"
+            export PATH="$HOME/.local/bin:$PATH"
+            task --version
+            task backend-pytest-etl-integration
       - upload-codecov:
           component: backend
           coverage-report: ./tdrs-backend/coverage.xml
@@ -128,17 +137,6 @@
           command: |
             . "$BASH_ENV"
             task parser:lint
-      - run:
-          name: sqlc diff
-          command: |
-            . "$BASH_ENV"
-            task dump-parser-schema
-            task parser:sqlc-diff
-      - run:
-          name: sqlc vet
-          command: |
-            . "$BASH_ENV"
-            task parser:sqlc-vet
       - run:
           name: Validator compilation check
           command: |

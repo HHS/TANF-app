@@ -340,6 +340,23 @@ func TestPositionalExtractor_Extract(t *testing.T) {
 func TestColumnarExtractor_Extract(t *testing.T) {
 	ext := &ColumnarExtractor{}
 
+	t.Run("default value without column source", func(t *testing.T) {
+		row := decoder.NewColumnarRow(1, "TE1", 2, []any{"202401", "123456789"})
+		field := &schema.FieldDef{
+			Name:    "RecordType",
+			Type:    "string",
+			Default: "TE1",
+		}
+
+		got, err := ext.Extract(row, field, nil, nil)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if got != "TE1" {
+			t.Errorf("got %v, want TE1", got)
+		}
+	})
+
 	t.Run("regular field extraction", func(t *testing.T) {
 		row := decoder.NewColumnarRow(1, "T1", 3, []any{"Alice", 42, "active"})
 		field := &schema.FieldDef{

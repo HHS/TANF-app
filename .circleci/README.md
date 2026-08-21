@@ -22,6 +22,8 @@ Contains workflows, jobs, and commands for setting up the infrastructure on Clou
 #### deployment
 Contains workflows, jobs, and commands for deploying the application on Cloud gov. Note: merges to develop now automatically trigger a develop deploy using [deploy-develop-on-merge](../.github/workflows/deploy-develop-on-merge.yml) and deploys to dev environments happen when a label is created on the PR using [deploy-on-label](../.github/workflows/deploy-on-label.yml)
 
+Application deployments use a fan-out/fan-in workflow. Infrastructure and database configuration complete first, then the Django backend, Python Celery worker, and Go parser worker deploy as independent jobs. The frontend deploys independently after infrastructure. A final verification job waits for all application jobs before environment-level tests run.
+
 #### owasp
 Contains workflows, jobs, and commands for running OWASP scans on the application in during the pipeline against Cloud.gov environments.
 

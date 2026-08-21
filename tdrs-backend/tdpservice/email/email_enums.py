@@ -31,6 +31,12 @@ class FeedbackReportEmail(Enum):
     REPORT_AVAILABLE = "feedback/report-available.html"
 
 
+class ETLEmail(Enum):
+    """Email templates related to ETL pipeline notifications."""
+
+    STATISTICAL_WEIGHTS_RUN = "etl/statistical-weights-run.html"
+
+
 class TanfDataFileEmail(Enum):
     """Email templates related to TANF data file submissions."""
 

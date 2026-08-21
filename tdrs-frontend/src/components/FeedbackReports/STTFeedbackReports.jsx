@@ -88,7 +88,10 @@ function STTFeedbackReports() {
       }
     }
     const urlType = searchParams.get('type')
-    if (urlType && STT_REPORT_TYPE_OPTIONS.some(({ value }) => value === urlType)) {
+    if (
+      urlType &&
+      STT_REPORT_TYPE_OPTIONS.some(({ value }) => value === urlType)
+    ) {
       return urlType
     }
     return REPORT_TYPES.TANF_SSP

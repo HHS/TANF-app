@@ -48,6 +48,7 @@ class CloudGov(Common):
     cloudgov_name = cloudgov_app.get("name").split("-")[
         -1
     ]  # converting "tdp-backend-name" to just "name"
+    CELERY_TASK_DEFAULT_QUEUE = os.getenv("CELERY_TASK_DEFAULT_QUEUE", cloudgov_name)
     # TODO: does this break prod?
     services_basename = cloudgov_space_suffix
 

@@ -28,8 +28,10 @@ These steps ensure the backend Django application passes basic unit tests, compi
 These steps ensure the ReactJS application passes basic unit tests, compilation, and linting.
 ### `deploy-infrastructure-dev`:
 These steps include the essential Terraform setup.
-### `deploy-dev`:
-These steps run through the commands needed to actually deploy this commit to the resulting app(s).
+### Application deployment jobs
+The `deploy-backend-*`, `deploy-celery-*`, `deploy-go-parser-*`, and `deploy-frontend-*` jobs deploy independently after their prerequisites complete. Inspect the failed component job directly; a successful sibling job does not imply that the full environment passed verification.
+
+The `verify-deployment-*` job configures shared networking and confirms that every deployed application has a running process. It runs only after all application deployment jobs succeed.
 
 ## Compilation/runtime failure
 **Symptom:** I deployed new code and now the app in Cloud.gov is down/just shows a white screen.
@@ -77,8 +79,10 @@ export JWT_KEY.......
 export DJANGO_SU_NAME=yourname@goraft.tech
 export LOGGING_LEVEL=DEBUG
 [...]
-bash scripts/deploy-backend.sh rebuild tdp-backend-raft tanf-dev
+bash scripts/deploy-backend.sh rebuild raft tdp-backend-raft tanf-dev
 ```
+
+The optional fifth argument limits a manual deployment to `backend` or `celery`. Omitting it preserves the combined manual recovery flow. The Go parser can be retried independently with `scripts/deploy-go-parser.sh`.
 
 ## Revision Rollback
 
@@ -87,7 +91,7 @@ First we need to get list of revisions and select a stable revision id.
 
 Then use the last successful guid, we can populate this reversion command:
 ```
-cf curl v3/deployments \        
+cf curl v3/deployments \
 -X POST \
 -d '{
   "revision": {

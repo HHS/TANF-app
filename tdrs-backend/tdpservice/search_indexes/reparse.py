@@ -71,7 +71,12 @@ def handle_datafiles(files, meta_model, log_context, previous_summary_statuses=N
 
 def clean_reparse(selected_file_ids):
     """Reparse selected files."""
+    from tdpservice.etl.pipelines.sources import (
+        validate_no_active_pipeline_source_overlap,
+    )
+
     selected_files = [int(file_id) for file_id in selected_file_ids[0].split(",")]
+    validate_no_active_pipeline_source_overlap(selected_files)
 
     files = DataFile.objects.filter(id__in=selected_files)
     previous_summary_statuses = dict(

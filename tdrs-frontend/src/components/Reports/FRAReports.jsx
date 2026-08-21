@@ -163,7 +163,7 @@ const Inputs = ({
 const UploadForm = ({
   handleCancel,
   handleUpload,
-  setLocalAlertState,
+  setUploadAlertState,
   setProcessingAlertState,
   file,
   setSelectedFile,
@@ -220,7 +220,7 @@ const UploadForm = ({
   const onFileChanged = async (e) => {
     setSelectedFile(null)
     setError(null)
-    setLocalAlertState({
+    setUploadAlertState({
       active: false,
       type: null,
       message: null,
@@ -306,7 +306,7 @@ const UploadForm = ({
     }
 
     if (!file || (file && file.id)) {
-      setLocalAlertState({
+      setUploadAlertState({
         active: true,
         type: 'error',
         message: 'No changes have been made to data files',
@@ -566,8 +566,8 @@ const FRAReportsContent = () => {
     setReprocessedModalVisible,
     reprocessedDate,
     setReprocessedDate,
-    localAlert,
-    setLocalAlertState,
+    uploadAlert,
+    setUploadAlertState,
     processingAlert,
     setProcessingAlertState,
     processingAlertRef,
@@ -577,7 +577,7 @@ const FRAReportsContent = () => {
     setFraUploadError,
     fraHasUploadedFile,
     headerRef,
-    alertRef,
+    uploadAlertRef,
     selectStt,
     selectFileType,
     selectYear,
@@ -659,7 +659,7 @@ const FRAReportsContent = () => {
       }
 
       setFraUploadError(null)
-      setLocalAlertState({
+      setUploadAlertState({
         active: false,
         type: null,
         message: null,
@@ -710,14 +710,9 @@ const FRAReportsContent = () => {
                 datafile: response?.data,
               },
             })
-            setProcessingAlertState({
-              active: true,
-              type: 'success',
-              message: 'Processing complete.',
-            })
           },
           (error) => {
-            setLocalAlertState({
+            setProcessingAlertState({
               active: true,
               type: 'error',
               message: error.message,
@@ -730,7 +725,7 @@ const FRAReportsContent = () => {
           }
         )
       })
-  }, [dispatch, fraSubmissionHistory, setLocalAlertState])
+  }, [dispatch, fraSubmissionHistory, setUploadAlertState])
 
   const handleUpload = ({ file: selectedFile }) => {
     // If already submitting, prevent multiple submissions
@@ -746,10 +741,10 @@ const FRAReportsContent = () => {
       // visible/trackable in Submission History.
       setFraSelectedFile(null)
       setFraUploadError(null)
-      setLocalAlertState({
+      setProcessingAlertState({
         active: true,
         type: 'success',
-        message: `Successfully submitted section: ${getReportTypeLabel()} on ${new Date().toDateString()}`,
+        message: `Successfully uploaded section: ${getReportTypeLabel()} on ${new Date().toDateString()}`,
       })
 
       // Complete the submission process
@@ -778,14 +773,9 @@ const FRAReportsContent = () => {
                 datafile: response?.data,
               },
             })
-            setProcessingAlertState({
-              active: true,
-              type: 'success',
-              message: 'Processing complete.',
-            })
           },
           (error) => {
-            setLocalAlertState({
+            setProcessingAlertState({
               active: true,
               type: 'error',
               message: error.message,
@@ -826,7 +816,7 @@ const FRAReportsContent = () => {
               ? error_response?.section
               : null
 
-      setLocalAlertState({
+      setUploadAlertState({
         active: true,
         type: 'error',
         message: ''.concat(error.message, ': ', msg),
@@ -895,11 +885,11 @@ const FRAReportsContent = () => {
   }, [allFieldsFilled, headerRef])
 
   useEffect(() => {
-    if (localAlert.active && alertRef && alertRef.current) {
-      alertRef.current.scrollIntoView({ behavior: 'smooth' })
-      alertRef.current.focus({ preventScroll: true })
+    if (uploadAlert.active && uploadAlertRef && uploadAlertRef.current) {
+      uploadAlertRef.current.scrollIntoView({ behavior: 'smooth' })
+      uploadAlertRef.current.focus({ preventScroll: true })
     }
-  }, [localAlert, alertRef])
+  }, [uploadAlert, uploadAlertRef])
 
   useEffect(() => {
     if (
@@ -907,7 +897,10 @@ const FRAReportsContent = () => {
       processingAlertRef &&
       processingAlertRef.current
     ) {
-      processingAlertRef.current.scrollIntoView({ behavior: 'smooth' })
+      processingAlertRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      })
     }
   }, [processingAlert, processingAlertRef])
 
@@ -960,7 +953,7 @@ const FRAReportsContent = () => {
               {/* Screen-reader announcer */}
               <div className="usa-sr-only">
                 <div role="status" aria-live="polite" aria-atomic="true">
-                  {localAlert.active ? localAlert.message : ''}
+                  {uploadAlert.active ? uploadAlert.message : ''}
                 </div>
 
                 <div role="status" aria-live="polite" aria-atomic="true">
@@ -969,28 +962,16 @@ const FRAReportsContent = () => {
               </div>
 
               {/* Visible alerts (not in accessibility tree, prevents duplicate screen reads */}
-              {localAlert.active && (
+              {uploadAlert.active && (
                 <div
                   className={classNames('usa-alert usa-alert--slim', {
-                    [`usa-alert--${localAlert.type}`]: true,
+                    [`usa-alert--${uploadAlert.type}`]: true,
                   })}
                   aria-hidden="true"
+                  ref={uploadAlertRef}
                 >
                   <div className="usa-alert__body">
-                    <p className="usa-alert__text">{localAlert.message}</p>
-                  </div>
-                </div>
-              )}
-
-              {processingAlert.active && (
-                <div
-                  className={classNames('usa-alert usa-alert--slim', {
-                    [`usa-alert--${processingAlert.type}`]: true,
-                  })}
-                  aria-hidden="true"
-                >
-                  <div className="usa-alert__body">
-                    <p className="usa-alert__text">{processingAlert.message}</p>
+                    <p className="usa-alert__text">{uploadAlert.message}</p>
                   </div>
                 </div>
               )}
@@ -998,7 +979,7 @@ const FRAReportsContent = () => {
               <UploadForm
                 handleUpload={handleUpload}
                 handleCancel={handleCancel}
-                setLocalAlertState={setLocalAlertState}
+                setUploadAlertState={setUploadAlertState}
                 setProcessingAlertState={setProcessingAlertState}
                 file={fraSelectedFile}
                 setSelectedFile={setFraSelectedFile}
@@ -1011,6 +992,24 @@ const FRAReportsContent = () => {
                 quarter={quarterInputValue}
               />
             </>
+          )}
+
+          <h3 className="font-sans-lg margin-top-5 margin-bottom-2 text-bold">
+            Submission &amp; Error Reports
+          </h3>
+
+          {processingAlert.active && (
+            <div
+              className={classNames('usa-alert usa-alert--slim', {
+                [`usa-alert--${processingAlert.type}`]: true,
+              })}
+              aria-hidden="true"
+              ref={processingAlertRef}
+            >
+              <div className="usa-alert__body">
+                <p className="usa-alert__text">{processingAlert.message}</p>
+              </div>
+            </div>
           )}
 
           <div

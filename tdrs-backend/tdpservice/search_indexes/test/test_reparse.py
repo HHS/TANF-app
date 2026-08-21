@@ -12,6 +12,11 @@ from django.utils import timezone
 import pytest
 
 from tdpservice.data_files.models import DataFile, ReparseFileMeta
+from tdpservice.etl.models import ETLPipelineRun
+from tdpservice.etl.pipelines.sources import (
+    SOURCE_DATAFILE_IDS_KEY,
+    ActivePipelineDataFileOverlapError,
+)
 from tdpservice.parsers import util
 from tdpservice.parsers.factory import ParserFactory
 from tdpservice.parsers.models import DataFileSummary
@@ -19,6 +24,7 @@ from tdpservice.parsers.test.factories import DataFileSummaryFactory
 from tdpservice.scheduling.management.commands import backup_db
 from tdpservice.search_indexes.management.commands import clean_and_reparse
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
+from tdpservice.search_indexes.reparse import clean_reparse
 from tdpservice.search_indexes.tasks import prettify_time_delta
 from tdpservice.search_indexes.utils import (
     assert_sequential_execution,
@@ -28,6 +34,20 @@ from tdpservice.search_indexes.utils import (
     delete_associated_models,
 )
 from tdpservice.users.models import User
+
+
+def _active_pipeline_run_for_datafile(data_file):
+    """Create an active ETL run that has snapshotted the DataFile."""
+    return ETLPipelineRun.objects.create(
+        pipeline_key="test_pipeline",
+        pipeline_version="1",
+        status=ETLPipelineRun.Status.RUNNING,
+        parameters={},
+        output_scope={"pipeline": "test_pipeline", "test_id": data_file.id},
+        output_scope_key=f"test-{data_file.id}",
+        metadata={SOURCE_DATAFILE_IDS_KEY: {"test": [data_file.id]}},
+        trigger_source=ETLPipelineRun.TriggerSource.ADMIN,
+    )
 
 
 @pytest.fixture
@@ -542,6 +562,29 @@ def test_reparse_no_files(mocker):
         "No files available for the selected Fiscal Year: 2025 and "
         "Quarter: Q1-4. Nothing to do."
     )
+
+
+@pytest.mark.django_db()
+def test_reparse_command_rejects_active_pipeline_source(big_file):
+    """Direct reparse command cannot overlap active ETL source snapshots."""
+    _active_pipeline_run_for_datafile(big_file)
+    cmd = clean_and_reparse.Command()
+
+    with pytest.raises(ActivePipelineDataFileOverlapError, match=str(big_file.id)):
+        cmd.handle(files=[str(big_file.id)], testing=True)
+
+    assert ReparseMeta.objects.count() == 0
+
+
+@pytest.mark.django_db()
+def test_clean_reparse_rejects_active_pipeline_source(big_file):
+    """Worker reparse path cannot overlap active ETL source snapshots."""
+    _active_pipeline_run_for_datafile(big_file)
+
+    with pytest.raises(ActivePipelineDataFileOverlapError, match=str(big_file.id)):
+        clean_reparse([str(big_file.id)])
+
+    assert ReparseMeta.objects.count() == 0
 
 
 @pytest.mark.django_db()

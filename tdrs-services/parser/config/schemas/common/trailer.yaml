@@ -10,9 +10,6 @@ section: 0
 document: "Trailer Record"
 format: positional
 
-record_validators:
-  - id: trailer_record_length
-
 # Trailer has no shared fields (single record per line)
 shared: []
 

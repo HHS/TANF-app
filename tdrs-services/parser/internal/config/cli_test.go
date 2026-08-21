@@ -134,6 +134,25 @@ func TestCLI_OverrideServerCeleryQueueName(t *testing.T) {
 	}
 }
 
+func TestCLI_OverridePostParseQueueFromEnv(t *testing.T) {
+	t.Setenv("GO_PARSER_POST_PARSE_QUEUE", "staging")
+
+	cli, ctx, err := ParseCLI([]string{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	cfg := DefaultConfig()
+	cli.ApplyTo(cfg, ctx)
+
+	if cfg.Server.Celery.PostParseQueue != "staging" {
+		t.Errorf(
+			"Server.Celery.PostParseQueue = %q, want staging",
+			cfg.Server.Celery.PostParseQueue,
+		)
+	}
+}
+
 func TestCLI_OverrideValidationEngine(t *testing.T) {
 	cli, ctx, err := ParseCLI([]string{"--validation.engine=hybrid"})
 	if err != nil {

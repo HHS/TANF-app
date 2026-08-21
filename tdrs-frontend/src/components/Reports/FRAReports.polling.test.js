@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { forwardRef } from 'react'
 import { render, waitFor } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import { MemoryRouter } from 'react-router-dom'
@@ -14,8 +14,9 @@ const mockContext = {
   setErrorModalVisible: jest.fn(),
   modalTriggerSource: null,
   setModalTriggerSource: jest.fn(),
-  localAlert: { active: false, type: null, message: null },
-  setLocalAlertState: jest.fn(),
+  uploadAlert: { active: false, type: null, message: null },
+  setUploadAlertState: jest.fn(),
+  uploadAlertRef: { current: null },
   processingAlert: { active: false, type: null, message: null },
   setProcessingAlertState: jest.fn(),
   processingAlertRef: { current: null },
@@ -25,7 +26,6 @@ const mockContext = {
   setFraUploadError: jest.fn(),
   fraHasUploadedFile: false,
   headerRef: { current: null },
-  alertRef: { current: null },
   selectStt: jest.fn(),
   selectFileType: jest.fn(),
   selectYear: jest.fn(),
@@ -42,6 +42,8 @@ const mockContext = {
   getYearError: jest.fn(() => false),
   getQuarterError: jest.fn(() => false),
 }
+
+const mockStore = (initial = {}) => configureStore(initial)
 
 jest.mock('./ReportsContext', () => ({
   ReportsProvider: ({ children }) => children,
@@ -61,74 +63,7 @@ jest.mock('@uswds/uswds/src/js/components', () => ({
   fileInput: { init: jest.fn() },
 }))
 
-describe('FRAReports processing alert', () => {
-  beforeEach(() => {
-    jest.clearAllMocks()
-    mockContext.isPolling = {}
-  })
-
-  it('renders processing alert and scrolls into view when active', async () => {
-    const scrollIntoViewMock = jest.fn()
-    mockContext.processingAlert = {
-      active: true,
-      type: 'success',
-      message: 'Processing complete.',
-    }
-    mockContext.processingAlertRef = {
-      current: { scrollIntoView: scrollIntoViewMock },
-    }
-    // Set context values so allFieldsFilled is true and alerts render
-    mockContext.fileTypeInputValue = 'workOutcomesOfTanfExiters'
-    mockContext.yearInputValue = '2021'
-    mockContext.quarterInputValue = 'Q1'
-
-    const state = {
-      auth: {
-        authenticated: true,
-        user: {
-          email: 'hi@bye.com',
-          stt: { id: 2, type: 'state', code: 'AK', name: 'Alaska' },
-          roles: [{ id: 1, name: 'Data Analyst', permission: [] }],
-          account_approval_status: 'Approved',
-        },
-      },
-      stts: {
-        sttList: [{ id: 2, type: 'state', code: 'AK', name: 'Alaska' }],
-        loading: false,
-      },
-      fraReports: { submissionHistory: [] },
-    }
-
-    const store = configureStore(state)
-    const { getAllByText } = render(
-      <Provider store={store}>
-        <MemoryRouter>
-          <FRAReports />
-        </MemoryRouter>
-      </Provider>
-    )
-
-    await waitFor(() => {
-      expect(
-        getAllByText('Processing complete.').length
-      ).toBeGreaterThanOrEqual(1)
-      expect(scrollIntoViewMock).toHaveBeenCalledWith({
-        behavior: 'smooth',
-      })
-    })
-
-    // Reset for other tests
-    mockContext.processingAlert = {
-      active: false,
-      type: null,
-      message: null,
-    }
-    mockContext.processingAlertRef = { current: null }
-    mockContext.fileTypeInputValue = ''
-    mockContext.yearInputValue = ''
-    mockContext.quarterInputValue = ''
-  })
-})
+window.HTMLElement.prototype.scrollIntoView = function () {}
 
 describe('FRAReports polling restart', () => {
   beforeEach(() => {
@@ -164,7 +99,10 @@ describe('FRAReports polling restart', () => {
       },
     }
 
-    const store = configureStore(state)
+    const store = mockStore(state)
+    const origDispatch = store.dispatch
+    store.dispatch = jest.fn(origDispatch)
+
     render(
       <Provider store={store}>
         <MemoryRouter>
@@ -175,11 +113,7 @@ describe('FRAReports polling restart', () => {
 
     await waitFor(() => {
       expect(mockContext.startPolling).toHaveBeenCalledTimes(1)
-      expect(mockContext.setProcessingAlertState).toHaveBeenCalledWith({
-        active: true,
-        type: 'success',
-        message: 'Processing complete.',
-      })
+      expect(store.dispatch).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -221,7 +155,7 @@ describe('FRAReports polling restart', () => {
     )
 
     await waitFor(() => {
-      expect(mockContext.setLocalAlertState).toHaveBeenCalledWith({
+      expect(mockContext.setProcessingAlertState).toHaveBeenCalledWith({
         active: true,
         type: 'error',
         message: 'Network error',
@@ -267,7 +201,7 @@ describe('FRAReports polling restart', () => {
     )
 
     await waitFor(() => {
-      expect(mockContext.setLocalAlertState).toHaveBeenCalledWith({
+      expect(mockContext.setProcessingAlertState).toHaveBeenCalledWith({
         active: true,
         type: 'error',
         message:
@@ -277,6 +211,16 @@ describe('FRAReports polling restart', () => {
   })
 
   it('does not restart polling when only isPolling changes', async () => {
+    const scrollIntoViewMock = jest.fn()
+    mockContext.processingAlert = {
+      active: true,
+      type: 'success',
+      message: 'Processing complete.',
+    }
+    mockContext.processingAlertRef = {
+      current: { scrollIntoView: scrollIntoViewMock },
+    }
+
     const submissionHistory = [{ id: 10, summary: { status: 'Pending' } }]
 
     const state = {

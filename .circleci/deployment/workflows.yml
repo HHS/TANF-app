@@ -83,8 +83,9 @@
             branches:
               only:
                 - master
-      - deploy-dev:
-          target_env: << pipeline.parameters.target_env >>
+      - apply-database-config:
+          name: apply-database-config-dev
+          backend-appname: tdp-backend-<< pipeline.parameters.target_env >>
           requires:
             - deploy-infrastructure-dev
           filters:
@@ -93,30 +94,328 @@
                 - develop
                 - main
                 - master
-      - deploy-develop:
+      - deploy-backend-application:
+          name: deploy-backend-dev
+          backend-appname: tdp-backend-<< pipeline.parameters.target_env >>
+          frontend-hostname: << pipeline.parameters.target_env >>
+          requires:
+            - apply-database-config-dev
+          filters:
+            branches:
+              ignore:
+                - develop
+                - main
+                - master
+      - deploy-celery-application:
+          name: deploy-celery-dev
+          backend-appname: tdp-backend-<< pipeline.parameters.target_env >>
+          celery-appname: tdp-celery-<< pipeline.parameters.target_env >>
+          frontend-hostname: << pipeline.parameters.target_env >>
+          requires:
+            - apply-database-config-dev
+          filters:
+            branches:
+              ignore:
+                - develop
+                - main
+                - master
+      - deploy-go-parser-application:
+          name: deploy-go-parser-dev
+          backend-appname: tdp-backend-<< pipeline.parameters.target_env >>
+          parser-appname: tdp-go-parser-<< pipeline.parameters.target_env >>
+          requires:
+            - apply-database-config-dev
+          filters:
+            branches:
+              ignore:
+                - develop
+                - main
+                - master
+      - deploy-frontend-application:
+          name: deploy-frontend-dev
+          backend-appname: tdp-backend-<< pipeline.parameters.target_env >>
+          frontend-hostname: << pipeline.parameters.target_env >>
+          requires:
+            - deploy-infrastructure-dev
+          filters:
+            branches:
+              ignore:
+                - develop
+                - main
+                - master
+      - verify-deployment:
+          name: verify-deployment-dev
+          backend-appname: tdp-backend-<< pipeline.parameters.target_env >>
+          celery-appname: tdp-celery-<< pipeline.parameters.target_env >>
+          parser-appname: tdp-go-parser-<< pipeline.parameters.target_env >>
+          frontend-hostname: << pipeline.parameters.target_env >>
+          requires:
+            - deploy-backend-dev
+            - deploy-celery-dev
+            - deploy-go-parser-dev
+            - deploy-frontend-dev
+          filters:
+            branches:
+              ignore:
+                - develop
+                - main
+                - master
+
+      - apply-database-config:
+          name: apply-database-config-develop
+          backend-appname: tdp-backend-develop
+          cf-password: CF_PASSWORD_STAGING
+          cf-space: tanf-staging
+          cf-username: CF_USERNAME_STAGING
           requires:
             - deploy-infrastructure-staging
           filters:
             branches:
               only:
                 - develop
-      - deploy-staging:
+      - deploy-backend-application:
+          name: deploy-backend-develop
+          backend-appname: tdp-backend-develop
+          frontend-hostname: develop
+          cf-password: CF_PASSWORD_STAGING
+          cf-space: tanf-staging
+          cf-username: CF_USERNAME_STAGING
+          requires:
+            - apply-database-config-develop
+          filters:
+            branches:
+              only:
+                - develop
+      - deploy-celery-application:
+          name: deploy-celery-develop
+          backend-appname: tdp-backend-develop
+          celery-appname: tdp-celery-develop
+          frontend-hostname: develop
+          cf-password: CF_PASSWORD_STAGING
+          cf-space: tanf-staging
+          cf-username: CF_USERNAME_STAGING
+          requires:
+            - apply-database-config-develop
+          filters:
+            branches:
+              only:
+                - develop
+      - deploy-go-parser-application:
+          name: deploy-go-parser-develop
+          backend-appname: tdp-backend-develop
+          parser-appname: tdp-go-parser-develop
+          cf-password: CF_PASSWORD_STAGING
+          cf-space: tanf-staging
+          cf-username: CF_USERNAME_STAGING
+          requires:
+            - apply-database-config-develop
+          filters:
+            branches:
+              only:
+                - develop
+      - deploy-frontend-application:
+          name: deploy-frontend-develop
+          backend-appname: tdp-backend-develop
+          frontend-hostname: develop
+          cf-password: CF_PASSWORD_STAGING
+          cf-space: tanf-staging
+          cf-username: CF_USERNAME_STAGING
+          requires:
+            - deploy-infrastructure-staging
+          filters:
+            branches:
+              only:
+                - develop
+      - verify-deployment:
+          name: verify-deployment-develop
+          backend-appname: tdp-backend-develop
+          celery-appname: tdp-celery-develop
+          parser-appname: tdp-go-parser-develop
+          frontend-hostname: develop
+          cf-password: CF_PASSWORD_STAGING
+          cf-space: tanf-staging
+          cf-username: CF_USERNAME_STAGING
+          requires:
+            - deploy-backend-develop
+            - deploy-celery-develop
+            - deploy-go-parser-develop
+            - deploy-frontend-develop
+          filters:
+            branches:
+              only:
+                - develop
+
+      - apply-database-config:
+          name: apply-database-config-staging
+          backend-appname: tdp-backend-staging
+          cf-password: CF_PASSWORD_STAGING
+          cf-space: tanf-staging
+          cf-username: CF_USERNAME_STAGING
           requires:
             - deploy-infrastructure-staging
           filters:
             branches:
               only:
                 - main
-      - deploy-production:
+      - deploy-backend-application:
+          name: deploy-backend-staging
+          backend-appname: tdp-backend-staging
+          frontend-hostname: staging
+          cf-password: CF_PASSWORD_STAGING
+          cf-space: tanf-staging
+          cf-username: CF_USERNAME_STAGING
+          requires:
+            - apply-database-config-staging
+          filters:
+            branches:
+              only:
+                - main
+      - deploy-celery-application:
+          name: deploy-celery-staging
+          backend-appname: tdp-backend-staging
+          celery-appname: tdp-celery-staging
+          frontend-hostname: staging
+          cf-password: CF_PASSWORD_STAGING
+          cf-space: tanf-staging
+          cf-username: CF_USERNAME_STAGING
+          requires:
+            - apply-database-config-staging
+          filters:
+            branches:
+              only:
+                - main
+      - deploy-go-parser-application:
+          name: deploy-go-parser-staging
+          backend-appname: tdp-backend-staging
+          parser-appname: tdp-go-parser-staging
+          cf-password: CF_PASSWORD_STAGING
+          cf-space: tanf-staging
+          cf-username: CF_USERNAME_STAGING
+          requires:
+            - apply-database-config-staging
+          filters:
+            branches:
+              only:
+                - main
+      - deploy-frontend-application:
+          name: deploy-frontend-staging
+          backend-appname: tdp-backend-staging
+          frontend-hostname: staging
+          cf-password: CF_PASSWORD_STAGING
+          cf-space: tanf-staging
+          cf-username: CF_USERNAME_STAGING
+          requires:
+            - deploy-infrastructure-staging
+          filters:
+            branches:
+              only:
+                - main
+      - verify-deployment:
+          name: verify-deployment-staging
+          backend-appname: tdp-backend-staging
+          celery-appname: tdp-celery-staging
+          parser-appname: tdp-go-parser-staging
+          frontend-hostname: staging
+          cf-password: CF_PASSWORD_STAGING
+          cf-space: tanf-staging
+          cf-username: CF_USERNAME_STAGING
+          requires:
+            - deploy-backend-staging
+            - deploy-celery-staging
+            - deploy-go-parser-staging
+            - deploy-frontend-staging
+          filters:
+            branches:
+              only:
+                - main
+
+      - apply-database-config:
+          name: apply-database-config-production
+          backend-appname: tdp-backend-prod
+          cf-password: CF_PASSWORD_PROD
+          cf-space: tanf-prod
+          cf-username: CF_USERNAME_PROD
           requires:
             - deploy-infrastructure-production
           filters:
             branches:
               only:
                 - master
+      - deploy-backend-application:
+          name: deploy-backend-production
+          backend-appname: tdp-backend-prod
+          frontend-hostname: prod
+          cf-password: CF_PASSWORD_PROD
+          cf-space: tanf-prod
+          cf-username: CF_USERNAME_PROD
+          requires:
+            - apply-database-config-production
+          filters:
+            branches:
+              only:
+                - master
+      - deploy-celery-application:
+          name: deploy-celery-production
+          backend-appname: tdp-backend-prod
+          celery-appname: tdp-celery-prod
+          frontend-hostname: prod
+          cf-password: CF_PASSWORD_PROD
+          cf-space: tanf-prod
+          cf-username: CF_USERNAME_PROD
+          requires:
+            - apply-database-config-production
+          filters:
+            branches:
+              only:
+                - master
+      - deploy-go-parser-application:
+          name: deploy-go-parser-production
+          backend-appname: tdp-backend-prod
+          parser-appname: tdp-go-parser-prod
+          cf-password: CF_PASSWORD_PROD
+          cf-space: tanf-prod
+          cf-username: CF_USERNAME_PROD
+          requires:
+            - apply-database-config-production
+          filters:
+            branches:
+              only:
+                - master
+      - deploy-frontend-application:
+          name: deploy-frontend-production
+          environment: production
+          backend-appname: tdp-backend-prod
+          frontend-hostname: prod
+          cf-password: CF_PASSWORD_PROD
+          cf-space: tanf-prod
+          cf-username: CF_USERNAME_PROD
+          requires:
+            - deploy-infrastructure-production
+          filters:
+            branches:
+              only:
+                - master
+      - verify-deployment:
+          name: verify-deployment-production
+          backend-appname: tdp-backend-prod
+          celery-appname: tdp-celery-prod
+          parser-appname: tdp-go-parser-prod
+          frontend-hostname: prod
+          cf-password: CF_PASSWORD_PROD
+          cf-space: tanf-prod
+          cf-username: CF_USERNAME_PROD
+          requires:
+            - deploy-backend-production
+            - deploy-celery-production
+            - deploy-go-parser-production
+            - deploy-frontend-production
+          filters:
+            branches:
+              only:
+                - master
       - test-deployment-e2e:
           requires:
-            - deploy-develop
+            - verify-deployment-develop
           filters:
             branches:
               only:

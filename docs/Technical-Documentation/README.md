@@ -1,8 +1,8 @@
-# Technical Documentation 
+# Technical Documentation
 
 This directory contains system and architecture documentation including diagrams, guides, overviews, Architectural Decision Records, and technical workflows.
 
-## Table of Contents 
+## Table of Contents
 
 - [Architecture-Decision-Record/](./Architecture-Decision-Record) : This folder contains all of our architecture decision write-ups.
 - [accessibility-guide.md](./accessibility-guide.md) : A guide on getting started with accessibility testing tools and TDP-relevant resources.
@@ -17,7 +17,9 @@ This directory contains system and architecture documentation including diagrams
 - [cypress-integration-tests.md](./cypress-integration-tests.md) : Shows how we use Cypress to manage our end to end integration testing.
 - [data-file-downloads.md](./data-file-downloads.md) : Provides an architecture-level view of data file storage and downloading.
 - [django-admin-logging.md](./django-admin-logging.md) : Outlines sections of the Django Administrator Console and details what should be logged.
-- [error-categories-guide.md](./error-categories-guide.md): Defines error categories 1-6 and overviews related categorizations of TANF data. 
+- [error-categories-guide.md](./error-categories-guide.md): Defines error categories 1-6 and overviews related categorizations of TANF data.
+- [etl-calculation-architecture.md](./etl-calculation-architecture.md) : Architecture for TDP-managed ETL calculations, beginning with the TANF statistical weights dataset.
+- [etl-reporting-system-architecture.md](./etl-reporting-system-architecture.md) : High-level architecture for ETL reporting data products across TANF, SSP, Tribal TANF, and future report families.
 - [jwt-key-rotation.md](./jwt-key-rotation.md) : Describes the process for rotating JWT keys in Login.gov.
 - [openid-connect.md](./openid-connect.md) : Provides an architecture-level view of the OpenID Connect prototocol.
 - [remote-development.md](./remote-development.md) : A guide on doing live remote development in Cloud.gov.

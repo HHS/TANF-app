@@ -41,6 +41,9 @@
 *.gif binary
 *.pdf binary
 *.xlsx binary
+*.xz binary
+*.gz binary
+*.zip binary
 
 # Annoying product-updates zip files
 product-updates/knowledge-center/FTANF_2009.zip binary eol=lf

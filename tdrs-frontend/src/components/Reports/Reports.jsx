@@ -32,6 +32,8 @@ function ReportsContent() {
     getSttError,
     getFileTypeError,
     piaFeatureFlag,
+    uploadAlert,
+    processingAlert,
   } = useReportsContext()
 
   const user = useSelector((state) => state.auth.user)

@@ -181,7 +181,8 @@ export const submit =
       formattedSections,
       logger,
       quarter,
-      setLocalAlertState,
+      setUploadAlertState,
+      setProcessingAlertState,
       stt,
       uploadedFiles,
       user,
@@ -222,11 +223,12 @@ export const submit =
           throw err
         }
 
-        setLocalAlertState({
+        setProcessingAlertState({
           active: true,
           type: 'success',
-          message: `Successfully submitted section(s): ${formattedSections} on ${new Date().toDateString()}`,
+          message: `Successfully uploaded section(s): ${formattedSections} on ${new Date().toDateString()}`,
         })
+
         removeFileInputErrorState()
 
         const submittedFileObjects = []
@@ -271,7 +273,7 @@ export const submit =
             : error_response?.file
               ? error_response.file
               : null
-        setLocalAlertState({
+        setUploadAlertState({
           active: true,
           type: 'error',
           message: ''.concat(error.message, ': ', msg),

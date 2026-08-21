@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useRef } from 'react'
+import classNames from 'classnames'
 import { ProgramIntegrityAuditExplainer } from '../components/Explainers'
 import QuarterFileUploadForm from '../../FileUploadForms/QuarterFileUploadForm'
 import QuarterSubmissionHistory from '../../SubmissionHistory/QuarterSubmissionHistory'
@@ -10,12 +11,15 @@ const ProgramIntegrityAuditReports = ({ stt, isRegionalStaff }) => {
   const {
     yearInputValue,
     fileTypeInputValue,
-    selectedSubmissionTab,
     setSelectedSubmissionTab,
     setReprocessedModalVisible,
     setReprocessedDate,
     headerRef,
     piaFeatureFlag,
+    uploadAlert,
+    processingAlert,
+    uploadAlertRef,
+    processingAlertRef,
   } = useReportsContext()
 
   const getDateRange = () => {
@@ -66,45 +70,54 @@ const ProgramIntegrityAuditReports = ({ stt, isRegionalStaff }) => {
             </div>
           </div>
 
-          {isRegionalStaff ? (
-            <h3 className="font-sans-lg margin-top-5 margin-bottom-2 text-bold">
-              Submission History
-            </h3>
-          ) : (
-            <SegmentedControl
-              buttons={[
-                {
-                  id: 1,
-                  label: 'Current Submission',
-                  onSelect: () => setSelectedSubmissionTab(1),
-                },
-                {
-                  id: 2,
-                  label: 'Submission History',
-                  onSelect: () => setSelectedSubmissionTab(2),
-                },
-              ]}
-              selected={selectedSubmissionTab}
-            />
+          {/* Visible alerts (not in accessibility tree, prevents duplicate screen reads */}
+          {uploadAlert.active && (
+            <div
+              className={classNames('usa-alert usa-alert--slim', {
+                [`usa-alert--${uploadAlert.type}`]: true,
+              })}
+              aria-hidden="true"
+              ref={uploadAlertRef}
+            >
+              <div className="usa-alert__body">
+                <p className="usa-alert__text">{uploadAlert.message}</p>
+              </div>
+            </div>
           )}
 
-          {!isRegionalStaff && selectedSubmissionTab === 1 && (
-            <QuarterFileUploadForm stt={stt} />
+          {!isRegionalStaff && <QuarterFileUploadForm stt={stt} />}
+
+          <hr />
+
+          <h3 className="font-sans-lg margin-top-5 margin-bottom-2 text-bold">
+            Submission &amp; Error Reports
+          </h3>
+
+          {processingAlert.active && (
+            <div
+              className={classNames('usa-alert usa-alert--slim', {
+                [`usa-alert--${processingAlert.type}`]: true,
+              })}
+              aria-hidden="true"
+              ref={processingAlertRef}
+            >
+              <div className="usa-alert__body">
+                <p className="usa-alert__text">{processingAlert.message}</p>
+              </div>
+            </div>
           )}
 
-          {(isRegionalStaff || selectedSubmissionTab === 2) && (
-            <QuarterSubmissionHistory
-              filterValues={{
-                year: yearInputValue,
-                stt: stt,
-                file_type: fileTypeInputValue,
-              }}
-              reprocessedState={{
-                setModalVisible: setReprocessedModalVisible,
-                setDate: setReprocessedDate,
-              }}
-            />
-          )}
+          <QuarterSubmissionHistory
+            filterValues={{
+              year: yearInputValue,
+              stt: stt,
+              file_type: fileTypeInputValue,
+            }}
+            reprocessedState={{
+              setModalVisible: setReprocessedModalVisible,
+              setDate: setReprocessedDate,
+            }}
+          />
         </>
       )}
     </>

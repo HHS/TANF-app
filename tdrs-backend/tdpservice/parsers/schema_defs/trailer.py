@@ -3,13 +3,13 @@
 from tdpservice.parsers.dataclasses import FieldType
 from tdpservice.parsers.fields import Field
 from tdpservice.parsers.row_schema import TanfDataReportSchema
-from tdpservice.parsers.validators import category1, category2
+from tdpservice.parsers.validators import category1, category2, util
 
 trailer = TanfDataReportSchema(
     record_type="TRAILER",
     model=dict,
     preparsing_validators=[
-        category1.recordHasLength(23),
+        util.deprecate_call(category1.recordHasLength(23)),
         category1.recordStartsWith(
             "TRAILER", lambda _: "Your file does not end with a TRAILER record."
         ),

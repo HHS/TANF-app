@@ -139,5 +139,6 @@
     "serialize-javascript@npm:^6.0.0": "npm:7.0.3",
     "serialize-javascript@npm:^6.0.2": "npm:7.0.3",
     "underscore@npm:1.13.6": "npm:1.13.8"
-  }
+  },
+  "allowScripts": {}
 }

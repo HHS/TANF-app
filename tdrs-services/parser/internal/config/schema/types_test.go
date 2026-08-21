@@ -2,6 +2,8 @@ package schema
 
 import (
 	"testing"
+
+	"gopkg.in/yaml.v3"
 )
 
 func TestCompile_SingleSegment(t *testing.T) {
@@ -135,6 +137,35 @@ func TestGetSegmentField_OutOfBounds(t *testing.T) {
 	// Non-existent field
 	if cs.GetSegmentField(0, "NONEXISTENT") != nil {
 		t.Error("expected nil for non-existent field")
+	}
+}
+
+func TestFieldDefUnmarshalYAML_DefaultAndExplicitColumnZero(t *testing.T) {
+	var defaultOnly FieldDef
+	if err := yaml.Unmarshal([]byte(`
+name: RecordType
+type: string
+default: TE1
+`), &defaultOnly); err != nil {
+		t.Fatalf("yaml.Unmarshal default-only field failed: %v", err)
+	}
+	if defaultOnly.Default != "TE1" {
+		t.Errorf("Default = %v, want TE1", defaultOnly.Default)
+	}
+	if defaultOnly.ColumnConfigured() {
+		t.Error("ColumnConfigured() = true, want false for omitted column")
+	}
+
+	var explicitColumnZero FieldDef
+	if err := yaml.Unmarshal([]byte(`
+name: EXIT_DATE
+type: integer
+column: 0
+`), &explicitColumnZero); err != nil {
+		t.Fatalf("yaml.Unmarshal explicit column field failed: %v", err)
+	}
+	if !explicitColumnZero.ColumnConfigured() {
+		t.Error("ColumnConfigured() = false, want true for explicit column 0")
 	}
 }
 
