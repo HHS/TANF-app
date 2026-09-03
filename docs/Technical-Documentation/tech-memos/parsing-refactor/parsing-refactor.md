@@ -40,7 +40,7 @@ class SchemaManager:
 
     def update_encrypted_fields(self, is_encrypted):
         """Update whether schema fields are encrypted or not."""
-        # This should be called at the begining of parsing after the header has been parsed and we have access to is_encrypted for TANF/SSP/Tribal
+        # This should be called at the beginning of parsing after the header has been parsed and we have access to is_encrypted for TANF/SSP/Tribal
         pass
 ```
 
@@ -181,9 +181,9 @@ class BaseParser(ABC):
         self.section = section
         self.program_type = program_type
 
-        # Since we know the program type and the section of the file. We can explicitely initialize the schema manager.
+        # Since we know the program type and the section of the file. We can explicitly initialize the schema manager.
         # This would involve making the schema manager "smarter". That is, we need to give the manager it's section and
-        # program type, then it can instantiate all of the correct row schemas and parse more explicitely.
+        # program type, then it can instantiate all of the correct row schemas and parse more explicitly.
         self.schema_manager = SchemaManager(datafile, program_type, section)
 
         # Initialized decoder.
@@ -201,7 +201,7 @@ class BaseParser(ABC):
 
     @abstractmethod
     def parse_and_validate(self) -> dict:
-        """To be overriden in child class."""
+        """To be overridden in child class."""
         # Should have the same return as parse.py::parse_datafile
         pass
 
@@ -342,10 +342,10 @@ class ParserFactory:
 
 Usage in `parser_task.py`.
 ```python
-# Other imports ommitted
+# Other imports omitted
 from tdpservice.parsers.parsers.factory import ParserFactory
 
-# Other functions ommitted
+# Other functions omitted
 
 @shared_task
 def parse(data_file_id, reparse_id=None):
@@ -369,7 +369,7 @@ def parse(data_file_id, reparse_id=None):
                                             program_type=data_file.program_type,
                                             is_program_audit=data_file.is_program_audit)
         errors = parser.parse_and_validate()
-        # Rest of the file is exactly the same and is ommitted for brevity.
+        # Rest of the file is exactly the same and is omitted for brevity.
 ```
 
 ## Affected Systems
