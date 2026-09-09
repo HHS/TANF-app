@@ -2,7 +2,7 @@
 
 import datetime
 import logging
-from urllib.parse import urlencode
+from urllib.parse import parse_qs, urlparse
 
 from django.conf import settings
 from django.contrib.auth import logout
@@ -12,7 +12,10 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.views import View
 
-from mozilla_django_oidc.views import OIDCAuthenticationRequestView
+from mozilla_django_oidc.views import (
+    OIDCAuthenticationCallbackView,
+    OIDCAuthenticationRequestView,
+)
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import MethodNotAllowed
@@ -27,6 +30,12 @@ from tdpservice.users.models import (
     Feedback,
     User,
     UserChangeRequest,
+)
+from tdpservice.users.oidc import (
+    ADMIN_OIDC_CALLBACK_URL_NAME,
+    ADMIN_OIDC_CLIENT,
+    ADMIN_SESSION_SCOPE,
+    STANDARD_SESSION_SCOPE,
 )
 from tdpservice.users.permissions import (
     CypressAdminAccountPermissions,
@@ -299,6 +308,8 @@ class KeycloakLoginDotGovView(OIDCAuthenticationRequestView):
 
     def get(self, request, *args, **kwargs):
         """Log the Login.gov auth flow before redirecting to Keycloak."""
+        request.session.pop("oidc_client", None)
+        request.session["session_scope"] = STANDARD_SESSION_SCOPE
         request.session["auth_idp"] = normalize_idp("login-gov")
         logger.info(
             "Login initiated",
@@ -316,6 +327,8 @@ class KeycloakLoginAMSView(OIDCAuthenticationRequestView):
 
     def get(self, request, *args, **kwargs):
         """Log the AMS auth flow before redirecting to Keycloak."""
+        request.session.pop("oidc_client", None)
+        request.session["session_scope"] = STANDARD_SESSION_SCOPE
         request.session["auth_idp"] = normalize_idp("ams")
         logger.info(
             "Login initiated", extra={"auth_flow": "keycloak", "auth_idp": "ams"}
@@ -327,22 +340,70 @@ class KeycloakLoginAMSView(OIDCAuthenticationRequestView):
         return {"kc_idp_hint": "ams"}
 
 
-class KeycloakLogoutView(View):
-    """Logout from Django session and redirect to Keycloak end_session endpoint."""
+class AdminKeycloakLoginMixin:
+    """Use the admin Keycloak client and admin redirect target for login."""
+
+    @staticmethod
+    def get_settings(attr, *args):
+        """Use the admin callback route for admin OIDC logins."""
+        if attr == "OIDC_AUTHENTICATION_CALLBACK_URL":
+            return ADMIN_OIDC_CALLBACK_URL_NAME
+
+        return OIDCAuthenticationRequestView.get_settings(attr, *args)
+
+    def get(self, request, *args, **kwargs):
+        """Mark this OIDC request as admin-scoped before redirecting."""
+        request.session.pop("oidc_client", None)
+        self.OIDC_RP_CLIENT_ID = settings.KEYCLOAK_TDP_ADMIN_CLIENT_ID
+        response = super().get(request, *args, **kwargs)
+        request.session["session_scope"] = ADMIN_SESSION_SCOPE
+        state = parse_qs(urlparse(response["Location"]).query).get("state", [None])[
+            0
+        ]
+        if state:
+            oidc_clients = request.session.get("oidc_clients", {}).copy()
+            oidc_clients[state] = ADMIN_OIDC_CLIENT
+            request.session["oidc_clients"] = oidc_clients
+        if not request.session.get("oidc_login_next"):
+            request.session["oidc_login_next"] = settings.ADMIN_FRONTEND_BASE_URL
+        return response
+
+
+class AdminKeycloakLoginDotGovView(AdminKeycloakLoginMixin, KeycloakLoginDotGovView):
+    """Redirect admin Login.gov users through the admin Keycloak client."""
+
+
+class AdminKeycloakLoginAMSView(AdminKeycloakLoginMixin, KeycloakLoginAMSView):
+    """Redirect admin AMS users through the admin Keycloak client."""
+
+
+class AdminOIDCAuthenticationCallbackView(OIDCAuthenticationCallbackView):
+    """Handle admin OIDC callbacks with admin-scoped client settings."""
 
     def get(self, request):
-        """Clear the Django session and redirect to Keycloak logout."""
-        id_token = request.session.get("oidc_id_token")
+        """Mark this callback so token exchange uses the admin redirect URI."""
+        request.session["session_scope"] = ADMIN_SESSION_SCOPE
+        request._oidc_client = ADMIN_OIDC_CLIENT
+        request._oidc_callback_url = ADMIN_OIDC_CALLBACK_URL_NAME
+        return super().get(request)
 
-        # Clear Django session
+
+class KeycloakLogoutView(View):
+    """Logout from the standard Django session and return to the frontend."""
+
+    def get(self, request):
+        """Clear only the standard app session."""
+        # RP-initiated logout would terminate the shared Keycloak SSO session.
         logout(request)
 
-        # Build Keycloak end_session URL
-        logout_url = settings.OIDC_OP_LOGOUT_ENDPOINT
-        params = {
-            "post_logout_redirect_uri": settings.FRONTEND_BASE_URL,
-        }
-        if id_token:
-            params["id_token_hint"] = id_token
+        return HttpResponseRedirect(settings.FRONTEND_BASE_URL)
 
-        return HttpResponseRedirect(f"{logout_url}?{urlencode(params)}")
+
+class AdminKeycloakLogoutView(KeycloakLogoutView):
+    """Logout from the admin-scoped session and return to the admin console."""
+
+    def get(self, request):
+        """Clear only the admin app session."""
+        logout(request)
+
+        return HttpResponseRedirect(settings.ADMIN_FRONTEND_BASE_URL)

@@ -50,6 +50,7 @@ def test_dev_local_config_includes_hosted_and_local_urls():
     """The shared dev/local config should allow both Cloud.gov dev and local workflows."""
     realm = load_realm_config("local")
     django_client = get_client(realm, "tdp-django")
+    admin_client = get_client(realm, "tdp-admin")
     grafana_client = get_client(realm, "tdp-grafana")
 
     assert "https://test.tanfdata.acf.hhs.gov/*" in django_client["redirectUris"]
@@ -57,6 +58,19 @@ def test_dev_local_config_includes_hosted_and_local_urls():
     assert "https://a11y.tanfdata.acf.hhs.gov/*" in django_client["redirectUris"]
     assert "http://localhost:3000/*" in django_client["redirectUris"]
     assert "http://127.0.0.1:8989/*" in django_client["redirectUris"]
+    assert (
+        "https://test.tanfdata.acf.hhs.gov/admin-auth/*"
+        in admin_client["redirectUris"]
+    )
+    assert (
+        "https://qasp.tanfdata.acf.hhs.gov/admin-auth/*"
+        in admin_client["redirectUris"]
+    )
+    assert (
+        "https://a11y.tanfdata.acf.hhs.gov/admin-auth/*"
+        in admin_client["redirectUris"]
+    )
+    assert "http://localhost:8989/*" in admin_client["redirectUris"]
     assert grafana_client["attributes"]["post.logout.redirect.uris"] == (
         "https://grafana.tanfdata.acf.hhs.gov/*##http://localhost:9400/*"
     )
@@ -66,23 +80,38 @@ def test_staging_config_excludes_local_urls():
     """Staging config should allow only hosted staging frontends."""
     realm = load_realm_config("staging")
     django_client = get_client(realm, "tdp-django")
+    admin_client = get_client(realm, "tdp-admin")
 
     assert django_client["redirectUris"] == [
         "https://staging.tanfdata.acf.hhs.gov/*",
         "https://develop.tanfdata.acf.hhs.gov/*",
     ]
+    assert admin_client["redirectUris"] == [
+        "https://staging.admin.tanfdata.acf.hhs.gov/*",
+        "https://develop.admin.tanfdata.acf.hhs.gov/*",
+        "https://staging.tanfdata.acf.hhs.gov/admin-auth/*",
+        "https://develop.tanfdata.acf.hhs.gov/admin-auth/*",
+    ]
     assert all("localhost" not in uri for uri in django_client["redirectUris"])
     assert all("127.0.0.1" not in uri for uri in django_client["redirectUris"])
+    assert all("localhost" not in uri for uri in admin_client["redirectUris"])
+    assert all("127.0.0.1" not in uri for uri in admin_client["redirectUris"])
 
 
 def test_prod_config_excludes_local_urls():
     """Prod config should allow only the production frontend."""
     realm = load_realm_config("prod")
     django_client = get_client(realm, "tdp-django")
+    admin_client = get_client(realm, "tdp-admin")
     grafana_client = get_client(realm, "tdp-grafana")
 
     assert django_client["redirectUris"] == ["https://tanfdata.acf.hhs.gov/*"]
     assert django_client["webOrigins"] == ["https://tanfdata.acf.hhs.gov"]
+    assert admin_client["redirectUris"] == [
+        "https://admin.tanfdata.acf.hhs.gov/*",
+        "https://tanfdata.acf.hhs.gov/admin-auth/*",
+    ]
+    assert admin_client["webOrigins"] == ["https://admin.tanfdata.acf.hhs.gov"]
     assert grafana_client["redirectUris"] == [
         "https://grafana.tanfdata.acf.hhs.gov/login/generic_oauth"
     ]
@@ -142,3 +171,17 @@ def test_configure_idps_shows_login_gov_for_existing_realms():
     assert "show_login_gov_on_login_page()" in script
     assert "show_login_gov_on_login_page" in script.split("main()", maxsplit=1)[1]
     assert ".hideOnLogin = false | del(.config.clientSecret)" in script
+
+
+def test_configure_idps_appends_admin_callback_redirect_uris():
+    """Deploy-time config must allow Django-hosted admin OIDC callbacks."""
+    script = CONFIGURE_IDPS_PATH.read_text()
+
+    assert "configure_tdp_admin_client" in script.split("main()", maxsplit=1)[1]
+    assert "https://test.tanfdata.acf.hhs.gov/admin-auth/*" in script
+    assert "https://qasp.tanfdata.acf.hhs.gov/admin-auth/*" in script
+    assert "https://a11y.tanfdata.acf.hhs.gov/admin-auth/*" in script
+    assert "https://staging.tanfdata.acf.hhs.gov/admin-auth/*" in script
+    assert "https://develop.tanfdata.acf.hhs.gov/admin-auth/*" in script
+    assert "https://tanfdata.acf.hhs.gov/admin-auth/*" in script
+    assert "appending required callback URIs" in script

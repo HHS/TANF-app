@@ -111,6 +111,11 @@ _Moved from **In Progress** to **Raft (Dev) Review**_
 - ✅ [React Admin High Level Architecture Document (#5746)](https://github.com/raft-tech/TANF-app/issues/5746)  
 _**Closed**_ - _Moved from **Raft (Dev) Review**_  
 
+- ➡️ [Establish admin API boundary (#5837)](https://github.com/raft-tech/TANF-app/issues/5837)  
+_Added shared server-side Django API helper, `/api/admin/*` pass-through tests, no-store cache handling, provenance forwarding, and `/api-validation` response validation page._  
+_Testing steps: run `task admin-test`; start the admin app with `task admin-up`; open `/api-validation?endpoint=test-viewset` against a mocked/local Django viewset response and confirm status/body render with `Cache-Control: no-store`._  
+_Relevant media: reviewer screenshot or recording should capture the `/api-validation` page after refresh to confirm consistent response rendering and no cached privileged data._  
+
 
 ## [Operations & Maintenance](https://github.com/raft-tech/TANF-app/issues/4445)
 
@@ -161,5 +166,3 @@ _Moved from **Product Backlog** to **Next Up: DEV**_
 
 - ➡️ [Update Vendor Product Manager contact on README (#5849)](https://github.com/raft-tech/TANF-app/issues/5849)  
 _Moved from **Product Backlog** to **In Progress**_  
-
-

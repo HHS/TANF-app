@@ -14,7 +14,11 @@ from rest_framework.permissions import AllowAny
 from rest_framework.routers import DefaultRouter
 
 from .core.views import FeatureFlagViewset, write_logs
-from .users.api.authorization_check import AuthorizationCheck, PlgAuthorizationCheck
+from .users.api.authorization_check import (
+    AdminAuthorizationCheck,
+    AuthorizationCheck,
+    PlgAuthorizationCheck,
+)
 from .users.api.canary_views import (
     CanaryLoginAMSView,
     CanaryLoginDotGovView,
@@ -29,6 +33,10 @@ from .users.api.login_redirect_oidc import LoginRedirectAMS, LoginRedirectLoginD
 from .users.api.logout import LogoutUser
 from .users.api.logout_redirect_oidc import LogoutRedirectOIDC
 from .users.views import (
+    AdminOIDCAuthenticationCallbackView,
+    AdminKeycloakLoginAMSView,
+    AdminKeycloakLoginDotGovView,
+    AdminKeycloakLogoutView,
     KeycloakLoginAMSView,
     KeycloakLoginDotGovView,
     KeycloakLogoutView,
@@ -91,11 +99,41 @@ canary_auth_urlpatterns = [
     path("logout/oidc", CanaryLogoutView.as_view(), name="canary-oidc-logout"),
 ]
 
+admin_auth_urlpatterns = [
+    path(
+        "login/dotgov",
+        AdminKeycloakLoginDotGovView.as_view(),
+        name="admin-login-dotgov",
+    ),
+    path("login/ams", AdminKeycloakLoginAMSView.as_view(), name="admin-login-ams"),
+    path(
+        "oidc/callback/",
+        AdminOIDCAuthenticationCallbackView.as_view(),
+        name="admin_oidc_authentication_callback",
+    ),
+    path(
+        "auth_check",
+        AdminAuthorizationCheck.as_view(),
+        name="admin-authorization-check",
+    ),
+    path(
+        "logout/oidc",
+        AdminKeycloakLogoutView.as_view(),
+        name="admin-oidc-logout",
+    ),
+]
+
 # Add 'prefix' to all urlpatterns to make it easier to version/group endpoints
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+api_urlpatterns = urlpatterns
 urlpatterns = [
-    path("v1/", include(urlpatterns)),
+    path("v1/", include(api_urlpatterns)),
+    path(
+        "admin-api/v1/",
+        include((api_urlpatterns, "admin_api"), namespace="admin-api"),
+    ),
     path("v2/", include(v2_urlpatterns)),
+    path("admin-auth/", include(admin_auth_urlpatterns)),
     path("", include(canary_auth_urlpatterns)),
     path("admin/", admin.site.urls, name="admin"),
     path("prometheus/", include("django_prometheus.urls")),

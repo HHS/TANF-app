@@ -1,12 +1,13 @@
 """Test the custom authorization class."""
 import datetime
+import logging
 import os
 import secrets
 import time
 import uuid
 from unittest import mock
 
-from django.core.exceptions import ImproperlyConfigured, SuspiciousOperation
+from django.core.exceptions import ImproperlyConfigured
 
 import jwt
 import pytest
@@ -15,6 +16,7 @@ from rest_framework.test import APIRequestFactory
 
 from tdpservice.settings.common import get_required_env_var_setting
 from tdpservice.users.api.login import (
+    OIDC_LOGIN_SESSION_ERROR,
     TokenAuthorizationAMS,
     TokenAuthorizationLoginDotGov,
 )
@@ -280,7 +282,9 @@ class TestLoginAMS:
         assert str(user_by_id.hhs_id) == self.test_hhs_id
 
     @mock.patch("requests.get")
-    def test_bad_AMS_configuration(self, ams_states_factory, req_factory, user):
+    def test_bad_AMS_configuration(
+        self, requests_get_mock, ams_states_factory, req_factory, user
+    ):
         """Test login with state and code."""
         request = req_factory
         request = create_session(request, ams_states_factory)
@@ -655,6 +659,183 @@ class TestLoginParam:
         # Add an origin param to test multiple auth handlers.
         yield request
 
+    def _setup_oidc_callback_request(
+        self,
+        pytest_request,
+        login_handler,
+        fix_mock_config,
+        fix_mock,
+        fix_states_factory,
+        fix_req_factory,
+        with_tracker=True,
+    ):
+        """Set up a callback request and matching auth view for parametrized tests."""
+        if login_handler == "AMS":
+            pytest_request.getfixturevalue(fix_mock_config)
+            pytest_request.getfixturevalue(fix_mock)
+            states = pytest_request.getfixturevalue(fix_states_factory)
+            oidc_request = pytest_request.getfixturevalue(fix_req_factory)
+            view = TokenAuthorizationAMS.as_view()
+        elif login_handler == "LoginDotGov":
+            pytest_request.getfixturevalue(fix_mock)
+            states = pytest_request.getfixturevalue(fix_states_factory)
+            oidc_request = pytest_request.getfixturevalue(fix_req_factory)
+            view = TokenAuthorizationLoginDotGov.as_view()
+
+        if with_tracker:
+            oidc_request = create_session(oidc_request, states)
+
+        return oidc_request, view
+
+    @pytest.mark.parametrize(
+        "login_handler,fix_mock_config,fix_mock,fix_states_factory,fix_req_factory",
+        [
+            (
+                "LoginDotGov",
+                "mock",
+                "mock",
+                "states_factory",
+                "req_factory",
+            ),
+            (
+                "AMS",
+                "mock_ams_configuration",
+                "mock_decode",
+                "ams_states_factory",
+                "ams_req_factory",
+            ),
+        ],
+    )
+    def test_login_with_missing_state_nonce_tracker_returns_friendly_error(
+        self,
+        request,
+        login_handler,
+        fix_mock_config,
+        fix_mock,
+        fix_states_factory,
+        fix_req_factory,
+        patch_login_gov_jwt_key,
+        caplog,
+    ):
+        """Login should return a friendly error when the OIDC session expired."""
+        oidc_request, view = self._setup_oidc_callback_request(
+            request,
+            login_handler,
+            fix_mock_config,
+            fix_mock,
+            fix_states_factory,
+            fix_req_factory,
+            with_tracker=False,
+        )
+        oidc_request.META["HTTP_X_VCAP_REQUEST_ID"] = "test-request-id"
+
+        with caplog.at_level(logging.WARNING, logger="tdpservice.users.api.login"):
+            response = view(oidc_request)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data == {"error": OIDC_LOGIN_SESSION_ERROR}
+
+        log_record = next(
+            record
+            for record in caplog.records
+            if "session state could not be validated" in record.message
+        )
+        assert log_record.request_id == "test-request-id"
+        assert log_record.oidc_tracker_exists is False
+        assert log_record.oidc_request_state_present is True
+        assert log_record.oidc_tracker_state_present is False
+        assert log_record.oidc_state_found is False
+
+    @pytest.mark.parametrize(
+        "login_handler,fix_mock_config,fix_mock,fix_states_factory,fix_req_factory",
+        [
+            (
+                "LoginDotGov",
+                "mock",
+                "mock",
+                "states_factory",
+                "req_factory",
+            ),
+            (
+                "AMS",
+                "mock_ams_configuration",
+                "mock_decode",
+                "ams_states_factory",
+                "ams_req_factory",
+            ),
+        ],
+    )
+    def test_login_with_tracker_missing_state_returns_friendly_error(
+        self,
+        request,
+        login_handler,
+        fix_mock_config,
+        fix_mock,
+        fix_states_factory,
+        fix_req_factory,
+        patch_login_gov_jwt_key,
+    ):
+        """Login should return a friendly error when tracker state is missing."""
+        oidc_request, view = self._setup_oidc_callback_request(
+            request,
+            login_handler,
+            fix_mock_config,
+            fix_mock,
+            fix_states_factory,
+            fix_req_factory,
+        )
+        tracker = dict(oidc_request.session["state_nonce_tracker"])
+        tracker.pop("state")
+        oidc_request.session["state_nonce_tracker"] = tracker
+
+        response = view(oidc_request)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data == {"error": OIDC_LOGIN_SESSION_ERROR}
+
+    @pytest.mark.parametrize(
+        "login_handler,fix_mock_config,fix_mock,fix_states_factory,fix_req_factory",
+        [
+            (
+                "LoginDotGov",
+                "mock",
+                "mock",
+                "states_factory",
+                "req_factory",
+            ),
+            (
+                "AMS",
+                "mock_ams_configuration",
+                "mock_decode",
+                "ams_states_factory",
+                "ams_req_factory",
+            ),
+        ],
+    )
+    def test_login_with_valid_state_nonce_tracker_still_works(
+        self,
+        request,
+        login_handler,
+        fix_mock_config,
+        fix_mock,
+        fix_states_factory,
+        fix_req_factory,
+        patch_login_gov_jwt_key,
+    ):
+        """Login should still work when the tracker state matches the callback."""
+        oidc_request, view = self._setup_oidc_callback_request(
+            request,
+            login_handler,
+            fix_mock_config,
+            fix_mock,
+            fix_states_factory,
+            fix_req_factory,
+        )
+
+        response = view(oidc_request)
+
+        assert response.status_code == status.HTTP_302_FOUND
+
     @pytest.mark.parametrize(
         "login_handler, fix_mock_config, fix_mock, fix_states_factory, fix_req_factory",
         [
@@ -684,7 +865,7 @@ class TestLoginParam:
         fix_req_factory,  # request_factory
         patch_login_gov_jwt_key,  # LoginDotGov jwt
     ):
-        """Login should error with a bad nonce and state."""
+        """Login should return a friendly error with an unknown callback state."""
         """
         To ensure correct fixtures are fetched and ran, instead of adding fixtures
         as function arguments, we use getfixturevalue to dynamically call an run fixtures.
@@ -725,8 +906,9 @@ class TestLoginParam:
                 "added_on": time.time(),
             }
 
-        with pytest.raises(SuspiciousOperation):
-            view(request)
+        response = view(request)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data == {"error": OIDC_LOGIN_SESSION_ERROR}
 
     @pytest.mark.parametrize(
         "login_handler,fix_mock_config,fix_mock,fix_states_factory,fix_req_factory",

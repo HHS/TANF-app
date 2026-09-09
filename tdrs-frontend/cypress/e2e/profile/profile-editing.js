@@ -41,13 +41,15 @@ const submitForm = () => {
     cy.get('body').then(($body) => {
       if (
         $body.find('input[type="radio"][id="regional"]').length > 0 &&
-        $body.find('input[type="radio"][name="is_regional"]:checked').length === 0
+        $body.find('input[type="radio"][name="is_regional"]:checked').length ===
+          0
       ) {
         cy.get('#regional').click({ force: true })
       }
 
       if (
-        $body.find('input[type="radio"][name="is_regional"]:checked').length > 0 &&
+        $body.find('input[type="radio"][name="is_regional"]:checked').length >
+          0 &&
         $body.find('input[type="checkbox"]').length > 0 &&
         $body.find('input[type="checkbox"]:checked').length === 0
       ) {
@@ -62,6 +64,21 @@ const submitForm = () => {
     }
     cy.wait(1000)
   })
+}
+
+const actorsWithPendingChangeRequests = [
+  'Data Analyst Donna',
+  'FRA Data Analyst David',
+  'FRA OFA Regional Staff Rita',
+  'FRA OFA Regional Staff Ryan',
+]
+
+const pendingChangeFirstName = (actor, firstName) => {
+  if (!actorsWithPendingChangeRequests.includes(actor)) {
+    return firstName
+  }
+
+  return `${firstName} ${Date.now()}`
 }
 
 // ============================================================================
@@ -115,7 +132,7 @@ When(
   '{string} updates their name to {string} {string}',
   (actor, firstName, lastName) => {
     openEditForm()
-    updateFirstName(firstName)
+    updateFirstName(pendingChangeFirstName(actor, firstName))
     updateLastName(lastName)
     submitForm()
   }
@@ -125,7 +142,7 @@ When(
   '{string} updates their name to {string} and disables FRA access',
   (actor, firstName) => {
     openEditForm()
-    updateFirstName(firstName)
+    updateFirstName(pendingChangeFirstName(actor, firstName))
     toggleFRAAccess()
     submitForm()
   }

@@ -7,6 +7,7 @@ import os
 from distutils.util import strtobool
 from os.path import join
 from typing import Any, Optional
+from urllib.parse import urlparse
 
 import django
 from django.core.exceptions import ImproperlyConfigured
@@ -37,6 +38,15 @@ def get_required_env_var_setting(
 
 
 SAMPLER_FILTER_URLS = ["/prometheus/metrics"]
+
+
+def _host_from_url(url: str) -> str:
+    parsed_url = urlparse(url)
+    return parsed_url.netloc or parsed_url.path
+
+
+def _unique_nonempty(values: list[str]) -> list[str]:
+    return list(dict.fromkeys(value for value in values if value))
 
 
 def traces_sampler(sampling_context: SamplingContext) -> float:
@@ -133,10 +143,11 @@ class Common(Configuration):
     MIDDLEWARE = (
         "django_prometheus.middleware.PrometheusBeforeMiddleware",
         "django.middleware.security.SecurityMiddleware",
-        "django.contrib.sessions.middleware.SessionMiddleware",
+        "tdpservice.middleware.SessionMiddleware",
         "django.middleware.common.CommonMiddleware",
         "django.middleware.csrf.CsrfViewMiddleware",
         "django.contrib.auth.middleware.AuthenticationMiddleware",
+        "tdpservice.middleware.AdminAPIAuthorizationMiddleware",
         "mozilla_django_oidc.middleware.SessionRefresh",
         "django.contrib.messages.middleware.MessageMiddleware",
         "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -188,6 +199,9 @@ class Common(Configuration):
     # Application URLs
     BASE_URL = os.getenv("BASE_URL", "http://localhost:8080/v1")
     FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:3000")
+    ADMIN_FRONTEND_BASE_URL = os.getenv(
+        "ADMIN_FRONTEND_BASE_URL", "http://localhost:3001"
+    )
 
     # Email Server
     EMAIL_BACKEND = "tdpservice.email.backend.SendgridEmailBackend"
@@ -391,6 +405,10 @@ class Common(Configuration):
     # Sessions
     SESSION_ENGINE = "tdpservice.core.custom_session_engine"
     SIGNED_COOKIE_EXPIRES = 60 * 60 * 12  # 12 hours
+    ADMIN_SESSION_COOKIE_NAME = os.getenv(
+        "ADMIN_SESSION_COOKIE_NAME", "admin_sessionid"
+    )
+    ADMIN_API_PROXY_TOKEN = os.getenv("ADMIN_API_PROXY_TOKEN", "")
     SESSION_COOKIE_HTTPONLY = True
     SESSION_SAVE_EVERY_REQUEST = True
     SESSION_COOKIE_AGE = 60 * 30  # 30 minutes
@@ -399,7 +417,12 @@ class Common(Configuration):
     # of API POST calls to prevent false negative authorization errors.
     # https://docs.djangoproject.com/en/2.2/ref/settings/#csrf-cookie-httponly
     CSRF_COOKIE_HTTPONLY = False
-    CSRF_TRUSTED_ORIGINS = ["https://*.acf.hhs.gov"]
+    CSRF_TRUSTED_ORIGINS = _unique_nonempty(
+        [
+            "https://*.acf.hhs.gov",
+            ADMIN_FRONTEND_BASE_URL,
+        ]
+    )
 
     # Django Rest Framework
     DEFAULT_RENDERER_CLASSES = ["rest_framework.renderers.JSONRenderer"]
@@ -441,6 +464,7 @@ class Common(Configuration):
     CORS_ORIGIN_ALLOW_ALL = True
     CORS_ALLOW_CREDENTIALS = True
     CORS_PREFLIGHT_MAX_AGE = 1800
+    # Existing frontends send this header, but it must not drive auth decisions.
     CORS_ALLOW_HEADERS = list(default_headers) + [
         "x-service-name",
     ]
@@ -558,6 +582,12 @@ class Common(Configuration):
     KEYCLOAK_DJANGO_CLIENT_SECRET = os.getenv(
         "KEYCLOAK_DJANGO_CLIENT_SECRET", "tdp-django-local-secret"
     )
+    KEYCLOAK_TDP_ADMIN_CLIENT_ID = os.getenv(
+        "KEYCLOAK_TDP_ADMIN_CLIENT_ID", "tdp-admin"
+    )
+    KEYCLOAK_TDP_ADMIN_CLIENT_SECRET = os.getenv(
+        "KEYCLOAK_TDP_ADMIN_CLIENT_SECRET", "tdp-admin-local-secret"
+    )
     KEYCLOAK_BEARER_CLIENT_ID = os.getenv("KEYCLOAK_BEARER_CLIENT_ID", "tdp-cli")
     KEYCLOAK_API_AUDIENCE = os.getenv(
         "KEYCLOAK_API_AUDIENCE", KEYCLOAK_DJANGO_CLIENT_ID
@@ -597,6 +627,12 @@ class Common(Configuration):
 
     # Custom authentication backend
     OIDC_AUTHENTICATION_CALLBACK_URL = "oidc_authentication_callback"
+    OIDC_REDIRECT_ALLOWED_HOSTS = _unique_nonempty(
+        [
+            _host_from_url(FRONTEND_BASE_URL),
+            _host_from_url(ADMIN_FRONTEND_BASE_URL),
+        ]
+    )
     AUTHENTICATION_BACKENDS = (
         "tdpservice.users.oidc.KeycloakOIDCBackend",
         "tdpservice.users.authentication.CustomAuthentication",
@@ -618,6 +654,7 @@ class Common(Configuration):
         "/plg_auth_check/",
         "/login/",
         "/auth_check",
+        "/admin-auth/",
         "/logout/",
     ]
 

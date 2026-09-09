@@ -6,7 +6,6 @@ export const SET_FEATURE_FLAGS_ERROR = 'SET_FEATURE_FLAGS_ERROR'
 export const CLEAR_FEATURE_FLAGS = 'CLEAR_FEATURE_FLAGS'
 
 export const fetchFeatureFlags = () => async (dispatch) => {
-  dispatch({ type: CLEAR_FEATURE_FLAGS })
   dispatch({ type: FETCH_FEATURE_FLAGS })
 
   const lastFetched = Date.now()

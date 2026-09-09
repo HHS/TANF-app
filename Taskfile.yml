@@ -125,7 +125,7 @@ tasks:
       PYTEST_ARGS: '{{.PYTEST_ARGS | default "."}}'
     cmds:
       - task: backend-up
-      - docker compose -f docker-compose.yml exec web sh -c "pytest --basetemp=/home/tdpapp/ {{.PYTEST_ARGS}}"
+      - docker compose -f docker-compose.yml exec web sh -c "pytest --basetemp=/tmp/tdp-pytest {{.PYTEST_ARGS}}"
 
   backend-pytest-go-integration:
     desc: 'Run the live Go parser integration suite. E.g: task backend-pytest-go-integration PYTEST_ARGS="-k section1 -vv"'
@@ -168,7 +168,7 @@ tasks:
           -e GO_PARSER_POST_PARSE_QUEUE="${post_parse_queue}" \
           go-parser
 
-        docker compose -f docker-compose.yml exec web sh -c "DB_NAME=${db_name} CELERY_GO_PARSER_QUEUE=${queue} DJANGO_SETTINGS_MODULE=tdpservice.settings.go_parser_integration DJANGO_CONFIGURATION=GoParserIntegration pytest -c pytest-go-parser.ini --basetemp=/home/tdpapp/ tdpservice/parsers/test/integration {{.PYTEST_ARGS}}"
+        docker compose -f docker-compose.yml exec web sh -c "DB_NAME=${db_name} CELERY_GO_PARSER_QUEUE=${queue} DJANGO_SETTINGS_MODULE=tdpservice.settings.go_parser_integration DJANGO_CONFIGURATION=GoParserIntegration pytest -c pytest-go-parser.ini --basetemp=/tmp/tdp-pytest-go-integration tdpservice/parsers/test/integration {{.PYTEST_ARGS}}"
 
   backend-pytest-go-integration-active:
     desc: 'Run Go parser integration tests against the active local DB and go-parser service. Faster, but not isolated. E.g: task backend-pytest-go-integration-active PYTEST_ARGS="-k section1 -vv"'
@@ -188,7 +188,7 @@ tasks:
         docker compose -f docker-compose.yml exec -T redis-server \
           redis-cli DEL "${queue}" >/dev/null
 
-        docker compose -f docker-compose.yml exec web sh -c "CELERY_GO_PARSER_QUEUE=${queue} DJANGO_SETTINGS_MODULE=tdpservice.settings.go_parser_integration DJANGO_CONFIGURATION=GoParserIntegration pytest -c pytest-go-parser.ini --basetemp=/home/tdpapp/ tdpservice/parsers/test/integration {{.PYTEST_ARGS}}"
+        docker compose -f docker-compose.yml exec web sh -c "CELERY_GO_PARSER_QUEUE=${queue} DJANGO_SETTINGS_MODULE=tdpservice.settings.go_parser_integration DJANGO_CONFIGURATION=GoParserIntegration pytest -c pytest-go-parser.ini --basetemp=/tmp/tdp-pytest-go-integration-active tdpservice/parsers/test/integration {{.PYTEST_ARGS}}"
 
   backend-pytest-etl-integration:
     desc: 'Run the live ETL integration suite. E.g: task backend-pytest-etl-integration PYTEST_ARGS="-k statistical_weights -vv"'
@@ -225,7 +225,7 @@ tasks:
       PYTEST_ARGS: '{{.PYTEST_ARGS | default "."}}'
     cmds:
       - task: backend-up
-      - docker compose -f docker-compose.yml exec web sh -c "pytest --cov=tdpservice --cov-report=json --basetemp=/home/tdpapp/ {{.PYTEST_ARGS}}"
+      - docker compose -f docker-compose.yml exec web sh -c "pytest --cov=tdpservice --cov-report=json --basetemp=/tmp/tdp-pytest-cov {{.PYTEST_ARGS}}"
 
   backend-remove-volumes:
     desc: Remove the backend volumes
@@ -352,16 +352,16 @@ tasks:
       - docker compose -f docker-compose.local.yml exec tdp-admin sh
 
   admin-test:
-    desc: Run admin unit tests (Vitest)
+    desc: Run admin unit tests (Vitest) in Docker
     dir: tdp-admin
     cmds:
-      - yarn test
+      - docker compose -f docker-compose.local.yml run --rm --no-deps tdp-admin sh -c "corepack prepare yarn@4.6.0 && corepack yarn test"
 
   admin-test-watch:
-    desc: Run admin unit tests in watch mode
+    desc: Run admin unit tests in watch mode in Docker
     dir: tdp-admin
     cmds:
-      - yarn test:watch
+      - docker compose -f docker-compose.local.yml run --rm --no-deps tdp-admin sh -c "corepack prepare yarn@4.6.0 && corepack yarn test:watch"
 
   frontend-init:
     desc: Initialize the frontend project (localdev image with node_modules)

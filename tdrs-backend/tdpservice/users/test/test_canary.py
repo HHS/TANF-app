@@ -78,6 +78,7 @@ class TestSetAuthFlow:
         set_auth_flow(request, "keycloak", "login-gov")
         assert get_auth_flow(request) == "keycloak"
         assert request.session["auth_idp"] == "login-gov"
+        assert request.session["session_scope"] == "standard"
 
     def test_set_legacy_flow(self):
         """set_auth_flow should record the legacy flow and AMS IdP on the session."""
@@ -88,6 +89,7 @@ class TestSetAuthFlow:
         set_auth_flow(request, "legacy", "ams")
         assert get_auth_flow(request) == "legacy"
         assert request.session["auth_idp"] == "ams"
+        assert request.session["session_scope"] == "standard"
 
     def test_get_auth_flow_empty_session(self):
         """get_auth_flow should return None when no flow marker is present on the session."""

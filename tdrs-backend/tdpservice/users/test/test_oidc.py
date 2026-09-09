@@ -1,16 +1,32 @@
 """Tests for KeycloakOIDCBackend authentication backend."""
 
+from importlib import import_module
 import logging
+from unittest.mock import patch
 
 from django.test import RequestFactory
+from django.urls import reverse
 
 import pytest
 
 from tdpservice.users.models import AccountApprovalStatusChoices
-from tdpservice.users.oidc import KeycloakOIDCBackend
+from tdpservice.users.oidc import (
+    ADMIN_OIDC_CALLBACK_URL_NAME,
+    ADMIN_OIDC_CLIENT,
+    KeycloakOIDCBackend,
+)
 from tdpservice.users.test.factories import UserFactory
 
 logger = logging.getLogger(__name__)
+
+
+def _session_cookie(settings, data):
+    """Return a signed session cookie with the provided data."""
+    engine = import_module(settings.SESSION_ENGINE)
+    session = engine.SessionStore()
+    session.update(data)
+    session.save()
+    return session.session_key
 
 
 @pytest.fixture
@@ -23,6 +39,240 @@ def backend():
 def request_factory():
     """Return a Django RequestFactory."""
     return RequestFactory()
+
+
+class TestAuthenticateClientSelection:
+    """Tests for request-scoped OIDC client selection."""
+
+    def test_admin_client_is_scoped_to_one_authenticate_call(
+        self, backend, request_factory, settings
+    ):
+        """Admin client credentials are restored and the session marker is cleared."""
+        settings.KEYCLOAK_DJANGO_CLIENT_ID = "tdp-django"
+        settings.KEYCLOAK_DJANGO_CLIENT_SECRET = "django-secret"
+        settings.KEYCLOAK_TDP_ADMIN_CLIENT_ID = "tdp-admin"
+        settings.KEYCLOAK_TDP_ADMIN_CLIENT_SECRET = "admin-secret"
+
+        backend.OIDC_RP_CLIENT_ID = "original-client"
+        backend.OIDC_RP_CLIENT_SECRET = "original-secret"
+
+        request = request_factory.get("/oidc/callback/", {"state": "admin-state"})
+        request.session = {"oidc_clients": {"admin-state": "tdp-admin"}}
+
+        seen_clients = []
+
+        def fake_super_authenticate(self, request, **kwargs):
+            seen_clients.append((self.OIDC_RP_CLIENT_ID, self.OIDC_RP_CLIENT_SECRET))
+            return None
+
+        with patch(
+            "mozilla_django_oidc.auth.OIDCAuthenticationBackend.authenticate",
+            fake_super_authenticate,
+        ):
+            backend.authenticate(request)
+
+        assert seen_clients == [("tdp-admin", "admin-secret")]
+        assert "oidc_clients" not in request.session
+        assert backend.OIDC_RP_CLIENT_ID == "original-client"
+        assert backend.OIDC_RP_CLIENT_SECRET == "original-secret"
+
+    def test_default_client_is_used_after_admin_marker_is_consumed(
+        self, backend, request_factory, settings
+    ):
+        """A reused backend instance does not leak admin credentials into later calls."""
+        settings.KEYCLOAK_DJANGO_CLIENT_ID = "tdp-django"
+        settings.KEYCLOAK_DJANGO_CLIENT_SECRET = "django-secret"
+        settings.KEYCLOAK_TDP_ADMIN_CLIENT_ID = "tdp-admin"
+        settings.KEYCLOAK_TDP_ADMIN_CLIENT_SECRET = "admin-secret"
+
+        seen_clients = []
+
+        def fake_super_authenticate(self, request, **kwargs):
+            seen_clients.append((self.OIDC_RP_CLIENT_ID, self.OIDC_RP_CLIENT_SECRET))
+            return None
+
+        admin_request = request_factory.get("/oidc/callback/", {"state": "admin-state"})
+        admin_request.session = {"oidc_clients": {"admin-state": "tdp-admin"}}
+        standard_request = request_factory.get(
+            "/oidc/callback/", {"state": "standard-state"}
+        )
+        standard_request.session = {}
+
+        with patch(
+            "mozilla_django_oidc.auth.OIDCAuthenticationBackend.authenticate",
+            fake_super_authenticate,
+        ):
+            backend.authenticate(admin_request)
+            backend.authenticate(standard_request)
+
+        assert seen_clients == [
+            ("tdp-admin", "admin-secret"),
+            ("tdp-django", "django-secret"),
+        ]
+
+    def test_admin_client_marker_is_scoped_to_callback_state(
+        self, backend, request_factory, settings
+    ):
+        """Admin credentials are used only for the matching OIDC state."""
+        settings.KEYCLOAK_DJANGO_CLIENT_ID = "tdp-django"
+        settings.KEYCLOAK_DJANGO_CLIENT_SECRET = "django-secret"
+        settings.KEYCLOAK_TDP_ADMIN_CLIENT_ID = "tdp-admin"
+        settings.KEYCLOAK_TDP_ADMIN_CLIENT_SECRET = "admin-secret"
+
+        request = request_factory.get("/oidc/callback/", {"state": "admin-state"})
+        request.session = {
+            "oidc_clients": {
+                "admin-state": "tdp-admin",
+                "abandoned-state": "tdp-admin",
+            }
+        }
+
+        seen_clients = []
+
+        def fake_super_authenticate(self, request, **kwargs):
+            seen_clients.append((self.OIDC_RP_CLIENT_ID, self.OIDC_RP_CLIENT_SECRET))
+            return None
+
+        with patch(
+            "mozilla_django_oidc.auth.OIDCAuthenticationBackend.authenticate",
+            fake_super_authenticate,
+        ):
+            backend.authenticate(request)
+
+        assert seen_clients == [("tdp-admin", "admin-secret")]
+        assert request.session["oidc_clients"] == {"abandoned-state": "tdp-admin"}
+
+    def test_stale_admin_state_does_not_affect_standard_callback(
+        self, backend, request_factory, settings
+    ):
+        """An abandoned admin state does not change credentials for a later login."""
+        settings.KEYCLOAK_DJANGO_CLIENT_ID = "tdp-django"
+        settings.KEYCLOAK_DJANGO_CLIENT_SECRET = "django-secret"
+        settings.KEYCLOAK_TDP_ADMIN_CLIENT_ID = "tdp-admin"
+        settings.KEYCLOAK_TDP_ADMIN_CLIENT_SECRET = "admin-secret"
+
+        request = request_factory.get("/oidc/callback/", {"state": "standard-state"})
+        request.session = {"oidc_clients": {"abandoned-admin-state": "tdp-admin"}}
+
+        seen_clients = []
+
+        def fake_super_authenticate(self, request, **kwargs):
+            seen_clients.append((self.OIDC_RP_CLIENT_ID, self.OIDC_RP_CLIENT_SECRET))
+            return None
+
+        with patch(
+            "mozilla_django_oidc.auth.OIDCAuthenticationBackend.authenticate",
+            fake_super_authenticate,
+        ):
+            backend.authenticate(request)
+
+        assert seen_clients == [("tdp-django", "django-secret")]
+        assert request.session["oidc_clients"] == {
+            "abandoned-admin-state": "tdp-admin"
+        }
+
+    def test_admin_token_request_uses_admin_callback_uri(
+        self, backend, request_factory, settings
+    ):
+        """Admin callbacks must exchange tokens with the admin redirect_uri."""
+        settings.KEYCLOAK_DJANGO_CLIENT_ID = "tdp-django"
+        settings.KEYCLOAK_DJANGO_CLIENT_SECRET = "django-secret"
+        settings.KEYCLOAK_TDP_ADMIN_CLIENT_ID = "tdp-admin"
+        settings.KEYCLOAK_TDP_ADMIN_CLIENT_SECRET = "admin-secret"
+
+        request = request_factory.get(
+            "/admin-auth/oidc/callback/",
+            {"state": "admin-state", "code": "authorization-code"},
+            secure=True,
+            HTTP_HOST="auth.example.gov",
+        )
+        request.session = {}
+        request._oidc_client = ADMIN_OIDC_CLIENT
+        request._oidc_callback_url = ADMIN_OIDC_CALLBACK_URL_NAME
+        token_payloads = []
+        authenticated_user = object()
+
+        def capture_token_payload(payload):
+            token_payloads.append(payload.copy())
+            return {"id_token": "id-token", "access_token": "access-token"}
+
+        with (
+            patch.object(backend, "get_token", side_effect=capture_token_payload),
+            patch.object(
+                backend,
+                "verify_token",
+                return_value={"email": "admin@example.gov"},
+            ),
+            patch.object(
+                backend, "get_or_create_user", return_value=authenticated_user
+            ),
+        ):
+            user = backend.authenticate(request, nonce="nonce")
+
+        assert user is authenticated_user
+        assert token_payloads == [
+            {
+                "client_id": "tdp-admin",
+                "client_secret": "admin-secret",
+                "grant_type": "authorization_code",
+                "code": "authorization-code",
+                "redirect_uri": "https://auth.example.gov/admin-auth/oidc/callback/",
+            }
+        ]
+        assert not hasattr(backend, "_oidc_callback_url")
+
+
+@pytest.mark.django_db
+class TestKeycloakLogout:
+    """Tests for app-scoped Keycloak logout behavior."""
+
+    def test_standard_logout_does_not_end_keycloak_sso_or_admin_session(
+        self, api_client, settings
+    ):
+        """Standard logout must only clear the standard Django session."""
+        settings.FRONTEND_BASE_URL = "https://tdp.example.gov"
+        settings.OIDC_OP_LOGOUT_ENDPOINT = (
+            "https://keycloak.example.gov/realms/tdp/protocol/openid-connect/logout"
+        )
+        api_client.cookies[settings.SESSION_COOKIE_NAME] = _session_cookie(
+            settings, {"oidc_id_token": "standard-id-token"}
+        )
+        api_client.cookies[settings.ADMIN_SESSION_COOKIE_NAME] = _session_cookie(
+            settings, {"oidc_id_token": "admin-id-token"}
+        )
+
+        response = api_client.get(reverse("v2-oidc-logout"))
+
+        assert response.status_code == 302
+        assert response.url == settings.FRONTEND_BASE_URL
+        assert settings.OIDC_OP_LOGOUT_ENDPOINT not in response.url
+        assert "id_token_hint" not in response.url
+        assert settings.SESSION_COOKIE_NAME in response.cookies
+        assert settings.ADMIN_SESSION_COOKIE_NAME not in response.cookies
+
+    def test_admin_logout_does_not_end_keycloak_sso_or_standard_session(
+        self, api_client, settings
+    ):
+        """Admin logout must only clear the admin Django session."""
+        settings.ADMIN_FRONTEND_BASE_URL = "https://admin.example.gov"
+        settings.OIDC_OP_LOGOUT_ENDPOINT = (
+            "https://keycloak.example.gov/realms/tdp/protocol/openid-connect/logout"
+        )
+        api_client.cookies[settings.SESSION_COOKIE_NAME] = _session_cookie(
+            settings, {"oidc_id_token": "standard-id-token"}
+        )
+        api_client.cookies[settings.ADMIN_SESSION_COOKIE_NAME] = _session_cookie(
+            settings, {"oidc_id_token": "admin-id-token"}
+        )
+
+        response = api_client.get(reverse("admin-oidc-logout"))
+
+        assert response.status_code == 302
+        assert response.url == settings.ADMIN_FRONTEND_BASE_URL
+        assert settings.OIDC_OP_LOGOUT_ENDPOINT not in response.url
+        assert "id_token_hint" not in response.url
+        assert settings.ADMIN_SESSION_COOKIE_NAME in response.cookies
+        assert settings.SESSION_COOKIE_NAME not in response.cookies
 
 
 @pytest.mark.django_db

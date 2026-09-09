@@ -197,6 +197,35 @@ This secret is used by both the Django OIDC flow and the Admin REST API sync lay
 
 **Impact:** During the window between restaging Keycloak and restaging the backends, auth and sync will fail. Coordinate to minimize this window.
 
+### Rotate the `tdp-admin` Client Secret
+
+The `tdp-admin` client is used by the standalone admin frontend OIDC flow.
+
+For initial production provisioning, or to configure all related admin,
+backend, and Keycloak variables together, use
+[`scripts/configure-admin-production-env.sh`](../../scripts/configure-admin-production-env.sh).
+Its `--help` output contains the required production targeting, secret storage,
+activation, and verification steps.
+
+1. Generate a new secret.
+
+2. Update the Keycloak app:
+   ```bash
+   cf set-env keycloak KC_TDP_ADMIN_CLIENT_SECRET "<new-secret>"
+   cf restage keycloak
+   ```
+
+3. Confirm the startup config import completed so Keycloak updates the `tdp-admin` client:
+   ```bash
+   cf logs keycloak --recent
+   ```
+
+4. Update and restage every backend app that serves admin auth routes:
+   ```bash
+   cf set-env tdp-backend-<name> KEYCLOAK_TDP_ADMIN_CLIENT_SECRET "<new-secret>"
+   cf restage tdp-backend-<name>
+   ```
+
 ### Rotate the `tdp-grafana` Client Secret
 
 1. Generate a new secret

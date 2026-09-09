@@ -307,6 +307,56 @@
       "optionalClientScopes": []
     },
     {
+      "clientId": "tdp-admin",
+      "name": "TDP Admin Console",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${KC_TDP_ADMIN_CLIENT_SECRET:tdp-admin-local-secret}",
+      "redirectUris": [
+        "https://tdp-admin-raft.app.cloud.gov/*",
+        "https://tdp-admin-qasp.app.cloud.gov/*",
+        "https://tdp-admin-a11y.app.cloud.gov/*",
+        "https://test.tanfdata.acf.hhs.gov/admin-auth/*",
+        "https://qasp.tanfdata.acf.hhs.gov/admin-auth/*",
+        "https://a11y.tanfdata.acf.hhs.gov/admin-auth/*",
+        "http://localhost:3001/*",
+        "http://localhost:8080/*",
+        "http://localhost:8989/*",
+        "http://127.0.0.1:3001/*",
+        "http://127.0.0.1:8080/*",
+        "http://127.0.0.1:8989/*"
+      ],
+      "webOrigins": [
+        "https://tdp-admin-raft.app.cloud.gov",
+        "https://tdp-admin-qasp.app.cloud.gov",
+        "https://tdp-admin-a11y.app.cloud.gov",
+        "http://localhost:3001",
+        "http://localhost:8080",
+        "http://localhost:8989",
+        "http://127.0.0.1:3001",
+        "http://127.0.0.1:8080",
+        "http://127.0.0.1:8989"
+      ],
+      "attributes": {
+        "post.logout.redirect.uris": "https://tdp-admin-raft.app.cloud.gov/*##https://tdp-admin-qasp.app.cloud.gov/*##https://tdp-admin-a11y.app.cloud.gov/*##http://localhost:3001/*##http://127.0.0.1:3001/*"
+      },
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": false,
+      "fullScopeAllowed": true,
+      "defaultClientScopes": [
+        "openid",
+        "email",
+        "profile",
+        "tdp-user-attributes"
+      ],
+      "optionalClientScopes": []
+    },
+    {
       "clientId": "tdp-grafana",
       "name": "TDP Grafana",
       "enabled": true,

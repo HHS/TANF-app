@@ -186,6 +186,13 @@ Promise.all([
 
 The rule of thumb: if a single Django endpoint can serve the view, pass-through. If the view needs to join data that Django doesn't serve in a single response, use BFF shaping — but do not add business logic or authorization checks in the BFF layer.
 
+Implementation guidance for `tdp-admin`:
+
+- Use the shared server-side admin API helper for Django calls so session cookies, CSRF context, request IDs, and provenance headers are forwarded consistently.
+- Keep `/api/admin/*` as the default pass-through route for single-endpoint views.
+- BFF shaping must only compose multiple Django responses for one view. It must not introduce authorization enforcement, workflow transitions, domain validation, persistence, or durable audit records in Next.js.
+- Reviewers should ask whether Django remains authoritative for every permission decision, mutation, validation result, and audit record before approving a new admin route or server action.
+
 ---
 
 ## Form Metadata and Validation
@@ -325,6 +332,7 @@ Target model:
 - Keycloak preserves seamless SSO for users who already have an active SSO session, but the admin browser session is scoped to the admin hostname.
 - Django remains the application session authority for backend API enforcement after the Keycloak login callback completes.
 - Admin and non-admin Django sessions should be separate browser cookies. Prefer host-only `SESSION_COOKIE_DOMAIN` and `CSRF_COOKIE_DOMAIN` behavior by leaving broad domain settings unset for the admin deployment path.
+- Signed Django session payloads must also carry an explicit `admin` or `standard` scope. Cookie names route requests to the appropriate session, while the signed scope prevents either cookie value from being replayed against the other application's endpoints.
 
 This model intentionally avoids sharing broad `.app.cloud.gov` or `.acf.hhs.gov` cookies between the user-facing CRA origin and the admin origin. It reduces the blast radius of a user-frontend XSS bug and gives admin routes their own redirect, cookie, CSRF, and session lifecycle boundaries.
 
@@ -356,7 +364,14 @@ Required guardrails:
 - Trusted origins should be explicit to the admin hostname and backend hostname; avoid wildcard subdomain trust.
 - SameSite behavior should be chosen for the deployed cross-host flow and documented before implementation. If the admin app and Django API require cross-site cookie submission, use the narrowest `SameSite=None; Secure` scope possible and compensate with strict origin/referrer checks.
 - Next.js BFF endpoints that accept browser mutations must perform CSRF validation or forward the request to Django without weakening Django's CSRF checks.
-- Logout must clear the admin-scoped Django session and trigger Keycloak logout or session revocation behavior consistent with the broader Keycloak architecture.
+- Logout must clear only the admin-scoped app session. A global Keycloak logout or session-revocation flow should be modeled separately so a TDP frontend logout does not implicitly end the admin console session.
+
+Keycloak keeps one realm SSO user session with a child client session for each
+application. RP-initiated logout terminates that shared SSO session and may
+continue to the upstream identity provider, so it is not an app-scoped logout
+mechanism. A future "sign out everywhere" action may use that flow explicitly;
+ordinary frontend and admin sign-out must only clear the matching signed Django
+session.
 
 ### Cache behavior and audit forwarding
 
@@ -371,6 +386,12 @@ When Next.js calls Django on behalf of an admin user, requests must preserve pro
 - Keycloak client/auth flow identifier when available.
 
 Django remains responsible for durable audit records. Next.js may add request context, but it must not be the only place where privileged admin activity is recorded.
+
+Current `tdp-admin` server-side helpers forward the Django session cookie, CSRF
+token for mutating calls, request/correlation headers, source route, proxy
+identity, and source IP chain headers. Authenticated admin proxy responses set
+`Cache-Control: no-store` by default so refreshes and back/forward navigation do
+not expose stale privileged data from browser or shared caches.
 
 ### Session validation flow
 

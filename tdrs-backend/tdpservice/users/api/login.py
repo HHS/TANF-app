@@ -18,7 +18,7 @@ from rest_framework.response import Response
 from tdpservice.core.utils import log
 from tdpservice.security.models import SecurityEventToken, SecurityEventType
 from tdpservice.users.models import AccountApprovalStatusChoices
-from tdpservice.users.oidc import FEDERAL_STAFF_EMAIL_DOMAINS
+from tdpservice.users.oidc import FEDERAL_STAFF_EMAIL_DOMAINS, STANDARD_SESSION_SCOPE
 from tdpservice.users.serializers import UserProfileSerializer
 
 from ..authentication import CustomAuthentication
@@ -58,6 +58,17 @@ class ExpiredToken(Exception):
     pass
 
 
+class InvalidOIDCLoginSession(Exception):
+    """Missing or invalid OIDC session tracker error handler."""
+
+    pass
+
+
+OIDC_LOGIN_SESSION_ERROR = (
+    "Your login session expired or is invalid. Please sign in again."
+)
+
+
 class TokenAuthorizationOIDC(ObtainAuthToken):
     """Define abstract methods for handling OIDC login requests."""
 
@@ -75,7 +86,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         if decoded_id_token == {"error": "The token is expired."}:
             raise ExpiredToken("The token is expired.")
 
-        if request.session["state_nonce_tracker"]:
+        if request.session.get("state_nonce_tracker"):
             request.session["token"] = id_token
 
         if not validate_nonce_and_state(request, state, decoded_id_token):
@@ -253,6 +264,43 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         )
         logger.info("%s: %s on %s", user_status, user.username, timezone.now)
 
+    @staticmethod
+    def _get_request_id(request):
+        """Get a request id from common request attributes or headers."""
+        request_id = getattr(request, "request_id", None)
+        if request_id:
+            return str(request_id)
+
+        meta = getattr(request, "META", {})
+        return (
+            meta.get("HTTP_X_REQUEST_ID")
+            or meta.get("HTTP_X_VCAP_REQUEST_ID")
+            or meta.get("HTTP_X_CORRELATION_ID")
+        )
+
+    def _validate_state_nonce_tracker(self, request, state):
+        """Confirm the callback state is present in the current session."""
+        tracker_key_exists = "state_nonce_tracker" in request.session
+        tracker = request.session.get("state_nonce_tracker")
+        tracker_is_dict = isinstance(tracker, dict)
+        tracker_state = tracker.get("state") if tracker_is_dict else None
+        state_found = bool(state and tracker_state and state == tracker_state)
+
+        if tracker_key_exists and tracker_is_dict and state_found:
+            return
+
+        logger.warning(
+            "OIDC login callback rejected because session state could not be validated.",
+            extra={
+                "request_id": self._get_request_id(request),
+                "oidc_tracker_exists": tracker_key_exists,
+                "oidc_request_state_present": bool(state),
+                "oidc_tracker_state_present": bool(tracker_state),
+                "oidc_state_found": state_found,
+            },
+        )
+        raise InvalidOIDCLoginSession(OIDC_LOGIN_SESSION_ERROR)
+
     def _get_user_id_token(self, request, state, token_data):
         """Get the user and id_token from the request."""
         try:
@@ -300,6 +348,11 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 f"Redirecting call to main page. No {'code' if code is None else 'state'} provided."
             )
             return HttpResponseRedirect(settings.FRONTEND_BASE_URL)
+
+        try:
+            self._validate_state_nonce_tracker(request, state)
+        except InvalidOIDCLoginSession as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             token_endpoint_response = self.get_token_endpoint_response(code)
@@ -484,6 +537,7 @@ class CypressLoginDotGovAuthenticationOverride(TokenAuthorizationOIDC):
         except User.DoesNotExist:
             return Response({"error": "User does not exist"}, status=400)
 
+        request.session["session_scope"] = STANDARD_SESSION_SCOPE
         request.session["auth_idp"] = self.get_cypress_idp(username)
         login(
             request,

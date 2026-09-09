@@ -13,7 +13,7 @@
             cd tdrs-backend;
             docker-compose run --rm zaproxy bash -c \
               "PATH=$PATH:/home/zap/.local/bin &&
-               pip install wait-for-it &&
+               pip install wait-for-it --break-system-packages &&
                wait-for-it --service http://web:8080 \
                            --timeout 60 \
                            -- echo \"Django is ready\""
@@ -36,7 +36,7 @@
             cd tdrs-frontend;
             docker-compose run --rm zaproxy bash -c \
               "PATH=$PATH:/home/zap/.local/bin &&
-               pip install wait-for-it &&
+               pip install wait-for-it --break-system-packages &&
                wait-for-it --service http://tdp-frontend/ \
                            --timeout 60 \
                            -- echo \"Frontend is ready\""

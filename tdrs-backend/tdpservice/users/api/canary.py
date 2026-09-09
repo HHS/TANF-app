@@ -10,6 +10,8 @@ import random
 
 from django.conf import settings
 
+from tdpservice.users.oidc import STANDARD_SESSION_SCOPE
+
 logger = logging.getLogger(__name__)
 
 
@@ -40,6 +42,7 @@ def set_auth_flow(request, flow: str, idp: str) -> None:
         idp: "dotgov" or "ams".
     """
     normalized_idp = normalize_idp(idp)
+    request.session["session_scope"] = STANDARD_SESSION_SCOPE
     request.session["auth_flow"] = flow
     request.session["auth_idp"] = normalized_idp
     logger.info(

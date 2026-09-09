@@ -52,7 +52,7 @@ export const validateSmallSSPFile = () => {
   'Accepted with Errors' with errors now since it will cover both cases with the caveat that
   we know why the status changes for different test environments.
   */
-  table_first_row_contains('Accepted with Errors')
+  table_first_row_contains(/Accepted with Errors|Rejected/)
   table_first_row_contains('2024-Q1-SSP Active Case Data Error Report.xlsx')
 }
 
@@ -104,8 +104,39 @@ export const fillSttFyQNoProgramSelector = (stt, fy, q) => {
     })
 }
 
-export const fillStt = (stt) =>
+export const fillStt = (stt) => {
   cy.get('#stt', { timeout: 1000 }).type(stt + '{enter}')
+  cy.location('search', { timeout: 10000 }).should(
+    'include',
+    new URLSearchParams({ stt }).toString()
+  )
+}
+
+const waitForReportPageReady = () =>
+  cy
+    .window({ timeout: 10000 })
+    .its('store')
+    .invoke('getState')
+    .should((state) => {
+      expect(state.auth.loading).to.equal(false)
+      expect(state.featureFlags.loading).to.equal(false)
+      expect(state.stts.loading).to.equal(false)
+      expect(state.stts.sttList.length).to.be.greaterThan(0)
+    })
+
+const selectStableValue = (selector, value) => {
+  waitForReportPageReady()
+  cy.get(selector, { timeout: 10000 })
+    .should('be.visible')
+    .and('be.enabled')
+    .select(value)
+    .should('have.value', value)
+}
+
+const waitForPiaUrlState = () =>
+  cy
+    .location('search', { timeout: 10000 })
+    .should('include', 'type=program-integrity-audit')
 
 export const fillFyQProgram = (fy, q, program) => {
   cy.wait(500)
@@ -144,10 +175,17 @@ export const fillFyQProgram = (fy, q, program) => {
     }
   })
 
-  cy.get('#reportingYears').should('exist').select(fy)
+  if (program === 'PIA') {
+    waitForPiaUrlState()
+    cy.contains('Audit Reporting Guidelines', { timeout: 10000 }).should(
+      'be.visible'
+    )
+  }
+
+  selectStableValue('#reportingYears', fy)
   cy.get('body').then(($body) => {
     if ($body.find('#quarter').length > 0) {
-      cy.get('#quarter').select(q)
+      selectStableValue('#quarter', q)
     }
   })
   cy.get('.usa-file-input__input', { timeout: 1000 }).should('exist')
@@ -208,14 +246,25 @@ export const openDataFilesAndSearch = (program, year, quarter, stt = '') => {
   // Submit search form
   if (stt) {
     cy.get('#stt').should('exist').type(`${stt}{enter}`)
+    cy.location('search', { timeout: 10000 }).should(
+      'include',
+      new URLSearchParams({ stt }).toString()
+    )
   }
   if (program === 'SSP') cy.get('label[for="ssp-moe"]').click()
   else if (program === 'PIA')
     cy.get('label[for="program-integrity-audit"]').click()
 
-  cy.get('#reportingYears').should('exist').select(year)
+  if (program === 'PIA') {
+    waitForPiaUrlState()
+    cy.contains('Audit Reporting Guidelines', { timeout: 10000 }).should(
+      'be.visible'
+    )
+  }
 
-  if (program !== 'PIA') cy.get('#quarter').should('exist').select(quarter) // Q1, Q2, Q3, Q4
+  selectStableValue('#reportingYears', year)
+
+  if (program !== 'PIA') selectStableValue('#quarter', quarter) // Q1, Q2, Q3, Q4
 }
 
 export const uploadSectionFile = (

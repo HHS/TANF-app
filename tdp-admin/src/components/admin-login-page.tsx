@@ -2,18 +2,18 @@ import { GridContainer, Link } from "@trussworks/react-uswds";
 import NextLink from "next/link";
 import {
   getAuthBaseUrl,
+  getAdminLoginUrl,
   getBackendBaseUrl,
-  getLoginUrl,
-  getProviderLoginPath,
+  getAdminProviderLoginPath,
 } from "@/lib/admin-auth";
 
 export default function AdminLoginPage() {
   const backendBaseUrl = getBackendBaseUrl();
   const authBaseUrl = getAuthBaseUrl();
-  const loginGovUrl = getLoginUrl("dotgov");
-  const acfAmsUrl = getLoginUrl("ams");
-  const loginGovPath = getProviderLoginPath("dotgov");
-  const acfAmsPath = getProviderLoginPath("ams");
+  const loginGovUrl = getAdminLoginUrl("dotgov");
+  const acfAmsUrl = getAdminLoginUrl("ams");
+  const loginGovPath = getAdminProviderLoginPath("dotgov");
+  const acfAmsPath = getAdminProviderLoginPath("ams");
   const loginGovLogoSrc = "/login-gov-logo.svg";
   const acfLogoSrc = "/ACFLogo.svg";
 
@@ -58,7 +58,12 @@ export default function AdminLoginPage() {
 
               <div className="admin-login-page__actions">
                 {loginGovUrl ? (
-                  <Link href={loginGovPath} className="usa-button width-full sign-in-button" id="loginDotGovSignIn">
+                  <Link
+                    href={loginGovPath}
+                    className="usa-button width-full sign-in-button"
+                    aria-disabled="false"
+                    id="loginDotGovSignIn"
+                  >
                     <div className="admin-login-page__login-button-content">
                       <span>Sign in with</span>
                       <img
@@ -70,7 +75,11 @@ export default function AdminLoginPage() {
                     </div>
                   </Link>
                 ) : (
-                  <span className="usa-button usa-button--disabled width-full sign-in-button" aria-disabled="true" id="loginDotGovSignIn">
+                  <span
+                    className="usa-button usa-button--disabled width-full sign-in-button"
+                    aria-disabled="true"
+                    id="loginDotGovSignIn"
+                  >
                     <div className="admin-login-page__login-button-content">
                       <span>Sign in with</span>
                       <img
@@ -84,11 +93,20 @@ export default function AdminLoginPage() {
                 )}
 
                 {acfAmsUrl ? (
-                  <Link href={acfAmsPath} className="usa-button width-full margin-top-3 sign-in-button" id="acfAmsSignIn">
+                  <Link
+                    href={acfAmsPath}
+                    className="usa-button width-full margin-top-3 sign-in-button"
+                    aria-disabled="false"
+                    id="acfAmsSignIn"
+                  >
                     Sign in with ACF AMS for ACF staff
                   </Link>
                 ) : (
-                  <span className="usa-button usa-button--disabled width-full margin-top-3 sign-in-button" aria-disabled="true" id="acfAmsSignIn">
+                  <span
+                    className="usa-button usa-button--disabled width-full margin-top-3 sign-in-button"
+                    aria-disabled="true"
+                    id="acfAmsSignIn"
+                  >
                     Sign in with ACF AMS for ACF staff
                   </span>
                 )}

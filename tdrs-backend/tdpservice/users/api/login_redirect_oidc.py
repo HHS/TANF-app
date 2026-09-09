@@ -18,6 +18,13 @@ from .canary import normalize_idp
 logger = logging.getLogger(__name__)
 
 
+def _store_state_nonce_tracker(request, tracker):
+    """Store state/nonce data and mark Django sessions as changed."""
+    request.session["state_nonce_tracker"] = tracker
+    if hasattr(request.session, "modified"):
+        request.session.modified = True
+
+
 class LoginRedirectLoginDotGov(RedirectView):
     """Handle login workflow for login.gov clients."""
 
@@ -68,11 +75,14 @@ class LoginRedirectLoginDotGov(RedirectView):
         auth_endpoint_with_scope = auth_endpoint + "&scope=openid+email"
 
         # update the user session so OIDC logout URL has token_hint
-        request.session["state_nonce_tracker"] = {
-            "nonce": nonce,
-            "state": state,
-            "added_on": time.time(),
-        }
+        _store_state_nonce_tracker(
+            request,
+            {
+                "nonce": nonce,
+                "state": state,
+                "added_on": time.time(),
+            },
+        )
 
         return HttpResponseRedirect(auth_endpoint_with_scope)
 
@@ -151,12 +161,15 @@ class LoginRedirectAMS(RedirectView):
         auth_endpoint_with_scope = auth_endpoint + "&scope=openid+email"
 
         # update the user session so OIDC logout URL has token_hint
-        request.session["state_nonce_tracker"] = {
-            "nonce": nonce,
-            "state": state,
-            "added_on": time.time(),
-            "ams": True,
-        }
+        _store_state_nonce_tracker(
+            request,
+            {
+                "nonce": nonce,
+                "state": state,
+                "added_on": time.time(),
+                "ams": True,
+            },
+        )
 
         logger.info(encoded_params)
 

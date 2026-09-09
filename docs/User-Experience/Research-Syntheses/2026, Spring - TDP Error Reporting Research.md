@@ -60,7 +60,9 @@ This question focused on how easy or difficult it is to interpret the error and 
 
 S11-P1 highlighted that while finding items on the report is “very easy” the actual difficulty lies in looking up the case information.
 
-### RQ2: What information and references do users rely on most when resolving errors (i.e. case number, error type, reporting period, coding instructions, etc.)?We validated that users primarily rely on the columns most suited to looking up coding instructions and relevant case data when interpreting error reports**
+### RQ2: What information and references do users rely on most when resolving errors (i.e. case number, error type, reporting period, coding instructions, etc.)?
+
+We validated that users primarily rely on the columns most suited to looking up coding instructions and relevant case data when interpreting error reports**
 
 > “Where it says item 41 work eligible individual indicator \[the error column\], I will a lot of times look up what that is and then put that little snippet in there… so they don’t have to go look up what those different things are to determine if that was correct or not correct.”* – S11-P1 (Data Analyst)
 

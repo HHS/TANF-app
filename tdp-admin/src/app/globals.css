@@ -223,6 +223,88 @@ a {
   text-decoration: underline;
 }
 
+.admin-console__eyebrow {
+  margin: 0;
+  color: #005ea8;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.admin-success {
+  flex: 1;
+  background: #f7f9fb;
+  padding: 3rem 0;
+}
+
+.admin-success__shell {
+  min-height: 30rem;
+  display: flex;
+  align-items: flex-start;
+}
+
+.admin-success__panel {
+  width: min(100%, 52rem);
+  padding: 2rem;
+  border: 1px solid #dfe1e2;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.admin-success__panel h1 {
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.admin-success__lede {
+  max-width: 42rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.admin-success__details {
+  display: grid;
+  gap: 1rem;
+  margin: 0 0 1.5rem;
+}
+
+.admin-success__details div {
+  display: grid;
+  grid-template-columns: minmax(8rem, 12rem) 1fr;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #dfe1e2;
+}
+
+.admin-success__details dt {
+  font-weight: 700;
+}
+
+.admin-success__details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.admin-success__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.admin-api-validation__body {
+  background: #f5f5f0;
+  border: 1px solid #dfe1e2;
+  border-radius: 4px;
+  color: #1b1b1b;
+  font-size: 0.94rem;
+  line-height: 1.5;
+  margin-top: 1.5rem;
+  max-height: 30rem;
+  overflow: auto;
+  padding: 1rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .margin-left-neg-205 {
   margin-left: -1.25rem;
 }
@@ -247,6 +329,19 @@ a {
 
   .admin-login-page__resources {
     padding: 0.75rem 1rem 1.5rem;
+  }
+
+  .admin-success {
+    padding: 1.5rem 0;
+  }
+
+  .admin-success__panel {
+    padding: 1.25rem;
+  }
+
+  .admin-success__details div {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
   }
 
   .admin-login-page__actions .usa-button,

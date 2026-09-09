@@ -182,7 +182,7 @@ The existing auth endpoints are extended to support both the legacy and Keycloak
 | `GET /login/ams` | Redirect to AMS (legacy or via Keycloak, based on canary flag) |
 | `GET /oidc/callback/` | OIDC authorization code callback (delegates to correct flow based on session marker) |
 | `GET /auth_check` | Current user authentication status |
-| `GET /logout/oidc` | Session termination (+ Keycloak logout if session was Keycloak-originated) |
+| `GET /logout/oidc` | App-scoped Django session termination |
 
 ---
 

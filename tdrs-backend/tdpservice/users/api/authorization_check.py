@@ -11,6 +11,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from ..authorization import is_authorized_admin_user
+from ..oidc import ADMIN_SESSION_SCOPE, STANDARD_SESSION_SCOPE
 from ..serializers import UserProfileSerializer
 
 logger = logging.getLogger(__name__)
@@ -22,12 +24,34 @@ class AuthorizationCheck(APIView):
     query_string = False
     pattern_name = "authorization-check"
     permission_classes = [AllowAny]
+    session_scope = STANDARD_SESSION_SCOPE
+    allow_unscoped_session = True
+
+    def has_valid_session_scope(self, request):
+        """Return whether this endpoint can use the current signed session."""
+        current_scope = request.session.get("session_scope")
+        is_admin_api_request = (
+            current_scope == ADMIN_SESSION_SCOPE
+            and request.resolver_match
+            and request.resolver_match.namespace == "admin-api"
+        )
+        return is_admin_api_request or current_scope == self.session_scope or (
+            self.allow_unscoped_session and current_scope is None
+        )
 
     def get(self, request, *args, **kwargs):
         """Handle get request and verify user is authorized."""
         logger.debug(
             f"{self.__class__.__name__}: {request} {request.user} {args} {kwargs}"
         )
+
+        if not self.has_valid_session_scope(request):
+            logger.warning(
+                "Rejected %s session on %s",
+                request.session.get("session_scope"),
+                self.pattern_name,
+            )
+            return Response({"authenticated": False})
 
         user = request.user
         serializer = UserProfileSerializer(user, context={"request": request})
@@ -55,6 +79,33 @@ class AuthorizationCheck(APIView):
         else:
             logger.info("Auth check FAIL for user on %s", timezone.now())
             return Response({"authenticated": False})
+
+
+class AdminAuthorizationCheck(AuthorizationCheck):
+    """Check if the current Django session is authorized for the admin console."""
+
+    pattern_name = "admin-authorization-check"
+    session_scope = ADMIN_SESSION_SCOPE
+    allow_unscoped_session = False
+
+    def get(self, request, *args, **kwargs):
+        """Return authenticated and admin authorization state for the session."""
+        response = super().get(request, *args, **kwargs)
+
+        if not response.data.get("authenticated"):
+            return response
+
+        user = request.user
+        is_admin = is_authorized_admin_user(user)
+
+        response.data["authorized"] = is_admin
+        response.data["csrf"] = csrf.get_token(request)
+
+        if not is_admin:
+            response.status_code = 403
+            response.data["detail"] = "User is not authorized for the admin console."
+
+        return response
 
 
 class PlgAuthorizationCheck(APIView):

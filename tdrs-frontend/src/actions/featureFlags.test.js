@@ -6,7 +6,6 @@ import {
   FETCH_FEATURE_FLAGS,
   SET_FEATURE_FLAGS,
   SET_FEATURE_FLAGS_ERROR,
-  CLEAR_FEATURE_FLAGS,
 } from './featureFlags'
 
 jest.mock('../fetch-instance')
@@ -27,11 +26,10 @@ describe('actions/featureFlags.js', () => {
     await store.dispatch(fetchFeatureFlags())
 
     const actions = store.getActions()
-    expect(actions[0].type).toBe(CLEAR_FEATURE_FLAGS)
-    expect(actions[1].type).toBe(FETCH_FEATURE_FLAGS)
-    expect(actions[2].type).toBe(SET_FEATURE_FLAGS)
-    expect(actions[2].payload.flags).toStrictEqual([mockFlag])
-    expect(actions[2].payload.lastFetched).toBeGreaterThanOrEqual(testDate)
+    expect(actions[0].type).toBe(FETCH_FEATURE_FLAGS)
+    expect(actions[1].type).toBe(SET_FEATURE_FLAGS)
+    expect(actions[1].payload.flags).toStrictEqual([mockFlag])
+    expect(actions[1].payload.lastFetched).toBeGreaterThanOrEqual(testDate)
   })
 
   it('dispatches an error to the store if the API errors', async () => {
@@ -43,9 +41,8 @@ describe('actions/featureFlags.js', () => {
     await store.dispatch(fetchFeatureFlags())
 
     const actions = store.getActions()
-    expect(actions[0].type).toBe(CLEAR_FEATURE_FLAGS)
-    expect(actions[1].type).toBe(FETCH_FEATURE_FLAGS)
-    expect(actions[2].type).toBe(SET_FEATURE_FLAGS_ERROR)
+    expect(actions[0].type).toBe(FETCH_FEATURE_FLAGS)
+    expect(actions[1].type).toBe(SET_FEATURE_FLAGS_ERROR)
   })
 
   it('does not dispatch SET_FEATURE_FLAGS when response has no data', async () => {
@@ -59,9 +56,6 @@ describe('actions/featureFlags.js', () => {
     await store.dispatch(fetchFeatureFlags())
 
     const actions = store.getActions()
-    expect(actions.map((action) => action.type)).toEqual([
-      CLEAR_FEATURE_FLAGS,
-      FETCH_FEATURE_FLAGS,
-    ])
+    expect(actions.map((action) => action.type)).toEqual([FETCH_FEATURE_FLAGS])
   })
 })

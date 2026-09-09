@@ -2100,6 +2100,60 @@ describe('Reports', () => {
     })
   })
 
+  it('should cap fiscal year at the configured Program Integrity Audit maximum', async () => {
+    const store = appConfigureStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        stt: 'California',
+      },
+      featureFlags: {
+        loading: false,
+        error: null,
+        lastFetched: '2025-03-01 10:00am',
+        flags: [
+          {
+            feature_name: 'program-integrity-audit',
+            enabled: true,
+            config: { minYear: 2023, maxYear: 2024 },
+            description: 'pia',
+          },
+        ],
+      },
+    })
+
+    const { getByLabelText, getByTestId, queryByText } = render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Reports />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    const stt = getByTestId('stt-combobox')
+    fireEvent.change(stt, { target: { value: 'California' } })
+    setReportInputs('2025', 'Q3', getByLabelText)
+
+    await waitFor(() => {
+      expect(
+        queryByText(
+          'California - TANF - Fiscal Year 2025 - Quarter 3 (April - June)'
+        )
+      ).toBeInTheDocument()
+    })
+
+    fireEvent.click(getByLabelText('Program Integrity Audit'))
+
+    await waitFor(() => {
+      expect(getByLabelText('Fiscal Year (October - September)*').value).toBe(
+        '2024'
+      )
+      expect(
+        queryByText('California - Program Integrity Audit - Fiscal Year 2024')
+      ).toBeInTheDocument()
+    })
+  })
+
   describe('Form order enforcement', () => {
     it('should not show errors when filling File Type -> Year -> Quarter in order', async () => {
       const state = {

@@ -2,7 +2,7 @@
 services:
   zaproxy:
     platform: linux/amd64
-    image: ghcr.io/${REGISTRY_OWNER:-hhs}/zap-stable:2.14.0
+    image: ghcr.io/${REGISTRY_OWNER:-hhs}/zap-stable:2.17.0
     command: sleep 3600
     depends_on:
       - web
@@ -70,6 +70,7 @@ services:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
       - KC_TDP_DJANGO_CLIENT_SECRET=tdp-django-local-secret
+      - KC_TDP_ADMIN_CLIENT_SECRET=tdp-admin-local-secret
       - KC_TDP_GRAFANA_CLIENT_SECRET=tdp-grafana-local-secret
       # Login.gov IdP (sandbox defaults)
       - LOGIN_GOV_CLIENT_ID=urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-dev
@@ -273,6 +274,7 @@ services:
       - DJANGO_CONFIGURATION=${DJANGO_CONFIGURATION:-Local}
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-tdp-dev-insecure}
       - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-tdpservice.settings.local}
+      - ADMIN_API_PROXY_TOKEN=${ADMIN_API_PROXY_TOKEN:-local-admin-proxy-token}
       - LOCALSTACK_HOST=localstack
       - DJANGO_SU_NAME
       - JWT_CERT_TEST
@@ -311,6 +313,8 @@ services:
       - KEYCLOAK_ADMIN_CLIENT_SECRET=tdp-django-local-secret
       - KEYCLOAK_DJANGO_CLIENT_ID=tdp-django
       - KEYCLOAK_DJANGO_CLIENT_SECRET=tdp-django-local-secret
+      - KEYCLOAK_TDP_ADMIN_CLIENT_ID=tdp-admin
+      - KEYCLOAK_TDP_ADMIN_CLIENT_SECRET=tdp-admin-local-secret
       - KEYCLOAK_AUTH_PERCENTAGE
     volumes:
       - .:/tdpapp
@@ -424,6 +428,8 @@ services:
       - KEYCLOAK_ADMIN_CLIENT_SECRET=tdp-django-local-secret
       - KEYCLOAK_DJANGO_CLIENT_ID=tdp-django
       - KEYCLOAK_DJANGO_CLIENT_SECRET=tdp-django-local-secret
+      - KEYCLOAK_TDP_ADMIN_CLIENT_ID=tdp-admin
+      - KEYCLOAK_TDP_ADMIN_CLIENT_SECRET=tdp-admin-local-secret
     volumes:
       - .:/tdpapp
       - logs:/tmp

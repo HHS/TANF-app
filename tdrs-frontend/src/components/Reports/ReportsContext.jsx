@@ -363,7 +363,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     if (yearInputValue && parseInt(yearInputValue) < minYear) {
       setYearInputValue('')
     } else if (
-      value === 'program-integrity-audit' &&
+      type === 'program-integrity-audit' &&
       parseInt(yearInputValue) > maxYear
     ) {
       setYearInputValue(`${maxYear}`)

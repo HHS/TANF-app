@@ -291,6 +291,38 @@
       "optionalClientScopes": []
     },
     {
+      "clientId": "tdp-admin",
+      "name": "TDP Admin Console",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${KC_TDP_ADMIN_CLIENT_SECRET}",
+      "redirectUris": [
+        "https://admin.tanfdata.acf.hhs.gov/*",
+        "https://tanfdata.acf.hhs.gov/admin-auth/*"
+      ],
+      "webOrigins": [
+        "https://admin.tanfdata.acf.hhs.gov"
+      ],
+      "attributes": {
+        "post.logout.redirect.uris": "https://admin.tanfdata.acf.hhs.gov/*"
+      },
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": false,
+      "fullScopeAllowed": true,
+      "defaultClientScopes": [
+        "openid",
+        "email",
+        "profile",
+        "tdp-user-attributes"
+      ],
+      "optionalClientScopes": []
+    },
+    {
       "clientId": "tdp-grafana",
       "name": "TDP Grafana",
       "enabled": true,
