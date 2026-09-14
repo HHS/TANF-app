@@ -18,6 +18,7 @@ from tdpservice.backends import DataFilesS3Storage
 from tdpservice.common.fields import S3VersionedFileField
 from tdpservice.common.models import FileRecord
 from tdpservice.common.shadow_models import create_shadow_model
+from tdpservice.core.models import BaseLog
 from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.util import (
     create_legacy_s3_log_file_path,
@@ -409,6 +410,55 @@ class DataFile(FileRecord):
     def __str__(self):
         """Return a string representation of the model."""
         return f"filename: {self.original_filename}"
+
+
+class DataFileStateTransition(BaseLog):
+    """Persistent audit record for a DataFile submission state transition."""
+
+    EVENT_TYPE = "data_file_state_transition"
+
+    previous_state = models.CharField(
+        max_length=32,
+        choices=SubmissionState.choices,
+    )
+    next_state = models.CharField(
+        max_length=32,
+        choices=SubmissionState.choices,
+    )
+    reparse_meta_id = models.PositiveIntegerField(blank=True, null=True)
+
+    class Meta:
+        """Metadata."""
+
+        default_permissions = ()
+        ordering = ["-created_at", "-id"]
+        indexes = [
+            models.Index(
+                fields=["reparse_meta_id"],
+                name="data_files_reparse_4ba50f_idx",
+            ),
+        ]
+
+    @property
+    def data_file_id(self):
+        """Return the associated DataFile id stored by the generic log relation."""
+        try:
+            return int(self.object_id)
+        except (TypeError, ValueError):
+            return self.object_id
+
+    def save(self, *args, **kwargs):
+        """Save the transition with its subclass event type."""
+        if not self.event_type:
+            self.event_type = self.EVENT_TYPE
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        """Return a string representation of the transition."""
+        return (
+            f"DataFile {self.object_id}: "
+            f"{self.previous_state} -> {self.next_state}"
+        )
 
 
 ShadowDataFile = create_shadow_model(

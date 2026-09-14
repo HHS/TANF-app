@@ -1,6 +1,7 @@
 """Tests for parser task helpers and flow control."""
 
 import io
+import uuid
 from types import SimpleNamespace
 
 from django.contrib.admin.models import LogEntry
@@ -12,6 +13,7 @@ import pytest
 from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.models import (
     DataFile,
+    DataFileStateTransition,
     ReparseFileMeta,
     create_or_update_shadow_data_file,
 )
@@ -124,16 +126,15 @@ def test_queue_go_parse_sends_shadow_task(monkeypatch):
         SimpleNamespace(send_task=fake_send_task),
     )
 
-    parser_task.queue_go_parse(42)
+    event_id = uuid.uuid4()
+    parser_task.queue_go_parse(42, event_id=event_id)
 
-    assert calls == [
-        {
-            "name": parser_task.GO_PARSER_TASK_NAME,
-            "args": [42, 0],
-            "queue": parser_task.GO_PARSER_QUEUE,
-            "ignore_result": True,
-        }
-    ]
+    assert len(calls) == 1
+    call = calls[0]
+    assert call["name"] == parser_task.GO_PARSER_TASK_NAME
+    assert call["args"] == [42, 0, str(event_id)]
+    assert call["queue"] == parser_task.GO_PARSER_QUEUE
+    assert call["ignore_result"] is True
 
 
 def test_queue_go_parse_sends_reparse_id(monkeypatch):
@@ -150,9 +151,10 @@ def test_queue_go_parse_sends_reparse_id(monkeypatch):
         ),
     )
 
-    parser_task.queue_go_parse(42, reparse_id=7)
+    event_id = uuid.uuid4()
+    parser_task.queue_go_parse(42, reparse_id=7, event_id=event_id)
 
-    assert calls == [[42, 7]]
+    assert calls == [[42, 7, str(event_id)]]
 
 
 @pytest.mark.django_db
@@ -187,24 +189,25 @@ def test_queue_parse_queues_python_and_go(monkeypatch):
         parser_task,
         "parse",
         SimpleNamespace(
-            delay=lambda data_file_id, reparse_id=None: calls.append(
-                ("python", data_file_id, reparse_id)
+            delay=lambda data_file_id, reparse_id=None, event_id=None: calls.append(
+                ("python", data_file_id, reparse_id, event_id)
             )
         ),
     )
     monkeypatch.setattr(
         parser_task,
         "queue_go_parse",
-        lambda data_file_id, reparse_id=None: calls.append(
-            ("go", data_file_id, reparse_id)
+        lambda data_file_id, reparse_id=None, event_id=None: calls.append(
+            ("go", data_file_id, reparse_id, event_id)
         ),
     )
 
-    parser_task.queue_parse(42, reparse_id=7)
+    event_id = uuid.uuid4()
+    parser_task.queue_parse(42, reparse_id=7, event_id=event_id)
 
     assert calls == [
-        ("python", 42, 7),
-        ("go", 42, 7),
+        ("python", 42, 7, str(event_id)),
+        ("go", 42, 7, str(event_id)),
     ]
 
 
@@ -217,23 +220,24 @@ def test_queue_parse_skips_go_when_shadow_mode_off(monkeypatch):
         parser_task,
         "parse",
         SimpleNamespace(
-            delay=lambda data_file_id, reparse_id=None: calls.append(
-                ("python", data_file_id, reparse_id)
+            delay=lambda data_file_id, reparse_id=None, event_id=None: calls.append(
+                ("python", data_file_id, reparse_id, event_id)
             )
         ),
     )
     monkeypatch.setattr(
         parser_task,
         "queue_go_parse",
-        lambda data_file_id, reparse_id=None: calls.append(
-            ("go", data_file_id, reparse_id)
+        lambda data_file_id, reparse_id=None, event_id=None: calls.append(
+            ("go", data_file_id, reparse_id, event_id)
         ),
     )
 
-    parser_task.queue_parse(42, reparse_id=7)
+    event_id = uuid.uuid4()
+    parser_task.queue_parse(42, reparse_id=7, event_id=event_id)
 
     assert calls == [
-        ("python", 42, 7),
+        ("python", 42, 7, str(event_id)),
     ]
 
 
@@ -399,7 +403,7 @@ def test_post_parse_finalizes_shadow_summary_only(monkeypatch, stt):
 
 @pytest.mark.django_db
 def test_post_parse_parse_error_rejects_shadow_summary(stt):
-    """Technical parse failures reject only the shadow summary."""
+    """Technical failures persist shadow history without changing production."""
     datafile = DataFileFactory(
         stt=stt,
         version=4,
@@ -411,7 +415,10 @@ def test_post_parse_parse_error_rejects_shadow_summary(stt):
         status=DataFileSummary.Status.PENDING,
     )
 
-    parser_task.post_parse(datafile.id, parse_error="pipeline failed")
+    event_id = uuid.uuid4()
+    parser_task.post_parse(
+        datafile.id, reparse_id=7, parse_error="pipeline failed", event_id=event_id
+    )
 
     shadow_summary.refresh_from_db()
     shadow_datafile.refresh_from_db()
@@ -420,6 +427,73 @@ def test_post_parse_parse_error_rejects_shadow_summary(stt):
     assert shadow_summary.status == DataFileSummary.Status.REJECTED
     assert shadow_datafile.state == SubmissionState.PARSE_FAILED
     assert datafile.state == SubmissionState.VIRUS_SCAN_COMPLETED
+    assert DataFileStateTransition.objects.for_object(datafile).count() == 0
+    transition = DataFileStateTransition.objects.for_object(shadow_datafile).get()
+    assert transition.content_object == shadow_datafile
+    assert transition.event_id == event_id
+    assert transition.previous_state == SubmissionState.VIRUS_SCAN_COMPLETED
+    assert transition.next_state == SubmissionState.PARSE_FAILED
+    assert transition.source == "go_parser"
+    assert transition.task_name == parser_task.GO_PARSER_POST_PARSE_TASK_NAME
+    assert transition.reparse_meta_id == 7
+    assert transition.metadata["parse_error"] == "pipeline failed"
+
+    parser_task.post_parse(
+        datafile.id, reparse_id=7, parse_error="pipeline failed", event_id=event_id
+    )
+    assert DataFileStateTransition.objects.for_object(shadow_datafile).count() == 1
+
+
+@pytest.mark.django_db
+def test_post_parse_shadow_state_rolls_back_when_audit_insert_fails(stt, monkeypatch):
+    """A failed shadow audit insert must leave the shadow state unchanged."""
+    datafile = DataFileFactory(stt=stt, state=SubmissionState.VIRUS_SCAN_COMPLETED)
+    shadow_datafile = create_or_update_shadow_data_file(datafile)
+
+    def fail_audit_insert(*args, **kwargs) -> None:
+        raise DatabaseError("audit insert failed")
+
+    monkeypatch.setattr(
+        DataFileStateTransition.objects, "create_for_object", fail_audit_insert
+    )
+    with pytest.raises(DatabaseError, match="audit insert failed"):
+        parser_task.post_parse(datafile.id, parse_error="pipeline failed")
+
+    shadow_datafile.refresh_from_db()
+    datafile.refresh_from_db()
+    assert shadow_datafile.state == SubmissionState.VIRUS_SCAN_COMPLETED
+    assert datafile.state == SubmissionState.VIRUS_SCAN_COMPLETED
+    assert not DataFileStateTransition.objects.for_object(shadow_datafile).exists()
+
+
+@pytest.mark.django_db
+@override_settings(GO_PARSER_SHADOW_MODE=False)
+def test_post_parse_parse_error_records_production_state_transition(stt):
+    """Production Go post-parse errors should persist transition history."""
+    datafile = DataFileFactory(
+        stt=stt,
+        version=4,
+        state=SubmissionState.VIRUS_SCAN_COMPLETED,
+    )
+    summary = DataFileSummary.objects.create(
+        datafile=datafile,
+        status=DataFileSummary.Status.PENDING,
+    )
+
+    parser_task.post_parse(datafile.id, reparse_id=7, parse_error="pipeline failed")
+
+    summary.refresh_from_db()
+    datafile.refresh_from_db()
+    transition = DataFileStateTransition.objects.for_object(datafile).get()
+    assert summary.status == DataFileSummary.Status.REJECTED
+    assert datafile.state == SubmissionState.PARSE_FAILED
+    assert transition.previous_state == SubmissionState.VIRUS_SCAN_COMPLETED
+    assert transition.next_state == SubmissionState.PARSE_FAILED
+    assert transition.note == "Go parser post-parse received parse_error"
+    assert transition.source == "go_parser"
+    assert transition.task_name == parser_task.GO_PARSER_POST_PARSE_TASK_NAME
+    assert transition.reparse_meta_id == 7
+    assert transition.metadata["parse_error"] == "pipeline failed"
 
 
 @pytest.mark.django_db
@@ -575,7 +649,8 @@ def test_parse_success_sends_email(monkeypatch, data_analyst):
 
     monkeypatch.setattr(parser_task, "send_data_submitted_email", fake_send)
 
-    parser_task.parse(datafile.id)
+    event_id = uuid.uuid4()
+    parser_task.parse(datafile.id, event_id=event_id)
 
     assert dummy_parser.called is True
     assert data_analyst.username in captured["recipients"]
@@ -583,6 +658,9 @@ def test_parse_success_sends_email(monkeypatch, data_analyst):
 
     datafile.refresh_from_db()
     assert datafile.state == SubmissionState.PARSE_COMPLETED
+    transitions = DataFileStateTransition.objects.for_object(datafile)
+    assert transitions.count() == 2
+    assert {transition.event_id for transition in transitions} == {event_id}
 
 
 @pytest.mark.django_db
@@ -1022,7 +1100,14 @@ def test_parse_transitions_include_parse_context(monkeypatch, data_analyst):
     transitions = []
     real_transition = parser_task.transition_datafile
 
-    def recording_transition(data_file, next_state, note="", logger_hook=None, log_fields=None):
+    def recording_transition(
+        data_file,
+        next_state,
+        note="",
+        logger_hook=None,
+        log_fields=None,
+        **kwargs,
+    ):
         transitions.append(
             {
                 "next_state": next_state,
@@ -1036,6 +1121,7 @@ def test_parse_transitions_include_parse_context(monkeypatch, data_analyst):
             note=note,
             logger_hook=logger_hook,
             log_fields=log_fields,
+            **kwargs,
         )
 
     setup_parse_mocks(monkeypatch)

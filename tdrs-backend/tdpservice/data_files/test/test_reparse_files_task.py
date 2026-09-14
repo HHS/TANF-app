@@ -4,6 +4,7 @@ import pytest
 
 from tdpservice.data_files import tasks as data_file_tasks
 from tdpservice.data_files.enums import SubmissionState
+from tdpservice.data_files.models import DataFileStateTransition
 from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.search_indexes.reparse import ReparseDestructiveCleanupStarted
 
@@ -51,6 +52,11 @@ def test_reparse_files_revert_handles_celery_string_keys(monkeypatch):
 
     data_file.refresh_from_db()
     assert data_file.state == SubmissionState.PARSE_FAILED
+    transition = DataFileStateTransition.objects.for_object(data_file).get()
+    assert transition.previous_state == SubmissionState.REPARSE_REQUESTED
+    assert transition.next_state == SubmissionState.PARSE_FAILED
+    assert transition.source == "celery_worker"
+    assert transition.note == "clean_reparse worker failure (pre-destructive)"
 
 
 @pytest.mark.django_db

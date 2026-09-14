@@ -14,10 +14,12 @@ This document evaluates whether moving TDP deployments from Cloud.gov-managed bu
 
 - **Background on the original buildpack decision:** [ADR-011](../Technical-Documentation/Architecture-Decision-Record/011-buildpacks.md) documents that TDP leveraged Cloud.gov buildpacks in 2021 in part because they provided a faster path to ATO than the team's earlier DockerHub-based approach, which lacked sufficient security documentation for ACF review.
 - **What is changing:** TDP would shift from Cloud.gov-managed buildpacks to Docker DHI hardened base images and TDP-managed Docker images for application deployment, while continuing to run the applications inside the same Cloud.gov platform and runtime environment.
+- **Implementation status note:** The current repository Dockerfiles still reference standard public images in some base or final stages, including `python:3.10.8-slim-bullseye`, `node:22-alpine`, and `nginx:1.25-alpine`. The DHI-based security claims in this document should be treated as target-state controls until those image baselines are updated to approved DHI images or an equivalent approved hardened-image baseline is documented.
 - **Why this is being considered now:** Buildpacks continue to create operational pain points, including long deploy times, repeated dependency downloads, less predictable build behavior, and limited visibility into the full runtime stack. At the same time, Docker image security capabilities and documentation have matured, especially around hardened base images, SBOMs, provenance, signing, and vulnerability management.
 - **Security responsibility impact:** This change shifts responsibility for selecting approved base images, maintaining TDP's derived application images, and applying updated DHI releases into the deployment lifecycle from Cloud.gov to the TDP application team. It does **not** mean TDP becomes responsible for remediating CVEs in DHI base images themselves; that remediation remains with the DHI provider. TDP is responsible for rebuilding, validating, and redeploying downstream images after remediated base image versions are published. Based on the current architecture, this does **not** change the Cloud.gov hosting model or the ATO boundary, because the workloads would still run inside the same FedRAMP-authorized Cloud.gov environment and retain the same inherited platform controls.
 - **Key tradeoffs:** The main tradeoff is greater operational and security ownership by the TDP team in exchange for better supply chain visibility, reproducibility, auditability, and deployment control. In practice, that means TDP must monitor for remediated DHI releases and update its derived images on an appropriate timeline, and ACF may need to evaluate whether Docker Hardened Images' enterprise tier or similar vendor support is needed if contractual remediation timelines such as a 7-day high/critical CVE response target are required.
 - **Registry note:** TDP will store and distribute deployment images through GitHub Container Registry (GHCR). GHCR should be treated as part of the implementation architecture because it affects image access control, retention, provenance, and scanning workflows. Its use does not by itself change the ATO boundary analysis, but SSP and supporting documentation should reflect GHCR as the private registry of record and describe the associated access and monitoring controls.
+- **Compliance disposition:** Even though the authorization boundary, data flows, and Cloud.gov hosting environment remain unchanged, the packaging and deployment method change is security relevant. The SSP should be updated and an SIA should be initiated before production adoption to formally document the impact, affected controls, residual risk, and approval path.
 
 ---
 
@@ -72,9 +74,11 @@ This shift in responsibility is **not a net loss**—it is a trade of opaque, au
 
 ---
 
-## 3. Docker Hardened Images: Security Guarantees
+## 3. Docker Hardened Images: Target Security Guarantees
 
 Docker provides [CIS-validated Hardened Images](https://hub.docker.com/hardened-images/catalog) that are **free to use, share, and build on** under the Apache 2.0 license.
+
+The guarantees below apply only if the approved production image baseline uses DHI images, or an alternative hardened-image source with equivalent documented controls. If the final implementation continues to use standard public images, the SIA and SSP should either document compensating controls or avoid claiming DHI-specific benefits such as CIS validation, SLSA provenance, signed SBOMs, VEX statements, or DHI remediation timelines.
 
 ### 3.1 Community Tier (Free) — Security Features
 
@@ -173,23 +177,97 @@ To address the additional responsibilities that come with Docker deployment, we 
 | **Base image maintenance** | Use DHI images with automated patching; pin to specific digests in CI/CD |
 | **OS-level security updates** | DHI continuous scanning and automatic rebuilds on upstream updates |
 | **Vulnerability management** | Integrate container scanning (e.g., Grype) into CI/CD pipeline for TDP frontend/backend containers; block deployment on critical/high CVEs |
-| **Configuration hardening** | DHI images are pre-hardened to CIS benchmarks; no manual hardening required |
-| **Incident response** | Immutable images simplify forensics; roll back by redeploying a previous digest |
+| **Configuration hardening** | Use DHI or an approved equivalent hardened-image baseline; document any compensating controls if standard public base images remain in use |
+| **Continuous monitoring** | Feed container scanner results, GHCR package activity, image digest changes, and DHI/base image update status into the existing process for monthly and quarterly reporting |
+| **POA&M and vulnerability reporting** | Track unresolved high/critical container findings, scanner exceptions, overdue base image updates, and accepted residual risks through the applicable ACF/TDP vulnerability management process, including POA&M tracking where required |
+| **Incident response** | Detect, triage, contain, and recover from image-related events using scanner alerts, CircleCI job logs, GHCR package activity, image digest inventory, and redeployment of a known-good digest |
 | **SSP documentation updates** | Update relevant control narratives to reflect Docker deployment model and DHI security features |
 
 ---
 
-## 8. ATO Impact Assessment
+## 8. Compliance Review/Updates
+
+ACF feedback correctly identifies the Docker migration as a security-relevant modification even though it does not alter the authorization boundary, data flow, or Cloud.gov hosting environment. The proposed compliance package should therefore include an SIA and targeted SSP updates.
+
+### 8.1 SIA and SSP Updates
+
+The SIA should evaluate the packaging change as a significant security-relevant modification and document:
+
+- No change to the system authorization boundary, Cloud.gov hosting environment, or application data flows
+- New or changed implementation details for Docker image build, registry storage, scanning, signing/provenance, and deployment
+- TDP responsibility for derived application images and base image update adoption
+- Cloud.gov responsibility for the platform runtime, host operating system, network isolation, and inherited FedRAMP controls
+- Residual risks associated with GHCR, external base image dependency, image tag/digest management, and delayed vulnerability remediation
+
+### 8.2 Continuous Monitoring, Vulnerability Reporting, and POA&M
+
+Container vulnerability management should be integrated into the existing continuous monitoring (ConMon) process rather than treated as a standalone CI/CD activity.
+
+| Activity | Proposed Documentation Update |
+|----------|-------------------------------|
+| **CI/CD scanning** | Document container scanning for frontend, backend, and base images during build and before publishing or deployment |
+| **Recurring review** | Include container scanner findings, GHCR package activity, image inventory, and base image update status in monthly and quarterly ConMon reporting |
+| **Vulnerability reporting** | Report high/critical image findings using the same severity, ownership, due date, and remediation evidence practices used for existing vulnerability sources |
+| **POA&M integration** | Open or update POA&M items for overdue remediation, accepted residual risk, scanner exceptions, or findings that cannot be remediated within required timelines |
+| **Evidence artifacts** | Retain scan results, SBOMs, image digests, CircleCI workflow/job records, release tags, and remediation validation as audit evidence |
+
+### 8.3 Configuration Management: CM-2 and CM-6
+
+Docker configuration artifacts are stored in the TANF-app GitHub repository and should be treated as version-controlled configuration baseline artifacts.
+
+| Artifact | Repository Location | CM Relevance |
+|----------|---------------------|--------------|
+| Backend application image | `tdrs-backend/Dockerfile` | Defines backend deployment image composition |
+| Backend base image | `tdrs-backend/Dockerfile.base` | Defines backend base runtime and OS package baseline |
+| Frontend application image | `tdrs-frontend/Dockerfile` | Defines frontend deployment image composition |
+| Frontend base image | `tdrs-frontend/Dockerfile.base` | Defines frontend build/runtime baseline |
+| Keycloak image | `tdrs-backend/keycloak/Dockerfile` | Defines Keycloak container image baseline, where applicable |
+| CircleCI build/deployment configuration | `.circleci/config.yml`, `.circleci/deployment/workflows.yml`, `.circleci/deployment/jobs.yml`, `.circleci/deployment/commands.yml` | Defines deployment orchestration and should define image build, tag, authentication, and publish process when Docker image publishing is moved into CircleCI |
+
+The SSP should state that Dockerfile changes, base image version changes, CircleCI deployment or image-publishing configuration changes, and production image digest changes are configuration-controlled changes subject to code review, CI validation, release approval, and audit retention.
+
+### 8.4 GHCR ATO Considerations
+
+GHCR introduces an external registry dependency and should be documented explicitly in the SSP, implementation architecture, and SIA.
+
+| Area | Required Documentation |
+|------|------------------------|
+| **External dependency** | GHCR is the private container registry used to store and distribute TDP deployment images |
+| **Access control** | Package read/write permissions should be limited by GitHub organization, repository, package, and team permissions, with CircleCI project and context access managed using least privilege |
+| **Authentication method** | CircleCI should publish images using approved GHCR credentials or tokens stored in CircleCI contexts or project environment variables and managed through the existing secret management process |
+| **Logging and monitoring** | CircleCI workflow/job logs, package publishing events, repository/package permission changes, CircleCI context or project setting changes, and available GitHub/GHCR audit logs should be retained and reviewed as part of ConMon and incident triage |
+| **Image integrity** | Deployments should reference immutable image digests where feasible; mutable tags such as `latest` should not be the sole production reference |
+| **Retention and recovery** | Release image tags and digests should be retained long enough to support rollback, forensic review, and audit evidence needs |
+
+### 8.5 Incident Response Detail
+
+The incident response narrative should go beyond rollback and define the expected lifecycle for image-related events.
+
+| Phase | Docker/GHCR-Specific Response |
+|-------|-------------------------------|
+| **Detection** | Scanner alerts, GHCR package activity, failed CircleCI build or deploy checks, image signature/provenance validation failures, CircleCI audit or job anomalies, and available GitHub/GHCR audit events |
+| **Triage** | Determine affected image digest, tag, source commit, SBOM components, environments deployed, severity, exploitability, and whether data or credentials may be affected |
+| **Containment** | Pause promotion, restrict or remove affected registry artifacts where appropriate, rotate exposed credentials if indicated, and redeploy the last known-good image digest |
+| **Eradication** | Rebuild from a patched base image or dependency set, validate scan results, regenerate SBOM/provenance artifacts, and verify configuration against the approved baseline |
+| **Recovery** | Promote the remediated image through the normal release path, validate application health, retain evidence, and update vulnerability or POA&M records |
+
+---
+
+## 9. ATO Impact Assessment
 
 ### What Changes
 
 #### New Content Required
 - **Container image scanning** must be added to the vulnerability management scanning tools table (currently lists OWASP ZAP, Dependabot, and Webinspect — needs a container scanner like Trivy/Grype with defined frequency)
-- **Dockerfiles and container image digests** must be added as configuration management artifacts in the CM tools and CM library sections
-- **CI/CD pipeline description** must be rewritten to include Docker image build, container scanning, image registry, and `cf push --docker-image` deployment flow
+- **Dockerfiles, CircleCI deployment or image-publishing configuration, release image tags, and container image digests** must be added as configuration management artifacts in the CM tools and CM library sections
+- **CI/CD pipeline description** must be rewritten to include CircleCI Docker image build, container scanning, image registry authentication, image publication to GHCR, and `cf push --docker-image` deployment flow
 - **Shared responsibility boundary** must be updated to document TDP team ownership of container runtime environment (base image OS packages, system libraries) vs. cloud.gov ownership of host OS and platform
 - **Container image baselines** (Dockerfiles, pinned base image versions) must be added as a distinct baseline type in the configuration baselining section
+- **Base image source decision** must reconcile current Dockerfile references to standard public images with the target DHI posture; the approved baseline should identify the selected base image source, owner, patch process, and evidence artifacts
 - **Risk summary** may need new entries for container image supply chain risks and their mitigations (DHI, image signing, SLSA provenance)
+- **Continuous monitoring procedures** must describe how container findings are reported monthly/quarterly and how unresolved findings feed into vulnerability reporting and POA&M management
+- **GHCR registry controls** must describe external dependency management, access control, authentication, logging/monitoring, image retention, and incident response expectations
+- **Incident response procedures** must include detection, triage, containment, eradication, and recovery for compromised, vulnerable, or untrusted container images
 
 #### New Control Narratives Required
 - **CM-7 (Least Functionality)** — no standalone section exists in the SSP; needs language about minimizing attack surface via slim/distroless base images
@@ -202,17 +280,18 @@ To address the additional responsibilities that come with Docker deployment, we 
 - **The authorization boundary** does not change — applications still run within Cloud.gov's FedRAMP-authorized environment.
 
 ### Recommended Path
-This transition can likely be handled as a **significant change request** rather than a full ATO reassessment, since:
+This transition should be handled through an **SIA-backed significant change review** with targeted SSP updates rather than assuming a full ATO reassessment is required, since:
 - The authorization boundary is unchanged
 - Inherited controls are unaffected
 - The deployment method is a supported Cloud.gov capability
 - The security posture is demonstrably maintained or improved
+- The SIA can formally document the security relevance, changed implementation responsibilities, and residual risks for AO review
 
 ---
 
-## 9. Conclusion
+## 10. Conclusion
 
-Transitioning from buildpacks to Docker containers built on CIS-validated Hardened Images **maintains our security posture** through Cloud.gov's unchanged inherited controls and **strengthens it** through:
+Transitioning from buildpacks to Docker containers built on CIS-validated Hardened Images, or an approved equivalent hardened-image baseline, **maintains our security posture** through Cloud.gov's unchanged inherited controls and **strengthens it** through:
 
 - CIS-benchmarked, continuously scanned base images with near-zero CVEs
 - SLSA Level 3 supply chain integrity with cryptographic verification
@@ -220,7 +299,7 @@ Transitioning from buildpacks to Docker containers built on CIS-validated Harden
 - Reduced attack surface through distroless image variants
 - Immutable, reproducible deployments that eliminate environment drift
 
-The additional responsibility for base image maintenance is mitigated by DHI's automated patching, continuous scanning, and (if needed) enterprise SLA-backed remediation. Meaning the TDP team is only responsible for monitoring new patches, verifying the patches, and applying them instead of managing the full supply chain and remediations surrounding the base images.
+The additional responsibility for base image maintenance is mitigated by DHI's automated patching, continuous scanning, and (if needed) enterprise SLA-backed remediation. Under that target-state model, the TDP team is responsible for monitoring new patches, verifying the patches, and applying them to downstream images rather than managing the full base-image supply chain itself. If the final implementation uses standard public base images instead of DHI or an approved equivalent, the SIA and SSP should document the different residual risk and compensating controls.
 
 ---
 

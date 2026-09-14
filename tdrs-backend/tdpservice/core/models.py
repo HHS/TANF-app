@@ -1,6 +1,10 @@
 """Core models."""
 
+import uuid
+
+from django.conf import settings
 from django.contrib.auth.models import Group, Permission
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import caches
 from django.db import models
@@ -12,6 +16,83 @@ from simple_history.models import HistoricalRecords
 
 # Register Django Group models for change tracking
 register(Group, app=__package__, m2m_fields=["permissions"])
+
+
+class BaseLogQuerySet(models.QuerySet):
+    """QuerySet helpers shared by concrete log models."""
+
+    def for_object(self, obj):
+        """Return logs attached to a model instance through the generic relation."""
+        return self.filter(
+            content_type=ContentType.objects.get_for_model(obj),
+            object_id=str(obj.pk),
+        )
+
+
+class BaseLogManager(models.Manager.from_queryset(BaseLogQuerySet)):
+    """Manager for models that inherit from BaseLog."""
+
+    def create_for_object(self, obj, **kwargs):
+        """Create a log attached to a model instance through the generic relation."""
+        kwargs["content_type"] = ContentType.objects.get_for_model(obj)
+        kwargs["object_id"] = str(obj.pk)
+        return self.create(**kwargs)
+
+
+class BaseLog(models.Model):
+    """Concrete base model for application logs tied to any model instance.
+
+    Subclasses use Django multi-table inheritance so all log types remain
+    queryable through this base table.
+    """
+
+    id = models.BigAutoField(primary_key=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.TextField()
+    content_object = GenericForeignKey("content_type", "object_id")
+    event_id = models.UUIDField(default=uuid.uuid4, db_index=True)
+    event_type = models.CharField(max_length=100, db_index=True)
+    note = models.TextField(blank=True, default="")
+    metadata = models.JSONField(blank=True, default=dict)
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="logs",
+        blank=True,
+        null=True,
+    )
+    source = models.CharField(max_length=64, blank=True, null=True)
+    task_name = models.CharField(max_length=255, blank=True, null=True)
+    celery_task_id = models.CharField(max_length=255, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    objects = BaseLogManager()
+
+    class Meta:
+        """Metadata."""
+
+        default_permissions = ()
+        ordering = ["-created_at", "-id"]
+        indexes = [
+            models.Index(
+                fields=["content_type", "object_id", "-created_at"],
+                name="baselog_object_created_idx",
+            ),
+            models.Index(
+                fields=["event_id", "-created_at"],
+                name="baselog_event_created_idx",
+            ),
+            models.Index(
+                fields=["event_type", "-created_at"],
+                name="baselog_type_created_idx",
+            ),
+            models.Index(fields=["source"], name="baselog_source_idx"),
+            models.Index(fields=["task_name"], name="baselog_task_name_idx"),
+        ]
+
+    def __str__(self):
+        """Return a string representation of the log."""
+        return f"{self.event_type}: {self.content_type} {self.object_id}"
 
 
 class FeatureFlag(models.Model):

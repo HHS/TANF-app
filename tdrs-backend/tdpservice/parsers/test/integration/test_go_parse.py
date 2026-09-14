@@ -3,6 +3,7 @@
 import logging
 import os
 import time
+import uuid
 
 from django.conf import settings
 from django.db.models import Q as Query
@@ -11,7 +12,12 @@ import pytest
 from celery import current_app as celery_app
 from celery.exceptions import TimeoutError as CeleryTimeoutError
 
-from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.enums import SubmissionState
+from tdpservice.data_files.models import DataFile, DataFileStateTransition
+from tdpservice.data_files.submission_lifecycle import (
+    REPARSE_REQUESTABLE_STATES,
+    transition_datafile,
+)
 from tdpservice.parsers import aggregates
 from tdpservice.parsers.models import (
     DataFileSummary,
@@ -74,14 +80,43 @@ def register_go_parser_datafile_for_cleanup(datafile):
 def parse_datafile(dfs, datafile, timeout_seconds=GO_PARSE_TIMEOUT_SECONDS):
     """Submit a datafile to the Go parser worker and wait for completion."""
     register_go_parser_datafile_for_cleanup(datafile)
+    datafile.refresh_from_db()
+
+    existing_transition_ids = set(
+        DataFileStateTransition.objects.for_object(datafile).values_list(
+            "pk", flat=True
+        )
+    )
 
     dfs.datafile = datafile
     dfs.status = DataFileSummary.Status.PENDING
     dfs.save()
 
+    event_id = uuid.uuid4()
+    if datafile.state == SubmissionState.UPLOADED:
+        transition_datafile(
+            datafile,
+            SubmissionState.VIRUS_SCAN_STARTED,
+            source="go_parser_integration",
+            event_id=event_id,
+        )
+        transition_datafile(
+            datafile,
+            SubmissionState.VIRUS_SCAN_COMPLETED,
+            source="go_parser_integration",
+            event_id=event_id,
+        )
+    elif SubmissionState(datafile.state) in REPARSE_REQUESTABLE_STATES:
+        transition_datafile(
+            datafile,
+            SubmissionState.REPARSE_REQUESTED,
+            source="go_parser_integration",
+            event_id=event_id,
+        )
+
     async_result = celery_app.send_task(
         GO_PARSE_TASK_NAME,
-        args=[datafile.pk, 0],
+        args=[datafile.pk, 0, str(event_id)],
         queue=settings.CELERY_GO_PARSER_QUEUE,
     )
 
@@ -102,6 +137,21 @@ def parse_datafile(dfs, datafile, timeout_seconds=GO_PARSE_TIMEOUT_SECONDS):
     time.sleep(0.1)
 
     dfs.refresh_from_db()
+    datafile.refresh_from_db()
+    transition_event_ids = set(
+        DataFileStateTransition.objects.for_object(datafile)
+        .exclude(pk__in=existing_transition_ids)
+        .values_list("event_id", flat=True)
+    )
+    assert transition_event_ids == {event_id}
+    go_transitions = DataFileStateTransition.objects.for_object(datafile).filter(
+        source="go_parser",
+        event_id=event_id,
+    )
+    assert go_transitions.exists()
+    assert set(go_transitions.values_list("celery_task_id", flat=True)) == {
+        async_result.id
+    }
     return dfs
 
 

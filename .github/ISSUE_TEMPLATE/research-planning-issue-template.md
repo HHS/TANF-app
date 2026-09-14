@@ -2,7 +2,7 @@
 name: Research planning issue template
 about: Template for research planning issues
 title: ''
-labels: Research & Design, Research Planning
+labels: UX Research
 assignees: ''
 
 ---

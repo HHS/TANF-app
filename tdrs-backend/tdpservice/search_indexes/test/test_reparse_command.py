@@ -1,12 +1,15 @@
 """Tests for search index reparse command helpers."""
 
 import datetime
+import uuid
 
 from django.db.utils import DatabaseError
 
 import pytest
 
-from tdpservice.data_files.models import ReparseFileMeta
+from tdpservice.data_files.enums import SubmissionState
+from tdpservice.data_files.models import DataFileStateTransition, ReparseFileMeta
+from tdpservice.data_files.submission_lifecycle import prepare_datafile_for_reparse
 from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 from tdpservice.search_indexes.reparse import clean_reparse, handle_datafiles
@@ -22,13 +25,19 @@ def log_context():
 def test_handle_datafiles_adds_reparse_and_queues(monkeypatch, stt, log_context):
     """Ensure datafiles are associated and queued for parsing."""
     meta_model = ReparseMeta.objects.create(db_backup_location="s3://backup")
-    file_one = DataFileFactory(stt=stt, version=1)
-    file_two = DataFileFactory(stt=stt, version=2)
+    file_one = DataFileFactory(
+        stt=stt, version=1, state=SubmissionState.PARSE_COMPLETED
+    )
+    file_two = DataFileFactory(
+        stt=stt, version=2, state=SubmissionState.PARSE_COMPLETED
+    )
+    prepare_datafile_for_reparse(file_one)
+    prepare_datafile_for_reparse(file_two)
 
     calls = []
 
-    def fake_delay(file_id, reparse_id):
-        calls.append((file_id, reparse_id))
+    def fake_delay(file_id, reparse_id, event_id):
+        calls.append((file_id, reparse_id, event_id))
 
     monkeypatch.setattr(
         "tdpservice.search_indexes.reparse.parser_task.parse.delay", fake_delay
@@ -38,10 +47,23 @@ def test_handle_datafiles_adds_reparse_and_queues(monkeypatch, stt, log_context)
 
     assert file_one.reparses.filter(pk=meta_model.pk).exists()
     assert file_two.reparses.filter(pk=meta_model.pk).exists()
-    assert calls == [
+    assert [(file_id, reparse_id) for file_id, reparse_id, _ in calls] == [
         (file_one.pk, meta_model.pk),
         (file_two.pk, meta_model.pk),
     ]
+    assert all(uuid.UUID(event_id) for _, _, event_id in calls)
+    expected_event_ids = {
+        file_one.pk: DataFileStateTransition.objects.for_object(
+            file_one
+        ).get().event_id,
+        file_two.pk: DataFileStateTransition.objects.for_object(
+            file_two
+        ).get().event_id,
+    }
+    assert all(
+        uuid.UUID(event_id) == expected_event_ids[file_id]
+        for file_id, _, event_id in calls
+    )
 
 
 @pytest.mark.django_db

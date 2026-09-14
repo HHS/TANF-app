@@ -2,7 +2,7 @@
 name: Research synthesis issue template
 about: Template for research synthesis issues
 title: ''
-labels: Research & Design, Research Synthesis
+labels: UX Research
 assignees: ''
 
 ---

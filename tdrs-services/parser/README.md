@@ -410,6 +410,27 @@ handwritten pgx helpers. Record table schemas are owned by the Django search
 index models, and `tdrs-backend/tdpservice/parsers/test/test_go_schema_contract.py`
 checks that active Django fields match the Go YAML schemas.
 
+Go parser state updates to both production and shadow data files write a
+`DataFileStateTransition` in the same transaction as the state update. Shadow
+transitions use the `data_files.shadowdatafile` content type, keeping their
+history separate even when the production and shadow file IDs match. Unchanged
+states do not create duplicate transitions.
+
+Both histories are available as read-only inlines on their respective Django
+Admin file pages. To compare a submission across parsers, search for its file ID
+in the Base Log admin view and use the shared event ID, source, and content type
+to distinguish each processing attempt. Reparses retain their own event IDs.
+
+The PostgreSQL tests for state persistence, correlation, and rollback run when
+`TEST_DATABASE_URL` is set to a disposable test database:
+
+```sh
+go test -count=1 ./internal/db -run TestUpdateDataFileState
+```
+
+These tests create and remove an isolated schema and require schema creation
+permission. They are skipped when `TEST_DATABASE_URL` is unset.
+
 ---
 
 ## CircleCI Checks

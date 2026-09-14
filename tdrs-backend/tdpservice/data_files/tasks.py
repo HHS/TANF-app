@@ -122,6 +122,7 @@ def reparse_files(file_ids, original_states=None):
                     data_file,
                     original,
                     note="clean_reparse worker failure (pre-destructive)",
+                    source="celery_worker",
                 )
             except Exception:
                 # Best-effort recovery; swallow per-file revert errors so one

@@ -12,7 +12,7 @@ from django.utils.safestring import mark_safe
 from django_json_widget.widgets import JSONEditorWidget
 from simple_history.admin import SimpleHistoryAdmin
 
-from tdpservice.core.models import FeatureFlag
+from tdpservice.core.models import BaseLog, FeatureFlag
 from tdpservice.core.utils import ReadOnlyAdminMixin
 
 # LogEntry needs to be de-registered first before registering a custom Admin Model below.
@@ -55,6 +55,31 @@ class LogEntryAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
 
     object_link.admin_order_field = "object_repr"
     object_link.short_description = "object"
+
+
+@admin.register(BaseLog)
+class BaseLogAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
+    """Read-only admin view for generic application logs."""
+
+    date_hierarchy = "created_at"
+
+    list_filter = ["event_type", "content_type", "source", "task_name"]
+
+    search_fields = ["object_id", "note"]
+
+    list_display = [
+        "created_at",
+        "event_id",
+        "event_type",
+        "content_type",
+        "object_id",
+        "actor",
+        "source",
+        "task_name",
+        "note",
+    ]
+
+    list_select_related = ("content_type", "actor")
 
 
 # Update GroupAdmin to use SimpleHistory

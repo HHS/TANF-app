@@ -2,7 +2,7 @@
 name: Design Deliverable issue template
 about: Template for dev-ready design issues
 title: ''
-labels: Design Deliverable, Research & Design
+labels: Design Deliverable
 assignees: ''
 
 ---
