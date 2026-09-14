@@ -187,7 +187,9 @@ class TestFeedbackAPIApprovedUser(FeedbackAPITestsBase):
     @pytest.fixture(params=["data_analyst", "ofa_system_admin"])
     def user(self, request: pytest.FixtureRequest) -> User:
         """Use approved grantee and ACF staff accounts."""
-        return request.getfixturevalue(request.param)
+        user = request.getfixturevalue(request.param)
+        user.refresh_from_db()
+        return user
 
     def test_list_feedback(self, api_client: APIClient) -> None:
         """Approved users can list feedback available to them."""
@@ -261,6 +263,7 @@ class TestFeedbackAPIIneligibleUser(FeedbackAPITestsBase):
         else:
             data_analyst.account_approval_status = request.param
         data_analyst.save()
+        data_analyst.refresh_from_db()
         return data_analyst
 
     @pytest.fixture

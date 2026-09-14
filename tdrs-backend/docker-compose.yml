@@ -271,6 +271,8 @@ services:
       - DJANGO_CONFIGURATION=${DJANGO_CONFIGURATION:-Local}
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-tdp-dev-insecure}
       - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-tdpservice.settings.local}
+      # The frontend Nginx proxy serves the registered Login.gov callback on 8080.
+      - BASE_URL=${BASE_URL:-http://localhost:8080/v1}
       - ADMIN_API_PROXY_TOKEN=${ADMIN_API_PROXY_TOKEN:-local-admin-proxy-token}
       - LOCALSTACK_HOST=localstack
       - DJANGO_SU_NAME

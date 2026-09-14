@@ -5,7 +5,7 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import status
 from rest_framework.exceptions import MethodNotAllowed
-from rest_framework.test import APIRequestFactory
+from rest_framework.test import APIClient, APIRequestFactory
 
 from tdpservice.users.models import (
     AccountApprovalStatusChoices,
@@ -249,8 +249,13 @@ def test_change_request_audit_log_queryset_filters_by_admin(
 
 
 @pytest.mark.django_db
-def test_feedback_create_anonymous_sets_anonymous(api_client, feedback_payload):
-    """Force anonymous feedback when user is not authenticated."""
+def test_feedback_create_authenticated_anonymous_omits_user(
+    api_client: APIClient, data_analyst: User, feedback_payload: dict
+) -> None:
+    """Approved users can submit feedback without retaining their association."""
+    api_client.login(username=data_analyst.username, password="test_password")
+    feedback_payload["anonymous"] = True
+
     response = api_client.post("/v1/feedback/", feedback_payload, format="json")
 
     assert response.status_code == status.HTTP_201_CREATED
@@ -277,13 +282,17 @@ def test_feedback_create_authenticated_sets_user(
 
 
 @pytest.mark.django_db
-def test_feedback_create_invalid_returns_400(api_client, feedback_payload):
-    """Return validation errors for invalid feedback payloads."""
+def test_feedback_create_invalid_returns_400(
+    api_client: APIClient, data_analyst: User, feedback_payload: dict
+) -> None:
+    """Return validation errors for invalid feedback from an approved user."""
+    api_client.login(username=data_analyst.username, password="test_password")
     feedback_payload.pop("rating")
 
     response = api_client.post("/v1/feedback/", feedback_payload, format="json")
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert "rating" in response.data
 
 
 @pytest.mark.django_db

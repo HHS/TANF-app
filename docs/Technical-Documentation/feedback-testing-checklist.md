@@ -7,24 +7,33 @@ it does not bypass these access checks.
 
 ## Automated checks
 
-Local verification on September 8, 2026:
+Local verification on September 14, 2026:
 
 - [x] Frontend Jest suite: 83 suites, 1,010 tests passed. Global coverage:
-  95.48% statements, 90.41% branches, 94.11% functions, 95.74% lines.
-  The CRA Jest configuration was run directly with explicit public test settings
-  because this workspace restricts access to environment files.
+  95.41% statements, 90.36% branches, 94.11% functions, 95.66% lines.
+  Run with `npm run test:ci -- --watchAll=false --runInBand`.
 - [x] Frontend ESLint: passed with existing warnings.
-- [x] Backend Flake8 for the changed permissions, views, and feedback API tests:
-  passed.
+- [x] Backend Flake8: passed for the full backend.
 - [x] Git diff whitespace check: passed.
-- [ ] Backend feedback API suite: cannot run in this workspace. The configured
-  Pipenv environment lacks pytest and Django; Docker socket access is denied.
-  Run `task backend-pytest PYTEST_ARGS="tdpservice/users/test/test_api/test_feedback.py"`
-  in the configured development environment.
-- [ ] Cypress feedback scenarios: launch attempted, but the cached Cypress
-  installation is missing a required application file. With Cypress and local
-  services working, run from `tdrs-frontend`:
-  `yarn test:e2e-ci --spec cypress/e2e/feedback/user-feedback.feature`.
+- [x] Full backend pytest suite: 1,783 passed and 1 existing large-file test
+  skipped for its documented long runtime. Final run used
+  `pytest --no-cov --basetemp=/tmp/tdp-pytest-final-6048` in the backend container.
+- [x] Backend feedback API and user view tests: 86 passed. Reloading factory users
+  normalizes UUID values for comparisons with persisted feedback; older view
+  tests now authenticate before testing anonymous submissions and validation.
+- [x] Go parser package tests and `go vet ./...`: passed, including the optional
+  PostgreSQL state-transition tests with `TEST_DATABASE_URL` configured.
+- [x] Django-to-Go parser integration suite: 97 passed.
+- [x] ETL integration suite: 1 passed.
+- [x] Cypress suite: all 6 specs and 123 tests passed, including all feedback
+  scenarios and the embedded accessibility tests.
+- [x] Pa11y: all 4 pages passed with zero errors, using installed Chrome via
+  `PUPPETEER_EXECUTABLE_PATH`.
+
+Browser tests used the current branch's frontend and a fresh local backend
+database because the existing local database contained schema changes from
+another branch. Integration suites also used isolated databases. Temporary
+services and databases were removed after verification.
 
 The frontend tests cover login-dependent visibility, hiding open forms and upload
 widgets on logout, anonymous payloads, pending POST/PATCH requests, duplicate
