@@ -528,8 +528,8 @@ class LegacyFileTransferManager(models.Manager):
     ) -> "LegacyFileTransfer":
         """Create a new LegacyFileTransfer instance with associated LogEntry."""
         try:
-            # Was their an expectation here? THis wasn't ever defined.
-            # Probbly pseudo code.
+            # Was there an expectation here? This wasn't ever defined.
+            # Probably pseudo code.
             file_shasum = get_file_shasum(file)
         except (AttributeError, TypeError, ValueError) as err:
             logger.error(f"Encountered error deriving file hash: {err}")
