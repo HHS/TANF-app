@@ -36,7 +36,7 @@ def test_handle_datafiles_adds_reparse_and_queues(monkeypatch, stt, log_context)
 
     calls = []
 
-    def fake_delay(file_id, reparse_id, event_id):
+    def fake_delay(file_id, reparse_id, parse_token=None, event_id=None):
         calls.append((file_id, reparse_id, event_id))
 
     monkeypatch.setattr(
@@ -70,7 +70,9 @@ def test_handle_datafiles_adds_reparse_and_queues(monkeypatch, stt, log_context)
 def test_handle_datafiles_database_error(monkeypatch, stt, log_context):
     """Raise DatabaseError when reparse association fails."""
     meta_model = ReparseMeta.objects.create(db_backup_location="s3://backup")
-    datafile = DataFileFactory(stt=stt, version=1)
+    datafile = DataFileFactory(
+        stt=stt, version=1, state=SubmissionState.REPARSE_REQUESTED
+    )
 
     def raise_db_error(*args, **kwargs):
         raise DatabaseError("boom")
@@ -86,7 +88,9 @@ def test_handle_datafiles_database_error(monkeypatch, stt, log_context):
 def test_handle_datafiles_generic_error(monkeypatch, stt, log_context):
     """Raise generic exception when queueing fails."""
     meta_model = ReparseMeta.objects.create(db_backup_location="s3://backup")
-    datafile = DataFileFactory(stt=stt, version=1)
+    datafile = DataFileFactory(
+        stt=stt, version=1, state=SubmissionState.REPARSE_REQUESTED
+    )
 
     def raise_generic(*args, **kwargs):
         raise RuntimeError("boom")
@@ -103,7 +107,13 @@ def test_handle_datafiles_generic_error(monkeypatch, stt, log_context):
 @pytest.mark.django_db
 def test_clean_reparse_single_file_updates_meta(monkeypatch, stt):
     """Ensure clean_reparse populates metadata and queues datafiles."""
-    datafile = DataFileFactory(stt=stt, version=1, quarter="Q2", year=2023)
+    datafile = DataFileFactory(
+        stt=stt,
+        version=1,
+        quarter="Q2",
+        year=2023,
+        state=SubmissionState.PARSE_COMPLETED,
+    )
 
     calls = {}
 

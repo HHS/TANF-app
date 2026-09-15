@@ -313,7 +313,11 @@ export const uploadSectionFile = (
   }
 }
 
-export const getLatestSubmissionHistoryRow = (section, program = 'TANF') => {
+export const getLatestSubmissionHistoryRow = (
+  section,
+  program = 'TANF',
+  timeout = 4000
+) => {
   const table_captions = {
     1: 'Section 1 - Active Case Data',
     2: 'Section 2 - Closed Case Data',
@@ -330,7 +334,7 @@ export const getLatestSubmissionHistoryRow = (section, program = 'TANF') => {
   }
 
   return cy
-    .contains('caption', sectionLabel)
+    .contains('caption', sectionLabel, { timeout })
     .parents('table')
     .find('tbody > tr')
     .first()

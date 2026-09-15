@@ -3,6 +3,20 @@
 ## Purpose
 Define and enforce a clear lifecycle for uploaded files so parsing and triage share a consistent contract. This is a precursor to the parser refactor to avoid churn and make status handling predictable.
 
+## Current implementation
+
+`data_files/submission_lifecycle.py` is the exclusive production state
+controller. State-changing callers use intent methods, current-state age is
+stored in `DataFile.state_changed_at`, and production parser writes are fenced
+by the UUID in `DataFile.current_parse_token`. An hourly Celery beat task moves
+active work older than one day to `stuck`; an unfinished reparse is also moved
+to `stuck` when its `ReparseMeta.timeout_at` deadline expires, even if the
+generic one-day window has not elapsed. The task is routed to a dedicated
+`lifecycle` worker, keeping timeout control available even while the parser
+worker is occupied. Non-production E2E runs may override the one-day timeout
+and hourly cadence. A stuck file can be reparsed through
+`stuck -> reparse_requested -> parse_started`.
+
 ## Why a state machine (and what it adds)
 - **Guardrails for future changes:** Even though end users cannot alter parsing, developers can. An explicit transition map prevents drift when we add steps (AV scan, retries, change requests) or touch the parser/reparser code paths. Instead of silently landing in an inconsistent state, we fail fast on illegal transitions.
 - **Durable, user-visible lifecycle:** `DataFileSummary` is per-parse and can be deleted/recreated during reparses. `DataFile.state` is a durable record of the submission lifecycle (upload -> scan -> parse) that survives reparses and exists even before a summary is created.

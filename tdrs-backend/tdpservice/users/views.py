@@ -1,6 +1,5 @@
 """Define API views for user class."""
 
-import datetime
 import logging
 from urllib.parse import parse_qs, urlencode, urlparse
 
@@ -162,7 +161,7 @@ class UserViewSet(
         serializer.is_valid(raise_exception=True)
         instance = serializer.save(
             account_approval_status=AccountApprovalStatusChoices.ACCESS_REQUEST,
-            access_requested_date=datetime.datetime.now(),
+            access_requested_date=timezone.now(),
         )  # DRF ignores commit, but semantically clearer
         for field, value in serializer.validated_data.items():
             try:

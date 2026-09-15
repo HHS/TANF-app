@@ -16,7 +16,9 @@ from django.utils.text import slugify
 
 from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.models import DataFile
-from tdpservice.data_files.submission_lifecycle import force_transition_datafile
+from tdpservice.data_files.submission_lifecycle import (
+    record_synthetic_import_completed,
+)
 from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T6, TANF_T7
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
@@ -366,20 +368,7 @@ class Command(BaseCommand):
                 f"version {self.version}. Choose a different --datafile-version."
             )
         if datafile.state != SubmissionState.PARSE_COMPLETED:
-            force_transition_datafile(
-                datafile,
-                SubmissionState.PARSE_COMPLETED,
-                note="statistical weights test data import",
-                actor=importer,
-                source="management_command",
-                log_fields={
-                    "command": "load_statistical_weights_test_data",
-                    "record_type": spec.record_type,
-                    "fiscal_year": self.fiscal_year,
-                    "quarter": quarter,
-                    "stt_code": stt_code,
-                },
-            )
+            record_synthetic_import_completed(datafile)
 
         self.datafile_ids[key] = datafile.id
         return datafile.id

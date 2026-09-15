@@ -10,7 +10,11 @@ import psycopg2
 import pytest
 from psycopg2 import sql
 
-from tdpservice.data_files.models import DataFile, LegacyFileTransfer, ReparseFileMeta
+from tdpservice.data_files.models import (
+    DataFile,
+    LegacyFileTransfer,
+    ReparseFileMeta,
+)
 from tdpservice.parsers.models import DataFileSummary, ParserError
 from tdpservice.search_indexes.models.program_audit import (
     ProgramAudit_T1,
