@@ -127,7 +127,7 @@ def clear_feature_flag_cache(sender, instance, **kwargs):
 
     This depends on the cache being separated by feature, so the entire cache can be deleted.
     There are too many options for headers/cookies to determine the key programatically,
-    so we segment the different featuers into separate caches to be able to invalidate efficiently
+    so we segment the different features into separate caches to be able to invalidate efficiently
     """
     cache = caches["feature-flags"]
     cache.clear()

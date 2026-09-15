@@ -122,7 +122,7 @@ For any RowSchema field that is converted to a numeric, consider also changing t
 
 ## Use and Test Cases to Consider
 
-All existing unit tests should pass unchanged except for tests that explicitely match a value on a leading zero. E.g.
+All existing unit tests should pass unchanged except for tests that explicitly match a value on a leading zero. E.g.
 
 ```python
 assert expected_value == "001"

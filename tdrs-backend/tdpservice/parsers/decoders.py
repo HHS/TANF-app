@@ -130,7 +130,7 @@ class CsvDecoder(BaseDecoder):
         for line in self.csv_file:
             raw_data = _strip_trailing_substitute_characters(line)
             break
-        # Very important to move pointer back to the begining since invoking the generator does not do it for us.
+        # Very important to move pointer back to the beginning since invoking the generator does not do it for us.
         self.local_file.seek(0)
         length = len(raw_data)
         return TupleRow(
