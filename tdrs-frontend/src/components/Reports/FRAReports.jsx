@@ -645,11 +645,6 @@ const FRAReportsContent = () => {
       }
 
       setFraUploadError(null)
-      setUploadAlertState({
-        active: false,
-        type: null,
-        message: null,
-      })
 
       const onSearchError = (e) => console.error(e)
 

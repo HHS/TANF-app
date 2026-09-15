@@ -20,6 +20,15 @@ const (
 	shadowDataFileSummaryTable     = "shadow_parsers_datafilesummary"
 )
 
+const lockCurrentProductionParseToken = `
+	SELECT 1
+	FROM data_files_datafile AS data_file
+	WHERE data_file.id = $1
+	  AND data_file.state = 'parse_started'
+	  AND data_file.current_parse_token = $2::uuid
+	FOR UPDATE
+`
+
 type DataFileRecord struct {
 	ID               int32
 	OriginalFilename string
@@ -37,6 +46,7 @@ type DataFileRecord struct {
 	ProgramType      string
 	IsProgramAudit   bool
 	State            string
+	StateChangedAt   pgtype.Timestamptz
 }
 
 type DataFileStateTransitionContext struct {
@@ -52,7 +62,7 @@ type DataFileStateTransitionContext struct {
 const selectShadowDataFile = `
 	SELECT id, original_filename, slug, extension, quarter, year, section, version,
 	       stt_id, user_id, created_at, file, s3_versioning_id, program_type,
-	       is_program_audit, state
+	       is_program_audit, state, state_changed_at
 	FROM shadow_data_files_datafile
 	WHERE id = $1
 `
@@ -60,7 +70,7 @@ const selectShadowDataFile = `
 const selectProductionDataFile = `
 	SELECT id, original_filename, slug, extension, quarter, year, section, version,
 	       stt_id, user_id, created_at, file, s3_versioning_id, program_type,
-	       is_program_audit, state
+	       is_program_audit, state, state_changed_at
 	FROM data_files_datafile
 	WHERE id = $1
 `
@@ -69,9 +79,9 @@ const upsertShadowDataFile = `
 	INSERT INTO shadow_data_files_datafile (
 	    id, original_filename, slug, extension, quarter, year, section, version,
 	    stt_id, user_id, created_at, file, s3_versioning_id, program_type,
-	    is_program_audit, state
+	    is_program_audit, state, state_changed_at
 	)
-	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
 	ON CONFLICT (id) DO UPDATE SET
 	    original_filename = EXCLUDED.original_filename,
 	    slug = EXCLUDED.slug,
@@ -86,17 +96,16 @@ const upsertShadowDataFile = `
 	    file = EXCLUDED.file,
 	    s3_versioning_id = EXCLUDED.s3_versioning_id,
 	    program_type = EXCLUDED.program_type,
-	    is_program_audit = EXCLUDED.is_program_audit,
-	    state = EXCLUDED.state
+	    is_program_audit = EXCLUDED.is_program_audit
 `
 
 const upsertProductionDataFile = `
 	INSERT INTO data_files_datafile (
 	    id, original_filename, slug, extension, quarter, year, section, version,
 	    stt_id, user_id, created_at, file, s3_versioning_id, program_type,
-	    is_program_audit, state
+	    is_program_audit, state, state_changed_at
 	)
-	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
 	ON CONFLICT (id) DO UPDATE SET
 	    original_filename = EXCLUDED.original_filename,
 	    slug = EXCLUDED.slug,
@@ -111,27 +120,13 @@ const upsertProductionDataFile = `
 	    file = EXCLUDED.file,
 	    s3_versioning_id = EXCLUDED.s3_versioning_id,
 	    program_type = EXCLUDED.program_type,
-	    is_program_audit = EXCLUDED.is_program_audit,
-	    state = EXCLUDED.state
+	    is_program_audit = EXCLUDED.is_program_audit
 `
 
 const updateShadowDataFileState = `
 	UPDATE shadow_data_files_datafile
-	SET state = $1
+	SET state = $1, state_changed_at = NOW()
 	WHERE id = $2
-`
-
-const updateProductionDataFileState = `
-	UPDATE data_files_datafile
-	SET state = $1
-	WHERE id = $2
-`
-
-const selectProductionDataFileStateForUpdate = `
-	SELECT state
-	FROM data_files_datafile
-	WHERE id = $1
-	FOR UPDATE
 `
 
 const selectShadowDataFileStateForUpdate = `
@@ -280,8 +275,8 @@ func EnsureShadowDataFile(ctx context.Context, pool *pgxpool.Pool, tableName str
 	return nil
 }
 
-// UpdateDataFileState updates the submission state for a DataFile-compatible table.
-func UpdateDataFileState(
+// UpdateShadowDataFileState records shadow state and audit history; production writes are rejected.
+func UpdateShadowDataFileState(
 	ctx context.Context,
 	pool *pgxpool.Pool,
 	tableName string,
@@ -296,9 +291,7 @@ func UpdateDataFileState(
 		updateStateQuery = updateShadowDataFileState
 		contentTypeModel = "shadowdatafile"
 	case productionDataFileTable:
-		selectStateQuery = selectProductionDataFileStateForUpdate
-		updateStateQuery = updateProductionDataFileState
-		contentTypeModel = "datafile"
+		return fmt.Errorf("production DataFile state is owned by the Django lifecycle controller")
 	default:
 		return fmt.Errorf("unsupported datafile table %q", tableName)
 	}
@@ -470,6 +463,17 @@ func EnsureDataFileSummary(ctx context.Context, pool *pgxpool.Pool, tableName st
 	return nil
 }
 
+// EnsureDataFileSummaryForToken fences production summary creation with token ownership.
+func EnsureDataFileSummaryForToken(ctx context.Context, pool *pgxpool.Pool, tableName string, datafileID int32, parseToken string) error {
+	if tableName != productionDataFileSummaryTable {
+		return EnsureDataFileSummary(ctx, pool, tableName, datafileID)
+	}
+	return withProductionParseToken(ctx, pool, datafileID, parseToken, func(tx pgx.Tx) error {
+		_, err := tx.Exec(ctx, upsertProductionDataFileSummary, datafileID)
+		return err
+	})
+}
+
 // UpdateDataFileSummaryResult updates the final aggregate counts for a summary row.
 func UpdateDataFileSummaryResult(ctx context.Context, pool *pgxpool.Pool, tableName string, datafileID int32, totalInFile int64, totalCreated int64) error {
 	totalInFileInt4, err := int64ToInt4(totalInFile)
@@ -494,6 +498,31 @@ func UpdateDataFileSummaryResult(ctx context.Context, pool *pgxpool.Pool, tableN
 	}
 
 	return nil
+}
+
+// UpdateDataFileSummaryResultForToken fences production totals with token ownership.
+func UpdateDataFileSummaryResultForToken(ctx context.Context, pool *pgxpool.Pool, tableName string, datafileID int32, totalInFile int64, totalCreated int64, parseToken string) error {
+	if tableName != productionDataFileSummaryTable {
+		return UpdateDataFileSummaryResult(ctx, pool, tableName, datafileID, totalInFile, totalCreated)
+	}
+	totalInFileInt4, err := int64ToInt4(totalInFile)
+	if err != nil {
+		return err
+	}
+	totalCreatedInt4, err := int64ToInt4(totalCreated)
+	if err != nil {
+		return err
+	}
+	return withProductionParseToken(ctx, pool, datafileID, parseToken, func(tx pgx.Tx) error {
+		_, err := tx.Exec(
+			ctx,
+			updateProductionDataFileSummaryResult,
+			totalInFileInt4,
+			totalCreatedInt4,
+			datafileID,
+		)
+		return err
+	})
 }
 
 // UpdateDataFileSummaryStatus updates the status of a DataFileSummary for the given datafile.
@@ -521,6 +550,44 @@ func int64ToInt4(value int64) (pgtype.Int4, error) {
 	return pgtype.Int4{Int32: int32(value), Valid: true}, nil
 }
 
+func withProductionParseToken(
+	ctx context.Context,
+	pool *pgxpool.Pool,
+	datafileID int32,
+	parseToken string,
+	write func(pgx.Tx) error,
+) error {
+	if parseToken == "" {
+		return fmt.Errorf("production write for datafile %d requires a parse token", datafileID)
+	}
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx) // no-op after Commit
+
+	var ownsToken int
+	if err := tx.QueryRow(
+		ctx,
+		lockCurrentProductionParseToken,
+		datafileID,
+		parseToken,
+	).Scan(&ownsToken); err != nil {
+		if err == pgx.ErrNoRows {
+			return fmt.Errorf(
+				"parse token %s no longer owns datafile %d",
+				parseToken,
+				datafileID,
+			)
+		}
+		return err
+	}
+	if err := write(tx); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
+
 func scanDataFile(row pgx.Row) (DataFileRecord, error) {
 	var df DataFileRecord
 	err := row.Scan(
@@ -540,6 +607,7 @@ func scanDataFile(row pgx.Row) (DataFileRecord, error) {
 		&df.ProgramType,
 		&df.IsProgramAudit,
 		&df.State,
+		&df.StateChangedAt,
 	)
 	return df, err
 }
@@ -569,6 +637,7 @@ func execDataFileUpsert(
 		df.ProgramType,
 		df.IsProgramAudit,
 		df.State,
+		df.StateChangedAt,
 	)
 	return err
 }

@@ -3,11 +3,16 @@
 import itertools
 import logging
 from abc import ABC, abstractmethod
+from contextlib import nullcontext
 
 from django.conf import settings
 from django.db.models import Count, Q
 from django.db.utils import DatabaseError
 
+from tdpservice.data_files.submission_lifecycle import (
+    StaleParseOwnership,
+    parse_write_scope,
+)
 from tdpservice.parsers.decoders import DecoderFactory
 from tdpservice.parsers.error_generator import (
     ErrorGeneratorArgs,
@@ -29,12 +34,13 @@ logger = logging.getLogger(__name__)
 class BaseParser(ABC):
     """Abstract base class for all parsers."""
 
-    def __init__(self, datafile, dfs, section):
+    def __init__(self, datafile, dfs, section, parse_token=None):
         super().__init__()
         self.datafile = datafile
         self.error_generator_factory = ErrorGeneratorFactory(datafile)
         self.dfs = dfs
         self.section = section
+        self.parse_token = parse_token
         self.program_type = None
         self.is_active_or_closed = "Active" in self.section or "Closed" in self.section
 
@@ -55,6 +61,17 @@ class BaseParser(ABC):
 
         # Initialized decoder.
         self._init_decoder()
+
+    def database_write_scope(self):
+        """Fence production parser writes while this token owns the DataFile."""
+        if self.parse_token is None:
+            return nullcontext()
+        return parse_write_scope(self.datafile.id, self.parse_token)
+
+    def save_summary(self):
+        """Persist summary changes only while this parser owns the token."""
+        with self.database_write_scope():
+            self.dfs.save()
 
     @abstractmethod
     def parse_and_validate(self):
@@ -108,25 +125,26 @@ class BaseParser(ABC):
             logger.debug("Bulk creating records.")
             num_db_records_created = 0
             num_expected_db_records = 0
-            for model, records in self.unsaved_records.get_bulk_create_struct().items():
-                try:
-                    num_expected_db_records += len(records)
-                    created_objs = model.objects.bulk_create(records)
-                    num_db_records_created += len(created_objs)
-                except DatabaseError as e:
-                    log_parser_exception(
-                        self.datafile,
-                        f"Encountered error while creating database records: \n{e}",
-                        "error",
-                    )
-                    return False
-                except Exception as e:
-                    log_parser_exception(
-                        self.datafile,
-                        f"Encountered generic exception while creating database records: \n{e}",
-                        "error",
-                    )
-                    return False
+            with self.database_write_scope():
+                for model, records in self.unsaved_records.get_bulk_create_struct().items():
+                    try:
+                        num_expected_db_records += len(records)
+                        created_objs = model.objects.bulk_create(records)
+                        num_db_records_created += len(created_objs)
+                    except DatabaseError as e:
+                        log_parser_exception(
+                            self.datafile,
+                            f"Encountered error while creating database records: \n{e}",
+                            "error",
+                        )
+                        return False
+                    except Exception as e:
+                        log_parser_exception(
+                            self.datafile,
+                            f"Encountered generic exception while creating database records: \n{e}",
+                            "error",
+                        )
+                        return False
 
             self.dfs.total_number_of_records_created += num_db_records_created
             if num_db_records_created != num_expected_db_records:
@@ -147,15 +165,16 @@ class BaseParser(ABC):
         """Bulk create unsaved_parser_errors."""
         if flush or (self.unsaved_parser_errors and self.num_errors >= batch_size):
             logger.debug("Bulk creating ParserErrors.")
-            num_created = len(
-                ParserError.objects.bulk_create(
-                    list(
-                        itertools.chain.from_iterable(
-                            self.unsaved_parser_errors.values()
+            with self.database_write_scope():
+                num_created = len(
+                    ParserError.objects.bulk_create(
+                        list(
+                            itertools.chain.from_iterable(
+                                self.unsaved_parser_errors.values()
+                            )
                         )
                     )
                 )
-            )
             logger.info(f"Created {num_created}/{self.num_errors} ParserErrors.")
             self.unsaved_parser_errors = dict()
             self.num_errors = 0
@@ -163,41 +182,45 @@ class BaseParser(ABC):
     def rollback_records(self):
         """Delete created records in the event of a failure."""
         logger.info("Rolling back created records.")
-        for model in self.unsaved_records.get_bulk_create_struct():
-            try:
-                qset = model.objects.filter(datafile=self.datafile)
-                # WARNING: we can use `_raw_delete` in this case because our record models don't have cascading
-                # dependencies. If that ever changes, we should NOT use `_raw_delete`.
-                num_deleted = qset._raw_delete(qset.db)
-                logger.debug(f"Deleted {num_deleted} records of type: {model}.")
-            except DatabaseError as e:
-                log_parser_exception(
-                    self.datafile,
-                    (
-                        f"Encountered error while deleting database records for model: {model}. "
-                        f"Exception: \n{e}"
-                    ),
-                    "error",
-                )
-            except Exception as e:
-                log_parser_exception(
-                    self.datafile,
-                    (
-                        "Encountered generic exception while trying to rollback "
-                        f"records. Exception: \n{e}"
-                    ),
-                    "error",
-                )
+        with self.database_write_scope():
+            for model in self.unsaved_records.get_bulk_create_struct():
+                try:
+                    qset = model.objects.filter(datafile=self.datafile)
+                    # WARNING: we can use `_raw_delete` in this case because our record models don't have cascading
+                    # dependencies. If that ever changes, we should NOT use `_raw_delete`.
+                    num_deleted = qset._raw_delete(qset.db)
+                    logger.debug(f"Deleted {num_deleted} records of type: {model}.")
+                except DatabaseError as e:
+                    log_parser_exception(
+                        self.datafile,
+                        (
+                            f"Encountered error while deleting database records for model: {model}. "
+                            f"Exception: \n{e}"
+                        ),
+                        "error",
+                    )
+                except Exception as e:
+                    log_parser_exception(
+                        self.datafile,
+                        (
+                            "Encountered generic exception while trying to rollback "
+                            f"records. Exception: \n{e}"
+                        ),
+                        "error",
+                    )
 
     def rollback_parser_errors(self):
         """Delete created errors in the event of a failure."""
         try:
             logger.info("Rolling back created parser errors.")
-            qset = ParserError.objects.filter(file=self.datafile)
-            # WARNING: we can use `_raw_delete` in this case because our error models don't have cascading dependencies.
-            # If that ever changes, we should NOT use `_raw_delete`.
-            num_deleted = qset._raw_delete(qset.db)
+            with self.database_write_scope():
+                qset = ParserError.objects.filter(file=self.datafile)
+                # WARNING: we can use `_raw_delete` in this case because our error models don't have cascading dependencies.
+                # If that ever changes, we should NOT use `_raw_delete`.
+                num_deleted = qset._raw_delete(qset.db)
             logger.debug(f"Deleted {num_deleted} ParserErrors.")
+        except StaleParseOwnership:
+            raise
         except DatabaseError as e:
             log_parser_exception(
                 self.datafile,
@@ -248,12 +271,13 @@ class BaseParser(ABC):
             cases = Q()
             for case in self.serialized_cases:
                 cases |= Q(**case)
-            for schemas in self.schema_manager.schema_map.values():
-                schema = schemas[0]
-                num_deleted, _ = schema.model.objects.filter(
-                    cases, datafile=self.datafile
-                ).delete()
-                self.dfs.total_number_of_records_created -= num_deleted
+            with self.database_write_scope():
+                for schemas in self.schema_manager.schema_map.values():
+                    schema = schemas[0]
+                    num_deleted, _ = schema.model.objects.filter(
+                        cases, datafile=self.datafile
+                    ).delete()
+                    self.dfs.total_number_of_records_created -= num_deleted
             logger.info(
                 f"Deleted {start_num - self.dfs.total_number_of_records_created} records with cat4 errors."
             )
@@ -331,7 +355,8 @@ class BaseParser(ABC):
 
         # We add the case ID here because a case with a duplicate record must be purged in it's entirety.
         self.serialized_cases.add(case_id_to_delete)
-        num_deleted = duplicate_records._raw_delete(duplicate_records.db)
+        with self.database_write_scope():
+            num_deleted = duplicate_records._raw_delete(duplicate_records.db)
         self.dfs.total_number_of_records_created -= num_deleted
 
     def _generate_errors_and_delete_dups(

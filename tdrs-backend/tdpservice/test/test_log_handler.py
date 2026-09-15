@@ -4,9 +4,10 @@ import os
 import tempfile
 
 import pytest
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, EndpointConnectionError
+from django.conf import settings
 
-from tdpservice.log_handler import S3FileHandler
+from tdpservice.log_handler import BOTO3_CLIENT_CONFIG, S3FileHandler
 
 
 @pytest.fixture
@@ -62,6 +63,20 @@ def test_doRollover_removes_local_file_after_failed_upload(handler, mock_datafil
     handler.doRollover(mock_datafile)
 
     assert not os.path.exists(log_path)
+
+
+def test_doRollover_ignores_unreachable_s3_endpoint(handler, mock_datafile):
+    """An ancillary log upload outage does not fail completed parsing."""
+    handler.s3_client.upload_file.side_effect = EndpointConnectionError(
+        endpoint_url="http://localstack:4566"
+    )
+
+    handler.doRollover(mock_datafile)
+
+
+def test_localstack_log_upload_uses_configured_endpoint():
+    """Use the Docker-network endpoint shared by other local S3 clients."""
+    assert BOTO3_CLIENT_CONFIG["endpoint_url"] == settings.AWS_S3_DATAFILES_ENDPOINT
 
 
 def test_doRollover_uploads_to_s3_before_deleting(handler, mock_datafile):
