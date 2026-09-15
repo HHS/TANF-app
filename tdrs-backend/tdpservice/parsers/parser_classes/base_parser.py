@@ -58,7 +58,7 @@ class BaseParser(ABC):
 
     @abstractmethod
     def parse_and_validate(self):
-        """To be overriden in child class."""
+        """To be overridden in child class."""
         pass
 
     def _init_decoder(self):

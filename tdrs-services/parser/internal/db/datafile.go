@@ -2,7 +2,10 @@ package db
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/json"
 	"fmt"
+	"io"
 	"math"
 
 	"github.com/jackc/pgx/v5"
@@ -34,6 +37,16 @@ type DataFileRecord struct {
 	ProgramType      string
 	IsProgramAudit   bool
 	State            string
+}
+
+type DataFileStateTransitionContext struct {
+	EventID       string
+	Note          string
+	Source        string
+	TaskName      string
+	CeleryTaskID  string
+	ReparseMetaID int32
+	Metadata      map[string]any
 }
 
 const selectShadowDataFile = `
@@ -112,6 +125,65 @@ const updateProductionDataFileState = `
 	UPDATE data_files_datafile
 	SET state = $1
 	WHERE id = $2
+`
+
+const selectProductionDataFileStateForUpdate = `
+	SELECT state
+	FROM data_files_datafile
+	WHERE id = $1
+	FOR UPDATE
+`
+
+const selectShadowDataFileStateForUpdate = `
+	SELECT state
+	FROM shadow_data_files_datafile
+	WHERE id = $1
+	FOR UPDATE
+`
+
+const insertDataFileStateTransition = `
+	WITH base_log AS (
+	    INSERT INTO core_baselog (
+	        object_id,
+	        event_id,
+	        event_type,
+	        note,
+	        metadata,
+	        source,
+	        task_name,
+	        celery_task_id,
+	        created_at,
+	        actor_id,
+	        content_type_id
+	    )
+	    VALUES (
+	        $1::text,
+	        $2,
+	        'data_file_state_transition',
+	        $5,
+	        $6::jsonb,
+	        NULLIF($7, ''),
+	        NULLIF($8, ''),
+	        NULLIF($9, ''),
+	        NOW(),
+	        NULL,
+	        (
+	            SELECT id
+	            FROM django_content_type
+	            WHERE app_label = 'data_files'
+	              AND model = $11
+	        )
+	    )
+	    RETURNING id
+	)
+	INSERT INTO data_files_datafilestatetransition (
+	    baselog_ptr_id,
+	    previous_state,
+	    next_state,
+	    reparse_meta_id
+	)
+	SELECT id, $3, $4, $10
+	FROM base_log
 `
 
 const upsertShadowDataFileSummary = `
@@ -209,21 +281,175 @@ func EnsureShadowDataFile(ctx context.Context, pool *pgxpool.Pool, tableName str
 }
 
 // UpdateDataFileState updates the submission state for a DataFile-compatible table.
-func UpdateDataFileState(ctx context.Context, pool *pgxpool.Pool, tableName string, datafileID int32, state string) error {
-	var err error
+func UpdateDataFileState(
+	ctx context.Context,
+	pool *pgxpool.Pool,
+	tableName string,
+	datafileID int32,
+	state string,
+	transitionContexts ...DataFileStateTransitionContext,
+) error {
+	var selectStateQuery, updateStateQuery, contentTypeModel string
 	switch tableName {
 	case shadowDataFileTable:
-		_, err = pool.Exec(ctx, updateShadowDataFileState, state, datafileID)
+		selectStateQuery = selectShadowDataFileStateForUpdate
+		updateStateQuery = updateShadowDataFileState
+		contentTypeModel = "shadowdatafile"
 	case productionDataFileTable:
-		_, err = pool.Exec(ctx, updateProductionDataFileState, state, datafileID)
+		selectStateQuery = selectProductionDataFileStateForUpdate
+		updateStateQuery = updateProductionDataFileState
+		contentTypeModel = "datafile"
 	default:
-		err = fmt.Errorf("unsupported datafile table %q", tableName)
+		return fmt.Errorf("unsupported datafile table %q", tableName)
 	}
+	err := updateDataFileStateWithTransition(
+		ctx, pool, datafileID, state, firstTransitionContext(transitionContexts),
+		selectStateQuery, updateStateQuery, contentTypeModel,
+	)
 	if err != nil {
 		return fmt.Errorf("update %s state for id=%d: %w", tableName, datafileID, err)
 	}
 
 	return nil
+}
+
+func updateDataFileStateWithTransition(
+	ctx context.Context,
+	pool *pgxpool.Pool,
+	datafileID int32,
+	state string,
+	transitionContext DataFileStateTransitionContext,
+	selectStateQuery, updateStateQuery, contentTypeModel string,
+) error {
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = tx.Rollback(ctx)
+	}()
+
+	var previousState string
+	if err := tx.QueryRow(
+		ctx,
+		selectStateQuery,
+		datafileID,
+	).Scan(&previousState); err != nil {
+		return err
+	}
+
+	if previousState == state {
+		return tx.Commit(ctx)
+	}
+
+	if _, err := tx.Exec(ctx, updateStateQuery, state, datafileID); err != nil {
+		return err
+	}
+
+	metadataJSON, err := marshalStateTransitionMetadata(
+		datafileID,
+		previousState,
+		state,
+		transitionContext,
+	)
+	if err != nil {
+		return err
+	}
+
+	reparseMetaID := pgtype.Int4{}
+	if transitionContext.ReparseMetaID > 0 {
+		reparseMetaID = pgtype.Int4{Int32: transitionContext.ReparseMetaID, Valid: true}
+	}
+
+	objectID := fmt.Sprint(datafileID)
+	eventID, err := resolveLogEventUUID(transitionContext.EventID)
+	if err != nil {
+		return err
+	}
+	if _, err := tx.Exec(
+		ctx,
+		insertDataFileStateTransition,
+		objectID,
+		eventID,
+		previousState,
+		state,
+		transitionContext.Note,
+		metadataJSON,
+		transitionContext.Source,
+		transitionContext.TaskName,
+		transitionContext.CeleryTaskID,
+		reparseMetaID,
+		contentTypeModel,
+	); err != nil {
+		return err
+	}
+
+	return tx.Commit(ctx)
+}
+
+func firstTransitionContext(contexts []DataFileStateTransitionContext) DataFileStateTransitionContext {
+	if len(contexts) == 0 {
+		return DataFileStateTransitionContext{}
+	}
+	return contexts[0]
+}
+
+func newLogEventUUID() pgtype.UUID {
+	var id [16]byte
+	if _, err := io.ReadFull(rand.Reader, id[:]); err != nil {
+		panic(err)
+	}
+	id[6] = (id[6] & 0x0f) | 0x40
+	id[8] = (id[8] & 0x3f) | 0x80
+	return pgtype.UUID{Bytes: id, Valid: true}
+}
+
+func resolveLogEventUUID(eventID string) (pgtype.UUID, error) {
+	if eventID == "" {
+		return newLogEventUUID(), nil
+	}
+
+	var id pgtype.UUID
+	if err := id.Scan(eventID); err != nil {
+		return pgtype.UUID{}, fmt.Errorf("invalid event_id %q: %w", eventID, err)
+	}
+	return id, nil
+}
+
+func marshalStateTransitionMetadata(
+	datafileID int32,
+	previousState string,
+	nextState string,
+	transitionContext DataFileStateTransitionContext,
+) ([]byte, error) {
+	metadata := map[string]any{
+		"data_file_id":    datafileID,
+		"previous_state":  previousState,
+		"next_state":      nextState,
+		"note":            transitionContext.Note,
+		"transition_path": "go_sql",
+	}
+	for key, value := range transitionContext.Metadata {
+		metadata[key] = value
+	}
+	if transitionContext.Source != "" {
+		metadata["source"] = transitionContext.Source
+	}
+	if transitionContext.TaskName != "" {
+		metadata["task_name"] = transitionContext.TaskName
+	}
+	if transitionContext.CeleryTaskID != "" {
+		metadata["celery_task_id"] = transitionContext.CeleryTaskID
+	}
+	if transitionContext.ReparseMetaID > 0 {
+		metadata["reparse_meta_id"] = transitionContext.ReparseMetaID
+		metadata["reparse_id"] = transitionContext.ReparseMetaID
+	}
+	if transitionContext.EventID != "" {
+		metadata["event_id"] = transitionContext.EventID
+	}
+
+	return json.Marshal(metadata)
 }
 
 // EnsureDataFileSummary creates or resets the shadow DataFileSummary for the given datafile.

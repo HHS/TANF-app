@@ -76,7 +76,7 @@ def regional_user(region, stt):
     return user
 
 
-# Might be made redundent by changes in 1587
+# Might be made redundant by changes in 1587
 @pytest.fixture
 def user_in_region(stt, region):
     """Return a user in the same region as a regional staff user."""
@@ -136,12 +136,12 @@ def ofa_admin():
 @pytest.fixture
 def ofa_system_admin():
     """Return on OFA System Admin user."""
-    ofa_sys_adming = UserFactory.create(
+    ofa_sys_admin = UserFactory.create(
         groups=(Group.objects.get(name="OFA System Admin"),)
     )
-    ofa_sys_adming.account_approval_status = AccountApprovalStatusChoices.APPROVED
-    ofa_sys_adming.save()
-    return ofa_sys_adming
+    ofa_sys_admin.account_approval_status = AccountApprovalStatusChoices.APPROVED
+    ofa_sys_admin.save()
+    return ofa_sys_admin
 
 
 @pytest.fixture
@@ -372,13 +372,13 @@ def csv_data_file(data_analyst, fake_file):
 
 @pytest.fixture
 def regional_data_file_data(base_regional_data_file_data, data_file):
-    """Return data file creation data for a reigon."""
+    """Return data file creation data for a region."""
     return {"file": data_file, **base_regional_data_file_data}
 
 
 @pytest.fixture
 def other_regional_data_file_data(other_base_regional_data_file_data, data_file):
-    """Return data file creation data for the other reigon."""
+    """Return data file creation data for the other region."""
     return {"file": data_file, **other_base_regional_data_file_data}
 
 

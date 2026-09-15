@@ -15,7 +15,7 @@ FIELD_LABELS = {
 
 
 def _readable_field_values(field_name: str, current_value: str, requested_value: str):
-    """Turn DB values into human readble strings for the email."""
+    """Turn DB values into human readable strings for the email."""
     if field_name == "regions":
 
         def ids_to_names(s: str) -> str:

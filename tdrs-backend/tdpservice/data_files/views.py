@@ -1,6 +1,7 @@
 """Check if user is authorized."""
 
 import logging
+import uuid
 from distutils.util import strtobool
 from wsgiref.util import FileWrapper
 
@@ -212,11 +213,15 @@ class DataFileViewSet(ModelViewSet):
 
         uploaded_file = serializer.validated_data.get("file")
         data_file = serializer.save(file=None)
+        event_id = uuid.uuid4()
 
         transition_datafile(
             data_file,
             SubmissionState.VIRUS_SCAN_STARTED,
             note="virus scan started",
+            actor=request.user,
+            source="api",
+            event_id=event_id,
         )
 
         scan_failure_response, scan_result = self._scan_uploaded_file(
@@ -229,6 +234,9 @@ class DataFileViewSet(ModelViewSet):
                 data_file,
                 scan_result=scan_result,
                 note=scan_failure_response.data["detail"],
+                actor=request.user,
+                source="api",
+                event_id=event_id,
             )
             data_file.delete()
             return scan_failure_response
@@ -237,6 +245,9 @@ class DataFileViewSet(ModelViewSet):
             data_file,
             scan_result=scan_result,
             note="file passed virus scan",
+            actor=request.user,
+            source="api",
+            event_id=event_id,
         )
 
         data_file.file = uploaded_file
@@ -251,7 +262,7 @@ class DataFileViewSet(ModelViewSet):
             + f"quarter {data_file.quarter}, year {data_file.year}."
         )
 
-        parser_task.queue_parse(data_file.id)
+        parser_task.queue_parse(data_file.id, event_id=event_id)
         logger.info("Submitted parse task to queue for datafile %s.", data_file.id)
 
         headers = self.get_success_headers(serializer.data)

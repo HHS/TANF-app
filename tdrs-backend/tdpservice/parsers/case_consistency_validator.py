@@ -108,7 +108,7 @@ class CaseConsistencyValidator:
         # Section 3/4 records don't have a CASE_NUMBER, and they're broken into multiple records for the same line.
         # The duplicate manager saves us from dupe validating the records on teh same line, however, we use record
         # type as the "case number" here because there should only ever be one line in a section 3/4 file with a
-        # record type. If we generate the same hash twice we guarentee an error and therefore need only check the
+        # record type. If we generate the same hash twice we guarantee an error and therefore need only check the
         # record type.
         if not self.case_is_section_one_or_two:
             return FrozenDict(RecordType=record.RecordType)
@@ -122,7 +122,7 @@ class CaseConsistencyValidator:
         @param record: a Django model representing a datafile record
         @param schema: the schema from which the record was created
         @param line_number: the line number the record was generated from in the datafile
-        @param case_has_errors: boolean indictating whether the record's case has any cat2 or cat3 errors
+        @param case_has_errors: boolean indicating whether the record's case has any cat2 or cat3 errors
         @return: (boolean indicating existence of cat4 errors, a case ID to remove if it has errors, and the current
                   case ID)
         """

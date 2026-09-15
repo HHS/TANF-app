@@ -13,7 +13,11 @@ from rest_framework.test import APIClient
 
 from tdpservice.core.models import FeatureFlag
 from tdpservice.data_files.enums import SubmissionState
-from tdpservice.data_files.models import DataFile, ShadowDataFile
+from tdpservice.data_files.models import (
+    DataFile,
+    DataFileStateTransition,
+    ShadowDataFile,
+)
 from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.submission_lifecycle import InvalidTransition
 from tdpservice.parsers import util
@@ -336,7 +340,19 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
         assert data_file.state == SubmissionState.VIRUS_SCAN_COMPLETED
         assert data_file.file
 
-        mock_parse_task.assert_called_once_with(data_file.id, reparse_id=None)
+        transitions = list(
+            DataFileStateTransition.objects.for_object(data_file).order_by("created_at")
+        )
+        assert [transition.next_state for transition in transitions] == [
+            SubmissionState.VIRUS_SCAN_STARTED,
+            SubmissionState.VIRUS_SCAN_COMPLETED,
+        ]
+        assert len({transition.event_id for transition in transitions}) == 1
+        mock_parse_task.assert_called_once_with(
+            data_file.id,
+            reparse_id=None,
+            event_id=str(transitions[0].event_id),
+        )
 
         shadow_data_file = ShadowDataFile.objects.get(id=data_file.id)
         assert shadow_data_file.state == SubmissionState.VIRUS_SCAN_COMPLETED
@@ -619,6 +635,9 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
 
         def fake_save(serializer, *args, **kwargs):
             data_file = actual_save(serializer, *args, **kwargs)
+            DataFile.objects.filter(pk=data_file.pk).update(
+                state=SubmissionState.PARSE_STARTED
+            )
             data_file.state = SubmissionState.PARSE_STARTED
             return data_file
 
