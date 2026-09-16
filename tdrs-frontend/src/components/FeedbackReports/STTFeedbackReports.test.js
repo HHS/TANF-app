@@ -6,8 +6,10 @@ import configureStore from 'redux-mock-store'
 import { thunk } from 'redux-thunk'
 import STTFeedbackReports from './STTFeedbackReports'
 import { get } from '../../fetch-instance'
+import { downloadBlob } from '../../utils/fileDownload'
 
 jest.mock('../../fetch-instance')
+jest.mock('../../utils/fileDownload')
 
 // Mock STTComboBox to avoid fetchSttList side effects
 jest.mock('../STTComboBox', () => {
@@ -911,6 +913,52 @@ describe('STTFeedbackReports', () => {
             params: { year: 2025, stt: 10, report_type: 'TANF_SSP' },
           })
         )
+      })
+    })
+
+    it('downloads reports for Regional Staff', async () => {
+      const mockBlob = new Blob(['test content'], { type: 'application/zip' })
+      const mockReports = [
+        {
+          id: 1,
+          year: 2025,
+          date_extracted_on: '2025-02-28',
+          created_at: '2025-03-05T10:41:00Z',
+          original_filename: 'F33.zip',
+          downloaded_at: '2026-08-10T14:10:00Z',
+        },
+      ]
+      get
+        .mockResolvedValueOnce({
+          data: { results: mockReports },
+          ok: true,
+          status: 200,
+          error: null,
+        })
+        .mockResolvedValueOnce({
+          data: mockBlob,
+          ok: true,
+          status: 200,
+          error: null,
+        })
+
+      renderComponent(regionalStore)
+      fireEvent.change(screen.getByLabelText(/State, Tribe, or Territory/i), {
+        target: { value: 'Wisconsin' },
+      })
+      fireEvent.change(screen.getByLabelText(/Fiscal Year/i), {
+        target: { value: '2025' },
+      })
+
+      expect(await screen.findByText('Downloaded At')).toBeInTheDocument()
+      expect(screen.getByText(/08\/10\/2026/)).toBeInTheDocument()
+
+      fireEvent.click(
+        await screen.findByRole('button', { name: /Download F33.zip/i })
+      )
+
+      await waitFor(() => {
+        expect(downloadBlob).toHaveBeenCalledWith(mockBlob, 'F33.zip')
       })
     })
 

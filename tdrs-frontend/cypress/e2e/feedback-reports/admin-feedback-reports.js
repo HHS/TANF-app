@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
-import { When, Then } from '@badeball/cypress-cucumber-preprocessor'
+import { Given, When, Then } from '@badeball/cypress-cucumber-preprocessor'
 import * as fr from './feedback-reports-helpers'
+import { checkA11y } from '../common-steps/a11y'
 
 // Note: '{string} logs in' step is defined globally in common-steps/common-steps.js
 
@@ -153,4 +154,72 @@ When('{string} selects {string} but no date', (_actor, fileName) => {
 
 Then('{string} sees the error about missing date', () => {
   cy.contains(fr.ERROR_MESSAGES.NO_DATE).should('exist')
+})
+
+// Download statistics
+
+Given('feedback report download statistics exist', () => {
+  fr.stubDownloadStatistics()
+})
+
+Given('the viewport is narrow', () => {
+  cy.viewport(375, 667)
+})
+
+Then('{string} sees the download statistics count', () => {
+  cy.wait('@feedbackReportSources')
+  cy.contains('th', 'Downloaded by').scrollIntoView().should('be.visible')
+  cy.contains('button', '1 jurisdiction').scrollIntoView().should('be.visible')
+})
+
+When('{string} opens the download statistics', () => {
+  cy.contains('button', '1 jurisdiction').click()
+  cy.wait('@feedbackReportDownloadStatistics')
+})
+
+Then('{string} sees the grouped download statistics', () => {
+  fr.getDownloadStatisticsModal().within(() => {
+    cy.contains('1 of 3 jurisdictions').should('be.visible')
+    cy.contains('th', 'Region 1').should('be.visible')
+    cy.contains('th', 'Unassigned Region').should('be.visible')
+    cy.contains('th', 'Alabama').should('be.visible').find('a').should('not.exist')
+    cy.contains('08/10/2026').should('be.visible')
+    cy.contains('th', 'Alaska').should('be.visible')
+    cy.contains('th', 'Example Tribe').should('be.visible')
+    cy.get('td').filter(':contains("Not yet downloaded")').should('have.length', 2)
+  })
+})
+
+Then('the open download statistics modal has no serious accessibility issues', () => {
+  checkA11y('[role="dialog"]')
+})
+
+When('{string} closes the download statistics', () => {
+  fr.getDownloadStatisticsModal().contains('button', 'Close').click()
+})
+
+Then('the download statistics modal is closed and focus returns to its trigger', () => {
+  fr.getDownloadStatisticsModal().should('not.exist')
+  cy.contains('button', '1 jurisdiction').should('have.focus')
+})
+
+Then('the download statistics remain operable at the narrow viewport', () => {
+  fr.getDownloadStatisticsModal().should(($modal) => {
+    const bounds = $modal[0].getBoundingClientRect()
+    expect(bounds.left).to.be.at.least(0)
+    expect(bounds.right).to.be.at.most(375)
+    expect(bounds.top).to.be.at.least(0)
+    expect(bounds.bottom).to.be.at.most(667)
+  })
+
+  fr.getDownloadStatisticsModal()
+    .find('[aria-label="Jurisdiction download statistics"]')
+    .should(($tableContainer) => {
+      expect($tableContainer[0].scrollWidth).to.be.greaterThan(
+        $tableContainer[0].clientWidth
+      )
+    })
+    .scrollTo('right')
+
+  fr.getDownloadStatisticsModal().contains('button', 'Close').should('be.visible')
 })
