@@ -2,10 +2,13 @@
 
 import logging
 
+from drf_yasg.utils import swagger_serializer_method
 from rest_framework import serializers
 
+from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.errors import ImmutabilityError
 from tdpservice.data_files.models import DataFile, ReparseFileMeta, Section
+from tdpservice.data_files.submission_lifecycle import allowed_next_states
 from tdpservice.data_files.validators import validate_file_extension
 from tdpservice.parsers.models import ParserError
 from tdpservice.parsers.serializers import DataFileSummarySerializer
@@ -41,6 +44,8 @@ class DataFileSerializer(serializers.ModelSerializer):
     summary = DataFileSummarySerializer(many=False, read_only=True)
     latest_reparse_file_meta = serializers.SerializerMethodField()
     program_type = serializers.CharField(read_only=True)
+    state_display = serializers.CharField(source="get_state_display", read_only=True)
+    allowed_next_states = serializers.SerializerMethodField()
 
     class Meta:
         """Metadata."""
@@ -68,9 +73,12 @@ class DataFileSerializer(serializers.ModelSerializer):
             "latest_reparse_file_meta",
             "is_program_audit",
             "program_type",
+            "state",
+            "state_display",
+            "allowed_next_states",
         ]
 
-        read_only_fields = ("version", "program_type")
+        read_only_fields = ("version", "program_type", "state")
 
     def get_has_error(self, obj):
         """Return whether the file has an error."""
@@ -87,6 +95,28 @@ class DataFileSerializer(serializers.ModelSerializer):
                 instance.rfms[0], many=False, read_only=True
             ).data
         return None
+
+    @swagger_serializer_method(
+        serializer_or_field=serializers.ListField(
+            child=serializers.ChoiceField(choices=SubmissionState.choices),
+            read_only=True,
+        )
+    )
+    def get_allowed_next_states(self, instance: DataFile) -> list[str]:
+        """Return valid lifecycle transitions in a stable order."""
+        try:
+            allowed_states = allowed_next_states(instance.state)
+        except (KeyError, TypeError, ValueError):
+            logger.warning(
+                "DataFile has an unknown submission lifecycle state.",
+                extra={
+                    "data_file_id": instance.pk,
+                    "state": instance.state,
+                },
+            )
+            return []
+
+        return [state.value for state in SubmissionState if state in allowed_states]
 
     def create(self, validated_data):
         """Create a new entry with a new version number."""
