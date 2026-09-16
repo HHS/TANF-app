@@ -2,6 +2,8 @@
 
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 
 import pytest
 from rest_framework.exceptions import ValidationError
@@ -79,6 +81,18 @@ def test_report_file_serializer_includes_report_type(report_file_data, data_anal
     output = ReportFileSerializer(obj).data
     assert "report_type" in output
     assert output["report_type"] == "TANF_SSP"
+
+
+@pytest.mark.django_db
+def test_report_file_serializer_includes_downloaded_at(report_file_instance):
+    """Report file responses include the first download timestamp."""
+    downloaded_at = timezone.now().replace(microsecond=0)
+    report_file_instance.downloaded_at = downloaded_at
+    report_file_instance.save(update_fields=["downloaded_at"])
+
+    output = ReportFileSerializer(report_file_instance).data
+
+    assert parse_datetime(output["downloaded_at"]) == downloaded_at
 
 
 @pytest.mark.django_db

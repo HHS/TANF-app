@@ -51,6 +51,7 @@ class ReportFileSerializer(serializers.ModelSerializer):
             "original_filename",
             "extension",
             "created_at",
+            "downloaded_at",
             "file",
         ]
 
@@ -62,6 +63,7 @@ class ReportFileSerializer(serializers.ModelSerializer):
             "slug",
             "extension",
             "created_at",
+            "downloaded_at",
         ]
 
     def create(self, validated_data):

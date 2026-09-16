@@ -285,6 +285,18 @@ class TestReportFileViewAsDataAnalyst:
         assert second_response.status_code == status.HTTP_200_OK
         assert report_file_instance.downloaded_at == first_downloaded_at
 
+    def test_head_download_does_not_record_download(
+        self, api_client_logged_in, report_file_instance
+    ):
+        """A HEAD request does not count as a download attempt."""
+        response = api_client_logged_in.head(
+            f"{self.root_url}{report_file_instance.id}/download/"
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        report_file_instance.refresh_from_db()
+        assert report_file_instance.downloaded_at is None
+
     def test_failed_file_response_does_not_record_download(
         self, api_client_logged_in, report_file_instance, mocker
     ):

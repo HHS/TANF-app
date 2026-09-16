@@ -86,7 +86,7 @@ class ReportFileViewSet(ModelViewSet):
             FileWrapper(report_file.file), filename=report_file.original_filename
         )
 
-        if request.user.is_data_analyst:
+        if request.method == "GET" and request.user.is_data_analyst:
             try:
                 ReportFile.objects.filter(
                     pk=report_file.pk,

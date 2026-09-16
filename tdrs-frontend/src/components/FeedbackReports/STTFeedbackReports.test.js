@@ -925,6 +925,7 @@ describe('STTFeedbackReports', () => {
           date_extracted_on: '2025-02-28',
           created_at: '2025-03-05T10:41:00Z',
           original_filename: 'F33.zip',
+          downloaded_at: '2026-08-10T14:10:00Z',
         },
       ]
       get
@@ -948,6 +949,9 @@ describe('STTFeedbackReports', () => {
       fireEvent.change(screen.getByLabelText(/Fiscal Year/i), {
         target: { value: '2025' },
       })
+
+      expect(await screen.findByText('Downloaded At')).toBeInTheDocument()
+      expect(screen.getByText(/08\/10\/2026/)).toBeInTheDocument()
 
       fireEvent.click(
         await screen.findByRole('button', { name: /Download F33.zip/i })
