@@ -2,6 +2,22 @@
 import { Given, When, Then } from '@badeball/cypress-cucumber-preprocessor'
 import * as df from '../common-steps/data_files.js'
 
+const submissionRowContains = (fileName, value) => {
+  cy.get('tbody > tr').should(($rows) => {
+    const matchingRow = [...$rows].find((row) => {
+      const hasExactFileName = [...row.querySelectorAll('th, td')].some(
+        (cell) => cell.textContent.trim() === fileName
+      )
+      return hasExactFileName && row.textContent.includes(value)
+    })
+
+    expect(
+      matchingRow,
+      `submission row for ${fileName} with status ${value}`
+    ).not.to.equal(undefined)
+  })
+}
+
 ///////////////////////// Admin Steps /////////////////////////
 
 // TANF steps
@@ -12,8 +28,7 @@ Then('Admin Alex can view the Illinois TANF Submission History', () => {
 })
 
 Then('Admin Alex can verify the Illinois TANF submission', () => {
-  df.table_first_row_contains('small_tanf_section1.txt')
-  df.table_first_row_contains('Accepted with Errors')
+  submissionRowContains('small_tanf_section1.txt', 'Accepted with Errors')
 })
 
 // SSP steps
@@ -24,8 +39,7 @@ Then('Admin Alex can view the Missouri SSP Submission History', () => {
 })
 
 Then('Admin Alex can verify the Missouri SSP submission', () => {
-  df.table_first_row_contains('small_ssp_section1.txt')
-  df.table_first_row_contains('Accepted with Errors')
+  submissionRowContains('small_ssp_section1.txt', 'Accepted with Errors')
 })
 
 // FRA steps
@@ -36,8 +50,7 @@ Then('Admin Alex can view the Arizona FRA Submission History', () => {
 })
 
 Then('Admin Alex can verify the Arizona FRA submission', () => {
-  df.table_first_row_contains('fra.csv')
-  df.table_first_row_contains('Partially Accepted with Errors')
+  submissionRowContains('fra.csv', 'Partially Accepted with Errors')
 })
 
 // PIA steps
@@ -49,8 +62,7 @@ When('Admin Alex views the California PIA Submission History', () => {
 })
 
 Then('Admin Alex can verify the California PIA submission', () => {
-  df.table_first_row_contains('PI_Audit_space-fill.txt')
-  df.table_first_row_contains('Accepted with Errors')
+  submissionRowContains('PI_Audit_space-fill.txt', 'Accepted with Errors')
 })
 
 ///////////////////////////////////////////////////////////////
@@ -65,8 +77,7 @@ When('Regional Randy searches TANF Data Files', () => {
 
 Then('Regional Randy has read-only access to submission history', () => {
   cy.get('button').contains('small_correct_file.txt').should('not.exist')
-  df.table_first_row_contains('small_correct_file.txt')
-  df.table_first_row_contains('Rejected')
+  submissionRowContains('small_correct_file.txt', 'Rejected')
   df.downloadErrorReport('2021-Q1-TANF Active Case Data Error Report.xlsx')
 })
 

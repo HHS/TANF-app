@@ -49,7 +49,7 @@ func stateTransitionTestPool(t *testing.T) (*pgxpool.Pool, context.Context) {
 	}
 	t.Cleanup(pool.Close)
 	_, err = pool.Exec(ctx, `
-		CREATE TABLE data_files_datafile (id integer PRIMARY KEY, state text NOT NULL);
+		CREATE TABLE data_files_datafile (id integer PRIMARY KEY, state text NOT NULL, state_changed_at timestamptz NOT NULL DEFAULT NOW());
 		CREATE TABLE shadow_data_files_datafile (LIKE data_files_datafile INCLUDING ALL);
 		INSERT INTO data_files_datafile VALUES (42, 'parse_started');
 		INSERT INTO shadow_data_files_datafile VALUES (42, 'parse_started');
@@ -76,7 +76,7 @@ func stateTransitionTestPool(t *testing.T) (*pgxpool.Pool, context.Context) {
 	return pool, ctx
 }
 
-func TestUpdateDataFileStatePersistsSeparateCorrelatedHistories(t *testing.T) {
+func TestUpdateShadowDataFileStatePersistsShadowHistory(t *testing.T) {
 	pool, ctx := stateTransitionTestPool(t)
 	transitionContext := DataFileStateTransitionContext{
 		EventID:       newLogEventUUID().String(),
@@ -92,10 +92,9 @@ func TestUpdateDataFileStatePersistsSeparateCorrelatedHistories(t *testing.T) {
 		model string
 	}{
 		{shadowDataFileTable, "shadowdatafile"},
-		{productionDataFileTable, "datafile"},
 	} {
 		for range 2 {
-			if err := UpdateDataFileState(ctx, pool, target.table, 42, "parse_completed", transitionContext); err != nil {
+			if err := UpdateShadowDataFileState(ctx, pool, target.table, 42, "parse_completed", transitionContext); err != nil {
 				t.Fatal(err)
 			}
 		}
@@ -147,13 +146,13 @@ func TestUpdateDataFileStatePersistsSeparateCorrelatedHistories(t *testing.T) {
 	if err := pool.QueryRow(ctx, "SELECT count(*) FROM core_baselog").Scan(&count); err != nil {
 		t.Fatal(err)
 	}
-	if count != 2 {
+	if count != 1 {
 		t.Fatalf("got %d logs, want one per file with no duplicates for unchanged states", count)
 	}
 }
 
-func TestUpdateDataFileStateRollsBackWhenAuditInsertFails(t *testing.T) {
-	for _, table := range []string{productionDataFileTable, shadowDataFileTable} {
+func TestUpdateShadowDataFileStateRollsBackWhenAuditInsertFails(t *testing.T) {
+	for _, table := range []string{shadowDataFileTable} {
 		t.Run(table, func(t *testing.T) {
 			pool, ctx := stateTransitionTestPool(t)
 			if _, err := pool.Exec(ctx, `
@@ -162,7 +161,7 @@ func TestUpdateDataFileStateRollsBackWhenAuditInsertFails(t *testing.T) {
 			`); err != nil {
 				t.Fatal(err)
 			}
-			if err := UpdateDataFileState(ctx, pool, table, 42, "parse_failed"); err == nil {
+			if err := UpdateShadowDataFileState(ctx, pool, table, 42, "parse_failed"); err == nil {
 				t.Fatal("expected audit insert failure")
 			}
 			var state string

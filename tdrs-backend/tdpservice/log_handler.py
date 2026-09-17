@@ -6,7 +6,7 @@ import os
 from django.conf import settings
 
 import boto3
-from botocore.exceptions import ClientError
+from botocore.exceptions import BotoCoreError, ClientError
 
 from tdpservice.data_files.util import create_s3_log_file_path
 
@@ -26,7 +26,7 @@ BOTO3_CLIENT_CONFIG = {
     "region_name": AWS_REGION,
 }
 if settings.USE_LOCALSTACK:
-    BOTO3_CLIENT_CONFIG["endpoint_url"] = "http://host.docker.internal:4566"
+    BOTO3_CLIENT_CONFIG["endpoint_url"] = settings.AWS_S3_DATAFILES_ENDPOINT
 
 
 def change_log_filename(logger, datafile):
@@ -72,7 +72,7 @@ class S3FileHandler(logging.FileHandler):
                 Filename=self.filename, Bucket=AWS_S3_BUCKET_NAME, Key=key
             )
             logger.info(f"Log file {self.filename} uploaded to S3.")
-        except ClientError as e:
+        except (BotoCoreError, ClientError) as e:
             logger.info(f"Error sending log to S3: {e}")
         finally:
             self.close()

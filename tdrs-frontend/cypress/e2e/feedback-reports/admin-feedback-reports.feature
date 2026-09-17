@@ -84,3 +84,25 @@ Feature: Admin Feedback Reports
         When 'Admin Alex' navigates to Feedback Reports
         And 'Admin Alex' selects fiscal year '2025'
         Then 'Admin Alex' sees the upload form for fiscal year '2025'
+
+    # Download statistics
+
+    Scenario: DIGIT Team member can review feedback report download statistics
+        Given feedback report download statistics exist
+        When 'DIGIT Diana' navigates to Feedback Reports
+        And 'DIGIT Diana' selects fiscal year '2025'
+        Then 'DIGIT Diana' sees the download statistics count
+        When 'DIGIT Diana' opens the download statistics
+        Then 'DIGIT Diana' sees the grouped download statistics
+        And the open download statistics modal has no serious accessibility issues
+        When 'DIGIT Diana' closes the download statistics
+        Then the download statistics modal is closed and focus returns to its trigger
+
+    Scenario: Download statistics remain operable on a narrow viewport
+        Given the viewport is narrow
+        And feedback report download statistics exist
+        When 'DIGIT Diana' navigates to Feedback Reports
+        And 'DIGIT Diana' selects fiscal year '2025'
+        Then 'DIGIT Diana' sees the download statistics count
+        When 'DIGIT Diana' opens the download statistics
+        Then the download statistics remain operable at the narrow viewport

@@ -186,6 +186,8 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
             {
                 "fields": (
                     "created_at",
+                    "state",
+                    "state_changed_at",
                     "parsing_state",
                     "quarter",
                     "year",
@@ -216,7 +218,13 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
             },
         ),
     )
-    readonly_fields = ("year", "parsing_state", "versioned_file_download_link")
+    readonly_fields = (
+        "year",
+        "state",
+        "state_changed_at",
+        "parsing_state",
+        "versioned_file_download_link",
+    )
 
     def get_fieldsets(self, request, obj):
         """Return the fieldsets."""

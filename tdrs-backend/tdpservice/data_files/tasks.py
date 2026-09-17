@@ -3,16 +3,22 @@
 import logging
 from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.auth.models import Group
-from django.db.models import Count, Q
+from django.db.models import Exists, OuterRef, Q
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 
 from celery import shared_task
 
-from tdpservice.data_files.models import DataFile
-from tdpservice.data_files.submission_lifecycle import revert_reparse_request
+from tdpservice.data_files.enums import SubmissionState
+from tdpservice.data_files.models import DataFile, ReparseFileMeta
+from tdpservice.data_files.submission_lifecycle import (
+    STALE_ELIGIBLE_STATES,
+    mark_stuck,
+    revert_reparse_request,
+)
 from tdpservice.email.helpers.data_file import send_stuck_file_email
-from tdpservice.parsers.models import DataFileSummary
 from tdpservice.search_indexes.reparse import (
     ReparseDestructiveCleanupStarted,
     clean_reparse,
@@ -22,37 +28,81 @@ from tdpservice.users.models import AccountApprovalStatusChoices, User
 logger = logging.getLogger(__name__)
 
 
+def get_stale_parse_age(timeout_seconds: int | None = None):
+    """Return the age after which active processing is stale."""
+    configured_timeout = (
+        settings.STALE_PARSE_TIMEOUT_SECONDS
+        if timeout_seconds is None
+        else timeout_seconds
+    )
+    return timedelta(seconds=configured_timeout)
+
+
+def get_current_fiscal_year():
+    """Return the current federal fiscal year."""
+    today = timezone.now()
+    if today.month >= 10:
+        return today.year + 1
+
+    return today.year
+
+
 def get_stuck_files():
-    """Return a queryset containing files in a 'stuck' state."""
-    stuck_files = (
-        DataFile.objects.annotate(reparse_count=Count("reparses"))
+    """Return current fiscal year files marked stuck."""
+    return (
+        DataFile.objects.select_related("stt", "user")
         .filter(
-            # non-reparse submissions over an hour old
-            Q(
-                reparse_count=0,
-                created_at__lte=timezone.now() - timedelta(hours=1),
-            )
-            |  # OR
-            # reparse submissions past the timeout, where the reparse did not complete
-            Q(
-                reparse_count__gt=0,
-                reparses__timeout_at__lte=timezone.now(),
-                reparse_file_metas__finished=False,
-                reparse_file_metas__success=False,
-            )
+            state=SubmissionState.STUCK,
+            year=get_current_fiscal_year(),
         )
-        .filter(
-            # where there is NO summary or the summary is in PENDING status
-            Q(summary=None) | Q(summary__status=DataFileSummary.Status.PENDING)
-        )
+        .order_by("created_at", "pk")
     )
 
-    return stuck_files
+
+def get_stale_lifecycle_files(now=None, timeout_seconds: int | None = None):
+    """Return active submissions that exceeded a lifecycle or reparse timeout."""
+    current_time = now or timezone.now()
+    cutoff = current_time - get_stale_parse_age(timeout_seconds)
+    timed_out_reparse = ReparseFileMeta.objects.filter(
+        data_file_id=OuterRef("pk"),
+        reparse_meta__timeout_at__lte=current_time,
+        finished=False,
+        success=False,
+    )
+
+    return (
+        DataFile.objects.annotate(
+            lifecycle_activity_at=Coalesce("state_changed_at", "created_at"),
+            has_timed_out_reparse=Exists(timed_out_reparse),
+        )
+        .filter(state__in=STALE_ELIGIBLE_STATES)
+        .filter(
+            Q(lifecycle_activity_at__lt=cutoff) | Q(has_timed_out_reparse=True)
+        )
+        .order_by("lifecycle_activity_at", "pk")
+    )
+
+
+@shared_task
+def mark_stale_files_stuck(timeout_seconds: int | None = None):
+    """Move active submissions that exceeded a detection deadline to STUCK."""
+    marked_count = 0
+    for data_file in get_stale_lifecycle_files(
+        timeout_seconds=timeout_seconds
+    ).iterator(chunk_size=500):
+        _, transition_occurred = mark_stuck(
+            data_file,
+            note="submission exceeded a lifecycle or reparse timeout",
+        )
+        marked_count += int(transition_occurred)
+
+    logger.info("Marked %s stale DataFile(s) as STUCK.", marked_count)
+    return marked_count
 
 
 @shared_task
 def notify_stuck_files():
-    """Find files stuck in 'Pending' and notify SysAdmins."""
+    """Find files marked stuck and notify SysAdmins."""
     stuck_files = get_stuck_files()
 
     if stuck_files.count() > 0:

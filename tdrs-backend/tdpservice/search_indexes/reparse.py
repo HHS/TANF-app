@@ -3,11 +3,15 @@
 import datetime
 import logging
 
+from django.db import transaction
 from django.db.utils import DatabaseError
 
 from tdpservice.core.utils import log
 from tdpservice.data_files.models import DataFile, ReparseFileMeta
-from tdpservice.data_files.submission_lifecycle import get_reparse_event_id
+from tdpservice.data_files.submission_lifecycle import (
+    get_reparse_event_id,
+    prepare_datafile_for_reparse,
+)
 from tdpservice.parsers.models import DataFileSummary
 from tdpservice.scheduling import parser_task
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
@@ -41,8 +45,15 @@ class ReparseDestructiveCleanupStarted(Exception):
         super().__init__(str(original_exception))
 
 
+def prepare_datafiles_for_reparse(files):
+    """Atomically give the lifecycle controller ownership before cleanup."""
+    with transaction.atomic():
+        for data_file in files:
+            prepare_datafile_for_reparse(data_file)
+
+
 def handle_datafiles(files, meta_model, log_context, previous_summary_statuses=None):
-    """Delete, re-save, and reparse selected datafiles."""
+    """Queue already-prepared datafiles after destructive reparse cleanup."""
     previous_summary_statuses = previous_summary_statuses or {}
     for file in files:
         try:
@@ -151,6 +162,8 @@ def clean_reparse(selected_file_ids):
     file_ids = files.values_list("id", flat=True).distinct()
     meta_model.total_num_records_initial = count_total_num_records(log_context)
     meta_model.save()
+
+    prepare_datafiles_for_reparse(files)
 
     # Boundary: everything below this point performs destructive DB cleanup
     # (deleting summaries/errors, re-saving datafiles, scheduling parser
