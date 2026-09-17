@@ -10,6 +10,8 @@ from django.contrib.auth.management import create_permissions
 from django.db.models import Q, QuerySet
 
 from rest_framework import permissions
+from rest_framework.request import Request
+from rest_framework.views import APIView
 
 from tdpservice.stts.models import STT
 from tdpservice.users.models import AccountApprovalStatusChoices
@@ -332,23 +334,23 @@ class UserPermissions(DjangoModelCRUDPermissions):
         return obj == request.user or is_admin
 
 
-class FeedbackPermissions(permissions.BasePermission):
+class FeedbackPermissions(IsApprovedPermission):
     """Permission class for the Feedback viewset.
 
     Permissions rules:
     - Admin users can retrieve/list all feedback models
     - Non-admin users can only see their submitted feedback
-    - Anonymous users can create feedback but cannot retrieve or list any feedback
+    - Only authenticated, active, approved users can access feedback
+    - Approved users can choose to submit feedback anonymously
     """
 
-    def has_permission(self, request, view):
+    def has_permission(self, request: Request, view: APIView) -> bool:
         """Check if user has permission to access Feedback resources."""
-        # Allow all create actions
-        if request.method == "POST" or request.method == "PATCH":
-            return True
-
-        # For list and retrieve actions, only authenticated users are allowed
-        if not request.user.is_authenticated:
+        if not (
+            request.user.is_authenticated
+            and request.user.is_active
+            and super().has_permission(request, view)
+        ):
             return False
 
         # For list action, filter queryset for non-admin users
