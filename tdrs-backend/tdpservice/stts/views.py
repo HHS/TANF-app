@@ -23,7 +23,15 @@ class RegionAPIView(generics.ListAPIView):
     pagination_class = None
     permission_classes = [IsAuthenticated]
     queryset = Region.objects.prefetch_related(
-        Prefetch("stts", queryset=STT.objects.select_related("state").order_by("name"))
+        Prefetch(
+            "stts",
+            queryset=STT.objects.select_related("state")
+            .prefetch_related(
+                "program_participations__program",
+                "program_participations__sections__program",
+            )
+            .order_by("name"),
+        )
     ).order_by("id")
     serializer_class = RegionSerializer
 
@@ -33,7 +41,14 @@ class STTApiAlphaView(generics.ListAPIView):
 
     pagination_class = None
     permission_classes = [IsAuthenticated]
-    queryset = STT.objects.select_related("state").order_by("name")
+    queryset = (
+        STT.objects.select_related("state")
+        .prefetch_related(
+            "program_participations__program",
+            "program_participations__sections__program",
+        )
+        .order_by("name")
+    )
     serializer_class = STTSerializer
 
     @method_decorator(
@@ -49,5 +64,8 @@ class STTApiView(generics.ListAPIView):
 
     pagination_class = None
     permission_classes = [IsAuthenticated]
-    queryset = STT.objects.select_related("state")
+    queryset = STT.objects.select_related("state").prefetch_related(
+        "program_participations__program",
+        "program_participations__sections__program",
+    )
     serializer_class = STTSerializer

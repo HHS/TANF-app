@@ -73,7 +73,9 @@ Next.js proxy only forwards request context and the server-side proxy token.
 - `/` checks the Django admin session before rendering the admin console.
 - `/login` renders the same login page.
 - `/logout` redirects through the admin-scoped Django logout flow.
-- `/api/backend-health` probes the backend auth endpoint and reports non-2xx responses as failures.
+- `/api/backend-health` is a backing JSON probe for the Django auth endpoint.
+  The login and home pages show its result as page detail instead of linking
+  admins directly to the JSON response.
 - `/api/admin/*` forwards backend API requests with the Django session cookie,
   CSRF token required by mutating requests, and server-side proxy token to
   `/admin-api/v1/*`.
@@ -81,6 +83,10 @@ Next.js proxy only forwards request context and the server-side proxy token.
   helper and displays the returned status, cache headers, content type, and
   response body. Use `?endpoint=test-viewset` to validate a mocked or local
   Django viewset response.
+- `/users` lists Django user accounts through `/admin-api/v1/users/`.
+- `/users/[id]/edit` renders the first migrated admin form from Django-derived
+  metadata at `/admin-api/v1/admin-forms/users.user.change/[id]/metadata/` and
+  submits mutations to the generic `submit_url` returned by that metadata.
 
 ## API Boundary
 
@@ -92,9 +98,15 @@ HTTP verb to be exported from that route.
 Use `src/lib/admin-api.ts` for server-side calls from admin pages and route
 handlers. It centralizes backend URL construction, admin session and CSRF
 forwarding, proxy identity, request ID/correlation headers, provenance headers,
-and no-store behavior. Resource methods such as `adminApi.dataFiles.list()` and
-`adminApi.dataFiles.get()` are the component-facing API and should be expanded
-as admin viewsets are migrated.
+and no-store behavior. Resource methods such as `adminApi.dataFiles.list()`,
+`adminApi.dataFiles.get()`, and `adminApi.adminForms.metadata()` are the
+component-facing API and should be expanded as admin viewsets and allowlisted
+admin form workflows are migrated.
+
+Django remains the source of truth for migrated admin form validation. React
+Hook Form should consume Django metadata for generic client-side feedback, then
+display normalized Django field and non-field errors returned by mutation
+endpoints.
 
 The proxy intentionally does not make a second auth-check request before each
 API call. Django's `/admin-api/v1/*` middleware validates the admin session and
@@ -121,4 +133,5 @@ Manual validation:
 ```bash
 yarn dev
 open http://localhost:3001/api-validation?endpoint=test-viewset
+open http://localhost:3001/users
 ```

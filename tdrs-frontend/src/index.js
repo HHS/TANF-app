@@ -22,20 +22,16 @@ import {
   useNavigationType,
 } from 'react-router-dom'
 import configureStore, { history } from './configureStore'
-import startMirage from './mirage'
 import { fetchAuth } from './actions/auth'
 import App from './App'
 
 import '@uswds/uswds'
 import './index.scss'
 
-if (
-  !window.location.href.match(/https:\/\/.*\.app\.cloud\.gov/) &&
-  (process.env.REACT_APP_USE_MIRAGE || process.env.REACT_APP_PA11Y_TEST)
-) {
-  // needs to be called before auth_check
-  startMirage()
-}
+const shouldStartMirage =
+  !window.location.href.match(/https:\/\/.*\.tanfdata\.acf\.hhs\.gov/) &&
+  (process.env.REACT_APP_USE_MIRAGE === 'true' ||
+    process.env.REACT_APP_PA11Y_TEST === 'true')
 
 // Initialize FaroSDK
 if (process.env.REACT_APP_ENABLE_RUM === 'true') {
@@ -74,14 +70,6 @@ if (process.env.REACT_APP_ENABLE_RUM === 'true') {
   })
 }
 
-// call auth_check
-const store = configureStore()
-store.dispatch(fetchAuth())
-
-// if (window.location.href.match(/https:\/\/.*\.app\.cloud\.gov/)) {
-// }
-// Start the mirage server to stub some backend endpoints when running locally
-
 /* istanbul ignore next */
 const ErrorProvider = ({ children }) => {
   return !faro || !faro.api ? (
@@ -91,19 +79,33 @@ const ErrorProvider = ({ children }) => {
   )
 }
 
-const container = document.getElementById('root')
-const root = createRoot(container)
-root.render(
-  <Provider store={store}>
-    <Router store={store} history={history}>
-      <ErrorProvider>
-        <App />
-      </ErrorProvider>
-    </Router>
-  </Provider>
-)
+const startApp = async () => {
+  if (shouldStartMirage) {
+    // Mirage must start before auth_check so local stubbed auth routes exist.
+    const { default: startMirage } = await import('./mirage')
+    startMirage()
+  }
 
-// expose store when run in Cypress
-if (window.Cypress) {
-  window.store = store
+  // call auth_check
+  const store = configureStore()
+  store.dispatch(fetchAuth())
+
+  const container = document.getElementById('root')
+  const root = createRoot(container)
+  root.render(
+    <Provider store={store}>
+      <Router store={store} history={history}>
+        <ErrorProvider>
+          <App />
+        </ErrorProvider>
+      </Router>
+    </Provider>
+  )
+
+  // expose store when run in Cypress
+  if (window.Cypress) {
+    window.store = store
+  }
 }
+
+startApp()

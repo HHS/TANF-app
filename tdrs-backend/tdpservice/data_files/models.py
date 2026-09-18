@@ -29,6 +29,45 @@ from tdpservice.users.models import User
 logger = logging.getLogger(__name__)
 
 
+class Program(models.Model):
+    """A model representing a reporting program."""
+
+    code = models.CharField(max_length=32, unique=True)
+    slug = models.SlugField(max_length=50, unique=True)
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        """Return the program name."""
+        return self.name
+
+
+class Section(models.Model):
+    """A model representing a reporting section for a program."""
+
+    program = models.ForeignKey(
+        Program, on_delete=models.CASCADE, related_name="sections"
+    )
+    name = models.CharField(max_length=100)
+
+    class Meta:
+        """Metadata."""
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=["program", "name"], name="section_uniq_program_name"
+            ),
+        ]
+
+    def __str__(self):
+        """Return the section name."""
+        return f"{self.program.name} - {self.name}"
+
+    @classmethod
+    def from_legacy_values(cls, program_code: str, section_name: str) -> "Section":
+        """Resolve a canonical section from legacy DataFile values."""
+        return cls.objects.get(program__code=program_code, name=section_name)
+
+
 def get_file_shasum(file: Union[File, StringIO]) -> str:
     """Derive the SHA256 checksum of a file."""
     _hash = sha256()
@@ -171,6 +210,13 @@ class DataFile(FileRecord):
     section = models.CharField(
         max_length=32, blank=False, null=False, choices=Section.choices
     )
+    section_ref = models.ForeignKey(
+        "data_files.Section",
+        on_delete=models.PROTECT,
+        related_name="data_files",
+        blank=True,
+        null=True,
+    )
     is_program_audit = models.BooleanField(default=False)
 
     version = models.IntegerField()
@@ -207,6 +253,13 @@ class DataFile(FileRecord):
         help_text="Reparse events this file has been associated with.",
         related_name="files",
     )
+
+    @property
+    def program(self):
+        """Return the program associated with the canonical section."""
+        if self.section_ref_id is None:
+            return None
+        return self.section_ref.program
 
     @property
     def filename(self):
@@ -333,6 +386,19 @@ class DataFile(FileRecord):
             is_program_audit=is_program_audit,
         ).first()
 
+    def save(self, *args, **kwargs):
+        """Populate the canonical section when legacy values are available."""
+        if self.section_ref_id is None:
+            self.section_ref = Section.from_legacy_values(
+                self.program_type,
+                self.section,
+            )
+            update_fields = kwargs.get("update_fields")
+            if update_fields is not None:
+                kwargs["update_fields"] = set(update_fields) | {"section_ref"}
+
+        return super().save(*args, **kwargs)
+
     def __repr__(self):
         """Return a string representation of the model."""
         return (
@@ -367,6 +433,7 @@ ShadowDataFile = create_shadow_model(
             null=False,
         ),
     },
+    exclude_fields={"section_ref"},
 )
 
 

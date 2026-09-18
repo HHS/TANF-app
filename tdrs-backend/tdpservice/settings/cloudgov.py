@@ -134,7 +134,7 @@ class CloudGov(Common):
     # Cookie settings
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_SAMESITE = "None"
-    SESSION_COOKIE_DOMAIN = ".tanfdata.acf.hhs.gov"
+    SESSION_COOKIE_DOMAIN = None
     CSRF_COOKIE_SECURE = True
     CSRF_COOKIE_SAMESITE = "None"
 
@@ -284,7 +284,7 @@ class Staging(CloudGov):
     # Cloud.gov SET integration settings
     LOGIN_GOV_SET_AUDIENCE = os.getenv(
         "LOGIN_GOV_SET_AUDIENCE",
-        "https://staging.tanfdata.acf.hhs.gov/v1/security/event-token/",
+        "https://staging.tanfdata.acf.hhs.gov/v1/security/event-token",
     )
 
 
@@ -332,7 +332,7 @@ class Production(CloudGov):
     # Cloud.gov SET integration settings
     LOGIN_GOV_SET_AUDIENCE = os.getenv(
         "LOGIN_GOV_SET_AUDIENCE",
-        "https://tanfdata.acf.hhs.gov/v1/security/event-token/",
+        "https://tanfdata.acf.hhs.gov/v1/security/event-token",
     )
     LOGIN_GOV_WELL_KNOWN_CONFIG = os.getenv(
         "LOGIN_GOV_WELL_KNOWN_CONFIG",

@@ -7,6 +7,15 @@ export type BackendHealth = {
   error?: string;
 };
 
+export type AdminRole =
+  | string
+  | {
+      id?: number | string;
+      name?: string;
+      permissions?: unknown[];
+      [key: string]: unknown;
+    };
+
 export type AdminSession = {
   authenticated: boolean;
   authorized?: boolean;
@@ -15,7 +24,7 @@ export type AdminSession = {
     email?: string;
     first_name?: string;
     last_name?: string;
-    roles?: string[];
+    roles?: AdminRole[];
   };
   detail?: string;
 };
@@ -123,6 +132,29 @@ export function getAdminLoginUrl(provider: "dotgov" | "ams", nextUrl?: string) {
     loginUrl.searchParams.set("next", nextUrl);
   }
   return loginUrl.toString();
+}
+
+export function getDefaultAdminLoginNextUrl(requestUrl: string) {
+  return new URL("/dashboard", new URL(requestUrl).origin).toString();
+}
+
+export function getAdminLoginNextUrl(requestUrl: string, nextUrl?: string | null) {
+  const fallbackNextUrl = getDefaultAdminLoginNextUrl(requestUrl);
+
+  if (!nextUrl) {
+    return fallbackNextUrl;
+  }
+
+  const requestOrigin = new URL(requestUrl).origin;
+
+  try {
+    const resolvedNextUrl = new URL(nextUrl, requestOrigin);
+    return resolvedNextUrl.origin === requestOrigin
+      ? resolvedNextUrl.toString()
+      : fallbackNextUrl;
+  } catch {
+    return fallbackNextUrl;
+  }
 }
 
 export function getAdminAuthCheckUrl() {

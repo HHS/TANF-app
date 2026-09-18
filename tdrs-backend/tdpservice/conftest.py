@@ -174,6 +174,15 @@ def admin_user():
 
 
 @pytest.fixture
+def admin_console_user():
+    """Return an approved Django staff superuser without a required role."""
+    user = AdminUserFactory.create(
+        account_approval_status=AccountApprovalStatusChoices.APPROVED
+    )
+    return user
+
+
+@pytest.fixture
 def staff_user():
     """Return a staff user."""
     return StaffUserFactory.create()

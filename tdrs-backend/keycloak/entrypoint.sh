@@ -5,8 +5,8 @@ set -euo pipefail
 # externally-facing port. If either process dies, the container exits.
 #
 # Usage: entrypoint.sh <kc.sh args...>
-#   Local:    entrypoint.sh start-dev --import-realm
-#   Cloud.gov: entrypoint.sh start --import-realm --optimized
+#   Local:    entrypoint.sh start-dev
+#   Cloud.gov: entrypoint.sh start --optimized
 
 KEYCLOAK_INTERNAL_PORT=8081
 KEYCLOAK_MANAGEMENT_PORT=9000
@@ -17,6 +17,7 @@ echo "  Nginx port:       ${NGINX_PORT}"
 echo "  Keycloak port:    ${KEYCLOAK_INTERNAL_PORT}"
 echo "  Management port:  ${KEYCLOAK_MANAGEMENT_PORT}"
 echo "  Realm env:        ${DEPLOY_ENV:-local}"
+echo "  Config import:    ${KEYCLOAK_CONFIG_IMPORT_ON_STARTUP:-false}"
 
 # Generate nginx config from template
 sed "s/LISTEN_PORT/${NGINX_PORT}/" /opt/keycloak/nginx.conf.template > /tmp/nginx.conf
@@ -49,6 +50,23 @@ until curl -sf "http://127.0.0.1:${KEYCLOAK_MANAGEMENT_PORT}/health/ready" > /de
     sleep 2
 done
 echo "Keycloak is ready."
+
+if [ "${KEYCLOAK_CONFIG_IMPORT_ON_STARTUP:-false}" == "true" ]; then
+    echo "Running Keycloak config import..."
+    export KEYCLOAK_URL="http://127.0.0.1:${KEYCLOAK_INTERNAL_PORT}"
+    export KEYCLOAK_USER="${KEYCLOAK_ADMIN}"
+    export KEYCLOAK_PASSWORD="${KEYCLOAK_ADMIN_PASSWORD}"
+    export KEYCLOAK_AVAILABILITYCHECK_ENABLED="${KEYCLOAK_AVAILABILITYCHECK_ENABLED:-true}"
+    export KEYCLOAK_AVAILABILITYCHECK_TIMEOUT="${KEYCLOAK_AVAILABILITYCHECK_TIMEOUT:-120s}"
+    export IMPORT_FILES_LOCATIONS="${IMPORT_FILES_LOCATIONS:-/opt/keycloak/data/import/realm-export.json}"
+    export IMPORT_VARSUBSTITUTION_ENABLED="${IMPORT_VARSUBSTITUTION_ENABLED:-true}"
+    export IMPORT_VARSUBSTITUTION_NESTED="${IMPORT_VARSUBSTITUTION_NESTED:-true}"
+    export IMPORT_CACHE_ENABLED="${IMPORT_CACHE_ENABLED:-false}"
+    export KEYCLOAK_CONFIG_CLI_JAR="${KEYCLOAK_CONFIG_CLI_JAR:-/opt/keycloak/keycloak-config-cli.jar}"
+
+    /opt/keycloak/normalize-login-gov-key.sh
+    echo "Keycloak config import complete."
+fi
 
 # Start nginx
 echo "Starting nginx on port ${NGINX_PORT}..."

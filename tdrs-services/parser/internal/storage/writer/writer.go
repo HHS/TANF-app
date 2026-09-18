@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"sync"
 	"sync/atomic"
+	"time"
 
+	"go-parser/internal/metrics"
 	"go-parser/internal/sentinel"
 )
 
@@ -189,10 +191,13 @@ func (tw *TableWriter) flush(ctx context.Context) error {
 	rows := tw.rows
 	tw.rows = make([][]any, 0, tw.threshold)
 
+	start := time.Now()
 	count, err := tw.sink.Flush(ctx, tw.tableName, tw.columns, rows)
 	if err != nil {
+		metrics.RecordFlush(tw.tableName, "failed", time.Since(start))
 		return fmt.Errorf("flush to %s: %w", tw.tableName, err)
 	}
+	metrics.RecordFlush(tw.tableName, "success", time.Since(start))
 
 	tw.totalWritten.Add(count)
 	return nil

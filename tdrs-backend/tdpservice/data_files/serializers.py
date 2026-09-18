@@ -5,7 +5,7 @@ import logging
 from rest_framework import serializers
 
 from tdpservice.data_files.errors import ImmutabilityError
-from tdpservice.data_files.models import DataFile, ReparseFileMeta
+from tdpservice.data_files.models import DataFile, ReparseFileMeta, Section
 from tdpservice.data_files.validators import validate_file_extension
 from tdpservice.parsers.models import ParserError
 from tdpservice.parsers.serializers import DataFileSummarySerializer
@@ -100,6 +100,20 @@ class DataFileSerializer(serializers.ModelSerializer):
             validated_data["program_type"] = DataFile.ProgramType.FRA
         else:
             validated_data["program_type"] = DataFile.ProgramType.TANF
+
+        try:
+            validated_data["section_ref"] = Section.from_legacy_values(
+                validated_data["program_type"],
+                validated_data["section"],
+            )
+        except Section.DoesNotExist as error:
+            raise serializers.ValidationError(
+                {
+                    "section": (
+                        "Section is not valid for the derived reporting program."
+                    )
+                }
+            ) from error
 
         data_file = DataFile.create_new_version(validated_data)
         return data_file

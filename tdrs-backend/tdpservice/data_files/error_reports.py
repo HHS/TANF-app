@@ -81,7 +81,11 @@ class ErrorReportBase(ABC):
         return ",".join([i for i in fields_json["friendly_name"].values()])
 
     def internal_names(self, fields_json):
-        """Return comma separated string of internal names."""
+        """
+        Return comma separated string of internal names.
+
+        No longer used, but keeping in case we decide to re-add internal variable names to the report.
+        """
         return ",".join([i for i in fields_json["friendly_name"].keys()])
 
     def check_fields_json(self, fields_json, field_name):
@@ -214,7 +218,6 @@ class TanfDataErrorReportBase(ErrorReportBase):
             "error_message",
             "item_number",
             "item_name",
-            "internal_variable_name",
             "error_type",
             "number_of_occurrences",
         ]
@@ -260,13 +263,12 @@ class TanfDataErrorReportBase(ErrorReportBase):
                 )
                 worksheet.write(row_idx, 3, error["item_number"])
                 worksheet.write(row_idx, 4, self.friendly_names(fields_json))
-                worksheet.write(row_idx, 5, self.internal_names(fields_json))
                 worksheet.write(
                     row_idx,
-                    6,
+                    5,
                     str(ParserErrorCategoryChoices(error["error_type"]).label),
                 )
-                worksheet.write(row_idx, 7, error["num_occurrences"])
+                worksheet.write(row_idx, 6, error["num_occurrences"])
                 row_idx += 1
 
     def write_readme_sheet(self, worksheet):
@@ -282,15 +284,19 @@ class TanfDataErrorReportBase(ErrorReportBase):
             {"bold": True, "bg_color": header_fill, "top": 1, "right": 1, "bottom": 1}
         )
         section_header_wrapped = self.workbook.add_format(
-            {"bold": True, "bg_color": header_fill, "top": 1, "bottom": 1, "text_wrap": True}
+            {
+                "bold": True,
+                "bg_color": header_fill,
+                "top": 1,
+                "bottom": 1,
+                "text_wrap": True,
+            }
         )
         wrapped_text = self.workbook.add_format({"text_wrap": True, "align": "left"})
         wrapped_text_top = self.workbook.add_format(
             {"text_wrap": True, "valign": "top"}
         )
-        link = self.workbook.add_format(
-            {"font_color": "#0070C0", "underline": True}
-        )
+        link = self.workbook.add_format({"font_color": "#0070C0", "underline": True})
         link_top = self.workbook.add_format(
             {"font_color": "#0070C0", "underline": True, "valign": "top"}
         )
@@ -453,8 +459,10 @@ class ActiveClosedErrorReport(TanfDataErrorReportBase):
         )
 
         # All cat1/4 errors
-        error_type_query = Q(error_type=ParserErrorCategoryChoices.PRE_CHECK) | Q(
-            error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY
+        error_type_query = (
+            Q(error_type=ParserErrorCategoryChoices.PRE_CHECK)
+            | Q(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
+            | Q(error_type=ParserErrorCategoryChoices.RECORD_PRE_CHECK)
         )
         filtered_errors = self.parser_errors.filter(error_type_query)
 
@@ -489,7 +497,6 @@ class ActiveClosedErrorReport(TanfDataErrorReportBase):
             self.format_error_msg(error.error_message, fields_json),
             error.item_number,
             self.friendly_names(fields_json),
-            self.internal_names(fields_json),
             error.row_number,
             str(ParserErrorCategoryChoices(error.error_type).label),
         )
@@ -503,7 +510,6 @@ class ActiveClosedErrorReport(TanfDataErrorReportBase):
             "error_message",
             "item_number",
             "item_name",
-            "internal_variable_name",
             "row_number",
             "error_type",
         ]
@@ -533,7 +539,6 @@ class AggregateStratumErrorReport(TanfDataErrorReportBase):
             self.format_error_msg(error.error_message, fields_json),
             error.item_number,
             self.friendly_names(fields_json),
-            self.internal_names(fields_json),
             error.row_number,
             str(ParserErrorCategoryChoices(error.error_type).label),
         )
@@ -546,7 +551,6 @@ class AggregateStratumErrorReport(TanfDataErrorReportBase):
             "error_message",
             "item_number",
             "item_name",
-            "internal_variable_name",
             "row_number",
             "error_type",
         ]

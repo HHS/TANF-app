@@ -3,7 +3,7 @@
 from django.contrib import admin
 
 from ..core.utils import ReadOnlyAdminMixin
-from .models import STT, Region
+from .models import STT, Region, SttProgramParticipation
 
 
 @admin.register(STT)
@@ -40,3 +40,13 @@ class RegionAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     """Read-only Admin class for STT models."""
 
     list_display = [field.name for field in Region._meta.fields]
+
+
+@admin.register(SttProgramParticipation)
+class SttProgramParticipationAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
+    """Read-only Admin class for SttProgramParticipation models."""
+
+    search_fields = ["stt__name", "stt__stt_code", "program__slug", "program__name"]
+    list_display = ["id", "stt", "program", "status"]
+    list_filter = ["program", "status"]
+    list_select_related = ["stt", "program"]

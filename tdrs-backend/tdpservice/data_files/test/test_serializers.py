@@ -35,6 +35,9 @@ def test_serializer_increment_create(data_file_data, other_data_file_data, user)
     data_file_2 = serializer_2.save()
 
     assert data_file_2.version == data_file_1.version + 1
+    assert data_file_1.section_ref.program.code == data_file_1.program_type
+    assert data_file_1.section_ref.name == data_file_1.section
+    assert data_file_2.section_ref == data_file_1.section_ref
 
 
 @pytest.mark.django_db

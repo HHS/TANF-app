@@ -130,7 +130,7 @@ function FileUpload({
   )
 
   const hasPreview = files?.some(
-    (file) => file.section.includes(section) && file.name
+    (file) => file.section.includes(section) && file.file
   )
 
   const selectedFile = files?.find((file) => file.section.includes(section))
@@ -151,15 +151,6 @@ function FileUpload({
     ? `Selected File ${selectedFile?.fileName}. To change the selected file, click this button.`
     : `Drag file here or choose from folder.`
 
-  // Reset the underlying input and preview when fiscal params change
-  useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.value = null
-    }
-    const deps = checkPreviewDependencies(targetClassName)
-    if (deps.rendered) removeOldPreviews(deps.dropTarget, deps.instructions)
-  }, [year, quarter, targetClassName])
-
   useEffect(() => {
     const trySettingPreview = () => {
       const previewState = handlePreview(fileName, targetClassName)
@@ -177,8 +168,10 @@ function FileUpload({
   }, [hasPreview, hasFile, fileName, targetClassName])
 
   const inputRef = useRef(null)
+  const previousFiscalPeriodRef = useRef(null)
+  const validateAndUploadFileRef = useRef(null)
 
-  const validateAndUploadFile = async (event) => {
+  const validateAndUploadFile = async (event, isRevalidation = false) => {
     setUploadAlertState({
       active: false,
       type: null,
@@ -203,10 +196,11 @@ function FileUpload({
       fileType: file.type,
     }
 
-    // Clear existing errors and the current
-    // file in the state if the user is re-uploading
-    dispatch(clearError({ section }))
-    dispatch(clearFile({ section }))
+    if (!isRevalidation) {
+      // Clear existing errors and the current file if the user is replacing it.
+      dispatch(clearError({ section }))
+      dispatch(clearFile({ section }))
+    }
 
     const input = inputRef.current
     const dropTarget = inputRef.current.parentNode
@@ -322,7 +316,8 @@ function FileUpload({
       const { isValid, calendarFiscalResult, programTypeResult } =
         await validateHeader(header, year, quarter, selectedProgramType)
       if (isValid) {
-        dispatch(upload({ file: encodedFile, section }))
+        dropTarget.classList.remove('has-invalid-file')
+        dispatch(upload({ file: encodedFile, section, year, quarter }))
       } else if (!programTypeResult.isValid) {
         dispatchProgramTypeError(
           programTypeResult,
@@ -354,6 +349,30 @@ function FileUpload({
       inputRef.current.value = null
     }
   }
+
+  validateAndUploadFileRef.current = validateAndUploadFile
+
+  useEffect(() => {
+    const previousFiscalPeriod = previousFiscalPeriodRef.current
+    const fiscalPeriodChanged =
+      previousFiscalPeriod &&
+      (previousFiscalPeriod.year !== year ||
+        previousFiscalPeriod.quarter !== quarter)
+
+    previousFiscalPeriodRef.current = { year, quarter }
+
+    if (
+      (previousFiscalPeriod === null || fiscalPeriodChanged) &&
+      selectedFile?.file
+    ) {
+      validateAndUploadFileRef.current(
+        {
+          target: { name: section, files: [selectedFile.file] },
+        },
+        true
+      )
+    }
+  }, [year, quarter, section, selectedFile?.file])
 
   // Initialize USWDS file input component
   useEffect(() => {

@@ -78,7 +78,13 @@ OFA_SYSTEM_ADMIN_TABLE_PERMISSIONS = (
                 "historicalgroup",
                 "historicalgroup_permissions",
             ],
-            "data_files": ["datafile", "legacyfiletransfer", "reparsefilemeta"],
+            "data_files": [
+                "datafile",
+                "legacyfiletransfer",
+                "program",
+                "reparsefilemeta",
+                "section",
+            ],
             "django_celery_beat": [
                 "clockedschedule",
                 "crontabschedule",
@@ -126,7 +132,7 @@ OFA_SYSTEM_ADMIN_TABLE_PERMISSIONS = (
                 "tribal_tanf_t7",
             ],
             "sessions": ["session"],
-            "stts": ["region", "stt"],
+            "stts": ["region", "stt", "sttprogramparticipation"],
         }
     )
     | permissions_for_models(

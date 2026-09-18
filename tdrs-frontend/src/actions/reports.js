@@ -140,7 +140,7 @@ export const download =
 
 // Main Redux action to add files to the state
 export const upload =
-  ({ file, section }) =>
+  ({ file, section, year, quarter }) =>
   async (dispatch) => {
     try {
       dispatch({
@@ -151,6 +151,8 @@ export const upload =
           fileType: file.type,
           section,
           uuid: uuidv4(),
+          ...(year && { validatedYear: year }),
+          ...(quarter && { validatedQuarter: quarter }),
         },
       })
     } catch (error) {

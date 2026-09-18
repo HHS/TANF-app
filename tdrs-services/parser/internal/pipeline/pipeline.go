@@ -13,6 +13,7 @@ import (
 	"go-parser/internal/config/schema"
 	"go-parser/internal/decoder"
 	"go-parser/internal/logging"
+	"go-parser/internal/metrics"
 	"go-parser/internal/parser"
 	"go-parser/internal/sentinel"
 	"go-parser/internal/storage/writer"
@@ -83,7 +84,9 @@ func NewPipeline(sink writer.Sink, reg *config.Registry, validators *validation.
 
 // Process parses data from the decoder and writes records via the sink.
 // The caller is responsible for creating and closing the decoder.
-func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataFileContext) (*ParsingResult, error) {
+// initialSetupDuration lets server modes include file-source and decoder setup
+// in the setup stage without emitting a separate histogram sample.
+func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataFileContext, initialSetupDuration time.Duration) (*ParsingResult, error) {
 	runCtx, cancelRun := context.WithCancel(ctx)
 	defer cancelRun()
 
@@ -123,8 +126,20 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 
 	// Step 3: Read first row. Positional files use it as HEADER; FRA uses it
 	// for a first-data-row sanity check and then processes it normally.
+	if initialSetupDuration < 0 {
+		initialSetupDuration = 0
+	}
+	setupRecorded := false
+	recordSetup := func() {
+		if setupRecorded {
+			return
+		}
+		metrics.ObservePipelineStage(dfCtx.Program, dfCtx.Section, "setup", initialSetupDuration+time.Since(startTime))
+		setupRecorded = true
+	}
 	firstRow, err := dec.ReadFirst()
 	if err != nil {
+		recordSetup()
 		err = fmt.Errorf("failed to read first row: %w", err)
 		if rollbackErr := p.abortAndRollback(ctx, cancelRun, dfCtx, router); rollbackErr != nil {
 			return nil, errors.Join(err, rollbackErr)
@@ -137,12 +152,14 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 	var parseCtx *parser.ParseContext
 	if spec.Format == filespec.FormatColumnar {
 		if dfCtx.Program == "FRA" && !isValidFRAFirstRow(firstRow) {
+			recordSetup()
 			return p.handleFRAFirstRowInvalid(ctx, dfCtx, router, startTime), nil
 		}
 	} else {
 		headerSchema := p.registry.GetSchema(parser.HeaderSchemaPath)
 		parseCtx, err = parser.ParseHeader(firstRow, headerSchema)
 		if err != nil {
+			recordSetup()
 			return p.handleHeaderParseInvalid(err, ctx, dfCtx, router, validationOrchestrator, startTime)
 		}
 	}
@@ -162,6 +179,7 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 			startTime,
 		)
 		if result != nil {
+			recordSetup()
 			return result, nil
 		}
 	}
@@ -172,6 +190,7 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 	// Step 4b: Sort the file if presort is enabled
 	if spec.Accumulator.Presort && spec.Accumulator.HasKeyFields() {
 		if err := dec.Sort(detector, spec.Accumulator.KeyFields.OrderedFields(), spec.Accumulator.GroupedSchemas); err != nil {
+			recordSetup()
 			err = fmt.Errorf("presort failed: %w", err)
 			if rollbackErr := p.abortAndRollback(ctx, cancelRun, dfCtx, router); rollbackErr != nil {
 				return nil, errors.Join(err, rollbackErr)
@@ -179,6 +198,7 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 			return nil, err
 		}
 	}
+	recordSetup()
 
 	// Step 5: Create parsing orchestrator
 	parsingOrchestrator := parser.NewParsingOrchestrator(spec.Format, parseCtx)
@@ -197,7 +217,16 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 	acc := parser.NewAccumulator(spec, detector)
 	fileStats := validation.NewFileRecordStats(parseCtx)
 	requireTrailer := spec.Format == filespec.FormatPositional
-	err = accumulateBatches(runCtx, dec, acc, workers, router, dfCtx.DatafileID, trailerSchema, validationOrchestrator, valDfCtx, fileStats, requireTrailer)
+	parseValidateStartedAt := time.Now()
+	parseValidateRecorded := false
+	recordParseValidate := func() {
+		if parseValidateRecorded {
+			return
+		}
+		metrics.ObservePipelineStage(dfCtx.Program, dfCtx.Section, "parse_validate", time.Since(parseValidateStartedAt))
+		parseValidateRecorded = true
+	}
+	_, err = accumulateBatches(runCtx, dec, acc, workers, router, dfCtx.DatafileID, trailerSchema, validationOrchestrator, valDfCtx, fileStats, requireTrailer)
 	if firstRow != nil {
 		fileStats.MaxLineNumber = max(fileStats.MaxLineNumber, firstRow.LineNum())
 	}
@@ -208,12 +237,14 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 		if errors.As(err, &multipleHeaders) {
 			workers.CloseInputs()
 			workers.Wait()
+			recordParseValidate()
 			return p.handleMultipleHeaders(ctx, cancelRun, dfCtx, router, multipleHeaders.RowNumber(), startTime)
 		}
 
 		cancelRun()
 		workers.CloseInputs()
 		workers.Wait()
+		recordParseValidate()
 		if rollbackErr := p.abortAndRollback(ctx, cancelRun, dfCtx, router); rollbackErr != nil {
 			return nil, errors.Join(err, rollbackErr)
 		}
@@ -223,6 +254,7 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 	workers.Wait()
 
 	if err := workers.Err(); err != nil {
+		recordParseValidate()
 		if rollbackErr := p.abortAndRollback(ctx, cancelRun, dfCtx, router); rollbackErr != nil {
 			return nil, errors.Join(err, rollbackErr)
 		}
@@ -230,17 +262,20 @@ func (p *Pipeline) Process(ctx context.Context, dec decoder.Decoder, dfCtx DataF
 	}
 
 	addedTrailerCountError, err := p.writeTrailerRecordCountError(ctx, router, dfCtx.DatafileID, fileStats)
+	recordParseValidate()
 	if err != nil {
 		return nil, err
 	}
 
 	// Flush remaining rows in all writers
+	stageStart := time.Now()
 	if err := router.Stop(); err != nil {
 		if rollbackErr := p.rollbackDatafile(ctx, dfCtx, router); rollbackErr != nil {
 			return nil, errors.Join(err, rollbackErr)
 		}
 		return nil, err
 	}
+	metrics.ObservePipelineStage(dfCtx.Program, dfCtx.Section, "flush", time.Since(stageStart))
 
 	routeStats := workers.AggregateStats()
 	addErrorStats(&routeStats.ErrorStats, headerStats)
@@ -494,6 +529,7 @@ func (p *Pipeline) handleMultipleHeaders(ctx context.Context, cancelRun context.
 	return &ParsingResult{
 		RecordCounts: map[string]int64{"parser_error": 1},
 		ErrorCount:   1,
+		ErrorStats:   &ErrorStats{RecordPreCheck: 1},
 		Duration:     time.Since(startTime),
 	}, nil
 }
@@ -580,6 +616,7 @@ func (p *Pipeline) handleHeaderValidationResult(
 			slog.Any(logging.KeyError, err),
 		)
 	}
+	headerStats.RecordPreCheck += addedErrorCount
 	if stopErr := router.Stop(); stopErr != nil {
 		logging.Error(ctx, "failed to stop router",
 			slog.Int(logging.KeyFileID, int(dfCtx.DatafileID)),
@@ -630,6 +667,7 @@ func (p *Pipeline) handleHeaderParseInvalid(err error, ctx context.Context, dfCt
 	return &ParsingResult{
 		RecordCounts: map[string]int64{"parser_error": 1 + addedErrorCount},
 		ErrorCount:   1 + addedErrorCount,
+		ErrorStats:   &ErrorStats{RecordPreCheck: 1 + addedErrorCount},
 		Duration:     time.Since(startTime),
 	}, nil
 }
@@ -647,13 +685,30 @@ func accumulateBatches(
 	dfCtx *validation.DataFileContext,
 	stats *validation.FileRecordStats,
 	requireTrailer bool,
-) error {
+) (time.Duration, error) {
 	if stats == nil {
 		stats = &validation.FileRecordStats{}
 	}
+	startedAt := time.Now()
+	var submitWait time.Duration
+	// Report accumulator time separately from worker backpressure.
+	duration := func() time.Duration {
+		elapsed := time.Since(startedAt) - submitWait
+		if elapsed < 0 {
+			return 0
+		}
+		return elapsed
+	}
+	// Track time blocked on the worker queue so duration reflects decoding work.
+	submit := func(batch *parser.DecodedBatch) {
+		waitStartedAt := time.Now()
+		workers.Submit(batch)
+		submitWait += time.Since(waitStartedAt)
+	}
+
 	for row, err := range dec.Rows() {
 		if err != nil {
-			return err
+			return duration(), err
 		}
 		stats.MaxLineNumber = max(stats.MaxLineNumber, row.LineNum())
 
@@ -670,7 +725,7 @@ func accumulateBatches(
 					datafileID,
 				)
 				if routeErr := router.RouteErrorRow(ctx, parserErr); routeErr != nil {
-					return routeErr
+					return duration(), routeErr
 				}
 			}
 			continue
@@ -679,7 +734,7 @@ func accumulateBatches(
 		if !isAccumulated && sch != nil {
 			if row.RecordType() == "HEADER" {
 				stats.HeaderCount++
-				return sentinel.NewMultipleHeadersError(row.LineNum())
+				return duration(), sentinel.NewMultipleHeadersError(row.LineNum())
 			}
 			if row.RecordType() == "TRAILER" {
 				result := validationOrchestrator.ValidateTrailerRow(
@@ -689,7 +744,7 @@ func accumulateBatches(
 					stats,
 				)
 				if err := routeTrailerRowValidationResult(ctx, row, router, datafileID, result); err != nil {
-					return err
+					return duration(), err
 				}
 				continue
 			}
@@ -701,22 +756,22 @@ func accumulateBatches(
 
 		// For non-keyed modes, batches may be returned during iteration
 		if batch != nil {
-			workers.Submit(batch)
+			submit(batch)
 		}
 	}
 
 	// Dispatch all remaining batches (for keyed modes, this is where groups are emitted)
 	for _, batch := range acc.Drain() {
-		workers.Submit(batch)
+		submit(batch)
 	}
 
 	if requireTrailer {
 		if err := validateTrailerFileContext(ctx, router, datafileID, stats); err != nil {
-			return err
+			return duration(), err
 		}
 	}
 
-	return nil
+	return duration(), nil
 }
 
 func routeTrailerRowValidationResult(

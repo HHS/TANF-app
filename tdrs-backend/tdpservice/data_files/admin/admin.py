@@ -6,7 +6,9 @@ from datetime import datetime, timedelta, timezone
 from django.conf import settings
 from django.contrib import admin, messages
 from django.db import transaction
+from django.db.models import Count
 from django.shortcuts import redirect
+from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.translation import ngettext
 
@@ -14,7 +16,13 @@ from botocore.exceptions import ClientError
 
 from tdpservice.core.utils import ReadOnlyAdminMixin
 from tdpservice.data_files.admin.filters import LatestReparseEvent, VersionFilter
-from tdpservice.data_files.models import DataFile, LegacyFileTransfer, ShadowDataFile
+from tdpservice.data_files.models import (
+    DataFile,
+    LegacyFileTransfer,
+    Program,
+    Section,
+    ShadowDataFile,
+)
 from tdpservice.data_files.s3_client import S3Client
 from tdpservice.data_files.submission_lifecycle import (
     ReparsePreparationError,
@@ -27,7 +35,7 @@ from tdpservice.data_files.util import (
     create_s3_log_file_path,
 )
 from tdpservice.log_handler import S3FileHandler
-from tdpservice.parsers.models import DataFileSummary, ParserError
+from tdpservice.parsers.models import ParserError
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +52,45 @@ class DataFileInline(admin.TabularInline):
     def has_change_permission(self, request, obj=None):
         """Read only permissions."""
         return False
+
+
+class SectionInline(admin.TabularInline):
+    """Read-only inline for sections associated with a program."""
+
+    model = Section
+    fields = ["section_link"]
+    readonly_fields = ["section_link"]
+    extra = 0
+    can_delete = False
+
+    def section_link(self, obj):
+        """Link to the section admin detail page."""
+        url = reverse("admin:data_files_section_change", args=[obj.pk])
+        return format_html('<a href="{}">{}</a>', url, obj.name)
+
+    section_link.short_description = "Name"
+
+    def has_add_permission(self, request, obj=None):
+        """Prevent adding sections from the Program admin page."""
+        return False
+
+
+@admin.register(Program)
+class ProgramAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
+    """Read-only Admin class for Program models."""
+
+    search_fields = ["slug", "name"]
+    list_display = ["id", "slug", "name"]
+    inlines = [SectionInline]
+
+
+@admin.register(Section)
+class SectionAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
+    """Read-only Admin class for Section models."""
+
+    search_fields = ["name", "program__slug", "program__name"]
+    list_display = ["id", "program", "name"]
+    list_select_related = ["program"]
 
 
 @admin.register(DataFile)
@@ -99,6 +146,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
                     "quarter",
                     "year",
                     "section",
+                    "section_ref",
                     "program_type",
                     "is_program_audit",
                     "stt",
@@ -151,7 +199,12 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
 
     def get_queryset(self, request):
         """Return the queryset."""
-        qs = super().get_queryset(request)
+        qs = (
+            super()
+            .get_queryset(request)
+            .select_related("stt", "summary", "user")
+            .annotate(parser_error_count=Count("parser_errors", distinct=True))
+        )
         # return data files based on user's section
         if not (request.user.has_fra_access or request.user.is_an_admin):
             filtered_for_fra = qs.exclude(
@@ -361,15 +414,17 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
 
     def status(self, obj):
         """Return the status of the data file summary."""
-        return DataFileSummary.objects.get(datafile=obj).status
+        return obj.summary.status
 
     def case_totals(self, obj):
         """Return the case totals."""
-        return DataFileSummary.objects.get(datafile=obj).case_aggregates
+        return obj.summary.case_aggregates
 
     def error_report_link(self, obj):
         """Return the link to the error report."""
-        pe_len = ParserError.objects.filter(file=obj).count()
+        pe_len = getattr(obj, "parser_error_count", None)
+        if pe_len is None:
+            pe_len = ParserError.objects.filter(file=obj).count()
 
         filtered_parserror_list_url = (
             f"{DOMAIN}/admin/parsers/parsererror/?file=" + str(obj.id)
@@ -385,7 +440,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
 
     def data_file_summary(self, obj):
         """Return the data file summary."""
-        df = DataFileSummary.objects.get(datafile=obj)
+        df = obj.summary
         return format_html(
             "<a href='{url}'>{field}</a>",
             field=f"{df.id}" + ":" + df.get_status(),

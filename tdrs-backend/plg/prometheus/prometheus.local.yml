@@ -40,6 +40,13 @@ scrape_configs:
           service: "celery"
           env: "local"
 
+  - job_name: "tdp-go-parser-local"
+    static_configs:
+      - targets: ["go-parser:9809"]
+        labels:
+          service: "go-parser"
+          env: "local"
+
   - job_name: postgres-local
     static_configs:
       - targets: ["postgres-exporter:9187"]

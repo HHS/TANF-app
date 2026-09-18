@@ -939,7 +939,7 @@ describe('Reports', () => {
     expect(queryByText('Submit Data Files')).not.toBeInTheDocument()
   })
 
-  it("should skip the file upload step when submitted files header doesn't match submitted year and quarter", async () => {
+  it('should retain and revalidate a file when its fiscal quarter is corrected', async () => {
     const currentYear = new Date().getFullYear()
     const store = appConfigureStore({
       ...initialState,
@@ -953,7 +953,7 @@ describe('Reports', () => {
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
-    const { getByText, getByLabelText } = render(
+    const { getByText, getByLabelText, queryByText } = render(
       <Provider store={store}>
         <MemoryRouter>
           <Reports />
@@ -988,6 +988,35 @@ describe('Reports', () => {
           `, Quarter 1. Adjust your search parameters or upload a different file.`
       )
       expect(divElement).toBeInTheDocument()
+      expect(getByText('test2.txt')).toBeInTheDocument()
+    })
+
+    fireEvent.click(getByText('Submit Data Files'))
+
+    await waitFor(() => {
+      expect(
+        getByText('There is 1 error that must be resolved before submitting')
+      ).toBeInTheDocument()
+    })
+    expect(post).not.toHaveBeenCalled()
+
+    const quarterSelect = getByLabelText('Fiscal Quarter*')
+    fireEvent.change(quarterSelect, { target: { value: 'Q1' } })
+
+    await waitFor(() => {
+      expect(
+        queryByText(
+          `File contains data from Oct 1 - Dec 31, which belongs to Fiscal Year ` +
+            (currentYear - 1).toString() +
+            `, Quarter 1. Adjust your search parameters or upload a different file.`
+        )
+      ).not.toBeInTheDocument()
+      expect(queryByText('Files Not Submitted')).not.toBeInTheDocument()
+      expect(getByText('test2.txt')).toBeInTheDocument()
+      expect(getByText('Submit Data Files')).toHaveAttribute(
+        'data-has-uploaded-files',
+        'true'
+      )
     })
   })
 

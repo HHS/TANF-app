@@ -2,8 +2,10 @@
 
 from importlib import import_module
 import logging
+from urllib.parse import parse_qs, urlparse
 from unittest.mock import patch
 
+from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.test import RequestFactory
 from django.urls import reverse
 
@@ -220,6 +222,85 @@ class TestAuthenticateClientSelection:
             }
         ]
         assert not hasattr(backend, "_oidc_callback_url")
+
+
+@pytest.mark.django_db
+class TestAdminOIDCAuthenticationCallback:
+    """Tests for the admin OIDC callback view."""
+
+    def test_failed_callbacks_return_to_admin_frontend_login(
+        self, api_client, settings
+    ):
+        """Generic OIDC failures should not redirect to the Django root."""
+        settings.ADMIN_FRONTEND_BASE_URL = "http://localhost:3001"
+
+        response = api_client.get(
+            reverse("admin_oidc_authentication_callback"),
+            {"state": "admin-state", "code": "authorization-code"},
+        )
+
+        assert response.status_code == 302
+        parsed_url = urlparse(response.url)
+        assert (
+            f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
+            == "http://localhost:3001/login"
+        )
+        query_params = parse_qs(parsed_url.query)
+        assert query_params["error"] == ["admin_login_failed"]
+        assert query_params["message"] == ["Unable to complete admin sign in."]
+
+    def test_validation_errors_return_to_admin_frontend_login(
+        self, api_client, settings
+    ):
+        """Validation failures during admin login should render in the admin UI."""
+        settings.ADMIN_FRONTEND_BASE_URL = "http://localhost:3001"
+        message = (
+            "Users other than Regional Staff, Developers, Data Analysts "
+            "do not get assigned a location"
+        )
+
+        with patch(
+            "mozilla_django_oidc.views.OIDCAuthenticationCallbackView.get",
+            side_effect=ValidationError(message),
+        ):
+            response = api_client.get(
+                reverse("admin_oidc_authentication_callback"),
+                {"state": "admin-state", "code": "authorization-code"},
+            )
+
+        assert response.status_code == 302
+        parsed_url = urlparse(response.url)
+        assert (
+            f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
+            == "http://localhost:3001/login"
+        )
+        query_params = parse_qs(parsed_url.query)
+        assert query_params["error"] == ["admin_login_validation"]
+        assert query_params["message"] == [message]
+
+    def test_stale_callback_state_returns_to_admin_frontend_login(
+        self, api_client, settings
+    ):
+        """Stale admin callback URLs should not render a backend error page."""
+        settings.ADMIN_FRONTEND_BASE_URL = "http://localhost:3001"
+
+        with patch(
+            "mozilla_django_oidc.views.OIDCAuthenticationCallbackView.get",
+            side_effect=SuspiciousOperation("OIDC callback state not found"),
+        ):
+            response = api_client.get(
+                reverse("admin_oidc_authentication_callback"),
+                {"state": "stale-state", "code": "authorization-code"},
+            )
+
+        assert response.status_code == 302
+        parsed_url = urlparse(response.url)
+        assert (
+            f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
+            == "http://localhost:3001/login"
+        )
+        query_params = parse_qs(parsed_url.query)
+        assert query_params["error"] == ["admin_login_failed"]
 
 
 @pytest.mark.django_db

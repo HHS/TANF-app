@@ -78,13 +78,20 @@ class UserAdmin(SimpleHistoryAdmin):
 
     def get_queryset(self, request):
         """Customize queryset to hide inactive users by default."""
-        qs = super().get_queryset(request)
+        qs = super().get_queryset(request).select_related("stt")
         # Hide inactive by default unless filter is applied
         if "active_status" not in request.GET:
             qs = qs.exclude(
                 account_approval_status=AccountApprovalStatusChoices.DEACTIVATED
             )
         return qs
+
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        """Eager load permission content types rendered in the change form."""
+        formfield = super().formfield_for_manytomany(db_field, request, **kwargs)
+        if db_field.name == "user_permissions" and formfield is not None:
+            formfield.queryset = formfield.queryset.select_related("content_type")
+        return formfield
 
     def save_form(self, request, form, change):
         """Override save_form to prevent saving the form when not changing."""

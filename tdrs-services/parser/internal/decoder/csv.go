@@ -10,6 +10,8 @@ import (
 	"go-parser/internal/config/filespec"
 )
 
+const substituteCharacter = "\x1a"
+
 // CSVDecoder reads CSV files.
 // Each row becomes a ColumnarRow with string values.
 type CSVDecoder struct {
@@ -143,11 +145,14 @@ func (d *CSVDecoder) readNextRow(skipSkippable bool) (Row, error) {
 			return nil, err
 		}
 		d.lineNum++
+		strippedSubstituteCharacter := stripTrailingSubstituteCharacters(record)
 
 		// Normal row iteration keeps the historical behavior of ignoring
 		// comments and empty rows. ReadFirst does not, because FRA validates
 		// the first physical row before streaming records.
-		if skipSkippable && (len(record) == 0 || strings.HasPrefix(record[0], "#")) {
+		if skipSkippable && (len(record) == 0 ||
+			strings.HasPrefix(record[0], "#") ||
+			(strippedSubstituteCharacter && len(record) == 1 && record[0] == "")) {
 			continue
 		}
 
@@ -158,6 +163,18 @@ func (d *CSVDecoder) readNextRow(skipSkippable bool) (Row, error) {
 
 		return NewColumnarRow(d.lineNum, d.recordType, len(columns), columns), nil
 	}
+}
+
+func stripTrailingSubstituteCharacters(record []string) bool {
+	if len(record) == 0 {
+		return false
+	}
+
+	lastColumn := len(record) - 1
+	trimmed := strings.TrimRight(record[lastColumn], substituteCharacter)
+	stripped := trimmed != record[lastColumn]
+	record[lastColumn] = trimmed
+	return stripped
 }
 
 func (d *CSVDecoder) consumeLeadingBlankLine() (bool, error) {

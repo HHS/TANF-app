@@ -10,21 +10,32 @@ import {
 export default function startMirage(
   { environment } = { environment: 'development' }
 ) {
+  const backendUrl =
+    process.env.REACT_APP_BACKEND_URL || 'http://localhost:8080/v1'
+  const authUrl = process.env.REACT_APP_AUTH_URL || backendUrl
+  const authCheck = () => {
+    if (
+      window.localStorage.getItem('loggedIn') ||
+      process.env.REACT_APP_PA11Y_TEST === 'true'
+    ) {
+      return AUTH_CHECK_DATA
+    } else {
+      return FAILED_AUTH_CHECK_DATA
+    }
+  }
+
   return createServer({
     environment,
 
     routes() {
-      this.urlPrefix = 'http://localhost:8080/v1'
-      this.get('/auth_check/', () => {
-        if (
-          window.localStorage.getItem('loggedIn') ||
-          process.env.REACT_APP_PA11Y_TEST
-        ) {
-          return AUTH_CHECK_DATA
-        } else {
-          return FAILED_AUTH_CHECK_DATA
-        }
+      Array.from(new Set([authUrl, backendUrl])).forEach((urlPrefix) => {
+        this.urlPrefix = urlPrefix
+        this.get('/auth_check', authCheck)
+        this.get('/auth_check/', authCheck)
       })
+
+      this.urlPrefix = backendUrl
+      this.get('/feature-flags/', () => [])
       this.post('/logs/', () => {})
       this.post('/reports/', () => 'Success')
 

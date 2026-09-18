@@ -2,14 +2,16 @@
 
 import datetime
 import logging
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urlencode, urlparse
 
 from django.conf import settings
 from django.contrib.auth import logout
 from django.contrib.auth.models import AnonymousUser, Group, Permission
+from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views import View
 
 from mozilla_django_oidc.views import (
@@ -56,6 +58,30 @@ from tdpservice.users.serializers import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _validation_error_message(exc):
+    """Return a user-facing string from a Django ValidationError."""
+    if hasattr(exc, "message_dict"):
+        return " ".join(
+            message
+            for messages in exc.message_dict.values()
+            for message in messages
+        )
+
+    return " ".join(exc.messages)
+
+
+def _admin_login_error_url(error, message):
+    """Build a failed admin login URL for the admin frontend."""
+    query_string = urlencode({"error": error, "message": message})
+    login_url = f"{settings.ADMIN_FRONTEND_BASE_URL.rstrip('/')}/login"
+    return f"{login_url}?{query_string}"
+
+
+def _admin_login_error_redirect(error, message):
+    """Redirect failed admin logins back to the admin frontend."""
+    return HttpResponseRedirect(_admin_login_error_url(error, message))
 
 
 class UserViewSet(
@@ -364,7 +390,14 @@ class AdminKeycloakLoginMixin:
             oidc_clients = request.session.get("oidc_clients", {}).copy()
             oidc_clients[state] = ADMIN_OIDC_CLIENT
             request.session["oidc_clients"] = oidc_clients
-        if not request.session.get("oidc_login_next"):
+        next_url = request.GET.get("next")
+        if next_url and url_has_allowed_host_and_scheme(
+            next_url,
+            allowed_hosts=getattr(settings, "OIDC_REDIRECT_ALLOWED_HOSTS", set()),
+            require_https=request.is_secure(),
+        ):
+            request.session["oidc_login_next"] = next_url
+        else:
             request.session["oidc_login_next"] = settings.ADMIN_FRONTEND_BASE_URL
         return response
 
@@ -380,12 +413,30 @@ class AdminKeycloakLoginAMSView(AdminKeycloakLoginMixin, KeycloakLoginAMSView):
 class AdminOIDCAuthenticationCallbackView(OIDCAuthenticationCallbackView):
     """Handle admin OIDC callbacks with admin-scoped client settings."""
 
+    @property
+    def failure_url(self):
+        """Return failed admin login attempts to the admin frontend."""
+        return _admin_login_error_url(
+            "admin_login_failed", "Unable to complete admin sign in."
+        )
+
     def get(self, request):
         """Mark this callback so token exchange uses the admin redirect URI."""
         request.session["session_scope"] = ADMIN_SESSION_SCOPE
         request._oidc_client = ADMIN_OIDC_CLIENT
         request._oidc_callback_url = ADMIN_OIDC_CALLBACK_URL_NAME
-        return super().get(request)
+        try:
+            return super().get(request)
+        except SuspiciousOperation:
+            logger.warning("Admin OIDC callback state validation failed", exc_info=True)
+            return _admin_login_error_redirect(
+                "admin_login_failed", "Unable to complete admin sign in."
+            )
+        except ValidationError as exc:
+            logger.warning("Admin OIDC callback validation failed", exc_info=True)
+            return _admin_login_error_redirect(
+                "admin_login_validation", _validation_error_message(exc)
+            )
 
 
 class KeycloakLogoutView(View):

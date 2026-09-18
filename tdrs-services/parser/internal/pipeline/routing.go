@@ -3,6 +3,7 @@ package pipeline
 import (
 	"context"
 	"log/slog"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 
@@ -38,8 +39,12 @@ func (s ErrorStats) LogAttrs() []slog.Attr {
 // RouteStats holds batch/group counts collected during result routing.
 type RouteStats struct {
 	ErrorStats
-	BatchCount int64
-	GroupCount int64
+	BatchCount          int64
+	GroupCount          int64
+	ParsingDuration     time.Duration
+	RoutingDuration     time.Duration
+	ActiveDuration      time.Duration
+	ValidationDurations validation.PhaseDurations
 }
 
 // countErrors tallies validation errors from a validated batch.

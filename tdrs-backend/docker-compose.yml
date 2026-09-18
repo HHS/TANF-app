@@ -69,9 +69,16 @@ services:
       - KC_EVENT_METRICS_USER_TAGS=realm,idp,clientId
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KEYCLOAK_CONFIG_IMPORT_ON_STARTUP=true
+      - LOGIN_GOV_JWT_KEY=${JWT_KEY:-}
+      - IMPORT_VARSUBSTITUTION_ENABLED=true
+      - IMPORT_VARSUBSTITUTION_NESTED=true
+      - IMPORT_CACHE_ENABLED=false
       - KC_TDP_DJANGO_CLIENT_SECRET=tdp-django-local-secret
       - KC_TDP_ADMIN_CLIENT_SECRET=tdp-admin-local-secret
       - KC_TDP_GRAFANA_CLIENT_SECRET=tdp-grafana-local-secret
+      - KC_CLI_REDIRECT_URI=http://localhost
+      - KC_CLI_WEB_ORIGIN=http://localhost
       # Login.gov IdP (sandbox defaults)
       - LOGIN_GOV_CLIENT_ID=urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-dev
       - LOGIN_GOV_AUTH_URL=https://idp.int.identitysandbox.gov/openid_connect/authorize
@@ -79,9 +86,10 @@ services:
       - LOGIN_GOV_JWKS_URL=https://idp.int.identitysandbox.gov/api/openid_connect/certs
       - LOGIN_GOV_LOGOUT_URL=https://idp.int.identitysandbox.gov/openid_connect/logout
       - LOGIN_GOV_ISSUER=https://idp.int.identitysandbox.gov/
+      - LOGIN_GOV_ACR_VALUES=http://idmanagement.gov/ns/assurance/ial/1
       # AMS IdP (stage defaults)
-      - AMS_CLIENT_ID=${AMS_CLIENT_ID}
-      - AMS_CLIENT_SECRET=${AMS_CLIENT_SECRET}
+      - AMS_CLIENT_ID=${AMS_CLIENT_ID:-local-ams-client}
+      - AMS_CLIENT_SECRET=${AMS_CLIENT_SECRET:-local-ams-secret}
       - AMS_AUTH_URL=https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/auth
       - AMS_TOKEN_URL=https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/token
       - AMS_JWKS_URL=https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/certs
@@ -91,23 +99,9 @@ services:
     ports:
       - "8443:8080"
       - "9001:9000"
-    command: start-dev --import-realm
+    command: start-dev
     depends_on:
       - keycloak-pg
-
-  keycloak-configure:
-    build:
-      context: ./keycloak
-    environment:
-      - DEPLOY_ENV=local
-      - KEYCLOAK_MANAGEMENT_URL=http://keycloak:9000
-      - KEYCLOAK_URL=http://keycloak:8080
-      - KEYCLOAK_ADMIN=admin
-      - KEYCLOAK_ADMIN_PASSWORD=admin
-      - LOGIN_GOV_JWT_KEY=${JWT_KEY}
-    entrypoint: ["/bin/bash", "/opt/keycloak/configure-idps.sh"]
-    depends_on:
-      - keycloak
 
   clamav-rest:
     image: rafttech/clamav-rest:0.103.2
@@ -198,6 +192,7 @@ services:
       - web
       - celery-exporter
       - postgres-exporter
+      - go-parser
       - alertmanager
       - mimir
 
@@ -360,6 +355,8 @@ services:
       context: ../tdrs-services/parser
       dockerfile: Dockerfile
     command: ["--server.mode=celery", "--storage.source=s3"]
+    ports:
+      - "9809:9809"
     environment:
       - REDIS_URL=redis://redis-server:6379/0
       - GO_PARSER_QUEUE=${GO_PARSER_QUEUE:-go-parser}

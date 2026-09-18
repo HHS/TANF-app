@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { GET, POST } from "./route";
+import { GET, PATCH, POST } from "./route";
 
 const originalEnv = { ...process.env };
 
@@ -155,6 +155,10 @@ describe("admin API proxy", () => {
 
     expect(response.status).toBe(200);
     expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith(
+      "https://backend.example.gov/admin-api/v1/users/",
+      expect.any(Object)
+    );
 
     const [, options] = vi.mocked(fetch).mock.calls[0];
     const headers = options?.headers as Headers;
@@ -163,6 +167,42 @@ describe("admin API proxy", () => {
     expect(headers.get("content-type")).toBe("application/json");
     expect(headers.get("X-CSRFToken")).toBe("header-csrf-token");
     expect(headers.get("X-Admin-Proxy-Token")).toBe("server-only-token");
+  });
+
+  it("uses a trailing slash for PATCH requests forwarded to Django", async () => {
+    process.env.NEXT_PUBLIC_BACKEND_URL = "https://backend.example.gov/v1";
+    process.env.ADMIN_API_PROXY_TOKEN = "server-only-token";
+    process.env.ADMIN_FRONTEND_ORIGIN = "https://admin.example.gov";
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ ok: true })));
+
+    const request = new NextRequest(
+      "https://admin.example.gov/api/admin/admin-forms/users.user.change/user-1",
+      {
+        method: "PATCH",
+        body: JSON.stringify({ first_name: "Updated" }),
+        headers: {
+          "content-type": "application/json",
+          "X-CSRFToken": "header-csrf-token",
+          cookie: "admin_sessionid=abc; csrftoken=cookie-csrf-token",
+          origin: "https://admin.example.gov",
+        },
+      }
+    );
+
+    const response = await PATCH(request, {
+      params: Promise.resolve({
+        path: ["admin-forms", "users.user.change", "user-1"],
+      }),
+    });
+
+    expect(response.status).toBe(200);
+    expect(fetch).toHaveBeenCalledWith(
+      "https://backend.example.gov/admin-api/v1/admin-forms/users.user.change/user-1/",
+      expect.objectContaining({
+        method: "PATCH",
+        body: JSON.stringify({ first_name: "Updated" }),
+      })
+    );
   });
 
   it("fails closed when the admin frontend origin is not configured for mutations", async () => {

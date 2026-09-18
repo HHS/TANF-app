@@ -112,11 +112,34 @@ export const useFileUploadForm = ({
   const onSubmit = async (event) => {
     event.preventDefault()
 
+    const validationErrorCount = uploadedFiles.filter(
+      (file) =>
+        file.error ||
+        (file.validatedYear && file.validatedYear !== yearInputValue) ||
+        (fileTypeInputValue !== 'program-integrity-audit' &&
+          quarterInputValue &&
+          file.validatedQuarter &&
+          file.validatedQuarter !== quarterInputValue)
+    ).length
+
     if (uploadedFiles.length === 0) {
       setUploadAlertState({
         active: true,
         type: 'error',
-        message: 'No changes have been made to data files',
+        message:
+          'No data files have been selected. Select at least one file before submitting.',
+      })
+      return
+    }
+
+    if (validationErrorCount > 0) {
+      setUploadAlertState({
+        active: true,
+        type: 'error',
+        message:
+          validationErrorCount === 1
+            ? 'There is 1 error that must be resolved before submitting'
+            : `There are ${validationErrorCount} errors that must be resolved before submitting`,
       })
       return
     }

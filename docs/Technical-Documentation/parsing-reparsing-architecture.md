@@ -2,7 +2,7 @@
 
 - **Status:** Internal reference documentation
 - **Scope:** TDP data file upload, parsing, validation, error reporting, and reparsing
-- **Last updated:** 2026-06-05
+- **Last updated:** 2026-07-24
 
 ---
 
@@ -27,6 +27,19 @@ For implementation details, use the source files referenced in [Where to Look](#
 ### `DataFile`
 
 `DataFile` represents the uploaded submission. It owns metadata such as program, section, reporting period, uploader, STT, and the uploaded file itself. It also has a lifecycle `state` that describes where the submission is in the upload and parsing process.
+
+#### Program and section metadata transition
+
+Canonical program and section metadata is represented by `Program` and `Section`. `DataFile.section_ref` is a nullable foreign key to the canonical `Section`, and `DataFile.program` is a derived property that returns `section_ref.program` rather than a separately stored foreign key. Historical files are backfilled from their legacy program and section values, and normal new writes populate `section_ref` alongside those values.
+
+This is an expand-phase schema transition:
+
+- `DataFile.program_type` and the string `DataFile.section` remain stored and continue to drive parser selection, upload compatibility, filtering, uniqueness, and storage behavior.
+- `section_ref` remains nullable during the transition so deployment does not require an immediate coordinated rewrite of every reader.
+- A separate read-migration phase will move runtime consumers to `section_ref` and the derived `program`.
+- Only after those reads have shipped and canonical data has been verified can the contract phase remove the legacy fields, make the canonical relation required, and rename `section_ref` to `section`.
+
+Until contract is complete, code must keep the canonical and legacy representations consistent rather than assuming either representation can be removed.
 
 Examples of lifecycle state:
 

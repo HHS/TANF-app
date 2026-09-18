@@ -7,7 +7,21 @@ from django.utils.translation import gettext_lazy as _
 
 from tdpservice.core.filters import MostRecentVersionFilter
 from tdpservice.search_indexes.admin.multiselect_filter import MultiSelectDropdownFilter
-from tdpservice.stts.models import STT
+from tdpservice.stts.models import SSP_PROGRAM_SLUG, STT, SttProgramParticipation
+
+
+SSP_VIEWABLE_STATUSES = [
+    SttProgramParticipation.Status.ACTIVE,
+    SttProgramParticipation.Status.FORMER,
+]
+
+
+def _ssp_participating_stts(queryset):
+    """Filter STTs to those that should be visible for SSP records."""
+    return queryset.filter(
+        program_participations__program__slug=SSP_PROGRAM_SLUG,
+        program_participations__status__in=SSP_VIEWABLE_STATUSES,
+    )
 
 
 class CreationDateFilter(MostRecentVersionFilter):
@@ -45,7 +59,7 @@ class STTFilter(MultiSelectDropdownFilter):
         if "tribal" in record_type:
             queryset = queryset.filter(type=STT.EntityType.TRIBE)
         elif "ssp" in record_type:
-            queryset = queryset.filter(ssp=True)
+            queryset = _ssp_participating_stts(queryset)
         else:
             type_query = Query(type=STT.EntityType.STATE) | Query(
                 type=STT.EntityType.TERRITORY
@@ -62,7 +76,7 @@ class STTFilter(MultiSelectDropdownFilter):
         if "tribal" in listing_record_type:
             objects = STT.objects.filter(type=STT.EntityType.TRIBE)
         elif "ssp" in listing_record_type:
-            objects = STT.objects.filter(ssp=True)
+            objects = _ssp_participating_stts(STT.objects.all())
         else:
             objects = STT.objects.filter(
                 Query(type=STT.EntityType.STATE) | Query(type=STT.EntityType.TERRITORY)

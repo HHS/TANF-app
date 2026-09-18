@@ -7,9 +7,11 @@ import {
   getAdminAuthBaseUrl,
   getAdminAuthCheckUrl,
   getAdminCookieHeader,
+  getAdminLoginNextUrl,
   getAdminLoginUrl,
   getAdminLogoutUrl,
   getAuthBaseUrl,
+  getDefaultAdminLoginNextUrl,
   getBackendBaseUrl,
   getBrowserAuthBaseUrl,
   getCsrfTokenFromCookie,
@@ -62,6 +64,27 @@ describe("admin auth helpers", () => {
     expect(getAdminLogoutUrl()).toBe(
       "http://localhost:8989/admin-auth/logout/oidc"
     );
+  });
+
+  it("defaults admin login return URLs to the current admin origin dashboard", () => {
+    expect(
+      getDefaultAdminLoginNextUrl("http://localhost:3002/login/ams")
+    ).toBe("http://localhost:3002/dashboard");
+    expect(getAdminLoginNextUrl("https://admin.example.gov/login/dotgov")).toBe(
+      "https://admin.example.gov/dashboard"
+    );
+  });
+
+  it("allows only same-origin admin login return URLs", () => {
+    expect(
+      getAdminLoginNextUrl("http://localhost:3002/login/ams", "/dashboard")
+    ).toBe("http://localhost:3002/dashboard");
+    expect(
+      getAdminLoginNextUrl(
+        "http://localhost:3002/login/ams",
+        "https://example.gov/bad"
+      )
+    ).toBe("http://localhost:3002/dashboard");
   });
 
   it("derives the auth base from the backend URL when needed", () => {

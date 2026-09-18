@@ -1,15 +1,24 @@
 import { GridContainer, Link } from "@trussworks/react-uswds";
-import NextLink from "next/link";
 import {
   getAuthBaseUrl,
   getAdminLoginUrl,
   getBackendBaseUrl,
   getAdminProviderLoginPath,
+  checkBackendHealth,
 } from "@/lib/admin-auth";
+import { getBackendHealthSummary } from "@/lib/backend-health-display";
 
-export default function AdminLoginPage() {
+type AdminLoginPageProps = {
+  loginErrorMessage?: string;
+};
+
+export default async function AdminLoginPage({
+  loginErrorMessage = "",
+}: AdminLoginPageProps) {
   const backendBaseUrl = getBackendBaseUrl();
   const authBaseUrl = getAuthBaseUrl();
+  const backendHealth = await checkBackendHealth();
+  const backendHealthSummary = getBackendHealthSummary(backendHealth);
   const loginGovUrl = getAdminLoginUrl("dotgov");
   const acfAmsUrl = getAdminLoginUrl("ams");
   const loginGovPath = getAdminProviderLoginPath("dotgov");
@@ -19,29 +28,6 @@ export default function AdminLoginPage() {
 
   return (
     <>
-      <a className="usa-skipnav" href="#main-content">
-        Skip to main content
-      </a>
-      <main className="admin-login-page" id="main-content">
-        <section className="admin-gov-banner" aria-label="Official government website">
-          <div className="grid-container-widescreen admin-gov-banner__inner">
-            <p>A Demo website of the United States government</p>
-            <p>Here&apos;s how you know</p>
-          </div>
-        </section>
-
-        <header className="usa-header usa-header--extended admin-header">
-          <div className="grid-container-widescreen usa-nav__wide desktop:padding-left-4 desktop:border-bottom-0 mobile:border-bottom-1px mobile:padding-left-0 mobile:padding-right-0">
-            <div className="usa-logo" id="extended-logo">
-              <em className="usa-logo__text">
-                <NextLink href="/" aria-label="TANF Data Portal Home">
-                  TANF Data Portal Admin
-                </NextLink>
-              </em>
-            </div>
-          </div>
-        </header>
-
         <section className="usa-hero admin-hero" aria-label="Introduction">
           <GridContainer className="grid-container-widescreen admin-login-page__shell">
             <div className="usa-hero__callout admin-login-page__callout">
@@ -55,6 +41,18 @@ export default function AdminLoginPage() {
                 improves the federal reporting experience for TANF grantees and
                 federal staff.
               </p>
+
+              {loginErrorMessage && (
+                <div
+                  className="usa-alert usa-alert--error admin-login-page__alert"
+                  role="alert"
+                >
+                  <div className="usa-alert__body">
+                    <h2 className="usa-alert__heading">Could not sign in</h2>
+                    <p className="usa-alert__text">{loginErrorMessage}</p>
+                  </div>
+                </div>
+              )}
 
               <div className="admin-login-page__actions">
                 {loginGovUrl ? (
@@ -111,9 +109,6 @@ export default function AdminLoginPage() {
                   </span>
                 )}
 
-                <Link href="/api/backend-health" className="usa-button usa-button--outline width-full margin-top-3">
-                  Check backend health
-                </Link>
               </div>
 
               <div className="admin-login-page__details">
@@ -122,6 +117,9 @@ export default function AdminLoginPage() {
                 </p>
                 <p>
                   <strong>Configured backend:</strong> {backendBaseUrl ?? "Not configured"}
+                </p>
+                <p>
+                  <strong>Backend health:</strong> {backendHealthSummary}
                 </p>
               </div>
             </div>
@@ -298,7 +296,6 @@ export default function AdminLoginPage() {
             </div>
           </div>
         </footer>
-      </main>
     </>
   );
 }

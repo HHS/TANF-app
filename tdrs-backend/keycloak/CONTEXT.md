@@ -16,9 +16,9 @@ This context covers the Keycloak initiative under `tdrs-backend/keycloak/`.
 - `keycloak-operations.md`: operational runbook for deployment, health checks, troubleshooting, Grafana SSO, and sync failures.
 - `realm-configs/`: checked-in realm exports for local/dev, staging, and production.
 - `select-realm-config.sh`: selects the environment-specific realm export before Keycloak starts.
-- `configure-idps.sh`: applies runtime-sensitive IdP configuration such as Login.gov signing key and ACR values.
-- `deploy.sh`: cloud.gov deployment script; sets routes, network policies, and post-start IdP configuration.
-- `entrypoint.sh`: starts Keycloak on an internal port and nginx on the Cloud Foundry `$PORT`.
+- `normalize-login-gov-key.sh`: decodes the base64 Login.gov private key and runs `keycloak-config-cli`.
+- `deploy.sh`: cloud.gov deployment script; sets routes, network policies, and config-cli substitution variables.
+- `entrypoint.sh`: starts Keycloak on an internal port, runs startup config import when enabled, and starts nginx on the Cloud Foundry `$PORT`.
 - `nginx.conf`: reverse proxy in front of Keycloak, including headers needed for the admin console.
 
 ## Runtime Model
@@ -27,7 +27,7 @@ This context covers the Keycloak initiative under `tdrs-backend/keycloak/`.
 - Keycloak brokers external IdPs; Django handles the OIDC callback and creates the application session cookie.
 - `KEYCLOAK_BROWSER_URL` is browser-facing and is used for authorization and logout redirects.
 - `KEYCLOAK_SERVER_URL` is server-to-server and is used by Django for token exchange, userinfo, JWKS, admin API calls, and user sync.
-- Local Docker defines `keycloak-pg`, `keycloak`, and `keycloak-configure` services in `tdrs-backend/docker-compose.yml`.
+- Local Docker defines `keycloak-pg` and `keycloak` services in `tdrs-backend/docker-compose.yml`.
 - In cloud.gov, Keycloak has a public route for browser/admin access and an internal route for backend/celery server-to-server traffic.
 
 ## Django Integration

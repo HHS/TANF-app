@@ -14,6 +14,15 @@ from tdpservice.parsers.dataclasses import RawRow, TupleRow
 
 logger = logging.getLogger(__name__)
 
+SUBSTITUTE_CHARACTER = "\x1a"
+
+
+def _strip_trailing_substitute_characters(raw_data: list[str]) -> list[str]:
+    """Strip legacy DOS end-of-file markers from a CSV record."""
+    if raw_data:
+        raw_data[-1] = raw_data[-1].rstrip(SUBSTITUTE_CHARACTER)
+    return raw_data
+
 
 class Decoder(IntEnum):
     """Enum class for decoder types."""
@@ -119,7 +128,7 @@ class CsvDecoder(BaseDecoder):
         """Get the first line in the file. Assumed to be the header."""
         raw_data = None
         for line in self.csv_file:
-            raw_data = line
+            raw_data = _strip_trailing_substitute_characters(line)
             break
         # Very important to move pointer back to the begining since invoking the generator does not do it for us.
         self.local_file.seek(0)
@@ -136,6 +145,7 @@ class CsvDecoder(BaseDecoder):
         """Decode and yield each row."""
         for raw_data in self.csv_file:
             self.current_row_num += 1
+            raw_data = _strip_trailing_substitute_characters(raw_data)
             if (
                 not len(raw_data)
                 or not any(raw_data)

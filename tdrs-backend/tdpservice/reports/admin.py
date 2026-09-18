@@ -52,12 +52,16 @@ class ReportFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "date_extracted_on",
         "report_type",
         "user",
-        VersionFilter
+        VersionFilter,
     ]
     search_fields = [
         "original_filename",
         "slug",
     ]
+
+    def get_queryset(self, request):
+        """Eager load changelist relations rendered by list_display."""
+        return super().get_queryset(request).select_related("stt", "user")
 
 
 @admin.register(ReportSource)
@@ -84,3 +88,7 @@ class ReportSourceAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "status",
         "created_at",
     ]
+
+    def get_queryset(self, request):
+        """Eager load changelist relations rendered by list_display."""
+        return super().get_queryset(request).select_related("uploaded_by")
