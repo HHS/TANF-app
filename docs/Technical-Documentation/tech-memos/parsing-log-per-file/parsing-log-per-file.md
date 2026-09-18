@@ -135,7 +135,7 @@ class ParseLogContextManager:
       self.loggers = {}
 ```
 
-In `settings.common`, intialize an instance of the singleton. Settings is used because Django already ensures there is only one instance of the settings object per application - it's already a singleton!
+In `settings.common`, initialize an instance of the singleton. Settings is used because Django already ensures there is only one instance of the settings object per application - it's already a singleton!
 
 ```python
 from tdpservice.parsers.parse_log_context_manager import ParseLogContextManager
@@ -220,7 +220,7 @@ Currently, modules in `tdpservice.parsers` use `logging` scoped at the module le
 ```python
 logger = logging.getLogger(__name__)
 ```
-REMOVE this line. 
+REMOVE this line.
 
 
 Then, import settings

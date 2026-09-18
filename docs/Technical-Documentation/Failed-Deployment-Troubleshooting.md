@@ -21,7 +21,7 @@ In preparation for production-ready infrastructure, we wanted to create a living
 Initially, we need to find the step where this failed. For your branch, go to CircleCI `https://www.circleci.com/pipelines/github/raft-tech/TANF-app?branch="name-of-your-branch"` and inspect the workflow which failed, likely `build-and-test`.
 
 ### `secrets-check`:
-These steps attempt to prevent developers from accidently committing secrets or hardcoded keys tot he repo. If not, you can expand the steps which should give you a read out of the offending line from either script of git-secrets or truffle-hog.
+These steps attempt to prevent developers from accidentally committing secrets or hardcoded keys to the repo. If not, you can expand the steps which should give you a readout of the offending line from either the git-secrets or trufflehog scripts.
 ### `test-backend`:
 These steps ensure the backend Django application passes basic unit tests, compilation, and linting.
 ### `test-frontend`:

@@ -12,10 +12,10 @@ logger = logging.getLogger(__name__)
 
 
 def _get_client():
-    """Lazily import and return the KeycloakSyncClient singleton."""
+    """Lazily import and return the configured Keycloak sync client."""
     from tdpservice.users.keycloak_client import KeycloakSyncClient
 
-    return KeycloakSyncClient.get_instance()
+    return KeycloakSyncClient.get_sync_client()
 
 
 @receiver(post_save, sender=User)

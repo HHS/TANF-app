@@ -1,9 +1,10 @@
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import FeedbackReportsHistory from './FeedbackReportsHistory'
 
 describe('FeedbackReportsHistory', () => {
   let mockFormatDateTime
+  let mockViewDownloadStatistics
 
   beforeEach(() => {
     mockFormatDateTime = jest.fn((timestamp) => {
@@ -17,12 +18,14 @@ describe('FeedbackReportsHistory', () => {
         hour12: true,
       })
     })
+    mockViewDownloadStatistics = jest.fn()
   })
 
   const renderComponent = (props = {}) => {
     const defaultProps = {
       data: [],
       formatDateTime: mockFormatDateTime,
+      onViewDownloadStatistics: mockViewDownloadStatistics,
     }
     return render(<FeedbackReportsHistory {...defaultProps} {...props} />)
   }
@@ -83,6 +86,7 @@ describe('FeedbackReportsHistory', () => {
       expect(screen.getByText('Status')).toBeInTheDocument()
       expect(screen.getByText('Error')).toBeInTheDocument()
       expect(screen.getByText('File')).toBeInTheDocument()
+      expect(screen.getByText('Downloaded by')).toBeInTheDocument()
     })
 
     it('applies correct table classes', () => {
@@ -93,6 +97,46 @@ describe('FeedbackReportsHistory', () => {
       const table = container.querySelector('table')
       expect(table).toHaveClass('usa-table')
       expect(table).toHaveClass('usa-table--striped')
+    })
+  })
+
+  describe('Download Statistics', () => {
+    const createReport = (downloadedCount) => ({
+      id: 42,
+      year: 2025,
+      date_extracted_on: '2025-02-28',
+      created_at: '2025-03-05T10:31:00Z',
+      processed_at: '2025-03-05T10:41:00Z',
+      status: 'SUCCEEDED',
+      original_filename: 'FY2025.zip',
+      file: 'https://example.com/FY2025.zip',
+      downloaded_count: downloadedCount,
+    })
+
+    it.each([
+      [0, '0 jurisdictions'],
+      [1, '1 jurisdiction'],
+      [2, '2 jurisdictions'],
+    ])('renders the count %s as %s', (count, label) => {
+      renderComponent({ data: [createReport(count)] })
+
+      expect(
+        screen.getByRole('button', { name: /FY2025.zip/ })
+      ).toHaveTextContent(label)
+    })
+
+    it('opens statistics for the selected report source', () => {
+      renderComponent({ data: [createReport(0)] })
+
+      fireEvent.click(screen.getByRole('button', { name: /FY2025.zip/ }))
+
+      expect(mockViewDownloadStatistics).toHaveBeenCalledWith(42)
+    })
+
+    it('spans all seven columns in the empty state', () => {
+      const { container } = renderComponent({ data: [] })
+
+      expect(container.querySelector('td')).toHaveAttribute('colspan', '7')
     })
   })
 

@@ -244,7 +244,9 @@ For one-shot local performance runs, the endpoint only exists while the parser p
 
 ### Celery Mode
 
-Celery mode connects to Redis and consumes parse tasks dispatched by Django. After each parse attempt, it enqueues Django's shadow-table `post_parse` task on the Python Celery queue.
+Celery mode connects to Redis and consumes parse tasks dispatched by Django. Tasks carry `[data_file_id, reparse_id, parse_token, event_id]`; the ownership token and audit event ID are separate values. After each parse attempt, the worker enqueues Django's `post_parse(data_file_id, reparse_id, parse_error, parse_token, event_id)` task on the Python Celery queue.
+
+Django's submission lifecycle controller owns production state changes. Production record and summary writes require the current parser token. The Go worker records shadow parse-start history directly; Django records the final outcome. Both histories retain the shared event ID and the task ID of the worker that recorded each transition.
 
 ```sh
 DATABASE_URL=postgres://user:pass@localhost:5432/tdrs \
@@ -409,6 +411,28 @@ Small datafile, summary, and content-type queries live in `internal/db/` as
 handwritten pgx helpers. Record table schemas are owned by the Django search
 index models, and `tdrs-backend/tdpservice/parsers/test/test_go_schema_contract.py`
 checks that active Django fields match the Go YAML schemas.
+
+The lifecycle controller writes a `DataFileStateTransition` in the same
+transaction as each production state update. Go shadow state updates also write
+an audit row atomically. Shadow
+transitions use the `data_files.shadowdatafile` content type, keeping their
+history separate even when the production and shadow file IDs match. Unchanged
+states do not create duplicate transitions.
+
+Both histories are available as read-only inlines on their respective Django
+Admin file pages. To compare a submission across parsers, search for its file ID
+in the Base Log admin view and use the shared event ID, source, and content type
+to distinguish each processing attempt. Reparses retain their own event IDs.
+
+The PostgreSQL tests for state persistence, correlation, and rollback run when
+`TEST_DATABASE_URL` is set to a disposable test database:
+
+```sh
+go test -count=1 ./internal/db -run TestUpdateShadowDataFileState
+```
+
+These tests create and remove an isolated schema and require schema creation
+permission. They are skipped when `TEST_DATABASE_URL` is unset.
 
 ---
 

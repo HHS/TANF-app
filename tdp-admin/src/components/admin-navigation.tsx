@@ -201,18 +201,33 @@ function NavGroup({
 
 export default function AdminNavigation({
   roles,
+  hasDjangoAdminAccess = false,
 }: {
   roles?: readonly AdminRoleValue[] | null;
+  hasDjangoAdminAccess?: boolean;
 }) {
   const currentPath = usePathname() || "/";
-  const navigationTitle = useMemo(() => getAdminNavigationTitle(roles), [roles]);
+  const navigationTitle = useMemo(
+    () => getAdminNavigationTitle(roles, hasDjangoAdminAccess),
+    [roles, hasDjangoAdminAccess]
+  );
   const primaryItems = useMemo(
-    () => getVisibleAdminNavItems(roles, ADMIN_PRIMARY_NAV_ITEMS),
-    [roles]
+    () =>
+      getVisibleAdminNavItems(
+        roles,
+        ADMIN_PRIMARY_NAV_ITEMS,
+        hasDjangoAdminAccess
+      ),
+    [roles, hasDjangoAdminAccess]
   );
   const dashboardItems = useMemo(
-    () => getVisibleAdminNavItems(roles, ADMIN_DASHBOARD_NAV_ITEMS),
-    [roles]
+    () =>
+      getVisibleAdminNavItems(
+        roles,
+        ADMIN_DASHBOARD_NAV_ITEMS,
+        hasDjangoAdminAccess
+      ),
+    [roles, hasDjangoAdminAccess]
   );
   const defaultExpandedIds = useMemo(
     () => getDefaultExpandedAdminNavIds(currentPath, primaryItems),

@@ -14,7 +14,7 @@ class Command(BaseCommand):
 
         self.stdout.write("Starting bulk sync of users to Keycloak...")
 
-        client = KeycloakSyncClient.get_instance()
+        client = KeycloakSyncClient.get_sync_client()
         stats = client.bulk_sync_all_users()
 
         self.stdout.write(

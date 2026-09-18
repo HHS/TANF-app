@@ -20,6 +20,7 @@ class ReportFileFactory(factory.django.DjangoModelFactory):
     original_filename = "report.zip"
     slug = "report.zip"
     extension = "zip"
+    downloaded_at = None
     date_extracted_on = datetime.date(2024, 2, 28)
     year = 2024
     report_type = ReportType.TANF_SSP

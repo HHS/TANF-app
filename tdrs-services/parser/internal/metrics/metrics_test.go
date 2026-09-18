@@ -191,6 +191,29 @@ func TestStartServerExposesLocalServerModeMetrics(t *testing.T) {
 	assertContains(t, string(bodyBytes), `go_parser_files_processed_total{program="TAN",section="1",server_mode="local",status="success"} 1`)
 }
 
+func TestMetricServerShutdownDoesNotResetNewerDefaultRegistry(t *testing.T) {
+	staleRegistry := NewRegistry("celery")
+	currentRegistry := NewRegistry("local")
+	UseDefault(currentRegistry)
+	defer ResetDefault()
+
+	staleServer := &MetricServer{
+		httpServer: &http.Server{},
+		registry:   staleRegistry,
+	}
+	if err := staleServer.Shutdown(context.Background()); err != nil {
+		t.Fatalf("Shutdown failed: %v", err)
+	}
+
+	RecordFileProcessed("TAN", 1, "success")
+
+	req := httptest.NewRequest(http.MethodGet, "/metrics", nil)
+	rec := httptest.NewRecorder()
+	currentRegistry.ServeHTTP(rec, req)
+
+	assertContains(t, rec.Body.String(), `go_parser_files_processed_total{program="TAN",section="1",server_mode="local",status="success"} 1`)
+}
+
 func TestStartServerRejectsRelativePath(t *testing.T) {
 	_, err := StartMetricServer(context.Background(), MetricServerConfig{
 		ServerMode:    "celery",

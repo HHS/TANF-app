@@ -1,20 +1,31 @@
 """Define API views for reports app."""
 
+import logging
 from wsgiref.util import FileWrapper
 
+from django.db import DatabaseError
+from django.db.models import Count, F, Min, Q
 from django.http import FileResponse
+from django.utils import timezone
 
 from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from tdpservice.reports.models import ReportFile, ReportSource
-from tdpservice.reports.serializers import ReportFileSerializer, ReportSourceSerializer
+from tdpservice.reports.serializers import (
+    ReportFileSerializer,
+    ReportSourceDownloadStatisticsSerializer,
+    ReportSourceSerializer,
+)
 from tdpservice.reports.tasks import process_report_source
 from tdpservice.users.permissions import (
     IsApprovedPermission,
     ReportFilePermissions,
     ReportSourcePermissions,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class ReportFileViewSet(ModelViewSet):
@@ -69,16 +80,38 @@ class ReportFileViewSet(ModelViewSet):
 
     @action(methods=["get"], detail=True)
     def download(self, request, pk=None):
-        """Retrieve a file from s3 then stream it to the client."""
-        obj = self.get_object()
-        return FileResponse(FileWrapper(obj.file), filename=obj.original_filename)
+        """Stream a report and record its first Data Analyst download."""
+        report_file = self.get_object()
+        response = FileResponse(
+            FileWrapper(report_file.file), filename=report_file.original_filename
+        )
+
+        if request.method == "GET" and request.user.is_data_analyst:
+            try:
+                ReportFile.objects.filter(
+                    pk=report_file.pk,
+                    downloaded_at__isnull=True,
+                ).update(downloaded_at=timezone.now())
+            except DatabaseError:
+                logger.exception(
+                    "Failed to record download for report file %s", report_file.pk
+                )
+
+        return response
 
 
 class ReportSourceViewSet(ModelViewSet):
     """Report source views for batch uploading report files."""
 
     http_method_names = ["get", "post", "head", "options"]
-    queryset = ReportSource.objects.all().order_by("-created_at")
+    queryset = ReportSource.objects.annotate(
+        downloaded_count=Count(
+            "report_files__stt",
+            filter=Q(report_files__downloaded_at__isnull=False),
+            distinct=True,
+        ),
+        total_count=Count("report_files__stt", distinct=True),
+    ).order_by("-created_at")
     serializer_class = ReportSourceSerializer
     permission_classes = [ReportSourcePermissions, IsApprovedPermission]
 
@@ -111,3 +144,41 @@ class ReportSourceViewSet(ModelViewSet):
         process_report_source.delay(response.data.get("id"))
 
         return response
+
+    @action(methods=["get"], detail=True, url_path="download-statistics")
+    def download_statistics(self, request, pk=None):
+        """Return region-grouped STT download statistics for a report source."""
+        report_source = self.get_object()
+        report_rows = list(
+            report_source.report_files.filter(stt__isnull=False)
+            .values("stt_id", "stt__name", "stt__region_id")
+            .annotate(downloaded_at=Min("downloaded_at"))
+            .order_by(
+                F("stt__region_id").asc(nulls_last=True),
+                "stt__name",
+            )
+        )
+
+        regions = []
+        for row in report_rows:
+            region_id = row["stt__region_id"]
+            if not regions or regions[-1]["id"] != region_id:
+                regions.append({"id": region_id, "stts": []})
+
+            regions[-1]["stts"].append(
+                {
+                    "id": row["stt_id"],
+                    "name": row["stt__name"],
+                    "downloaded_at": row["downloaded_at"],
+                }
+            )
+
+        response_data = {
+            "report_source_id": report_source.id,
+            "downloaded_count": sum(
+                row["downloaded_at"] is not None for row in report_rows
+            ),
+            "total_count": len(report_rows),
+            "regions": regions,
+        }
+        return Response(ReportSourceDownloadStatisticsSerializer(response_data).data)

@@ -350,6 +350,7 @@ type MetricServerConfig struct {
 type MetricServer struct {
 	httpServer *http.Server
 	listener   net.Listener
+	registry   *Registry
 	once       sync.Once
 	err        error
 }
@@ -387,6 +388,7 @@ func StartMetricServer(ctx context.Context, cfg MetricServerConfig) (*MetricServ
 	server := &MetricServer{
 		httpServer: &http.Server{Handler: mux},
 		listener:   listener,
+		registry:   registry,
 	}
 
 	go func() {
@@ -423,17 +425,28 @@ func (s *MetricServer) Address() string {
 
 // Shutdown stops the metrics HTTP server and disables process-wide recording.
 func (s *MetricServer) Shutdown(ctx context.Context) error {
-	ResetDefault()
 	if s == nil || s.httpServer == nil {
 		return nil
 	}
 	s.once.Do(func() {
+		resetDefaultRegistry(s.registry)
 		s.err = s.httpServer.Shutdown(ctx)
 	})
 	if errors.Is(s.err, http.ErrServerClosed) {
 		return nil
 	}
 	return s.err
+}
+
+func resetDefaultRegistry(registry *Registry) {
+	if registry == nil {
+		return
+	}
+	defaultMu.Lock()
+	defer defaultMu.Unlock()
+	if current, ok := defaultRecorder.(*Registry); ok && current == registry {
+		defaultRecorder = noopRecorder{}
+	}
 }
 
 // RecordFileProcessed increments the file counter with success/failure status.

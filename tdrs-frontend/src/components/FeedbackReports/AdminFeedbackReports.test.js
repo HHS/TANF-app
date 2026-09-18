@@ -1,6 +1,6 @@
 import React from 'react'
 import { Provider } from 'react-redux'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { act, render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import configureStore from 'redux-mock-store'
 import { thunk } from 'redux-thunk'
@@ -812,6 +812,227 @@ describe('AdminFeedbackReports', () => {
       await waitFor(() => {
         expect(screen.getByText('new.zip')).toBeInTheDocument()
       })
+    })
+
+    it('loads statistics only after a source count is selected', async () => {
+      const mockHistory = [
+        {
+          id: 42,
+          year: 2025,
+          date_extracted_on: '2025-02-28',
+          created_at: '2025-03-05T10:31:00Z',
+          processed_at: '2025-03-05T10:41:00Z',
+          status: 'SUCCEEDED',
+          original_filename: 'FY2025.zip',
+          file: 'https://example.com/FY2025.zip',
+          downloaded_count: 1,
+          total_count: 2,
+        },
+      ]
+      const statistics = {
+        report_source_id: 42,
+        downloaded_count: 1,
+        total_count: 2,
+        regions: [
+          {
+            id: 1,
+            stts: [
+              {
+                id: 1,
+                name: 'Alabama',
+                downloaded_at: '2026-08-10T14:10:00Z',
+              },
+              { id: 2, name: 'Alaska', downloaded_at: null },
+            ],
+          },
+        ],
+      }
+      get.mockImplementation((url) =>
+        Promise.resolve(
+          url.includes('/download-statistics/')
+            ? { data: statistics, ok: true, status: 200, error: null }
+            : {
+                data: { results: mockHistory },
+                ok: true,
+                status: 200,
+                error: null,
+              }
+        )
+      )
+
+      renderComponent()
+      await selectFiscalYear('2025')
+      const countButton = await screen.findByRole('button', {
+        name: /View download statistics for FY2025.zip/,
+      })
+      expect(
+        get.mock.calls.some(([url]) => url.includes('/download-statistics/'))
+      ).toBe(false)
+
+      fireEvent.click(countButton)
+
+      await waitFor(() => {
+        expect(get).toHaveBeenCalledWith(
+          expect.stringContaining(
+            '/reports/report-sources/42/download-statistics/'
+          )
+        )
+      })
+      expect(screen.getByText(/1 of 2 jurisdictions/)).toBeInTheDocument()
+      expect(screen.getByText('Alabama')).toBeInTheDocument()
+      expect(screen.getByText('Not yet downloaded')).toBeInTheDocument()
+    })
+
+    it('shows statistics loading and request error states', async () => {
+      const consoleError = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
+      let resolveStatistics
+      get.mockImplementation((url) => {
+        if (url.includes('/download-statistics/')) {
+          return new Promise((resolve) => {
+            resolveStatistics = resolve
+          })
+        }
+        return Promise.resolve({
+          data: {
+            results: [
+              {
+                id: 42,
+                original_filename: 'FY2025.zip',
+                downloaded_count: 0,
+              },
+            ],
+          },
+          ok: true,
+          status: 200,
+          error: null,
+        })
+      })
+
+      renderComponent()
+      await selectFiscalYear('2025')
+      fireEvent.click(
+        await screen.findByRole('button', {
+          name: /View download statistics for FY2025.zip/,
+        })
+      )
+      expect(screen.getByRole('status')).toHaveTextContent(
+        'Loading download statistics...'
+      )
+
+      await act(async () => {
+        resolveStatistics({
+          data: null,
+          ok: false,
+          status: 500,
+          error: new Error('Request failed'),
+        })
+      })
+
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'Failed to load download statistics. Please try again.'
+      )
+      expect(consoleError).toHaveBeenCalledWith(
+        'Failed to fetch download statistics:',
+        expect.any(Error)
+      )
+    })
+
+    it('clears statistics when the report type changes', async () => {
+      get.mockImplementation((url) =>
+        Promise.resolve(
+          url.includes('/download-statistics/')
+            ? {
+                data: {
+                  report_source_id: 42,
+                  downloaded_count: 0,
+                  total_count: 0,
+                  regions: [],
+                },
+                ok: true,
+                status: 200,
+                error: null,
+              }
+            : {
+                data: {
+                  results: [
+                    {
+                      id: 42,
+                      original_filename: 'FY2025.zip',
+                      downloaded_count: 0,
+                    },
+                  ],
+                },
+                ok: true,
+                status: 200,
+                error: null,
+              }
+        )
+      )
+
+      renderComponent()
+      await selectFiscalYear('2025')
+      fireEvent.click(
+        await screen.findByRole('button', {
+          name: /View download statistics for FY2025.zip/,
+        })
+      )
+      expect(await screen.findByRole('dialog')).toBeInTheDocument()
+
+      fireEvent.click(screen.getByLabelText('FRA'))
+
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+
+    it('ignores a statistics response after the modal closes', async () => {
+      let resolveStatistics
+      get.mockImplementation((url) => {
+        if (url.includes('/download-statistics/')) {
+          return new Promise((resolve) => {
+            resolveStatistics = resolve
+          })
+        }
+        return Promise.resolve({
+          data: {
+            results: [
+              {
+                id: 42,
+                original_filename: 'FY2025.zip',
+                downloaded_count: 0,
+              },
+            ],
+          },
+          ok: true,
+          status: 200,
+          error: null,
+        })
+      })
+
+      renderComponent()
+      await selectFiscalYear('2025')
+      fireEvent.click(
+        await screen.findByRole('button', {
+          name: /View download statistics for FY2025.zip/,
+        })
+      )
+      fireEvent.click(screen.getByRole('button', { name: 'Close' }))
+
+      await act(async () => {
+        resolveStatistics({
+          data: {
+            report_source_id: 42,
+            downloaded_count: 0,
+            total_count: 0,
+            regions: [],
+          },
+          ok: true,
+          status: 200,
+          error: null,
+        })
+      })
+
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     })
   })
 

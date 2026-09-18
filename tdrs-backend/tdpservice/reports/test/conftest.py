@@ -198,3 +198,102 @@ def other_region_report_file_instance(regional_user):
         stt=other_stt,
         user=regional_user,
     )
+
+
+@pytest.fixture
+def report_source_statistics(ofa_system_admin):
+    """Return a source with downloaded, pending, duplicate, and unassigned STTs."""
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from tdpservice.reports.test.factories import ReportSourceFactory
+    from tdpservice.stts.models import STT, Region
+
+    source = ReportSourceFactory.create(
+        uploaded_by=ofa_system_admin,
+        status="SUCCEEDED",
+    )
+    other_source = ReportSourceFactory.create(uploaded_by=ofa_system_admin)
+    region_two, _ = Region.objects.get_or_create(id=2, defaults={"name": "New York"})
+    region_four, _ = Region.objects.get_or_create(id=4, defaults={"name": "Atlanta"})
+    alabama, _ = STT.objects.get_or_create(
+        name="Alabama Statistics",
+        defaults={"region": region_four, "stt_code": "01"},
+    )
+    florida, _ = STT.objects.get_or_create(
+        name="Florida Statistics",
+        defaults={"region": region_four, "stt_code": "12"},
+    )
+    new_jersey, _ = STT.objects.get_or_create(
+        name="New Jersey Statistics",
+        defaults={"region": region_two, "stt_code": "34"},
+    )
+    unassigned, _ = STT.objects.get_or_create(
+        name="Unassigned Statistics",
+        defaults={"region": None, "stt_code": "98"},
+    )
+    other_only, _ = STT.objects.get_or_create(
+        name="Other Source Statistics",
+        defaults={"region": region_two, "stt_code": "97"},
+    )
+    first_download = (timezone.now() - timedelta(days=2)).replace(microsecond=0)
+    later_download = (timezone.now() - timedelta(days=1)).replace(microsecond=0)
+
+    ReportFileFactory.create(
+        source=source,
+        stt=alabama,
+        user=ofa_system_admin,
+        version=1,
+        downloaded_at=later_download,
+        file=None,
+    )
+    ReportFileFactory.create(
+        source=source,
+        stt=alabama,
+        user=ofa_system_admin,
+        version=2,
+        downloaded_at=first_download,
+        file=None,
+    )
+    ReportFileFactory.create(
+        source=source,
+        stt=florida,
+        user=ofa_system_admin,
+        downloaded_at=None,
+        file=None,
+    )
+    ReportFileFactory.create(
+        source=source,
+        stt=new_jersey,
+        user=ofa_system_admin,
+        downloaded_at=later_download,
+        file=None,
+    )
+    ReportFileFactory.create(
+        source=source,
+        stt=unassigned,
+        user=ofa_system_admin,
+        downloaded_at=None,
+        file=None,
+    )
+    ReportFileFactory.create(
+        source=source,
+        stt=None,
+        user=ofa_system_admin,
+        file=None,
+    )
+    ReportFileFactory.create(
+        source=other_source,
+        stt=other_only,
+        user=ofa_system_admin,
+        downloaded_at=later_download,
+        file=None,
+    )
+
+    return {
+        "source": source,
+        "other_source": other_source,
+        "first_download": first_download,
+        "later_download": later_download,
+    }

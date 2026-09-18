@@ -59,6 +59,27 @@ describe("admin navigation helpers", () => {
     ]);
   });
 
+  it("shows full navigation to Django admins without a TDP role", () => {
+    const items = getVisibleAdminNavItems(
+      [],
+      ADMIN_PRIMARY_NAV_ITEMS,
+      true
+    );
+    const dashboardItems = getVisibleAdminNavItems(
+      [],
+      ADMIN_DASHBOARD_NAV_ITEMS,
+      true
+    );
+
+    expect(getAdminNavigationTitle([], true)).toBe("System Admin");
+    expect(items.map((item) => item.id)).toEqual(
+      ADMIN_PRIMARY_NAV_ITEMS.map((item) => item.id)
+    );
+    expect(dashboardItems.map((item) => item.id)).toEqual(
+      ADMIN_DASHBOARD_NAV_ITEMS.map((item) => item.id)
+    );
+  });
+
   it("shows ACF OCIO navigation", () => {
     const items = getVisibleAdminNavItems([ACF_OCIO_ROLE]);
 

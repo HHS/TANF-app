@@ -8,6 +8,39 @@
 
 ---
 
+## Implementation Update — 2026-08-28
+
+The lifecycle is implemented as an exclusive, function-based controller in
+`data_files/submission_lifecycle.py`; the class-shaped interface below records
+the original design direction. The implemented ownership rules are:
+
+- Production callers express intent to the controller and cannot choose or
+  persist a target state directly. API and admin state fields are read-only.
+- Every parse dispatch receives an ephemeral UUID stored in
+  `DataFile.current_parse_token`. Only that token may write production
+  summaries, errors, or records while the file is in `PARSE_STARTED`.
+- `DataFile.state_changed_at` records when the current state began, and each
+  production transition emits a structured log. No secondary lifecycle or
+  transition-history models are required.
+- Celery beat checks active submissions hourly by default. Activity older than
+  one day is moved to `STUCK`. An unfinished reparse is moved to `STUCK` sooner
+  when its `ReparseMeta.timeout_at` deadline expires. Detection is centralized
+  in `get_stale_lifecycle_files()`, and the earlier applicable deadline wins.
+  The transition revokes the parser token and fails any unfinished reparse
+  metadata. The lifecycle timeout and checker interval are configurable for
+  non-production E2E environments. The checker runs on a dedicated `lifecycle`
+  Celery queue so a hung parser cannot prevent its own timeout. `STUCK` may
+  re-enter through `REPARSE_REQUESTED`.
+- Python owns production state. The Go parser passes the parse token back to
+  Python and fences its production data writes against that token; it does
+  not update `DataFile.state`.
+
+The timeout check locks and revalidates the row before changing state. If a
+parser completes after selection but before that lock is acquired, completion
+wins and the stale monitor performs no transition.
+
+---
+
 ## 1. Executive Summary
 
 ### PM/UX/OFA Value
@@ -181,15 +214,16 @@ def post_parse(
 This is unchanged from the existing `ALLOWED_TRANSITIONS` dict in `submission_lifecycle.py`. The orchestrator enforces it; it does not replace it.
 
 ```
-UPLOADED              → VIRUS_SCAN_STARTED, CANCELED
-VIRUS_SCAN_STARTED    → VIRUS_SCAN_FAILED, VIRUS_SCAN_COMPLETED, CANCELED
+UPLOADED              → VIRUS_SCAN_STARTED, STUCK, CANCELED
+VIRUS_SCAN_STARTED    → VIRUS_SCAN_FAILED, VIRUS_SCAN_COMPLETED, STUCK, CANCELED
 VIRUS_SCAN_FAILED     → CANCELED
-VIRUS_SCAN_COMPLETED  → PARSE_STARTED, CANCELED
-PARSE_STARTED         → PARSE_FAILED, PARSED_WITH_ERRORS, PARSE_COMPLETED, CANCELED
-PARSE_FAILED          → PARSE_STARTED, CANCELED
-PARSED_WITH_ERRORS    → PARSE_STARTED, COMPLETED, CANCELED
-PARSE_COMPLETED       → PARSE_STARTED, COMPLETED, CANCELED
-STUCK                 → CANCELED
+VIRUS_SCAN_COMPLETED  → REPARSE_REQUESTED, PARSE_STARTED, PARSE_FAILED, STUCK, CANCELED
+REPARSE_REQUESTED     → PARSE_STARTED, PARSE_FAILED, STUCK, CANCELED
+PARSE_STARTED         → PARSE_FAILED, PARSED_WITH_ERRORS, PARSE_COMPLETED, STUCK, CANCELED
+PARSE_FAILED          → REPARSE_REQUESTED, PARSE_STARTED, CANCELED
+PARSED_WITH_ERRORS    → REPARSE_REQUESTED, PARSE_STARTED, COMPLETED, CANCELED
+PARSE_COMPLETED       → REPARSE_REQUESTED, PARSE_STARTED, COMPLETED, CANCELED
+STUCK                 → REPARSE_REQUESTED, CANCELED
 COMPLETED             → (none)
 CANCELED              → (none)
 ```
@@ -504,11 +538,11 @@ Before each phase ships to production:
 
 | # | Question | Owner | Target Resolution |
 |---|---|---|---|
-| OQ-1 | Should `LifecycleEvent` be a DB model or a structured log key? A DB model supports future admin UI timelines but adds a migration and a write on every transition. | Backend Lead + PM | Phase 1 planning |
+| OQ-1 | **Resolved:** `DataFile.state_changed_at` records current-state age and transitions emit structured logs; no second audit model is introduced. | Backend Lead + PM | Implemented |
 | OQ-2 | Should `COMPLETED` be reachable from `PARSED_WITH_ERRORS` directly (current), or only via an explicit analyst review action? | PM + OFA | Before Phase 3 |
 | OQ-3 | What is the correct `finalize()` trigger? Currently there is no explicit `→ COMPLETED` call in the codebase. `PARSE_COMPLETED` and `PARSED_WITH_ERRORS` are both treated as terminal in the UI. The orchestrator's `finalize()` method needs a caller. | Engineering + PM | Phase 3 design |
-| OQ-4 | What exact payload should Go pass to Python `post_parse`? At minimum it needs `data_file_id`, `parser_backend`, and `reparse_id`; it may also need task outcome, parser completion timestamp, and failure reason so Django can emit accurate post-parse metrics and lifecycle events. | Backend + Go team | Phase 4 planning |
-| OQ-5 | Timeout / `STUCK` automation: what process monitors `PARSE_STARTED` age and calls `mark_stuck()`? Celery beat task? Health check? | Engineering | Phase 4 |
+| OQ-4 | **Resolved for state ownership:** Go passes `data_file_id`, `reparse_id`, parse error, and `parse_token` to Python `post_parse`; Python derives and records the state outcome. | Backend + Go team | Implemented |
+| OQ-5 | **Resolved:** the hourly Celery beat task `mark_stale_files_stuck` marks active lifecycle work `STUCK` after the earlier applicable deadline: the generic one-day lifecycle threshold or an unfinished reparse's `ReparseMeta.timeout_at`. It is routed to a dedicated `lifecycle` worker so parser saturation cannot block the monitor. `STALE_PARSE_TIMEOUT_SECONDS` and `STALE_PARSE_CHECK_INTERVAL_SECONDS` accelerate non-production E2E coverage without changing production defaults. | Engineering | Implemented |
 | OQ-6 | Status string mismatch between Go worker (`"Partially Accepted"`) and Django (`"Partially Accepted with Errors"`) (#5735). Which is canonical? Fix must be coordinated before Python `post_parse` derives `DataFile.state` from Go parser output. | Backend + Go team | Before Phase 4 |
 | OQ-7 | Should `VIRUS_SCAN_FAILED` be re-entrant? Currently there is no path from `VIRUS_SCAN_FAILED → VIRUS_SCAN_STARTED`. If OFA wants to allow a re-upload without creating a new DataFile, the transition map needs to change. | PM + OFA | Phase 1 planning |
 | OQ-8 | What is the Go parser's integration mode? Options: (a) **canary** — both parsers run concurrently, Python result is authoritative; (b) **replacement** — Go replaces Python for supported file types, Python does not run; (c) **comparison** — both run, results are diffed, neither is authoritative. This decision determines whether `go_parse.delay()` is dispatched from `enqueue_parse()`, which queue owns `DataFileSummary` writes, and how the race condition between the two workers is resolved. Currently no production code dispatches `go_parse.delay()`. | Backend + Go team + PM | Before Phase 2 |

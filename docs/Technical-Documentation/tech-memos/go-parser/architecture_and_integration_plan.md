@@ -550,7 +550,7 @@ Before widening the canary beyond the initial allowlist, the Go parser must hand
 - [ ] Duplicate detection
 - [ ] DataFileSummary status updates
 - [ ] Parser error records with correct line numbers, field names, and error messages
-- [ ] Reparse handling (The Reparse Service should handle the queing, deleting, etc.)
+- [ ] Reparse handling (The Reparse Service should handle the queuing, deleting, etc.)
 
 ---
 
