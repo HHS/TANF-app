@@ -41,7 +41,9 @@ def validate_file_extension(file_name: str, is_fra: bool = False):
     )
 
     allowed_ext_patterns = "|".join(allowed_list)
-    if file_extension is not None and not re.match(
+    # fullmatch, not match: the entries that are plain strings rather than
+    # patterns carry no anchors, so txtcsv would pass on its txt prefix.
+    if file_extension is not None and not re.fullmatch(
         allowed_ext_patterns, file_extension
     ):
         msg = _get_unsupported_msg("file extension", file_extension, allowed_list)

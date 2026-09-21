@@ -109,12 +109,28 @@ def test_accepts_valid_file_extensions(file_name):
         "ADS.E2J.FTP1.TS38WRONG",
         "ADS.E2J.FTP1.MS38483",
         "ADS.E2J.FTP1.MS38WRONG",
+        "ADS.E2J.FTP4.TS06.txtcsv",
+        "ADS.E2J.FTP4.TS06.txtzip",
     ],
 )
 def test_rejects_invalid_file_extensions(file_name):
     """Test invalid file names are rejected by serializer validation."""
     with pytest.raises(ValidationError):
         validate_file_extension(file_name)
+
+
+@pytest.mark.parametrize(
+    "file_name",
+    [
+        "fra.csvzip",
+        "fra.xlsxabc",
+        "fra.csv.exe",
+    ],
+)
+def test_rejects_invalid_fra_file_extensions(file_name):
+    """Test FRA file names are matched whole, not by prefix."""
+    with pytest.raises(ValidationError):
+        validate_file_extension(file_name, is_fra=True)
 
 
 @pytest.mark.django_db
