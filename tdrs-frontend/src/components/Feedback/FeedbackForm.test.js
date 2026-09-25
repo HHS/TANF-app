@@ -85,6 +85,142 @@ describe('Feedback Form tests', () => {
     reactRedux.useSelector.mockImplementation(() => true)
   })
 
+  it.each([true, false])(
+    'blocks duplicate rating and submit requests while pending (general: %s)',
+    async (isGeneralFeedback) => {
+      let resolvePost
+      let resolvePatch
+      post.mockReturnValue(
+        new Promise((resolve) => {
+          resolvePost = resolve
+        })
+      )
+      patch.mockReturnValue(
+        new Promise((resolve) => {
+          resolvePatch = resolve
+        })
+      )
+
+      render(
+        <FeedbackForm
+          isGeneralFeedback={isGeneralFeedback}
+          onFeedbackSubmit={mockOnFeedbackSubmit}
+        />
+      )
+      fireEvent.click(screen.getByTestId('feedback-radio-input-3'))
+      const button = screen.getByRole('button', { name: /send feedback/i })
+      const textarea = screen.getByTestId('feedback-message-input')
+      expect(button).toBeDisabled()
+
+      const tryDuplicateRequests = () => {
+        fireEvent.click(button)
+        fireEvent.keyDown(button, { key: 'Enter' })
+        textarea.focus()
+        fireEvent.keyDown(window, { key: 'Enter', ctrlKey: true })
+        fireEvent.keyDown(window, { key: 'Enter', metaKey: true })
+        fireEvent.click(screen.getByTestId('feedback-radio-input-4'))
+      }
+      tryDuplicateRequests()
+      expect(post).toHaveBeenCalledTimes(1)
+      expect(patch).not.toHaveBeenCalled()
+      expect(screen.getByTestId('feedback-radio-input-3')).toBeChecked()
+
+      await act(async () => {
+        resolvePost({ ok: true, data: { id: 42 } })
+      })
+      expect(button).toBeEnabled()
+      expect(mockOnFeedbackSubmit).not.toHaveBeenCalled()
+
+      fireEvent.change(textarea, { target: { value: 'My feedback' } })
+      fireEvent.click(screen.getByLabelText('Send anonymously'))
+      fireEvent.click(button)
+      expect(button).toBeDisabled()
+      tryDuplicateRequests()
+      expect(post).toHaveBeenCalledTimes(1)
+      expect(patch).toHaveBeenCalledTimes(1)
+      expect(patch).toHaveBeenCalledWith(
+        expect.stringContaining('/feedback/42/'),
+        expect.objectContaining({
+          rating: 3,
+          feedback: 'My feedback',
+          anonymous: true,
+        })
+      )
+
+      await act(async () => {
+        resolvePatch({ ok: true, data: { id: 42 } })
+      })
+      expect(mockOnFeedbackSubmit).toHaveBeenCalledTimes(1)
+      if (isGeneralFeedback) expect(button).toBeEnabled()
+    }
+  )
+
+  it.each([
+    ['POST', false],
+    ['POST', true],
+    ['PATCH', false],
+    ['PATCH', true],
+  ])(
+    'allows retry after a failed %s request (rejected: %s)',
+    async (method, rejected) => {
+      const consoleSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
+      const onRequestError = jest.fn()
+      const successResponse = { ok: true, data: { id: 42 } }
+      post.mockResolvedValue(successResponse)
+      patch.mockResolvedValue(successResponse)
+
+      let resolveRequest
+      let rejectRequest
+      const request = method === 'POST' ? post : patch
+      request.mockReturnValueOnce(
+        new Promise((resolve, reject) => {
+          resolveRequest = resolve
+          rejectRequest = reject
+        })
+      )
+
+      render(
+        <FeedbackForm
+          isGeneralFeedback={true}
+          onFeedbackSubmit={mockOnFeedbackSubmit}
+          onRequestError={onRequestError}
+        />
+      )
+      const button = screen.getByRole('button', { name: /send feedback/i })
+      fireEvent.change(screen.getByTestId('feedback-message-input'), {
+        target: { value: 'Keep this feedback' },
+      })
+      fireEvent.click(screen.getByLabelText('Send anonymously'))
+      fireEvent.click(screen.getByTestId('feedback-radio-input-3'))
+      if (method === 'PATCH') {
+        await waitFor(() => expect(button).toBeEnabled())
+        fireEvent.click(button)
+      }
+      expect(button).toBeDisabled()
+
+      await act(async () => {
+        const error = new Error('Request failed')
+        if (rejected) rejectRequest(error)
+        else resolveRequest({ ok: false, error })
+      })
+      expect(button).toBeEnabled()
+      expect(mockOnFeedbackSubmit).not.toHaveBeenCalled()
+      expect(onRequestError).toHaveBeenCalledTimes(1)
+      expect(screen.getByTestId('feedback-message-input')).toHaveValue(
+        'Keep this feedback'
+      )
+      expect(screen.getByLabelText('Send anonymously')).toBeChecked()
+
+      fireEvent.click(button)
+      await waitFor(() => expect(mockOnFeedbackSubmit).toHaveBeenCalledTimes(1))
+      expect(request).toHaveBeenCalledTimes(2)
+      expect(button).toBeEnabled()
+      consoleSpy.mockRestore()
+    }
+  )
+
   it('renders feedback form', () => {
     render(
       <FeedbackForm
@@ -376,6 +512,7 @@ describe('Feedback Form tests', () => {
     fireEvent.click(screen.getByTestId('feedback-radio-input-3'))
 
     const button = screen.getByTestId('feedback-submit-button')
+    await waitFor(() => expect(button).toBeEnabled())
     // Focus the button and simulate Enter keypress
     button.focus()
     fireEvent.keyDown(button, { key: 'Enter', code: 'Enter' })
@@ -452,6 +589,9 @@ describe('Feedback Form tests', () => {
     })
     fireEvent.click(screen.getByLabelText(/Send anonymously/i))
 
+    await waitFor(() =>
+      expect(screen.getByTestId('feedback-submit-button')).toBeEnabled()
+    )
     fireEvent.click(screen.getByRole('button', { name: /send feedback/i }))
 
     await waitFor(() => {

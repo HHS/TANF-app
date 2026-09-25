@@ -1,6 +1,6 @@
 # Keycloak Integration
 
-Keycloak acts as a centralized **OpenID Connect (OIDC) broker** between the TDP application and multiple identity providers (Login.gov and AMS).
+Keycloak acts as the **OpenID Connect (OIDC) broker** between TDP applications and multiple identity providers (Login.gov and AMS). The standard TDP frontend uses the `tdp` realm; the standalone admin frontend uses the dedicated `tdp-admin` realm so browser SSO and logout boundaries remain separate.
 
 ```
 User -> Frontend -> Django /v2/ -> Keycloak -> Identity Provider (Login.gov / AMS)
@@ -15,6 +15,7 @@ User -> Frontend -> Django /v2/ -> Keycloak -> Identity Provider (Login.gov / AM
 |---|---|
 | `Dockerfile` | Keycloak 26.5 image with nginx proxying and the config-cli jar copied from `adorsys/keycloak-config-cli` |
 | `realm-configs/` | Full realm exports for `dev-local`, `staging`, and `prod` |
+| `select-realm-config.sh` | Copies the correct checked-in standard and admin realm exports into Keycloak's import path based on `DEPLOY_ENV` |
 | `normalize-login-gov-key.sh` | Decodes the base64 Login.gov private key and runs `keycloak-config-cli` |
 | `deploy.sh` | Cloud Foundry deployment script for cloud.gov |
 | `manifest.yml` | Cloud.gov manifest template |
@@ -48,7 +49,8 @@ The Keycloak entrypoint automatically imports the local realm export after Keycl
 ### Verifying the Setup
 
 1. Keycloak health check: http://localhost:9001/health/ready
-2. Realm discovery: http://localhost:8443/realms/tdp/.well-known/openid-configuration
+2. Standard realm discovery: http://localhost:8443/realms/tdp/.well-known/openid-configuration
+3. Admin realm discovery: http://localhost:8443/realms/tdp-admin/.well-known/openid-configuration
 
 ## Environment Variables
 
@@ -66,6 +68,7 @@ The Keycloak entrypoint automatically imports the local realm export after Keycl
 | `KEYCLOAK_ADMIN_CLIENT_SECRET` | `tdp-django-local-secret` | Client secret for admin API access |
 | `KEYCLOAK_DJANGO_CLIENT_ID` | `tdp-django` | Client ID for OIDC authentication |
 | `KEYCLOAK_DJANGO_CLIENT_SECRET` | `tdp-django-local-secret` | Client secret for OIDC authentication |
+| `KEYCLOAK_TDP_ADMIN_REALM` | `tdp-admin` | Dedicated Keycloak realm name for standalone admin console authentication |
 | `KEYCLOAK_TDP_ADMIN_CLIENT_ID` | `tdp-admin` | Client ID for the standalone admin console OIDC flow |
 | `KEYCLOAK_TDP_ADMIN_CLIENT_SECRET` | `tdp-admin-local-secret` | Client secret for the standalone admin console OIDC flow |
 | `ADMIN_FRONTEND_BASE_URL` | `http://localhost:3001` | Browser-facing admin console URL used for admin login/logout redirects |
@@ -87,8 +90,13 @@ These are derived from the Keycloak variables above in `settings/common.py`:
 | `OIDC_OP_USER_ENDPOINT` | `{KEYCLOAK_SERVER_URL}/realms/tdp/protocol/openid-connect/userinfo` |
 | `OIDC_OP_JWKS_ENDPOINT` | `{KEYCLOAK_SERVER_URL}/realms/tdp/protocol/openid-connect/certs` |
 | `OIDC_OP_LOGOUT_ENDPOINT` | `{KEYCLOAK_BROWSER_URL}/realms/tdp/protocol/openid-connect/logout` |
+| `KEYCLOAK_TDP_ADMIN_AUTHORIZATION_ENDPOINT` | `{KEYCLOAK_BROWSER_URL}/realms/tdp-admin/protocol/openid-connect/auth` |
+| `KEYCLOAK_TDP_ADMIN_TOKEN_ENDPOINT` | `{KEYCLOAK_SERVER_URL}/realms/tdp-admin/protocol/openid-connect/token` |
+| `KEYCLOAK_TDP_ADMIN_USER_ENDPOINT` | `{KEYCLOAK_SERVER_URL}/realms/tdp-admin/protocol/openid-connect/userinfo` |
+| `KEYCLOAK_TDP_ADMIN_JWKS_ENDPOINT` | `{KEYCLOAK_SERVER_URL}/realms/tdp-admin/protocol/openid-connect/certs` |
+| `KEYCLOAK_TDP_ADMIN_LOGOUT_ENDPOINT` | `{KEYCLOAK_BROWSER_URL}/realms/tdp-admin/protocol/openid-connect/logout` |
 
-Note: `OIDC_OP_AUTHORIZATION_ENDPOINT` and `OIDC_OP_LOGOUT_ENDPOINT` use `KEYCLOAK_BROWSER_URL` because the browser redirects to these. The token/userinfo/JWKS endpoints use `KEYCLOAK_SERVER_URL` because they are server-to-server calls.
+Note: authorization and logout endpoints use `KEYCLOAK_BROWSER_URL` because the browser redirects to these. Token, userinfo, and JWKS endpoints use `KEYCLOAK_SERVER_URL` because they are server-to-server calls.
 
 #### Identity Provider Configuration
 
@@ -131,16 +139,18 @@ Note: `OIDC_OP_AUTHORIZATION_ENDPOINT` and `OIDC_OP_LOGOUT_ENDPOINT` use `KEYCLO
 
 | Client | Type | Purpose |
 |---|---|---|
-| `tdp-django` | Confidential (service account) | Backend OIDC authentication and admin API access |
-| `tdp-admin` | Confidential | Standalone admin console browser authentication |
-| `tdp-grafana` | Confidential | Grafana SSO integration |
-| `tdp-cli` | **Public** (no secret, PKCE + Device Authorization Grant) | External API clients - Postman, CLI tools, CI/CD, security auditors |
+| `tdp-django` | Confidential (service account) | Standard realm backend OIDC authentication and admin API access |
+| `tdp-grafana` | Confidential | Standard realm Grafana SSO integration |
+| `tdp-cli` | **Public** (no secret, PKCE + Device Authorization Grant) | Standard realm external API clients - Postman, CLI tools, CI/CD, security auditors |
+| `tdp-admin` | Confidential (service account) | Admin realm standalone admin console browser authentication and admin realm sync |
 
 Realm configurations are stored as full exports in `realm-configs/`:
 
-- `realm-export.dev-local.json` is shared by `local` and `dev` and includes both hosted dev frontend URLs and localhost/`127.0.0.1`.
-- `realm-export.staging.json` allows the hosted staging frontends and the admin client's Django-hosted `/admin-auth/*` callbacks.
-- `realm-export.prod.json` allows the production frontend and the admin client's Django-hosted `/admin-auth/*` callback.
+- `realm-export.dev-local.json` and `admin-realm-export.dev-local.json` are shared by `local` and `dev`.
+- `realm-export.staging.json` and `admin-realm-export.staging.json` are used for staging.
+- `realm-export.prod.json` and `admin-realm-export.prod.json` are used for production.
+
+The standard `tdp` realm contains `tdp-django`, `tdp-cli`, and `tdp-grafana`. The admin `tdp-admin` realm contains only `tdp-admin` plus the scopes, groups, authentication flows, and IdP configuration needed by the admin frontend.
 
 ### Groups
 
@@ -199,7 +209,7 @@ The `tdp-user-attributes` client scope includes these custom attributes, synced 
 | `GET /v2/login/ams` | `KeycloakLoginAMSView` | Redirects to Keycloak with `kc_idp_hint=ams` |
 | `GET /v2/oidc/callback/` | mozilla-django-oidc | Handles authorization code callback |
 | `GET /v2/auth_check` | `AuthorizationCheck` | Returns current user authentication status |
-| `GET /v2/logout/oidc` | `KeycloakLogoutView` | Clears the standard Django session and returns to the TDP frontend |
+| `GET /v2/logout/oidc` | `KeycloakLogoutView` | Logs out of the standard Keycloak realm, clears the standard Django session, and returns to the TDP frontend |
 
 ### Admin Console Endpoints
 
@@ -208,30 +218,30 @@ The `tdp-user-attributes` client scope includes these custom attributes, synced 
 | `GET /admin-auth/login/dotgov` | `AdminKeycloakLoginDotGovView` | Redirects admin users to Keycloak with the `tdp-admin` client and `kc_idp_hint=login-gov` |
 | `GET /admin-auth/login/ams` | `AdminKeycloakLoginAMSView` | Redirects admin users to Keycloak with the `tdp-admin` client and `kc_idp_hint=ams` |
 | `GET /admin-auth/oidc/callback/` | mozilla-django-oidc | Handles admin authorization code callback with the admin-scoped Django session |
-| `GET /admin-auth/auth_check` | `AdminAuthorizationCheck` | Validates the Django session and OFA System Admin authorization before admin rendering |
-| `GET /admin-auth/logout/oidc` | `AdminKeycloakLogoutView` | Clears the admin-scoped Django session and returns to the admin frontend |
-| `/admin-api/v1/*` | v1 API routes | Admin frontend proxy path; requires the server-side `X-Admin-Proxy-Token` header matching `ADMIN_API_PROXY_TOKEN`, an admin-scoped Django session, and OFA System Admin authorization |
+| `GET /admin-auth/auth_check` | `AdminAuthorizationCheck` | Validates the Django session and active staff-superuser authorization before admin rendering |
+| `GET /admin-auth/logout/oidc` | `AdminKeycloakLogoutView` | Logs out of the admin Keycloak realm, clears the admin-scoped Django session, and returns to the admin frontend |
+| `/admin-api/v1/*` | v1 API routes | Admin frontend proxy path; requires the server-side `X-Admin-Proxy-Token` header matching `ADMIN_API_PROXY_TOKEN`, an admin-scoped Django session, and active staff-superuser authorization |
 
 The standard and admin cookies contain explicit signed `standard` and `admin`
 session scopes. Django rejects a session whose signed scope does not match the
 auth or API route, even if the cookie value is copied under the other cookie
 name.
 
-App sign-out deliberately does not call Keycloak's RP-initiated logout
-endpoint. Keycloak maintains one realm SSO user session with child sessions for
-`tdp-django`, `tdp-admin`, and other clients; RP-initiated logout terminates the
-shared SSO session and can continue to Login.gov or AMS. A separate global
-sign-out flow is required if the product needs "sign out everywhere" behavior.
+App sign-out uses realm-specific RP-initiated logout. Standard logout calls the
+`tdp` realm logout endpoint and clears only `sessionid`. Admin logout calls the
+`tdp-admin` realm logout endpoint and clears only `admin_sessionid`. The upstream
+Login.gov or AMS browser session may still be shared, but each Keycloak realm
+session and Django session remains isolated.
 
 ### User Sync
 
 When `KEYCLOAK_SYNC_ENABLED=true`:
 
-- **On user save** — syncs attributes (login_gov_uuid, hhs_id, stt_id, etc.) to Keycloak
-- **On group change** — syncs Django group memberships to Keycloak groups
+- **On user save** — syncs attributes (login_gov_uuid, hhs_id, stt_id, etc.) to both Keycloak realms when the user exists there
+- **On group change** — syncs Django group memberships to Keycloak groups in both realms when the user exists there
 - **Bulk sync** — `python manage.py sync_users_to_keycloak`
 
-Sync only works if the Keycloak user already exists (i.e., user has logged in via Keycloak at least once).
+Sync only works in a realm if the Keycloak user already exists there (i.e., user has logged in via that realm at least once).
 
 ### Security Rules
 
@@ -361,7 +371,7 @@ Use the 4XX query for failed API-client traffic. Expired or invalid bearer token
 
 ### Local testing
 
-The `tdp-cli` client is in `realm-export.json`, so it's imported on first Keycloak start. To pick up realm changes locally after editing the file, the Keycloak image must be rebuilt and the keycloak-pg volume cleared:
+The realm configs are imported on first Keycloak start. To pick up realm changes locally after editing files in `realm-configs/`, the Keycloak image must be rebuilt and the keycloak-pg volume cleared:
 
 ```bash
 task backend-down
@@ -390,7 +400,7 @@ This will:
 4. Map the public route `<public_hostname>.app.cloud.gov` (for browser redirects and admin console)
 5. Set `KC_HOSTNAME`, `DEPLOY_ENV`, and config-cli substitution variables
 6. Set up network policies so backend and celery can reach Keycloak
-7. Start Keycloak with `KEYCLOAK_CONFIG_IMPORT_ON_STARTUP=true`, causing the entrypoint to run `/opt/keycloak/normalize-login-gov-key.sh` after Keycloak is healthy. This decodes the Login.gov key and invokes `keycloak-config-cli` against the selected realm export before nginx starts.
+7. Start Keycloak with `KEYCLOAK_CONFIG_IMPORT_ON_STARTUP=true`, causing the entrypoint to run `/opt/keycloak/normalize-login-gov-key.sh` after Keycloak is healthy. This decodes the Login.gov key and invokes `keycloak-config-cli` against the selected standard and admin realm exports before nginx starts.
 
 Cloud deployment does **not** use Keycloak's native `--import-realm`. The app starts Keycloak first, then the entrypoint runs config-cli against the local Keycloak port through the Admin API. This is what allows checked-in realm JSON to contain `$(env:...)`, `$(urlEncoder:...)`, and the decoded Login.gov signing key.
 
@@ -405,9 +415,9 @@ Set `KEYCLOAK_BROWSER_URL` in the backend's environment to match the public rout
 
 For the checked-in realm exports:
 
-- `local` and `dev` both use `realm-export.dev-local.json`, which allows `raft`, `qasp`, and `a11y` hosted frontends, admin `/admin-auth/*` callbacks on those hosts, plus localhost/`127.0.0.1`.
-- `staging` uses `realm-export.staging.json`, which allows `develop` and `staging` hosted frontends plus admin `/admin-auth/*` callbacks on those hosts.
-- `prod` uses `realm-export.prod.json`, which allows `https://tanfdata.acf.hhs.gov` plus the admin `/admin-auth/*` callback on that host.
+- `local` and `dev` use `realm-export.dev-local.json` for standard TDP and `admin-realm-export.dev-local.json` for admin auth.
+- `staging` uses `realm-export.staging.json` for standard TDP and `admin-realm-export.staging.json` for admin auth.
+- `prod` uses `realm-export.prod.json` for standard TDP and `admin-realm-export.prod.json` for admin auth.
 
 ### Required cloud.gov Environment Variables
 
@@ -449,7 +459,7 @@ Use the app name for the target environment:
 | Staging | `keycloak-staging` |
 | Prod | `keycloak` |
 
-Checked-in realm JSON is packaged into the Keycloak container image. To apply realm JSON changes in cloud.gov, rebuild the Keycloak container, push it to the container registry, then redeploy Keycloak with that image so startup config import runs against the new realm export.
+Checked-in realm JSON is packaged into the Keycloak container image. To apply realm JSON changes in cloud.gov, rebuild the Keycloak container, push it to the container registry, then redeploy Keycloak with that image so startup config import runs against the new realm exports.
 
 ## Secret Rotation
 
@@ -488,8 +498,8 @@ Detailed steps live in [keycloak-operations.md](keycloak-operations.md#restart-a
 
 **Keycloak sync errors**
 - Ensure `KEYCLOAK_SYNC_ENABLED=true` in backend env
-- User must exist in Keycloak first (login at least once)
-- Verify `tdp-django` client has `realm-management` roles (view-users, manage-users, query-users)
+- User must exist in the target Keycloak realm first (login there at least once)
+- Verify `tdp-django` in the standard realm and `tdp-admin` in the admin realm have `realm-management` roles (view-users, manage-users, query-users)
 
 **`NoReverseMatch` errors on v2 endpoints**
 - Check `OIDC_EXEMPT_URLS` entries start with `/` (e.g., `"/v1/"` not `"v1/"`)

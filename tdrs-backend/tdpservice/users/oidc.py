@@ -11,6 +11,7 @@ from typing import Optional
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.exceptions import SuspiciousOperation
 
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
@@ -24,6 +25,47 @@ STANDARD_SESSION_SCOPE = "standard"
 ADMIN_SESSION_SCOPE = "admin"
 ADMIN_OIDC_CLIENT = "tdp-admin"
 ADMIN_OIDC_CALLBACK_URL_NAME = "admin_oidc_authentication_callback"
+OIDC_REQUEST_SCOPED_ATTRS = (
+    "OIDC_OP_TOKEN_ENDPOINT",
+    "OIDC_OP_USER_ENDPOINT",
+    "OIDC_OP_JWKS_ENDPOINT",
+    "OIDC_RP_CLIENT_ID",
+    "OIDC_RP_CLIENT_SECRET",
+    "OIDC_OP_ISSUER",
+    "_oidc_expected_issuer",
+)
+
+
+def _setting_snapshot(obj, attr_names):
+    """Return current object attributes so request-scoped overrides can be restored."""
+    missing = object()
+    return {attr: getattr(obj, attr, missing) for attr in attr_names}, missing
+
+
+def _restore_settings_from_snapshot(obj, snapshot, missing):
+    """Restore attributes captured by _setting_snapshot."""
+    for attr, value in snapshot.items():
+        if value is missing:
+            if hasattr(obj, attr):
+                delattr(obj, attr)
+        else:
+            setattr(obj, attr, value)
+
+
+def _sync_keycloak_groups_on_login(user: User) -> None:
+    """Backfill Keycloak group memberships during successful OIDC logins."""
+    if not getattr(settings, "KEYCLOAK_SYNC_ENABLED", False):
+        return
+
+    try:
+        from tdpservice.users.keycloak_client import KeycloakSyncClient
+
+        KeycloakSyncClient.get_sync_client().sync_user_groups(user)
+    except Exception:
+        logger.exception(
+            "Failed to sync Keycloak groups during OIDC login for user: %s",
+            user.username,
+        )
 
 
 def keycloak_username_algo(email: Optional[str], claims: Optional[dict] = None) -> str:
@@ -95,9 +137,7 @@ def apply_user_updates(user: User, claims: dict) -> User:
 
     if changed:
         user.save()
-        logger.info(
-            "Updated user attributes from Keycloak claims: %s", user.username
-        )
+        logger.info("Updated user attributes from Keycloak claims: %s", user.username)
 
     return user
 
@@ -133,22 +173,6 @@ def verify_claims(claims: dict) -> bool:
     return True
 
 
-def _sync_keycloak_groups_on_login(user: User) -> None:
-    """Backfill Keycloak group memberships during successful OIDC logins."""
-    if not getattr(settings, "KEYCLOAK_SYNC_ENABLED", False):
-        return
-
-    try:
-        from tdpservice.users.keycloak_client import KeycloakSyncClient
-
-        KeycloakSyncClient.get_instance().sync_user_groups(user)
-    except Exception:
-        logger.exception(
-            "Failed to sync Keycloak groups during OIDC login for user: %s",
-            user.username,
-        )
-
-
 class KeycloakOIDCBackend(OIDCAuthenticationBackend):
     """Custom OIDC authentication backend for Keycloak-brokered login.
 
@@ -167,10 +191,29 @@ class KeycloakOIDCBackend(OIDCAuthenticationBackend):
 
         return super().get_settings(attr, *args)
 
+    def _use_standard_oidc_settings(self):
+        """Use the standard TDP realm for a single authentication call."""
+        self.OIDC_OP_TOKEN_ENDPOINT = settings.OIDC_OP_TOKEN_ENDPOINT
+        self.OIDC_OP_USER_ENDPOINT = settings.OIDC_OP_USER_ENDPOINT
+        self.OIDC_OP_JWKS_ENDPOINT = settings.OIDC_OP_JWKS_ENDPOINT
+        self.OIDC_RP_CLIENT_ID = settings.KEYCLOAK_DJANGO_CLIENT_ID
+        self.OIDC_RP_CLIENT_SECRET = settings.KEYCLOAK_DJANGO_CLIENT_SECRET
+        self.OIDC_OP_ISSUER = settings.KEYCLOAK_ISSUER
+        self._oidc_expected_issuer = settings.KEYCLOAK_ISSUER
+
+    def _use_admin_oidc_settings(self):
+        """Use the dedicated admin realm for a single authentication call."""
+        self.OIDC_OP_TOKEN_ENDPOINT = settings.KEYCLOAK_TDP_ADMIN_TOKEN_ENDPOINT
+        self.OIDC_OP_USER_ENDPOINT = settings.KEYCLOAK_TDP_ADMIN_USER_ENDPOINT
+        self.OIDC_OP_JWKS_ENDPOINT = settings.KEYCLOAK_TDP_ADMIN_JWKS_ENDPOINT
+        self.OIDC_RP_CLIENT_ID = settings.KEYCLOAK_TDP_ADMIN_CLIENT_ID
+        self.OIDC_RP_CLIENT_SECRET = settings.KEYCLOAK_TDP_ADMIN_CLIENT_SECRET
+        self.OIDC_OP_ISSUER = settings.KEYCLOAK_TDP_ADMIN_ISSUER
+        self._oidc_expected_issuer = settings.KEYCLOAK_TDP_ADMIN_ISSUER
+
     def authenticate(self, request, **kwargs):
-        """Authenticate with the request-scoped Keycloak client."""
-        original_client_id = self.OIDC_RP_CLIENT_ID
-        original_client_secret = self.OIDC_RP_CLIENT_SECRET
+        """Authenticate with the request-scoped Keycloak realm and client."""
+        original_settings, missing = _setting_snapshot(self, OIDC_REQUEST_SCOPED_ATTRS)
         had_callback_url = hasattr(self, "_oidc_callback_url")
         original_callback_url = getattr(self, "_oidc_callback_url", None)
         oidc_client = None
@@ -190,24 +233,36 @@ class KeycloakOIDCBackend(OIDCAuthenticationBackend):
             oidc_callback_url = getattr(request, "_oidc_callback_url", None)
 
         if oidc_client == ADMIN_OIDC_CLIENT:
-            self.OIDC_RP_CLIENT_ID = settings.KEYCLOAK_TDP_ADMIN_CLIENT_ID
-            self.OIDC_RP_CLIENT_SECRET = settings.KEYCLOAK_TDP_ADMIN_CLIENT_SECRET
-            self._oidc_callback_url = (
-                oidc_callback_url or ADMIN_OIDC_CALLBACK_URL_NAME
-            )
+            self._use_admin_oidc_settings()
+            self._oidc_callback_url = oidc_callback_url or ADMIN_OIDC_CALLBACK_URL_NAME
         else:
-            self.OIDC_RP_CLIENT_ID = settings.KEYCLOAK_DJANGO_CLIENT_ID
-            self.OIDC_RP_CLIENT_SECRET = settings.KEYCLOAK_DJANGO_CLIENT_SECRET
+            self._use_standard_oidc_settings()
 
         try:
             return super().authenticate(request, **kwargs)
         finally:
-            self.OIDC_RP_CLIENT_ID = original_client_id
-            self.OIDC_RP_CLIENT_SECRET = original_client_secret
+            _restore_settings_from_snapshot(self, original_settings, missing)
             if had_callback_url:
                 self._oidc_callback_url = original_callback_url
             elif hasattr(self, "_oidc_callback_url"):
                 del self._oidc_callback_url
+
+    def verify_token(self, token, **kwargs):
+        """Validate token signature, nonce, and the realm issuer."""
+        payload = super().verify_token(token, **kwargs)
+        expected_issuer = getattr(
+            self, "_oidc_expected_issuer", settings.KEYCLOAK_ISSUER
+        )
+
+        if payload.get("iss") != expected_issuer:
+            logger.warning(
+                "OIDC token issuer mismatch: expected %s, received %s",
+                expected_issuer,
+                payload.get("iss"),
+            )
+            raise SuspiciousOperation("OIDC token issuer mismatch.")
+
+        return payload
 
     def filter_users_by_claims(self, claims: dict) -> list:
         """Delegate to the module-level helper shared with bearer-token auth."""

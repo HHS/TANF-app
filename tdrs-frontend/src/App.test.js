@@ -19,6 +19,8 @@ jest.mock('./actions/sttList', () => ({
   fetchSttList: jest.fn(() => ({ type: 'FETCH_STTS' })),
 }))
 
+jest.mock('jest-transform-stub', () => require('./__mocks__/svg'))
+
 describe('App.js', () => {
   const initialState = {
     alert: {
@@ -38,6 +40,10 @@ describe('App.js', () => {
     feedbackWidget: {
       isOpen: false,
       lockedDataType: null,
+    },
+    stts: {
+      sttList: [],
+      loading: true,
     },
   }
   const mockStore = configureStore([thunk])
@@ -94,7 +100,7 @@ describe('App.js', () => {
     expect(alertContainer).not.toBeInTheDocument()
   })
 
-  it('renders sticky button at bottom right of Apps viewport', () => {
+  it('hides feedback on the public landing page', () => {
     const store = mockStore(initialState)
     render(
       <Provider store={store}>
@@ -103,8 +109,98 @@ describe('App.js', () => {
         </MemoryRouter>
       </Provider>
     )
-    expect(screen.getByText('Give Feedback')).toBeInTheDocument()
+    expect(screen.queryByText('Give Feedback')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('feedback-form')).not.toBeInTheDocument()
   })
+
+  it.each(['Initial', 'Access request', 'Pending', 'Denied', 'Deactivated'])(
+    'hides feedback for a logged-in user with %s status',
+    (accountStatus) => {
+      const store = mockStore({
+        ...initialState,
+        auth: {
+          authenticated: true,
+          user: { account_approval_status: accountStatus, roles: [] },
+        },
+      })
+      render(
+        <Provider store={store}>
+          <MemoryRouter>
+            <App />
+          </MemoryRouter>
+        </Provider>
+      )
+      expect(screen.queryByText('Give Feedback')).not.toBeInTheDocument()
+    }
+  )
+
+  it.each(['login.gov', 'AMS'])(
+    'shows feedback after %s login and removes an open form on logout',
+    (loginProvider) => {
+      const user = {
+        account_approval_status: 'Approved',
+        roles: [],
+        login_gov_uuid: loginProvider === 'login.gov' ? 'test-user' : null,
+        hhs_id: loginProvider === 'AMS' ? 'test-user' : null,
+      }
+      const renderApp = (authenticated) => (
+        <Provider
+          store={mockStore({
+            ...initialState,
+            auth: { authenticated, user },
+          })}
+        >
+          <MemoryRouter>
+            <App />
+          </MemoryRouter>
+        </Provider>
+      )
+      const { rerender } = render(renderApp(false))
+      expect(screen.queryByText('Give Feedback')).not.toBeInTheDocument()
+
+      rerender(renderApp(true))
+      fireEvent.click(screen.getByRole('button', { name: 'Give Feedback' }))
+      expect(screen.getByTestId('feedback-form')).toBeInTheDocument()
+      expect(screen.getByLabelText('Send anonymously')).toBeInTheDocument()
+
+      rerender(renderApp(false))
+      expect(screen.queryByText('Give Feedback')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('feedback-form')).not.toBeInTheDocument()
+
+      rerender(renderApp(true))
+      expect(screen.getByText('Give Feedback')).toBeInTheDocument()
+      expect(screen.queryByTestId('feedback-form')).not.toBeInTheDocument()
+    }
+  )
+
+  it.each(['/data-files', '/fra-data-files'])(
+    'hides an open upload feedback widget after logout on %s',
+    (pathname) => {
+      window.location.pathname = pathname
+      const renderApp = (authenticated) => (
+        <Provider
+          store={mockStore({
+            ...initialState,
+            auth: {
+              authenticated,
+              user: { account_approval_status: 'Approved', roles: [] },
+            },
+            feedbackWidget: { isOpen: true, dataType: 'tanf' },
+          })}
+        >
+          <MemoryRouter>
+            <App />
+          </MemoryRouter>
+        </Provider>
+      )
+      const { rerender } = render(renderApp(true))
+      expect(screen.getByTestId('feedback-widget')).toBeInTheDocument()
+
+      rerender(renderApp(false))
+      expect(screen.queryByTestId('feedback-widget')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('feedback-form')).not.toBeInTheDocument()
+    }
+  )
 
   it('renders skip link with correct href and text', () => {
     const store = mockStore(initialState)

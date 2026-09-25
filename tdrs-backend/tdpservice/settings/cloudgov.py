@@ -114,7 +114,7 @@ class CloudGov(Common):
     AWS_S3_DATAFILES_ACCESS_KEY = s3_datafiles_creds["access_key_id"]
     AWS_S3_DATAFILES_SECRET_KEY = s3_datafiles_creds["secret_access_key"]
     AWS_S3_DATAFILES_BUCKET_NAME = s3_datafiles_creds["bucket"]
-    AWS_S3_DATAFILES_ENDPOINT = f'https://{s3_datafiles_creds["endpoint"]}'
+    AWS_S3_DATAFILES_ENDPOINT = f"https://{s3_datafiles_creds['endpoint']}"
     AWS_S3_DATAFILES_REGION_NAME = s3_datafiles_creds["region"]
 
     ###
@@ -124,7 +124,7 @@ class CloudGov(Common):
     AWS_S3_STATICFILES_ACCESS_KEY = s3_staticfiles_creds["access_key_id"]
     AWS_S3_STATICFILES_SECRET_KEY = s3_staticfiles_creds["secret_access_key"]
     AWS_S3_STATICFILES_BUCKET_NAME = s3_staticfiles_creds["bucket"]
-    AWS_S3_STATICFILES_ENDPOINT = f'https://{s3_staticfiles_creds["endpoint"]}'
+    AWS_S3_STATICFILES_ENDPOINT = f"https://{s3_staticfiles_creds['endpoint']}"
     AWS_S3_STATICFILES_REGION_NAME = s3_staticfiles_creds["region"]
 
     MEDIA_URL = (
@@ -203,6 +203,10 @@ class CloudGov(Common):
         "tdp_admin_client_secret",
         os.getenv("KEYCLOAK_TDP_ADMIN_CLIENT_SECRET", ""),
     )
+    KEYCLOAK_TDP_ADMIN_REALM = keycloak_creds.get(
+        "tdp_admin_realm",
+        os.getenv("KEYCLOAK_TDP_ADMIN_REALM", "tdp-admin"),
+    )
 
     # mozilla-django-oidc: derive OIDC settings from Keycloak URLs
     OIDC_RP_CLIENT_ID = KEYCLOAK_DJANGO_CLIENT_ID
@@ -214,24 +218,86 @@ class CloudGov(Common):
     _KC_REALM_URL = f"{KEYCLOAK_SERVER_URL}/realms/{KEYCLOAK_REALM}"
     _KC_BROWSER_REALM_URL = f"{KEYCLOAK_BROWSER_URL}/realms/{KEYCLOAK_REALM}"
     KEYCLOAK_ISSUER = os.getenv("KEYCLOAK_ISSUER", _KC_BROWSER_REALM_URL)
+    OIDC_OP_ISSUER = KEYCLOAK_ISSUER
 
     # Browser-facing endpoints (user's browser is redirected here)
-    OIDC_OP_AUTHORIZATION_ENDPOINT = (
-        f"{_KC_BROWSER_REALM_URL}/protocol/openid-connect/auth"
+    OIDC_OP_AUTHORIZATION_ENDPOINT = os.getenv(
+        "KEYCLOAK_AUTHORIZATION_ENDPOINT",
+        f"{_KC_BROWSER_REALM_URL}/protocol/openid-connect/auth",
     )
-    OIDC_OP_LOGOUT_ENDPOINT = f"{_KC_BROWSER_REALM_URL}/protocol/openid-connect/logout"
+    OIDC_OP_LOGOUT_ENDPOINT = os.getenv(
+        "KEYCLOAK_LOGOUT_ENDPOINT",
+        f"{_KC_BROWSER_REALM_URL}/protocol/openid-connect/logout",
+    )
 
     # Server-to-server endpoints (Django backend talks to Keycloak within Docker)
-    OIDC_OP_TOKEN_ENDPOINT = f"{_KC_REALM_URL}/protocol/openid-connect/token"
-    OIDC_OP_USER_ENDPOINT = f"{_KC_REALM_URL}/protocol/openid-connect/userinfo"
-    OIDC_OP_JWKS_ENDPOINT = f"{_KC_REALM_URL}/protocol/openid-connect/certs"
+    OIDC_OP_TOKEN_ENDPOINT = os.getenv(
+        "KEYCLOAK_TOKEN_ENDPOINT",
+        f"{_KC_REALM_URL}/protocol/openid-connect/token",
+    )
+    OIDC_OP_USER_ENDPOINT = os.getenv(
+        "KEYCLOAK_USER_ENDPOINT",
+        f"{_KC_REALM_URL}/protocol/openid-connect/userinfo",
+    )
+    OIDC_OP_JWKS_ENDPOINT = os.getenv(
+        "KEYCLOAK_JWKS_ENDPOINT",
+        f"{_KC_REALM_URL}/protocol/openid-connect/certs",
+    )
+
+    _KC_ADMIN_REALM_URL = f"{KEYCLOAK_SERVER_URL}/realms/{KEYCLOAK_TDP_ADMIN_REALM}"
+    _KC_ADMIN_BROWSER_REALM_URL = (
+        f"{KEYCLOAK_BROWSER_URL}/realms/{KEYCLOAK_TDP_ADMIN_REALM}"
+    )
+    KEYCLOAK_TDP_ADMIN_ISSUER = keycloak_creds.get(
+        "tdp_admin_issuer",
+        os.getenv("KEYCLOAK_TDP_ADMIN_ISSUER", _KC_ADMIN_BROWSER_REALM_URL),
+    )
+    KEYCLOAK_TDP_ADMIN_AUTHORIZATION_ENDPOINT = keycloak_creds.get(
+        "tdp_admin_authorization_endpoint",
+        os.getenv(
+            "KEYCLOAK_TDP_ADMIN_AUTHORIZATION_ENDPOINT",
+            f"{_KC_ADMIN_BROWSER_REALM_URL}/protocol/openid-connect/auth",
+        ),
+    )
+    KEYCLOAK_TDP_ADMIN_LOGOUT_ENDPOINT = keycloak_creds.get(
+        "tdp_admin_logout_endpoint",
+        os.getenv(
+            "KEYCLOAK_TDP_ADMIN_LOGOUT_ENDPOINT",
+            f"{_KC_ADMIN_BROWSER_REALM_URL}/protocol/openid-connect/logout",
+        ),
+    )
+    KEYCLOAK_TDP_ADMIN_TOKEN_ENDPOINT = keycloak_creds.get(
+        "tdp_admin_token_endpoint",
+        os.getenv(
+            "KEYCLOAK_TDP_ADMIN_TOKEN_ENDPOINT",
+            f"{_KC_ADMIN_REALM_URL}/protocol/openid-connect/token",
+        ),
+    )
+    KEYCLOAK_TDP_ADMIN_USER_ENDPOINT = keycloak_creds.get(
+        "tdp_admin_user_endpoint",
+        os.getenv(
+            "KEYCLOAK_TDP_ADMIN_USER_ENDPOINT",
+            f"{_KC_ADMIN_REALM_URL}/protocol/openid-connect/userinfo",
+        ),
+    )
+    KEYCLOAK_TDP_ADMIN_JWKS_ENDPOINT = keycloak_creds.get(
+        "tdp_admin_jwks_endpoint",
+        os.getenv(
+            "KEYCLOAK_TDP_ADMIN_JWKS_ENDPOINT",
+            f"{_KC_ADMIN_REALM_URL}/protocol/openid-connect/certs",
+        ),
+    )
 
 
 class Development(CloudGov):
     """Settings for applications deployed in the Cloud.gov dev space."""
 
     # https://docs.djangoproject.com/en/2.0/ref/settings/#allowed-hosts
-    ALLOWED_HOSTS = [".tanfdata.acf.hhs.gov", ".apps.internal"]
+    ALLOWED_HOSTS = [
+        ".tanfdata.acf.hhs.gov",
+        "tdp-admin-test.app.cloud.gov",
+        ".apps.internal",
+    ]
     ADMIN_FRONTEND_BASE_URL = os.getenv(
         "ADMIN_FRONTEND_BASE_URL", "https://admin-test.tanfdata.acf.hhs.gov"
     )

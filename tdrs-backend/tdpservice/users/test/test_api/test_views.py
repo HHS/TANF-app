@@ -1,11 +1,14 @@
 """Additional viewset tests for users app coverage."""
 
+import warnings
+
 import pytest
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.exceptions import MethodNotAllowed
-from rest_framework.test import APIRequestFactory
+from rest_framework.test import APIClient, APIRequestFactory
 
 from tdpservice.users.models import (
     AccountApprovalStatusChoices,
@@ -69,7 +72,15 @@ def test_request_access_sets_stt_and_permission(api_client, data_analyst):
         "has_fra_access": True,
     }
 
-    response = api_client.patch("/v1/users/request_access/", payload, format="json")
+    requested_after = timezone.now()
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "error",
+            message="DateTimeField .* received a naive datetime",
+            category=RuntimeWarning,
+        )
+        response = api_client.patch("/v1/users/request_access/", payload, format="json")
+    requested_before = timezone.now()
 
     assert response.status_code == status.HTTP_200_OK
 
@@ -78,7 +89,11 @@ def test_request_access_sets_stt_and_permission(api_client, data_analyst):
         data_analyst.account_approval_status
         == AccountApprovalStatusChoices.ACCESS_REQUEST
     )
-    assert data_analyst.access_requested_date is not None
+    assert requested_after <= data_analyst.access_requested_date <= requested_before
+    assert (
+        data_analyst.history.first().access_requested_date
+        == data_analyst.access_requested_date
+    )
     assert data_analyst.stt_id == stt_id
     assert data_analyst.user_permissions.filter(codename="has_fra_access").exists()
 
@@ -249,8 +264,13 @@ def test_change_request_audit_log_queryset_filters_by_admin(
 
 
 @pytest.mark.django_db
-def test_feedback_create_anonymous_sets_anonymous(api_client, feedback_payload):
-    """Force anonymous feedback when user is not authenticated."""
+def test_feedback_create_authenticated_anonymous_omits_user(
+    api_client: APIClient, data_analyst: User, feedback_payload: dict
+) -> None:
+    """Approved users can submit feedback without retaining their association."""
+    api_client.login(username=data_analyst.username, password="test_password")
+    feedback_payload["anonymous"] = True
+
     response = api_client.post("/v1/feedback/", feedback_payload, format="json")
 
     assert response.status_code == status.HTTP_201_CREATED
@@ -277,13 +297,17 @@ def test_feedback_create_authenticated_sets_user(
 
 
 @pytest.mark.django_db
-def test_feedback_create_invalid_returns_400(api_client, feedback_payload):
-    """Return validation errors for invalid feedback payloads."""
+def test_feedback_create_invalid_returns_400(
+    api_client: APIClient, data_analyst: User, feedback_payload: dict
+) -> None:
+    """Return validation errors for invalid feedback from an approved user."""
+    api_client.login(username=data_analyst.username, password="test_password")
     feedback_payload.pop("rating")
 
     response = api_client.post("/v1/feedback/", feedback_payload, format="json")
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert "rating" in response.data
 
 
 @pytest.mark.django_db

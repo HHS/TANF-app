@@ -38,6 +38,8 @@ const FeedbackForm = ({
   const [feedbackMessage, setFeedbackMessage] = useState('')
   const [hasError, setHasError] = useState(false)
   const [feedbackID, setFeedbackID] = useState(null)
+  const [isRequestPending, setIsRequestPending] = useState(false)
+  const requestPendingRef = useRef(false)
 
   // Determine values based on props and state
   const isGeneral = isGeneralFeedback
@@ -108,32 +110,34 @@ const FeedbackForm = ({
 
   const submitFeedback = useCallback(
     async (payload) => {
-      const response = feedbackID
-        ? await updateFeedback(payload)
-        : await postFeedback(payload)
+      requestPendingRef.current = true
+      setIsRequestPending(true)
+      try {
+        const response = feedbackID
+          ? await updateFeedback(payload)
+          : await postFeedback(payload)
 
-      if (response.ok) {
-        setFeedbackID(response.data.id)
-      } else {
-        console.error('Error submitting feedback:', response.error)
+        if (response.ok) {
+          setFeedbackID(response.data.id)
+        } else {
+          console.error('Error submitting feedback:', response.error)
+          onRequestError?.()
+        }
+        return response
+      } catch (error) {
+        console.error('Error submitting feedback:', error)
         onRequestError?.()
+      } finally {
+        requestPendingRef.current = false
+        setIsRequestPending(false)
       }
-      return response
     },
-    [
-      feedbackID,
-      isGeneral,
-      isAnonymous,
-      widgetId,
-      dataFiles,
-      dataType,
-      handlePayloadAttachments,
-      updateFeedback,
-      postFeedback,
-    ]
+    [feedbackID, updateFeedback, postFeedback, onRequestError]
   )
 
   const handleSubmit = useCallback(async () => {
+    if (requestPendingRef.current) return
+
     if (!selectedRatingsOption) {
       setHasError(true)
       return
@@ -142,13 +146,10 @@ const FeedbackForm = ({
     const payload = constructPayload()
     const response = await submitFeedback(payload)
 
-    if (response.ok) {
+    if (response?.ok) {
       onFeedbackSubmit()
       onRequestSuccess?.()
       resetStatesOnceSubmitted()
-    } else {
-      console.error('Unexpected response: ', response)
-      onRequestError?.()
     }
   }, [
     selectedRatingsOption,
@@ -164,6 +165,8 @@ const FeedbackForm = ({
   ])
 
   const handleRatingSelected = async (rating) => {
+    if (requestPendingRef.current) return
+
     setSelectedRatingsOption(rating)
     const payload = { ...constructPayload(), rating: rating }
     await submitFeedback(payload)
@@ -372,6 +375,7 @@ const FeedbackForm = ({
             data-testid="feedback-submit-button"
             type="button"
             className="usa-button"
+            disabled={isRequestPending}
             onClick={handleSubmit}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {

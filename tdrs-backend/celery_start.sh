@@ -50,7 +50,11 @@ CELERY_QUEUE_ARGS=()
 if [[ -n "${CELERY_WORKER_QUEUES:-}" ]]; then
     CELERY_QUEUE_ARGS=(-Q "${CELERY_WORKER_QUEUES}")
 fi
+CELERY_LIFECYCLE_QUEUE="${CELERY_LIFECYCLE_QUEUE:-lifecycle}"
 
+# Keep lifecycle monitoring independent from parsing. Otherwise a hung parser
+# can occupy the only worker that is capable of declaring that parser STUCK.
+celery -A tdpservice.settings worker --loglevel=INFO --pool=solo --without-gossip --without-mingle --without-heartbeat -Q "${CELERY_LIFECYCLE_QUEUE}" -n lifecycle@%h &
 celery -A tdpservice.settings worker --loglevel=INFO --concurrency=1 --max-tasks-per-child=100 "${CELERY_QUEUE_ARGS[@]}" -n worker1@%h & # tune -c ?
 sleep 5
 

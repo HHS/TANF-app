@@ -120,6 +120,21 @@ describe("admin auth helpers", () => {
     expect(result.error).toContain("404");
   });
 
+  it("marks private Cloud Foundry backend requests as HTTPS", async () => {
+    process.env.NEXT_PUBLIC_BACKEND_URL =
+      "http://tdp-backend-test.apps.internal:8080/v1";
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => Response.json({ authenticated: false }))
+    );
+
+    await checkBackendHealth();
+
+    const [, options] = vi.mocked(fetch).mock.calls[0];
+    const headers = options?.headers as Headers;
+    expect(headers.get("X-Forwarded-Proto")).toBe("https");
+  });
+
   it("forwards explicit Django CSRF context for mutating requests", () => {
     const cookieHeader =
       "sessionid=standard; admin_sessionid=admin; csrftoken=my-csrf-token; preference=compact";

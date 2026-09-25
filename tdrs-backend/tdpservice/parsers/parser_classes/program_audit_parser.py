@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 class ProgramAuditParser(TanfDataReportParser):
     """Parser class for TANF/SSP/Tribal program audit."""
 
-    def __init__(self, datafile, dfs, section):
-        super().__init__(datafile, dfs, section)
+    def __init__(self, datafile, dfs, section, parse_token=None):
+        super().__init__(datafile, dfs, section, parse_token=parse_token)
         self.header_schema = schema_defs.program_audit.header
         self.trailer_schema = schema_defs.program_audit.trailer
 

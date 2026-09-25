@@ -52,7 +52,7 @@ Grafana shall provide a visualization dashboard for these various tools which wi
 
 The storing of system logs will allow more expedient troubleshooting and debugging that is currently out of reach with Cloud.gov's existing Kibana interface for logging. The ability to find and correlate log events is critical to technical analysis of faults, performance degradation, and system's overall health.
 
-By having our monitoring ecosystem take in performance metrics, we will garner performance metrics over time as opposed to simply a live snapshot as is currently provided. This will allow spotting of anomolous or out-of-bounds behaviors such as out of memory, high memory, cpu spikes, and disk thrashing.
+By having our monitoring ecosystem take in performance metrics, we will garner performance metrics over time as opposed to simply a live snapshot as is currently provided. This will allow spotting of anomalous or out-of-bounds behaviors such as out of memory, high memory, cpu spikes, and disk thrashing.
 
 Finally, having all of this data in one place will allow technical staff to easily cross-reference given time periods with problematic performance, ongoing issues, or error stacktraces leading to a holistic view of all of our applications both in lower tier development sites and in critical production.
 

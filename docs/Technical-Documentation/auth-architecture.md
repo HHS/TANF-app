@@ -270,8 +270,10 @@ The frontend uses `REACT_APP_AUTH_URL` for auth endpoints and `REACT_APP_BACKEND
 | Login.gov endpoints | `idp.int.identitysandbox.gov` | `idp.int.identitysandbox.gov` | `secure.login.gov` |
 | AMS endpoint | `sso-stage.acf.hhs.gov` | `sso-stage.acf.hhs.gov` | Production AMS |
 | Keycloak public route | `tdp-keycloak-dev.app.cloud.gov` | `tdp-keycloak-staging.acf.hhs.gov` | `tdp-keycloak-prod.acf.hhs.gov` |
+| Standard realm | `tdp` | `tdp` | `tdp` |
+| Admin realm | `tdp-admin` | `tdp-admin` | `tdp-admin` |
 
-The `realm-export.json` uses Keycloak's `${ENV_VAR}` syntax for environment-specific values (Login.gov client ID, endpoints, redirect URIs). These are injected as environment variables per space.
+The files in `tdrs-backend/keycloak/realm-configs/` use config-cli `$(env:ENV_VAR)` placeholders for environment-specific values (Login.gov client ID, endpoints, redirect URIs, and client secrets). `select-realm-config.sh` stages the standard realm export and the matching admin realm export for Keycloak import based on `DEPLOY_ENV`.
 
 ## Key Files
 
@@ -282,8 +284,8 @@ The `realm-export.json` uses Keycloak's `${ENV_VAR}` syntax for environment-spec
 | Sync Signals | `tdrs-backend/tdpservice/users/keycloak_sync.py` | Django signal handlers for auto-sync |
 | Login Views | `tdrs-backend/tdpservice/users/views.py` | Keycloak login/logout views with IdP hints |
 | URL Routing | `tdrs-backend/tdpservice/urls.py` | `/v2/` auth route definitions |
-| Realm Config | `tdrs-backend/keycloak/realm-export.json` | Complete Keycloak realm definition |
-| IdP Config | `tdrs-backend/keycloak/configure-idps.sh` | Post-startup IdP configuration script |
+| Realm Configs | `tdrs-backend/keycloak/realm-configs/` | Standard and admin Keycloak realm definitions |
+| Config Import | `tdrs-backend/keycloak/normalize-login-gov-key.sh` | Decodes the Login.gov key and invokes config-cli during startup |
 | Keycloak Deploy | `tdrs-backend/keycloak/deploy.sh` | Cloud Foundry deployment script |
 | Keycloak README | `tdrs-backend/keycloak/README.md` | Detailed integration reference |
 
