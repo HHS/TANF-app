@@ -279,7 +279,7 @@ class Staging(CloudGov):
     )
 
     # Cookie settings
-    SESSION_COOKIE_DOMAIN = ".tanfdata.acf.hhs.gov"
+    SESSION_COOKIE_DOMAIN = None
 
     # Cloud.gov SET integration settings
     LOGIN_GOV_SET_AUDIENCE = os.getenv(
@@ -307,8 +307,7 @@ class Production(CloudGov):
 
     # Cookie settings
     SESSION_COOKIE_SAMESITE = "None"
-    SESSION_COOKIE_DOMAIN = ".tanfdata.acf.hhs.gov"
-    SESSION_COOKIE_PATH = "/;HttpOnly"
+    SESSION_COOKIE_DOMAIN = None
 
     # CORS allowed origins
     CORS_ALLOWED_ORIGINS = [
