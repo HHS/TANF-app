@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"sync"
 	"text/template"
+	"time"
 
 	"go-parser/internal/parser"
 )
@@ -46,6 +47,20 @@ type ValidationResult struct {
 	TemplateData    map[string]any
 }
 
+// PhaseDurations tracks non-overlapping validation time spent by phase.
+type PhaseDurations struct {
+	GroupValidation  time.Duration
+	RecordValidation time.Duration
+	FieldValidation  time.Duration
+}
+
+// Add accumulates another phase duration set.
+func (d *PhaseDurations) Add(other PhaseDurations) {
+	d.GroupValidation += other.GroupValidation
+	d.RecordValidation += other.RecordValidation
+	d.FieldValidation += other.FieldValidation
+}
+
 // BlocksRecord returns true if this error type blocks record serialization.
 func (vr *ValidationResult) BlocksRecord() bool {
 	return vr.ErrorType == ErrorTypeRecordPreCheck || vr.ErrorType == ErrorTypePreCheck
@@ -84,6 +99,7 @@ type RecordValidationResult struct {
 	RecordErrors []*ValidationResult // All record-scope errors
 	FieldErrors  []*ValidationResult // All field-scope errors
 	Skipped      bool                // True if field/record validators were skipped due to blocking errors
+	Durations    PhaseDurations
 }
 
 // HasErrors returns true if this record has any validation errors.
@@ -125,6 +141,7 @@ type GroupValidationResult struct {
 	Group         *parser.ParsedGroup
 	GroupErrors   []*ValidationResult // All group-scope errors
 	RecordResults []*RecordValidationResult
+	Durations     PhaseDurations
 }
 
 // HasErrors returns true if this group has any validation errors.

@@ -3939,6 +3939,14 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-hook-form@npm:^7.83.0":
+  version: 7.83.0
+  resolution: "react-hook-form@npm:7.83.0"
+  peerDependencies:
+    react: ^16.8.0 || ^17 || ^18 || ^19
+  languageName: node
+  linkType: hard
+
 "react-is@npm:^16.13.1":
   version: 16.13.1
   resolution: "react-is@npm:16.13.1"
@@ -4573,6 +4581,7 @@ __metadata:
     next: "npm:16.2.9"
     react: "npm:19.2.4"
     react-dom: "npm:19.2.4"
+    react-hook-form: "npm:^7.83.0"
     typescript: "npm:^5"
     vitest: "npm:^4.1.9"
   languageName: unknown

@@ -37,6 +37,19 @@ class TestDecoderFactory:
         assert first_row.data == ("202401", "946412419")
 
     @pytest.mark.django_db
+    def test_csv_decoder_strips_trailing_sub_character(
+        self, fra_csv_with_sub_character
+    ):
+        """Test CSV decoder ignores a legacy DOS EOF marker."""
+        decoder = DecoderFactory.get_instance(fra_csv_with_sub_character.file)
+
+        rows = list(decoder.decode())
+
+        assert len(rows) == 28
+        assert rows[-1].data == ("202504", "912345678")
+        assert all("\x1a" not in value for row in rows for value in row.data)
+
+    @pytest.mark.django_db
     def test_xlsx_decoder(self, fra_xlsx):
         """Test XLSX decoder is selected and decodes data."""
         decoder = DecoderFactory.get_instance(fra_xlsx.file)

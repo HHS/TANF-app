@@ -401,6 +401,10 @@ class TestLogin:
             "id_token": mock_token,
         }
         mock_post.return_value = MockRequest(data=token)
+        mocker.patch(
+            "tdpservice.users.api.login.generate_jwt_from_jwks",
+            return_value="test-public-key",
+        )
         mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
 
         mock_decode.return_value = decoded_token(
@@ -573,6 +577,10 @@ class TestLoginParam:
             "id_token": mock_token,
         }
         mock_post.return_value = MockRequest(data=token)
+        mocker.patch(
+            "tdpservice.users.api.login.generate_jwt_from_jwks",
+            return_value="test-public-key",
+        )
         mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
 
         mock_decode.return_value = decoded_token(

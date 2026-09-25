@@ -114,7 +114,7 @@ func TestProcess_MissingFileSpec(t *testing.T) {
 	_, err = p.Process(context.Background(), stubDec, DataFileContext{
 		Program: "NONEXISTENT",
 		Section: 99,
-	})
+	}, 0)
 	if err == nil {
 		t.Fatal("expected error for missing file spec")
 	}

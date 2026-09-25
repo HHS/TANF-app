@@ -67,7 +67,13 @@ class CsvExportAdminMixin(AdminModelMixin, ExportCsvMixin, SttMixin):
     """Class to encapsulate CSV related mixins."""
 
     actions = ["export_as_csv"]
+    list_per_page = 25
     ordering = ["datafile__stt__stt_code"]
+    show_full_result_count = False
+
+    def get_queryset(self, request):
+        """Return the queryset with displayed DataFile relations eager loaded."""
+        return super().get_queryset(request).select_related("datafile", "datafile__stt")
 
 
 class ReadOnlyAdminMixin(AdminModelMixin):
@@ -77,11 +83,12 @@ class ReadOnlyAdminMixin(AdminModelMixin):
 
     def get_readonly_fields(self, request, obj=None):
         """Force all fields to read only."""
-        return (
+        readonly_fields = (
             list(self.readonly_fields)
             + [field.name for field in obj._meta.fields]
             + [field.name for field in obj._meta.many_to_many]
         )
+        return list(dict.fromkeys(readonly_fields))
 
     def has_add_permission(self, request):
         """Deny add permisison."""

@@ -74,6 +74,10 @@ def test_load_statistical_weights_test_data_creates_datafiles_and_rows(tmp_path,
     assert set(datafiles.values_list("state", flat=True)) == {
         SubmissionState.PARSE_COMPLETED
     }
+    assert not datafiles.filter(section_ref__isnull=True).exists()
+    assert set(datafiles.values_list("section_ref__program__code", flat=True)) == {
+        DataFile.ProgramType.TANF
+    }
 
     t1_rows = list(TANF_T1.objects.order_by("RPT_MONTH_YEAR"))
     assert len(t1_rows) == 2

@@ -327,7 +327,7 @@
       "name": "TDP Grafana",
       "enabled": true,
       "clientAuthenticatorType": "client-secret",
-      "secret": "${KC_TDP_GRAFANA_CLIENT_SECRET}",
+      "secret": "$(env:KC_TDP_GRAFANA_CLIENT_SECRET)",
       "redirectUris": [
         "https://grafana.tanfdata.acf.hhs.gov/login/generic_oauth"
       ],

@@ -26,6 +26,11 @@ type CLI struct {
 	GlobalLogLevel  string `kong:"name='global.log-level',env='GO_PARSER_LOG_LEVEL',help='Log level (debug, info, warn, error)'"`
 	GlobalConfigDir string `kong:"name='global.config-dir',help='Config directory'"`
 
+	// Metrics
+	MetricsEnabled       bool   `kong:"name='metrics.enabled',env='GO_PARSER_METRICS_ENABLED',help='Enable Prometheus metrics exporter'"`
+	MetricsListenAddress string `kong:"name='metrics.listen-address',env='GO_PARSER_METRICS_LISTEN_ADDRESS',help='Prometheus metrics listen address'"`
+	MetricsPath          string `kong:"name='metrics.path',env='GO_PARSER_METRICS_PATH',help='Prometheus metrics endpoint path'"`
+
 	// Server
 	ServerMode              string `kong:"name='server.mode',help='Server mode (celery, grpc, http, local)'"`
 	ServerCeleryRedisURL    string `kong:"name='server.celery.redis-url',help='Redis URL for Celery broker'"`
@@ -118,6 +123,16 @@ func (c *CLI) ApplyTo(cfg *Config, ctx *kong.Context) {
 	}
 	if set["global.config-dir"] {
 		cfg.Global.ConfigDir = c.GlobalConfigDir
+	}
+
+	if set["metrics.enabled"] {
+		cfg.Metrics.Enabled = c.MetricsEnabled
+	}
+	if set["metrics.listen-address"] {
+		cfg.Metrics.ListenAddress = c.MetricsListenAddress
+	}
+	if set["metrics.path"] {
+		cfg.Metrics.Path = c.MetricsPath
 	}
 
 	if set["server.mode"] {

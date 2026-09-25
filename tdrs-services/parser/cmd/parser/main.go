@@ -8,6 +8,7 @@ import (
 
 	"go-parser/internal/config"
 	"go-parser/internal/logging"
+	"go-parser/internal/metrics"
 	"go-parser/internal/server/celery"
 	"go-parser/internal/server/local"
 	"go-parser/internal/validation"
@@ -62,6 +63,31 @@ func main() {
 	validators, err := validation.NewRegistry(cfg, reg)
 	if err != nil {
 		fatal("Failed to load validators", err)
+	}
+
+	metricsServers := metrics.NewMetricsServer(metrics.ServerConfig{
+		Enabled:       cfg.Metrics.Enabled,
+		ServerMode:    cfg.Server.Mode,
+		ListenAddress: cfg.Metrics.ListenAddress,
+		Path:          cfg.Metrics.Path,
+	})
+	if err := metricsServers.Start(bgCtx); err != nil {
+		fatal("Failed to start metrics server", err)
+	}
+	defer metricsServers.Shutdown()
+	metricTableNames := map[string]struct{}{
+		config.ParserErrorTableName(reg.TablePrefix()): {},
+	}
+	for _, spec := range reg.FileSpecs() {
+		metrics.InitializeParserMetrics(spec.Program, spec.Section)
+		for _, schemaPath := range spec.Schemas {
+			if meta := reg.GetSchemaMetadata(schemaPath); meta != nil {
+				metricTableNames[meta.TableName] = struct{}{}
+			}
+		}
+	}
+	for tableName := range metricTableNames {
+		metrics.InitializeWriterMetrics(tableName)
 	}
 
 	// ---- Server mode dispatch ----

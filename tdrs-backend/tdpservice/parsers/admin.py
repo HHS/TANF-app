@@ -10,6 +10,9 @@ from . import models
 class ParserErrorAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     """ModelAdmin class for ParserError objects generated in parsing."""
 
+    list_per_page = 25
+    show_full_result_count = False
+
     list_display = [
         "row_number",
         "field_name",
@@ -30,6 +33,10 @@ class ParserErrorAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "fields_json",
         "values_json",
     ]
+
+    def get_queryset(self, request):
+        """Return the queryset with related parser context eager loaded."""
+        return super().get_queryset(request).select_related("file", "file__stt")
 
 
 class ParserErrorInline(admin.TabularInline):

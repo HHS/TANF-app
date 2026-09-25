@@ -1,4 +1,5 @@
 """Celery configuration file."""
+
 from __future__ import absolute_import
 
 import os
@@ -31,6 +32,10 @@ if not settings.USE_LOCALSTACK:
         redis_backend_use_ssl={
             "ssl_cert_reqs": ssl.CERT_NONE,
         },
+        broker_connection_retry=True,
+        broker_connection_retry_on_startup=True,
+        broker_channel_error_retry=True,
+        broker_connection_max_retries=100,
     )
 
 # Load task modules from all registered Django apps.

@@ -5,6 +5,7 @@ import zipfile
 from datetime import date, datetime
 from unittest.mock import patch
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 
 import pytest
@@ -285,7 +286,9 @@ class TestProcessReportSource:
         assert report_file.version == 1
 
     @patch("tdpservice.reports.tasks.timezone.now")
-    def test_process_preserves_nested_paths_in_report_file_zip(self, mock_now, ofa_admin):
+    def test_process_preserves_nested_paths_in_report_file_zip(
+        self, mock_now, ofa_admin
+    ):
         """Should preserve STT-relative nested paths in the created ReportFile zip."""
         from tdpservice.stts.models import STT, Region
 
@@ -644,7 +647,9 @@ class TestProcessReportSourceReportType:
         assert report_file.report_type == ReportType.TRIBAL_TANF
 
     @patch("tdpservice.reports.tasks.timezone.now")
-    def test_fra_source_multiple_stts_all_inherit_report_type(self, mock_now, ofa_admin):
+    def test_fra_source_multiple_stts_all_inherit_report_type(
+        self, mock_now, ofa_admin
+    ):
         """All ReportFiles from an FRA source should have report_type=FRA."""
         from tdpservice.stts.models import STT, Region
 
@@ -696,6 +701,152 @@ class TestProcessReportSourceReportType:
         report_files = ReportFile.objects.filter(source=source)
         for rf in report_files:
             assert rf.report_type == ReportType.FRA
+
+
+@pytest.mark.django_db
+class TestProcessReportSourceReportTypeValidation:
+    """Tests for validating source STTs against selected report_type."""
+
+    def _create_source(self, ofa_admin, structure, report_type):
+        """Create a ReportSource from a nested zip structure."""
+        zip_buffer = create_nested_zip(structure, "FY2025_test")
+        uploaded_file = SimpleUploadedFile(
+            "report_source.zip", zip_buffer.read(), content_type="application/zip"
+        )
+
+        return ReportSource.objects.create(
+            uploaded_by=ofa_admin,
+            original_filename="report_source.zip",
+            slug="report_source.zip",
+            file=uploaded_file,
+            year=2025,
+            date_extracted_on=date(2025, 1, 31),
+            report_type=report_type,
+        )
+
+    @patch("tdpservice.reports.tasks.send_feedback_report_available_email")
+    def test_tanf_ssp_source_rejects_tribal_stts_before_creating_reports(
+        self, mock_send_email, ofa_admin
+    ):
+        """A TANF/SSP source upload with tribal STTs should fail atomically."""
+        from django.contrib.auth.models import Group
+
+        from tdpservice.stts.models import STT, Region
+        from tdpservice.users.models import AccountApprovalStatusChoices, User
+
+        region = Region.objects.create(id=9030, name="Test Region RTV1")
+        state_stt = STT.objects.create(
+            id=8030,
+            stt_code="01",
+            name="Test State RTV1",
+            region=region,
+            postal_code="S1",
+            type="STATE",
+        )
+        STT.objects.create(
+            id=8031,
+            stt_code="101",
+            name="Test Tribe RTV1",
+            region=region,
+            postal_code="T1",
+            type="TRIBE",
+        )
+
+        data_analyst_group, _ = Group.objects.get_or_create(name="Data Analyst")
+        data_analyst = User.objects.create(
+            username="rtv_state_analyst",
+            email="rtv_state_analyst@example.com",
+            stt=state_stt,
+            account_approval_status=AccountApprovalStatusChoices.APPROVED,
+        )
+        data_analyst.groups.add(data_analyst_group)
+
+        source = self._create_source(
+            ofa_admin,
+            {
+                "FY2025": {
+                    "RO1": {
+                        "F1": ["state_report.pdf"],
+                        "F101": ["tribal_report.pdf"],
+                    }
+                }
+            },
+            ReportType.TANF_SSP,
+        )
+
+        process_report_source(source.id)
+
+        source.refresh_from_db()
+        assert source.status == ReportSource.Status.FAILED
+        assert "Selected report type TANF/SSP" in source.error_message
+        assert "Test Tribe RTV1 (101; folder F101)" in source.error_message
+        assert "Tribal TANF" in source.error_message
+        assert ReportFile.objects.filter(source=source).count() == 0
+        mock_send_email.assert_not_called()
+
+    @patch("tdpservice.reports.tasks.send_feedback_report_available_email")
+    def test_tribal_tanf_source_rejects_non_tribal_stts(
+        self, mock_send_email, ofa_admin
+    ):
+        """A Tribal TANF source upload with state STTs should fail."""
+        from tdpservice.stts.models import STT, Region
+
+        region = Region.objects.create(id=9031, name="Test Region RTV2")
+        STT.objects.create(
+            id=8032,
+            stt_code="01",
+            name="Test State RTV2",
+            region=region,
+            postal_code="S2",
+            type="STATE",
+        )
+
+        source = self._create_source(
+            ofa_admin,
+            {"FY2025": {"RO1": {"F1": ["state_report.pdf"]}}},
+            ReportType.TRIBAL_TANF,
+        )
+
+        process_report_source(source.id)
+
+        source.refresh_from_db()
+        assert source.status == ReportSource.Status.FAILED
+        assert "Selected report type Tribal TANF" in source.error_message
+        assert "Test State RTV2 (01; folder F1)" in source.error_message
+        assert "TANF/SSP or FRA" in source.error_message
+        assert ReportFile.objects.filter(source=source).count() == 0
+        mock_send_email.assert_not_called()
+
+    @patch("tdpservice.reports.tasks.send_feedback_report_available_email")
+    def test_fra_source_rejects_tribal_stts(self, mock_send_email, ofa_admin):
+        """An FRA source upload with tribal STTs should fail."""
+        from tdpservice.stts.models import STT, Region
+
+        region = Region.objects.create(id=9032, name="Test Region RTV3")
+        STT.objects.create(
+            id=8033,
+            stt_code="101",
+            name="Test Tribe RTV3",
+            region=region,
+            postal_code="T3",
+            type="TRIBE",
+        )
+
+        source = self._create_source(
+            ofa_admin,
+            {"FY2025": {"RO1": {"F101": ["tribal_report.pdf"]}}},
+            ReportType.FRA,
+        )
+
+        process_report_source(source.id)
+
+        source.refresh_from_db()
+        assert source.status == ReportSource.Status.FAILED
+        assert "Selected report type FRA" in source.error_message
+        assert "Test Tribe RTV3 (101; folder F101)" in source.error_message
+        assert "Tribal TANF" in source.error_message
+        assert ReportFile.objects.filter(source=source).count() == 0
+        mock_send_email.assert_not_called()
 
 
 @pytest.mark.django_db
@@ -954,10 +1105,11 @@ class TestFeedbackReportEmailContent:
     def test_tanf_ssp_email_subject(self):
         """TANF_SSP report should produce subject with 'TANF/SSP'."""
         from unittest.mock import patch as mock_patch
-        from tdpservice.reports.test.factories import ReportFileFactory
+
         from tdpservice.email.helpers.feedback_report import (
             send_feedback_report_available_email,
         )
+        from tdpservice.reports.test.factories import ReportFileFactory
 
         report = ReportFileFactory.create(report_type=ReportType.TANF_SSP)
 
@@ -975,10 +1127,11 @@ class TestFeedbackReportEmailContent:
     def test_fra_email_subject(self):
         """FRA report should produce subject with 'FRA'."""
         from unittest.mock import patch as mock_patch
-        from tdpservice.reports.test.factories import ReportFileFactory
+
         from tdpservice.email.helpers.feedback_report import (
             send_feedback_report_available_email,
         )
+        from tdpservice.reports.test.factories import ReportFileFactory
 
         report = ReportFileFactory.create(report_type=ReportType.FRA)
 
@@ -996,10 +1149,11 @@ class TestFeedbackReportEmailContent:
     def test_email_text_message_includes_report_type(self):
         """Plain text fallback should include report_type_label."""
         from unittest.mock import patch as mock_patch
-        from tdpservice.reports.test.factories import ReportFileFactory
+
         from tdpservice.email.helpers.feedback_report import (
             send_feedback_report_available_email,
         )
+        from tdpservice.reports.test.factories import ReportFileFactory
 
         report = ReportFileFactory.create(report_type=ReportType.FRA)
 

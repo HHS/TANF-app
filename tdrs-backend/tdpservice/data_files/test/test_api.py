@@ -3,6 +3,7 @@
 import io
 import os
 
+from django.contrib.auth.models import Permission
 from django.test import override_settings
 
 import openpyxl
@@ -194,7 +195,7 @@ class DataFileAPITestBase:
         summary = wb["Summary"]
 
         COL_ERROR_MESSAGE = 4
-        COL_NUM_OCCURRENCES = 8
+        COL_NUM_OCCURRENCES = 7
 
         assert readme.cell(row=1, column=1).value == "Error Report Readme"
         assert critical.cell(row=1, column=1).value == "Case Number"
@@ -212,7 +213,7 @@ class DataFileAPITestBase:
         critical = wb["Critical"]
         summary = wb["Summary"]
 
-        COL_NUM_OCCURRENCES = 8
+        COL_NUM_OCCURRENCES = 7
 
         assert readme.cell(row=1, column=1).value == "Error Report Readme"
         assert critical.cell(row=1, column=1).value == "Case Number"
@@ -227,7 +228,7 @@ class DataFileAPITestBase:
         summary = wb["Summary"]
 
         COL_ERROR_MESSAGE = 4
-        COL_NUM_OCCURRENCES = 8
+        COL_NUM_OCCURRENCES = 7
 
         assert readme.cell(row=1, column=1).value == "Error Report Readme"
         assert critical.cell(row=1, column=1).value == "Case Number"
@@ -543,6 +544,9 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
 
         response = self.post_data_file(api_client, data_file_data)
         assert response.data["section"] == "Active Case Data"
+        data_file = DataFile.objects.get(id=response.data["id"])
+        assert data_file.section_ref.program.code == DataFile.ProgramType.SSP
+        assert data_file.section_ref.name == response.data["section"]
 
     def test_data_file_data_upload_tribe(self, api_client, data_file_data, stt):
         """Test that when we upload a file for Tribe the section name is updated."""
@@ -550,6 +554,9 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         stt.save()
         response = self.post_data_file(api_client, data_file_data)
         assert "Active Case Data" == response.data["section"]
+        data_file = DataFile.objects.get(id=response.data["id"])
+        assert data_file.section_ref.program.code == DataFile.ProgramType.TRIBAL
+        assert data_file.section_ref.name == response.data["section"]
         stt.type = ""
         stt.save()
 
@@ -563,6 +570,32 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
 
         response = self.post_data_file(api_client, data_file_data)
         assert response.data["section"] == "Active Case Data"
+        data_file = DataFile.objects.get(id=response.data["id"])
+        assert data_file.section_ref.program.code == DataFile.ProgramType.TANF
+        assert data_file.section_ref.name == response.data["section"]
+
+    def test_data_files_data_upload_fra(self, api_client, csv_data_file, user):
+        """FRA uploads reference their canonical FRA section."""
+        user.user_permissions.add(Permission.objects.get(codename="has_fra_access"))
+
+        response = self.post_data_file(api_client, csv_data_file)
+
+        assert response.status_code == status.HTTP_201_CREATED
+        data_file = DataFile.objects.get(id=response.data["id"])
+        assert data_file.section_ref.program.code == DataFile.ProgramType.FRA
+        assert data_file.section_ref.name == csv_data_file["section"]
+
+    def test_data_files_data_upload_rejects_cross_program_section(
+        self, api_client, csv_data_file, user
+    ):
+        """Uploads reject sections that do not belong to the derived program."""
+        user.user_permissions.add(Permission.objects.get(codename="has_fra_access"))
+        csv_data_file["ssp"] = True
+
+        response = self.post_data_file(api_client, csv_data_file)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert not DataFile.objects.filter(slug=csv_data_file["slug"]).exists()
 
     def test_failed_upload_does_not_create_record(
         self, api_client, data_file_data, user
@@ -640,6 +673,9 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
             assert response.data["section"] == "Active Case Data"
             assert response.data["is_program_audit"] is True
             assert response.status_code == status.HTTP_201_CREATED
+            data_file = DataFile.objects.get(id=response.data["id"])
+            assert data_file.section_ref.program.code == DataFile.ProgramType.TANF
+            assert data_file.section_ref.name == response.data["section"]
         else:
             assert response.data == {
                 "detail": "This file was submitted for a reporting year not supported by this file type."

@@ -1,9 +1,7 @@
 import { headers } from "next/headers";
-import { forbidden, redirect } from "next/navigation";
-import { GridContainer } from "@trussworks/react-uswds";
-import NextLink from "next/link";
+import AdminShell from "@/components/admin-shell";
 import { requestAdminApi, setAuthenticatedNoStore } from "@/lib/admin-api";
-import { checkAdminSession } from "@/lib/admin-auth";
+import { requireAdminSession } from "@/lib/require-admin-session";
 
 export const dynamic = "force-dynamic";
 
@@ -47,17 +45,7 @@ export default async function ApiValidationPage({
 }: {
   searchParams: Promise<{ endpoint?: string }>;
 }) {
-  const requestHeaders = await headers();
-  const cookieHeader = requestHeaders.get("cookie");
-  const session = await checkAdminSession(cookieHeader);
-
-  if (!session.authenticated) {
-    redirect("/login");
-  }
-
-  if (session.authorized !== true) {
-    forbidden();
-  }
+  const { cookieHeader, requestHeaders, session } = await requireAdminSession();
 
   const params = await searchParams;
   const endpoint = params.endpoint ?? "auth_check";
@@ -74,61 +62,40 @@ export default async function ApiValidationPage({
   }));
 
   return (
-    <main className="admin-login-page" id="main-content">
-      <section className="admin-gov-banner" aria-label="Official government website">
-        <div className="grid-container-widescreen admin-gov-banner__inner">
-          <p>A Demo website of the United States government</p>
-          <p>Here&apos;s how you know</p>
-        </div>
-      </section>
-
-      <header className="usa-header usa-header--extended admin-header">
-        <div className="grid-container-widescreen usa-nav__wide desktop:padding-left-4 desktop:border-bottom-0 mobile:border-bottom-1px mobile:padding-left-0 mobile:padding-right-0">
-          <div className="usa-logo" id="extended-logo">
-            <em className="usa-logo__text">
-              <NextLink href="/" aria-label="TANF Data Portal Admin Home">
-                TANF Data Portal Admin
-              </NextLink>
-            </em>
-          </div>
-        </div>
-      </header>
-
+    <AdminShell session={session}>
       <section className="admin-success" aria-label="API response validation">
-        <GridContainer className="grid-container-widescreen admin-success__shell">
-          <div className="admin-success__panel">
-            <p className="admin-console__eyebrow">API validation</p>
-            <h1>Django API response validation</h1>
-            <p className="admin-success__lede">
-              This page calls one Django endpoint through the shared admin API helper and
-              displays the response returned by Django.
-            </p>
+        <div className="admin-success__panel">
+          <p className="admin-console__eyebrow">API validation</p>
+          <h1>Django API response validation</h1>
+          <p className="admin-success__lede">
+            This page calls one Django endpoint through the shared admin API helper and
+            displays the response returned by Django.
+          </p>
 
-            <dl className="admin-success__details">
-              <div>
-                <dt>Endpoint</dt>
-                <dd>{endpoint}</dd>
-              </div>
-              <div>
-                <dt>Status</dt>
-                <dd>
-                  {validation.status} {validation.statusText}
-                </dd>
-              </div>
-              <div>
-                <dt>Cache-Control</dt>
-                <dd>{validation.cacheControl}</dd>
-              </div>
-              <div>
-                <dt>Content-Type</dt>
-                <dd>{validation.contentType}</dd>
-              </div>
-            </dl>
+          <dl className="admin-success__details">
+            <div>
+              <dt>Endpoint</dt>
+              <dd>{endpoint}</dd>
+            </div>
+            <div>
+              <dt>Status</dt>
+              <dd>
+                {validation.status} {validation.statusText}
+              </dd>
+            </div>
+            <div>
+              <dt>Cache-Control</dt>
+              <dd>{validation.cacheControl}</dd>
+            </div>
+            <div>
+              <dt>Content-Type</dt>
+              <dd>{validation.contentType}</dd>
+            </div>
+          </dl>
 
-            <pre className="admin-api-validation__body">{validation.body}</pre>
-          </div>
-        </GridContainer>
+          <pre className="admin-api-validation__body">{validation.body}</pre>
+        </div>
       </section>
-    </main>
+    </AdminShell>
   );
 }

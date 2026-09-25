@@ -1,22 +1,19 @@
 # Codex configuration for the TANF-app repository.
 # Reference: https://developers.openai.com/codex/config-advanced
 
-model                  = "gpt-5.5"
+model                  = "gpt-5.6"
 model_provider         = "openai"
 
-# Sandbox: allow writing within the workspace but not outside it.
-sandbox_mode         = "workspace-write"
-approval_policy      = "on-request"
-default_permissions  = "tdp-workspace"
+approval_policy = "on-request"
+default_permissions = "tdp-workspace"
 
-# ---------------------------------------------------------------------------
-# Filesystem permissions
-# ---------------------------------------------------------------------------
+[permissions.tdp-workspace]
+extends = ":workspace"
+
 [permissions.tdp-workspace.filesystem]
 glob_scan_max_depth = 12
 
 [permissions.tdp-workspace.filesystem.":workspace_roots"]
-"." = "write"
 "**/.env" = "deny"
 "**/.env.*" = "deny"
 "**/*.tfvars" = "deny"

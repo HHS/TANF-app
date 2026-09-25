@@ -112,17 +112,52 @@
     "ariaDescription": "Ellipses = true",
     "tags": ["faqs"]
   },
+  {
+    "title": "FAQ: Why did I receive a submission reminder?",
+    "url": "faq.html#Why did I receive a submission reminder?",
+    "content": "TDP sends reminder emails when at least one required TANF, SSP, or Tribal TANF file has not been submitted.",
+    "ariaDescription": "Ellipses = true",
+    "tags": ["faqs"]
+  },
+  {
+    "title": "FAQ: When are submission reminders sent?",
+    "url": "faq.html#When are submission reminders sent?",
+    "content": "Submission reminders are sent five days before the quarterly submission deadline.",
+    "ariaDescription": "Ellipses = true",
+    "tags": ["faqs"]
+  },
+  {
+    "title": "FAQ: What should I do if I have no data to report?",
+    "url": "faq.html#What should I do if I have no data to report?",
+    "content": "What you should do depends on whether your program had no caseload for the entire quarter, no caseload for part of the quarter, or no records for a specific required file.",
+    "ariaDescription": "Ellipses = true",
+    "tags": ["faqs"]
+  },
+  {
+    "title": "FAQ: Where can I find reporting due dates?",
+    "url": "faq.html#Where can I find reporting due dates?",
+    "content": "See Reporting Due Dates for TANF, SSP, Tribal TANF, and Fiscal Responsibility Act reporting deadlines.",
+    "ariaDescription": "Ellipses = true",
+    "tags": ["faqs"]
+  },
+  {
+    "title": "FAQ: I submit the 477 Statistical Report. Do I still need to submit quarterly Tribal TANF reports?",
+    "url": "faq.html#I submit the 477 Statistical Report. Do I still need to submit quarterly Tribal TANF reports?",
+    "content": "Beginning with Fiscal Year 2025, 477 Tribal TANF programs that choose to submit the new 477 Statistical Report are not required to continue submitting quarterly Tribal TANF reports through TDP.",
+    "ariaDescription": "Ellipses = true",
+    "tags": ["faqs"]
+  },
+  {
+    "title": "FAQ: How can I confirm that TDP accepted my submission?",
+    "url": "faq.html#How can I confirm that TDP accepted my submission?",
+    "content": "After TDP processes your submission, you can confirm its status by:",
+    "ariaDescription": "Ellipses = true",
+    "tags": ["faqs"]
+  },
       {
     "title": "FAQ: Where can I report a bug or other issue with TDP?",
     "url": "faq.html#Where can I report a bug or other issue with TDP?",
     "content": "You can anonymously submit bug reports, feedback, and ideas for making TDP better on the Give Feedback page here on the Knowledge Center",
-    "ariaDescription": "Ellipses = true",
-    "tags": ["bug","feedback","faqs"]
-  },
-        {
-    "title": "FAQ: I have questions about the Program Integrity Review referenced in the Dear Colleague letter sent to TANF Administrators on August 27, 2025. Where can I find more information?",
-    "url": "faq.html#I have questions about the Program Integrity Review referenced in the Dear Colleague letter sent to TANF Administrators on August 27, 2025. Where can I find more information?",
-    "content": "ACF recognizes that TANF partners in states and territories may have questions regarding the scope, process, and expectations of the Program Integrity Review described in the Dear Colleague letter. Additional details—including specific data requirements",
     "ariaDescription": "Ellipses = true",
     "tags": ["bug","feedback","faqs"]
   },
@@ -179,6 +214,18 @@
     "url": "give-feedback.html",
     "content": "Give feedback on TDP or the Knowledge Center",
     "tags": ["help","bug","contact","support","get help"]
+  },
+        {
+    "title": "When You Have No Caseload or Records To Submit",
+    "url": "when-you-have-no-data.html",
+    "content": "If your program has no caseload or other records to report for a month or quarter, follow the steps below. Do not follow these steps if you have records to report but plan to submit them at a later date...",
+    "tags": ["zero cases","no caseload","no records","zero records","submission"]
+  },
+          {
+    "title": "Reporting Due Dates",
+    "url": "reporting-due-dates.html",
+    "content": " This page provides the quarterly reporting deadlines for reports submitted through the TANF Data Portal (TDP).",
+    "tags": ["due dates","when is data due","deadlines","quarterly","fra","TANF","SSP","Tribal TANF"]
   },
         {
     "title": "Release Notes",

@@ -197,14 +197,15 @@ Implementation guidance for `tdp-admin`:
 
 ## Form Metadata and Validation
 
-Django remains the source of truth for editable admin forms. The React admin should not manually duplicate Django model or form validators in TypeScript. Instead, each migrated admin workflow should expose an explicit form-metadata endpoint from Django and a matching mutation endpoint for submission.
+Django remains the source of truth for editable admin forms. The React admin should not manually duplicate Django model or form validators in TypeScript. Instead, migrated admin workflows should be added to an explicit Django allowlist and served through the generic admin form endpoints.
 
-The target pattern is metadata-driven, not fully generic form generation. Shared React components should render common field types from backend metadata, while workflow-specific screens can still provide layout, conditional behavior, and specialized controls where needed. This gives the frontend reusable building blocks without requiring every Django admin form to fit a single universal form-builder abstraction.
+The target pattern is metadata-driven and registry-based. A shared metadata builder derives common field metadata from Django `Form` and `ModelForm` fields, and a shared React renderer maps that metadata to USWDS controls. Workflow-specific screens can still provide page layout, conditional behavior, and specialized controls where needed, but they should not create one-off metadata builders or mutation endpoints for common Django form saves.
 
 ### Guiding design principles
 
-- **Explicit workflow contracts:** each migrated admin form should have a clear backend metadata endpoint and mutation endpoint rather than relying on frontend inference from unrelated APIs.
+- **Explicit workflow contracts:** each migrated admin form should be registered in the backend admin form workflow registry rather than relying on frontend inference from unrelated APIs.
 - **Shared component mapping:** the frontend should map common metadata field types to reusable USWDS React form controls.
+- **Generic endpoint shape:** the backend should use one generic metadata endpoint and one generic save endpoint for registered workflows.
 - **Server-authoritative validation:** Django remains the final authority for validation, permission checks, workflow rules, persistence, and audit behavior.
 - **Generic where safe:** required fields, choices, labels, help text, simple type checks, lengths, and numeric/date bounds can drive reusable form behavior.
 - **Workflow-specific escape hatches:** custom layouts, conditional fields, specialized controls, and server-only validation are expected for complex admin workflows.
@@ -223,7 +224,7 @@ The implementation should assume we own the Django metadata contract and the com
 
 ### Backend metadata pattern
 
-For model-backed forms, the backend should derive generic metadata from the same Django form, serializer, and model field definitions used for server-side validation where practical:
+For registered Django forms, the backend should derive generic metadata from the same Django form, serializer, and model field definitions used for server-side validation where practical:
 
 - field type and widget intent,
 - required/optional state,
@@ -232,18 +233,17 @@ For model-backed forms, the backend should derive generic metadata from the same
 - max length and numeric/date bounds where Django exposes them,
 - simple field validators that can be represented as client rules,
 - initial values for edit forms,
-- read-only or disabled state derived from permissions or workflow state,
 - field and form-level errors returned from Django validation.
 
-The backend contract should be explicit per workflow rather than inferred by the frontend. For example, a migrated user-access review form could expose one metadata endpoint for the editable fields on that screen and one mutation endpoint for approve/reject/update actions.
+The backend contract should be explicit in the admin form registry rather than inferred by the frontend. For example, a migrated user-access review form should register a workflow key, form class, queryset, object serializer, and optional save callback.
 
 Conceptual shape:
 
 ```
-GET /api/admin/users/{id}/access-review/form/
-  -> fields, initial values, generic constraints, permissions
+GET /admin-api/v1/admin-forms/{workflow}/{object_id}/metadata/
+  -> fields, initial values, generic constraints, submit_url
 
-POST /api/admin/users/{id}/access-review/
+PATCH /admin-api/v1/admin-forms/{workflow}/{object_id}/
   -> runs Django validation and workflow logic, persists changes, returns success or validation errors
 ```
 
@@ -251,32 +251,27 @@ High-level metadata example:
 
 ```json
 {
-  "workflow": "user_access_review",
+  "workflow": "users.user.change",
+  "title": "Edit user",
+  "object": {
+    "id": "user-1",
+    "label": "admin@example.gov"
+  },
+  "submit_url": "/admin-forms/users.user.change/user-1/",
   "fields": [
     {
-      "name": "role",
-      "label": "Role",
-      "type": "choice",
-      "widget": "select",
+      "name": "groups",
+      "label": "Groups",
+      "type": "multiselect",
       "required": true,
       "choices": [
-        { "value": "data_analyst", "label": "Data Analyst" },
-        { "value": "ofa_admin", "label": "OFA Admin" }
-      ]
-    },
-    {
-      "name": "decision_reason",
-      "label": "Decision reason",
-      "type": "string",
-      "widget": "textarea",
-      "required": false,
-      "maxLength": 500
+        { "value": "1", "label": "Data Analyst" },
+        { "value": "2", "label": "OFA Admin" }
+      ],
+      "initial": ["1"],
+      "constraints": {}
     }
-  ],
-  "initialValues": {
-    "role": "data_analyst",
-    "decision_reason": ""
-  }
+  ]
 }
 ```
 
@@ -284,12 +279,15 @@ High-level validation error example:
 
 ```json
 {
-  "fieldErrors": {
-    "role": ["Select a valid role."]
-  },
-  "nonFieldErrors": [
-    "This user cannot be approved until all required profile fields are complete."
-  ]
+  "ok": false,
+  "errors": {
+    "field_errors": {
+      "groups": ["Select a valid role."]
+    },
+    "non_field_errors": [
+      "This user cannot be approved until all required profile fields are complete."
+    ]
+  }
 }
 ```
 
@@ -304,7 +302,7 @@ Form submission should follow this sequence:
 1. The Next.js admin page requests metadata and initial values from Django.
 2. The React form maps backend field metadata to shared USWDS input components.
 3. React Hook Form applies generic client-side checks for immediate feedback.
-4. On submit, the form sends the payload to the Django mutation endpoint.
+4. On submit, the form sends the payload to the metadata-provided generic Django mutation endpoint.
 5. Django runs authoritative `ModelForm`, serializer, model, permission, workflow, and domain validation.
 6. Django returns either a successful result or a normalized error response containing field errors and non-field errors.
 7. The React form maps server-returned errors back onto the corresponding fields or form-level alert region.

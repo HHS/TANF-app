@@ -5,13 +5,17 @@
 **Date**: July 17, 2025 <br>
 
 ## Summary
+
 This technical memorandum outlines the implementation plan for integrating [Security Event Tokens (SETs)](https://developers.login.gov/security-events/) from Login.gov into the TDP application. The integration will enable TDP to:
+
 1. Handle security-related notifications about user accounts
 2. Automatically manage account recreation scenarios when users delete and recreate their Login.gov accounts
 3. Maintain audit history and respond appropriately to security events
 
 ## Background
+
 Login.gov provides a Security Event Token (SET) notification system that follows the OpenID RISC Event Types specification. These notifications are sent as JWT tokens via HTTP POST requests when specific security events occur for users, such as:
+
 - Account disabling
 - Account purging (when users delete their accounts)
 - Password resets
@@ -22,9 +26,10 @@ A common issue in production is that users sometimes delete their Login.gov acco
 ![Unique Key Violation](./unique_key_violation.png)
 
 ## Out of Scope
-* Frontend UI components for displaying security events
-* Integration with other identity providers' security event systems
-* Real-time notifications to users about security events
+
+- Frontend UI components for displaying security events
+- Integration with other identity providers' security event systems
+- Real-time notifications to users about security events
 
 ## Method/Design
 
@@ -67,6 +72,7 @@ class SecurityEventToken(models.Model):
 ```
 
 ### SET Receiver Endpoint
+
 Create a dedicated endpoint to receive and process SETs from Login.gov. The endpoint will be a POST endpoint that will receive the SETs from Login.gov. The endpoint will be protected by no authentication and no authorization. The endpoint needs to grab existing Login.gov public keys to verify the JWTs. Once verified and decoded, the data is passed to an event handler for remaining processing.
 
 ```python
@@ -144,6 +150,7 @@ class SecurityEventTokenView(APIView):
 ```
 
 ### Event Processing System
+
 To handle the myriad of events that Login.gov publishes it is suggested to implement a class based handler. The handler will maintain a map of event types to event handlers. The handlers are responsible for the unique logic to handle their event.
 
 ```python
@@ -313,17 +320,19 @@ def handle_user(self, request, id_token, decoded_token_data):
 ```
 
 ### Configuration Settings
+
 We will add the necessary configuration settings:
 
 ```python
 # tdpservice/settings/common.py
 
 # Login.gov SET Integration
-LOGIN_GOV_SET_AUDIENCE = env.str('LOGIN_GOV_SET_AUDIENCE', 'https://your-app-domain.gov/api/security/events/login-gov/')
+LOGIN_GOV_SET_AUDIENCE = env.str('LOGIN_GOV_SET_AUDIENCE', 'https://your-app-domain.gov/api/security/events/login-gov')
 LOGIN_GOV_CERTS_URL = env.str('LOGIN_GOV_CERTS_URL', 'https://idp.int.identitysandbox.gov/api/openid_connect/certs')
 ```
 
 ### Admin Interface
+
 Create an admin model to view and manage security events.
 
 ```python
@@ -338,6 +347,7 @@ class SecurityEventTokenAdmin(admin.ModelAdmin):
 ```
 
 ## Affected Systems
+
 - **Django Backend**: New models, views, and handlers for SET processing
 - **User Authentication System**: Enhanced handling of account recreation scenarios
 - **Admin Interface**: New admin views for security events
@@ -346,6 +356,7 @@ class SecurityEventTokenAdmin(admin.ModelAdmin):
 ## Use and Test Cases to Consider
 
 ### Use Cases
+
 1. **Account Disabled**: Login.gov disables a user account, TDP receives the SET and marks the user as deactivated
 2. **Account Enabled**: Login.gov re-enables a previously disabled account, TDP updates the user status
 3. **Account Purged**: Login.gov purges a user account, TDP prepares for potential recreation
@@ -355,5 +366,6 @@ class SecurityEventTokenAdmin(admin.ModelAdmin):
 7. **Recovery Information Changed**: User changes their recovery methods, TDP logs the event
 
 ### Test Cases
+
 1. **Valid SET Processing**: Verify that valid SETs are properly received, validated, and processed (Requires mocking/code injection to fake the Login.gov private key)
 2. **Invalid SET Handling**: Test handling of invalid SETs (wrong signature, expired, etc.)

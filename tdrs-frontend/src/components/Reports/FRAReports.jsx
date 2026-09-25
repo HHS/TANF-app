@@ -172,8 +172,6 @@ const UploadForm = ({
   setError,
   isSubmitting,
   fraHasUploadedFile,
-  year,
-  quarter,
 }) => {
   const inputRef = useRef(null)
 
@@ -204,18 +202,6 @@ const UploadForm = ({
       if (deps.rendered) removeOldPreviews(deps.dropTarget, deps.instructions)
     }
   }, [file])
-
-  useEffect(() => {
-    // Clear the input and any previews when fiscal params change
-    if (inputRef.current) {
-      inputRef.current.value = null
-    }
-    const targetClassName = '.usa-file-input__target input#fra-file-upload'
-    const deps = checkPreviewDependencies(targetClassName)
-    if (deps.rendered) removeOldPreviews(deps.dropTarget, deps.instructions)
-    setSelectedFile(null)
-    setError(null)
-  }, [year, quarter, setError, setSelectedFile])
 
   const onFileChanged = async (e) => {
     setSelectedFile(null)
@@ -988,8 +974,6 @@ const FRAReportsContent = () => {
                 setError={setFraUploadError}
                 isSubmitting={isSubmitting}
                 fraHasUploadedFile={fraHasUploadedFile}
-                year={yearInputValue}
-                quarter={quarterInputValue}
               />
             </>
           )}

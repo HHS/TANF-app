@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   adminApi,
   getAdminApiUrl,
@@ -8,6 +8,10 @@ import {
 } from "./admin-api";
 
 const originalEnv = { ...process.env };
+
+beforeEach(() => {
+  delete process.env.ADMIN_BACKEND_URL;
+});
 
 afterEach(() => {
   process.env = { ...originalEnv };
@@ -48,6 +52,7 @@ describe("admin API service", () => {
     const headers = options?.headers as Headers;
     expect(options?.method).toBe("PATCH");
     expect(options?.cache).toBe("no-store");
+    expect(options?.redirect).toBe("manual");
     expect(headers.get("Cookie")).toBe(
       "admin_sessionid=abc; csrftoken=csrf-cookie"
     );
@@ -71,6 +76,21 @@ describe("admin API service", () => {
 
     expect(fetch).toHaveBeenCalledWith(
       "https://backend.example.gov/admin-api/v1/data_files/42",
+      expect.objectContaining({ method: "GET" })
+    );
+  });
+
+  it("exposes generic admin form metadata reads", async () => {
+    process.env.NEXT_PUBLIC_BACKEND_URL = "https://backend.example.gov/v1";
+    process.env.ADMIN_API_PROXY_TOKEN = "server-only-token";
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ id: "user-1" })));
+
+    await adminApi.adminForms.metadata("users.user.change", "user 1", {
+      cookieHeader: "admin_sessionid=abc",
+    });
+
+    expect(fetch).toHaveBeenCalledWith(
+      "https://backend.example.gov/admin-api/v1/admin-forms/users.user.change/user%201/metadata/",
       expect.objectContaining({ method: "GET" })
     );
   });

@@ -59,6 +59,7 @@ urlpatterns = [
     path("logout", LogoutUser.as_view(), name="logout"),
     path("logout/oidc", LogoutRedirectOIDC.as_view(), name="oidc-logout"),
     path("auth_check", AuthorizationCheck.as_view(), name="authorization-check"),
+    path("admin-forms/", include("tdpservice.admin_forms.urls")),
     path("", include("tdpservice.users.urls")),
     path("stts/", include("tdpservice.stts.urls")),
     path("data_files/", include("tdpservice.data_files.urls")),

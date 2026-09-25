@@ -67,6 +67,7 @@ type Config struct {
 	Global        GlobalConfig         `yaml:"global"`
 	SchemaFiles   []string             `yaml:"schema_files"`
 	FilespecFiles []string             `yaml:"filespec_files"`
+	Metrics       MetricsConfig        `yaml:"metrics"`
 	Server        ServerConfig         `yaml:"server"`
 	Pipeline      PipelineWorkerConfig `yaml:"pipeline"`
 	Writer        WriterConfig         `yaml:"writer"`
@@ -79,6 +80,13 @@ type Config struct {
 type GlobalConfig struct {
 	LogLevel  string `yaml:"log_level"`
 	ConfigDir string `yaml:"config_dir"`
+}
+
+// MetricsConfig controls the Prometheus metrics exporter.
+type MetricsConfig struct {
+	Enabled       bool   `yaml:"enabled"`
+	ListenAddress string `yaml:"listen_address"`
+	Path          string `yaml:"path"`
 }
 
 // ServerConfig controls how the parser receives work.
@@ -137,6 +145,11 @@ func DefaultConfig() *Config {
 		},
 		SchemaFiles:   []string{"schemas/**/*.yaml"},
 		FilespecFiles: []string{"filespecs/**/*.yaml"},
+		Metrics: MetricsConfig{
+			Enabled:       true,
+			ListenAddress: ":9809",
+			Path:          "/metrics",
+		},
 		Server: ServerConfig{
 			Mode: "local",
 			Celery: CeleryConfig{

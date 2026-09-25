@@ -4,6 +4,7 @@ import json
 import logging
 import logging.handlers
 import os
+import re
 from distutils.util import strtobool
 from os.path import join
 from typing import Any, Optional
@@ -156,6 +157,7 @@ class Common(Configuration):
         "csp.middleware.CSPMiddleware",
         "tdpservice.middleware.NoCacheMiddleware",
         "simple_history.middleware.HistoryRequestMiddleware",
+        "tdpservice.middleware.RequestAttributionMetricsMiddleware",
         "django_prometheus.middleware.PrometheusAfterMiddleware",
     )
 
@@ -648,14 +650,15 @@ class Common(Configuration):
 
     # SessionRefresh middleware: exempt API endpoints from silent re-auth redirects
     OIDC_EXEMPT_URLS = [
-        "/v1/",
-        "/admin/",
-        "/prometheus/",
-        "/plg_auth_check/",
-        "/login/",
+        re.compile(r"^/v1/"),
+        re.compile(r"^/admin/"),
+        re.compile(r"^/prometheus/"),
+        re.compile(r"^/plg_auth_check/"),
+        re.compile(r"^/login/"),
         "/auth_check",
-        "/admin-auth/",
-        "/logout/",
+        re.compile(r"^/admin-auth/"),
+        re.compile(r"^/admin-api/"),
+        re.compile(r"^/logout/"),
     ]
 
     # -------- CELERY CONFIG
@@ -828,7 +831,7 @@ class Common(Configuration):
     # Cloud.gov SET integration settings
     LOGIN_GOV_SET_AUDIENCE = os.getenv(
         "LOGIN_GOV_SET_AUDIENCE",
-        "https://test.tanfdata.acf.hhs.gov/v1/security/event-token/",
+        "https://test.tanfdata.acf.hhs.gov/v1/security/event-token",
     )
     LOGIN_GOV_WELL_KNOWN_CONFIG = os.getenv(
         "LOGIN_GOV_WELL_KNOWN_CONFIG",

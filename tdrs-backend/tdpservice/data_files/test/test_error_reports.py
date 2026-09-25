@@ -2,15 +2,14 @@
 
 from io import BytesIO
 
-from openpyxl import load_workbook
 import pytest
+from openpyxl import load_workbook
 
 from tdpservice.data_files.error_reports import ActiveClosedErrorReport
 from tdpservice.data_files.models import DataFile
-from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.data_files.parser_error_choices import ParserErrorCategoryChoices
+from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.parsers.test.factories import ParserErrorFactory
-
 
 KNOWLEDGE_CENTER_URL = (
     "https://tdp-project-updates.app.cloud.gov/knowledge-center/"
@@ -66,7 +65,6 @@ def test_tanf_error_report_data_tabs_start_with_headers(
         "Error Message",
         "Item Number",
         "Item Name",
-        "Internal Variable Name",
         "Row Number",
         "Error Type",
     ]
@@ -76,7 +74,6 @@ def test_tanf_error_report_data_tabs_start_with_headers(
         "Error Message",
         "Item Number",
         "Item Name",
-        "Internal Variable Name",
         "Error Type",
         "Number Of Occurrences",
     ]

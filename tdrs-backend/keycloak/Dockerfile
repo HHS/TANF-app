@@ -17,6 +17,8 @@ FROM registry.access.redhat.com/ubi9/ubi-minimal AS ubi-libs
 RUN microdnf install -y libxcrypt-compat && \
     mkdir /ubi-libs && cp -L /usr/lib64/libcrypt.so.1* /ubi-libs/
 
+FROM adorsys/keycloak-config-cli:6.5.1-26.5.5 AS keycloak-config-cli
+
 FROM quay.io/keycloak/keycloak:26.5.5
 
 USER root
@@ -28,13 +30,14 @@ RUN mkdir -p /var/log/nginx /tmp/nginx_client_body /tmp/nginx_proxy /tmp/nginx_f
     chown -R 1000:0 /var/log/nginx /tmp/nginx_*
 USER 1000
 
-# Install jq and curl for configure-idps.sh (static binaries, no package manager needed)
+# Install jq and curl for manifest startup and health checks.
 ADD --chmod=755 https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64 /usr/local/bin/jq
 ADD --chmod=755 https://github.com/moparisthebest/static-curl/releases/download/v8.7.1/curl-amd64 /usr/local/bin/curl
 
 COPY realm-configs/ /opt/keycloak/realm-configs/
+COPY --from=keycloak-config-cli /app/keycloak-config-cli.jar /opt/keycloak/keycloak-config-cli.jar
 COPY --chmod=755 select-realm-config.sh /opt/keycloak/select-realm-config.sh
-COPY configure-idps.sh /opt/keycloak/configure-idps.sh
+COPY --chmod=755 normalize-login-gov-key.sh /opt/keycloak/normalize-login-gov-key.sh
 COPY nginx.conf /opt/keycloak/nginx.conf.template
 COPY --chmod=755 entrypoint.sh /opt/keycloak/entrypoint.sh
 

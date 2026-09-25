@@ -20,6 +20,12 @@ schema_files:
 filespec_files:
   - "filespecs/**/*.yaml"
 
+# Metrics: exported for every server mode when enabled.
+metrics:
+  enabled: true
+  listen_address: ":9809"
+  path: "/metrics"
+
 # Server: how the parser receives work
 server:
   mode: local              # celery | grpc | http | local

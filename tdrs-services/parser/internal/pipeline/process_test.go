@@ -218,7 +218,7 @@ func processContentForTest(
 	pipelineCfg.IncludeErrors = true
 	p := NewPipeline(sink, reg, validators, pipelineCfg)
 
-	result, err := p.Process(context.Background(), dec, dfCtx)
+	result, err := p.Process(context.Background(), dec, dfCtx, 0)
 	if err != nil {
 		t.Fatalf("Process failed: %v", err)
 	}
@@ -276,7 +276,7 @@ func TestProcess_FRAInvalidFirstRowWritesPreCheckError(t *testing.T) {
 			pipelineCfg.IncludeErrors = true
 			p := NewPipeline(sink, reg, validators, pipelineCfg)
 
-			result, err := p.Process(context.Background(), dec, testFRAContext())
+			result, err := p.Process(context.Background(), dec, testFRAContext(), 0)
 			if err != nil {
 				t.Fatalf("Process failed: %v", err)
 			}
@@ -333,7 +333,7 @@ func TestProcess_FRAValidFileDoesNotRequireTrailer(t *testing.T) {
 	pipelineCfg.IncludeErrors = true
 	p := NewPipeline(sink, reg, validators, pipelineCfg)
 
-	result, err := p.Process(context.Background(), dec, testFRAContext())
+	result, err := p.Process(context.Background(), dec, testFRAContext(), 0)
 	if err != nil {
 		t.Fatalf("Process failed: %v", err)
 	}
@@ -395,7 +395,7 @@ func TestProcess_TANF_S1_ValidData(t *testing.T) {
 	p := NewPipeline(sink, reg, validators, pipelineCfg)
 
 	ctx := context.Background()
-	result, err := p.Process(ctx, dec, testTANFContext())
+	result, err := p.Process(ctx, dec, testTANFContext(), 0)
 	if err != nil {
 		t.Fatalf("Process failed: %v", err)
 	}
@@ -429,21 +429,21 @@ func TestProcess_HeaderProgramTypeMismatchWritesPreCheckError(t *testing.T) {
 		expectedMessage string
 	}{
 		{
-			name:   "submitted SSP with TAN header",
-			header: "HEADER20241A06000TAN1ED",
-			dfCtx:  testSSPContext(),
+			name:            "submitted SSP with TAN header",
+			header:          "HEADER20241A06000TAN1ED",
+			dfCtx:           testSSPContext(),
 			expectedMessage: "Submitted program type (SSP) does not match file program type (TAN).",
 		},
 		{
-			name:   "submitted TAN with SSP header",
-			header: "HEADER20241A06000SSP1ED",
-			dfCtx:  testTANFContext(),
+			name:            "submitted TAN with SSP header",
+			header:          "HEADER20241A06000SSP1ED",
+			dfCtx:           testTANFContext(),
 			expectedMessage: "Submitted program type (TAN) does not match file program type (SSP).",
 		},
 		{
-			name:   "submitted TAN with Tribal header",
-			header: "HEADER20241A00142TAN1ED",
-			dfCtx:  testTANFContext(),
+			name:            "submitted TAN with Tribal header",
+			header:          "HEADER20241A00142TAN1ED",
+			dfCtx:           testTANFContext(),
 			expectedMessage: "Submitted program type (TAN) does not match file program type (TRIBAL).",
 		},
 		{
@@ -542,7 +542,7 @@ func TestProcess_TANF_S1_MissingHeader(t *testing.T) {
 	ctx := context.Background()
 
 	// Pipeline should return a result with a PRE_CHECK error, not panic
-	result, err := p.Process(ctx, dec, testTANFContext())
+	result, err := p.Process(ctx, dec, testTANFContext(), 0)
 	if err != nil {
 		t.Fatalf("Process returned unexpected error: %v", err)
 	}
@@ -589,7 +589,7 @@ func TestProcess_TANF_MultipleHeaders_RollbacksAndWritesOffendingRow(t *testing.
 	pipelineCfg.IncludeErrors = true
 	p := NewPipeline(sink, reg, validators, pipelineCfg)
 
-	result, err := p.Process(context.Background(), dec, testTANFContext())
+	result, err := p.Process(context.Background(), dec, testTANFContext(), 0)
 	if err != nil {
 		t.Fatalf("Process returned unexpected error: %v", err)
 	}
@@ -647,7 +647,7 @@ func TestProcess_TANF_MultipleHeaders_RollbackFailurePropagates(t *testing.T) {
 	pipelineCfg.IncludeErrors = true
 	p := NewPipeline(sink, reg, validators, pipelineCfg)
 
-	result, err := p.Process(context.Background(), dec, testTANFContext())
+	result, err := p.Process(context.Background(), dec, testTANFContext(), 0)
 	if err == nil {
 		t.Fatal("expected rollback error")
 	}
@@ -689,7 +689,7 @@ func TestProcess_RollbackDoesNotPoisonLaterProcess(t *testing.T) {
 	}
 	defer badDec.Close()
 
-	if _, err := p.Process(context.Background(), badDec, testTANFContext()); err != nil {
+	if _, err := p.Process(context.Background(), badDec, testTANFContext(), 0); err != nil {
 		t.Fatalf("first Process returned unexpected error: %v", err)
 	}
 
@@ -707,7 +707,7 @@ func TestProcess_RollbackDoesNotPoisonLaterProcess(t *testing.T) {
 	}
 	defer goodDec.Close()
 
-	if _, err := p.Process(context.Background(), goodDec, testTANFContext()); err != nil {
+	if _, err := p.Process(context.Background(), goodDec, testTANFContext(), 0); err != nil {
 		t.Fatalf("second Process failed after prior rollback: %v", err)
 	}
 }
@@ -741,7 +741,7 @@ func TestProcess_EmptyFile(t *testing.T) {
 	ctx := context.Background()
 
 	// Empty file: parseCtx is nil (no header), pipeline processes zero rows
-	result, err := p.Process(ctx, dec, testTANFContext())
+	result, err := p.Process(ctx, dec, testTANFContext(), 0)
 	if err != nil {
 		t.Fatalf("Process returned unexpected error: %v", err)
 	}
@@ -784,7 +784,7 @@ func TestProcess_HeaderOnly(t *testing.T) {
 	p := NewPipeline(sink, reg, validators, pipelineCfg)
 
 	ctx := context.Background()
-	result, err := p.Process(ctx, dec, testTANFContext())
+	result, err := p.Process(ctx, dec, testTANFContext(), 0)
 	if err != nil {
 		t.Fatalf("Process failed for header-only file: %v", err)
 	}
@@ -835,7 +835,7 @@ func TestProcess_HeaderOnlyWritesNoRecordsCreatedError(t *testing.T) {
 		FiscalYear:    2024,
 		FiscalQuarter: "Q2",
 		SectionName:   "Active Case Data",
-	})
+	}, 0)
 	if err != nil {
 		t.Fatalf("Process failed: %v", err)
 	}
@@ -937,7 +937,7 @@ func TestProcess_TANFZeroRecordSectionsAccepted(t *testing.T) {
 			pipelineCfg.IncludeErrors = true
 			p := NewPipeline(sink, reg, validators, pipelineCfg)
 
-			result, err := p.Process(context.Background(), dec, tt.ctx)
+			result, err := p.Process(context.Background(), dec, tt.ctx, 0)
 			if err != nil {
 				t.Fatalf("Process failed: %v", err)
 			}
@@ -984,7 +984,7 @@ func TestProcess_TANFZeroRecordBadTrailerCountRejected(t *testing.T) {
 	pipelineCfg.IncludeErrors = true
 	p := NewPipeline(sink, reg, validators, pipelineCfg)
 
-	result, err := p.Process(context.Background(), dec, testTANFContext())
+	result, err := p.Process(context.Background(), dec, testTANFContext(), 0)
 	if err != nil {
 		t.Fatalf("Process failed: %v", err)
 	}
@@ -1043,7 +1043,7 @@ func TestProcess_HeaderValidationFailureAlsoWritesNoRecordsCreatedError(t *testi
 		FiscalYear:    2024,
 		FiscalQuarter: "Q1",
 		SectionName:   "Active Case Data",
-	})
+	}, 0)
 	if err != nil {
 		t.Fatalf("Process failed: %v", err)
 	}
@@ -1097,7 +1097,7 @@ func TestProcess_NonBlockingHeaderErrorWritesParserError(t *testing.T) {
 	pipelineCfg.IncludeErrors = true
 	p := NewPipeline(sink, reg, validators, pipelineCfg)
 
-	result, err := p.Process(context.Background(), dec, testTANFContext())
+	result, err := p.Process(context.Background(), dec, testTANFContext(), 0)
 	if err != nil {
 		t.Fatalf("Process failed: %v", err)
 	}
@@ -1168,7 +1168,7 @@ func TestProcess_BlankRequiredCountyFIPSWritesRequiredFieldError(t *testing.T) {
 		FiscalYear:    2024,
 		FiscalQuarter: "Q2",
 		SectionName:   "Active Case Data",
-	})
+	}, 0)
 	if err != nil {
 		t.Fatalf("Process failed: %v", err)
 	}
@@ -1222,7 +1222,7 @@ func TestProcess_UnknownRecordTypeWritesParserError(t *testing.T) {
 	pipelineCfg.IncludeErrors = true
 	p := NewPipeline(sink, reg, validators, pipelineCfg)
 
-	result, err := p.Process(context.Background(), dec, testTANFContext())
+	result, err := p.Process(context.Background(), dec, testTANFContext(), 0)
 	if err != nil {
 		t.Fatalf("Process failed: %v", err)
 	}
@@ -1279,7 +1279,7 @@ func TestProcess_TANF_S1_WithRecordWriting(t *testing.T) {
 	p := NewPipeline(sink, reg, validators, pipelineCfg)
 
 	ctx := context.Background()
-	result, err := p.Process(ctx, dec, testTANFContext())
+	result, err := p.Process(ctx, dec, testTANFContext(), 0)
 	if err != nil {
 		t.Fatalf("Process failed: %v", err)
 	}
@@ -1333,7 +1333,7 @@ func TestProcess_TANF_MultipleRecordTypes(t *testing.T) {
 	p := NewPipeline(sink, reg, validators, pipelineCfg)
 
 	ctx := context.Background()
-	result, err := p.Process(ctx, dec, testTANFContext())
+	result, err := p.Process(ctx, dec, testTANFContext(), 0)
 	if err != nil {
 		t.Fatalf("Process failed: %v", err)
 	}
@@ -1379,7 +1379,7 @@ func TestProcess_SSP_S1(t *testing.T) {
 	p := NewPipeline(sink, reg, validators, pipelineCfg)
 
 	ctx := context.Background()
-	result, err := p.Process(ctx, dec, testSSPContext())
+	result, err := p.Process(ctx, dec, testSSPContext(), 0)
 	if err != nil {
 		t.Fatalf("Process failed: %v", err)
 	}
@@ -1419,7 +1419,7 @@ func TestProcess_ErrorsDisabled(t *testing.T) {
 	p := NewPipeline(sink, reg, validators, pipelineCfg)
 
 	ctx := context.Background()
-	result, err := p.Process(ctx, dec, testTANFContext())
+	result, err := p.Process(ctx, dec, testTANFContext(), 0)
 	if err != nil {
 		t.Fatalf("Process failed: %v", err)
 	}
@@ -1465,7 +1465,7 @@ func TestProcess_ParsingResult_HasExpectedFields(t *testing.T) {
 	p := NewPipeline(sink, reg, validators, pipelineCfg)
 
 	ctx := context.Background()
-	result, err := p.Process(ctx, dec, testTANFContext())
+	result, err := p.Process(ctx, dec, testTANFContext(), 0)
 	if err != nil {
 		t.Fatalf("Process failed: %v", err)
 	}
@@ -1523,7 +1523,7 @@ func TestProcess_FileSink_Integration(t *testing.T) {
 	p := NewPipeline(fileSink, reg, validators, pipelineCfg)
 
 	ctx := context.Background()
-	result, err := p.Process(ctx, dec, testTANFContext())
+	result, err := p.Process(ctx, dec, testTANFContext(), 0)
 	if err != nil {
 		t.Fatalf("Process failed: %v", err)
 	}

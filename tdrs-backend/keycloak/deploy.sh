@@ -16,14 +16,30 @@ REQUIRED_ENV_VARS=(
     "KEYCLOAK_ADMIN"              # Admin console username
     "KEYCLOAK_ADMIN_PASSWORD"     # Admin console password
     "KC_TDP_DJANGO_CLIENT_SECRET" # tdp-django client secret (realm config)
+    "KC_TDP_ADMIN_CLIENT_SECRET"  # tdp-admin client secret (realm config)
     "LOGIN_GOV_JWT_KEY"           # Login.gov RSA private key (PEM or base64)
     "CF_DOCKER_PASSWORD"          # Docker registry password/token (used by cf push)
     "AMS_CLIENT_ID"                # AMS OIDC client ID
     "AMS_CLIENT_SECRET"            # AMS OIDC client secret
 )
 OPTIONAL_ENV_VARS=(
-    "KC_TDP_GRAFANA_CLIENT_SECRET" # tdp-grafana client secret (realm config)
+    "KEYCLOAK_CONFIG_IMPORT_ON_STARTUP" # Run config-cli from entrypoint after Keycloak readiness
     "LOGIN_GOV_ACR_VALUES"         # Login.gov identity assurance level
+    "LOGIN_GOV_CLIENT_ID"           # Login.gov OIDC client ID
+    "LOGIN_GOV_AUTH_URL"            # Login.gov authorization endpoint
+    "LOGIN_GOV_TOKEN_URL"           # Login.gov token endpoint
+    "LOGIN_GOV_JWKS_URL"            # Login.gov JWKS endpoint
+    "LOGIN_GOV_LOGOUT_URL"          # Login.gov logout endpoint
+    "LOGIN_GOV_ISSUER"              # Login.gov issuer
+    "AMS_AUTH_URL"                  # AMS authorization endpoint
+    "AMS_TOKEN_URL"                 # AMS token endpoint
+    "AMS_JWKS_URL"                  # AMS JWKS endpoint
+    "AMS_LOGOUT_URL"                # AMS logout endpoint
+    "AMS_USERINFO_URL"              # AMS userinfo endpoint
+    "AMS_ISSUER"                    # AMS issuer
+    "KC_CLI_REDIRECT_URI"           # Additional redirect URI for tdp-cli
+    "KC_CLI_WEB_ORIGIN"             # Additional web origin for tdp-cli
+    "KC_TDP_GRAFANA_CLIENT_SECRET" # tdp-grafana client secret (realm config)
 )
 
 help() {
@@ -98,6 +114,54 @@ inject_env_vars() {
     done
 }
 
+set_manifest_env() {
+    local manifest="$1"
+    local var="$2"
+    local value="$3"
+
+    export "$var=$value"
+    yq eval -i ".applications[0].env.$var = strenv($var)" "$manifest"
+}
+
+inject_default_config_cli_env_vars() {
+    local manifest="$1"
+    local default_login_gov_client_id
+
+    set_manifest_env "$manifest" "KEYCLOAK_CONFIG_IMPORT_ON_STARTUP" "${KEYCLOAK_CONFIG_IMPORT_ON_STARTUP:-true}"
+
+    case "$DEPLOY_ENV" in
+        dev)
+            default_login_gov_client_id="urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-dev"
+            ;;
+        staging)
+            default_login_gov_client_id="urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-staging"
+            ;;
+        prod)
+            default_login_gov_client_id="urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-prod"
+            ;;
+    esac
+
+    set_manifest_env "$manifest" "LOGIN_GOV_CLIENT_ID" "${LOGIN_GOV_CLIENT_ID:-$default_login_gov_client_id}"
+    set_manifest_env "$manifest" "LOGIN_GOV_AUTH_URL" "${LOGIN_GOV_AUTH_URL:-https://idp.int.identitysandbox.gov/openid_connect/authorize}"
+    set_manifest_env "$manifest" "LOGIN_GOV_TOKEN_URL" "${LOGIN_GOV_TOKEN_URL:-https://idp.int.identitysandbox.gov/api/openid_connect/token}"
+    set_manifest_env "$manifest" "LOGIN_GOV_JWKS_URL" "${LOGIN_GOV_JWKS_URL:-https://idp.int.identitysandbox.gov/api/openid_connect/certs}"
+    set_manifest_env "$manifest" "LOGIN_GOV_LOGOUT_URL" "${LOGIN_GOV_LOGOUT_URL:-https://idp.int.identitysandbox.gov/openid_connect/logout}"
+    set_manifest_env "$manifest" "LOGIN_GOV_ISSUER" "${LOGIN_GOV_ISSUER:-https://idp.int.identitysandbox.gov/}"
+    set_manifest_env "$manifest" "LOGIN_GOV_ACR_VALUES" "${LOGIN_GOV_ACR_VALUES:-http://idmanagement.gov/ns/assurance/ial/1}"
+
+    set_manifest_env "$manifest" "KC_TDP_GRAFANA_CLIENT_SECRET" "${KC_TDP_GRAFANA_CLIENT_SECRET:-}"
+
+    set_manifest_env "$manifest" "AMS_AUTH_URL" "${AMS_AUTH_URL:-https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/auth}"
+    set_manifest_env "$manifest" "AMS_TOKEN_URL" "${AMS_TOKEN_URL:-https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/token}"
+    set_manifest_env "$manifest" "AMS_JWKS_URL" "${AMS_JWKS_URL:-https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/certs}"
+    set_manifest_env "$manifest" "AMS_LOGOUT_URL" "${AMS_LOGOUT_URL:-https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/logout}"
+    set_manifest_env "$manifest" "AMS_USERINFO_URL" "${AMS_USERINFO_URL:-https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/userinfo}"
+    set_manifest_env "$manifest" "AMS_ISSUER" "${AMS_ISSUER:-https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO}"
+
+    set_manifest_env "$manifest" "KC_CLI_REDIRECT_URI" "${KC_CLI_REDIRECT_URI:-http://localhost/*}"
+    set_manifest_env "$manifest" "KC_CLI_WEB_ORIGIN" "${KC_CLI_WEB_ORIGIN:-http://localhost}"
+}
+
 deploy_keycloak() {
     local app_name="$1"
     local db_service="$2"
@@ -116,6 +180,7 @@ deploy_keycloak() {
     yq eval -i ".applications[0].env.DEPLOY_ENV = \"${DEPLOY_ENV}\"" $MANIFEST
     yq eval -i ".applications[0].docker.image = \"${docker_image}\"" $MANIFEST
     inject_env_vars $MANIFEST
+    inject_default_config_cli_env_vars $MANIFEST
 
     local strategy_flag=""
     if [ "$rolling" == "true" ]; then
@@ -133,22 +198,8 @@ deploy_keycloak() {
     rm $MANIFEST
 }
 
-configure_keycloak_idps() {
-    local app_name="$1"
-    local internal_base="http://${app_name}.apps.internal"
-    echo "Running IdP configuration task..."
-    # /health/ready is proxied through nginx on port 8080, so the management URL
-    # uses port 8080 (not 9000, which is only accessible within the container).
-    cf run-task "$app_name" \
-        --command "export KEYCLOAK_URL=${internal_base}:8080 KEYCLOAK_MANAGEMENT_URL=${internal_base}:8080 && /opt/keycloak/configure-idps.sh" \
-        --name "configure-idps"
-}
-
 setup_keycloak_net_pols() {
     local app_name="$1"
-    # Allow keycloak tasks to reach the running keycloak app via internal route
-    cf add-network-policy "$app_name" "$app_name" --protocol tcp --port 8080
-
     CURRENT_SPACE=$(cf target | grep -Eo "tanf-[a-z]+")
 
     if [ "$CURRENT_SPACE" == "tanf-dev" ]; then
@@ -273,6 +324,5 @@ echo ""
 
 deploy_keycloak "$APP_NAME" "$DB_SERVICE_NAME" "$PUBLIC_HOSTNAME" "$DOCKER_IMAGE" "$DOCKER_USERNAME" "$ROLLING"
 setup_keycloak_net_pols "$APP_NAME"
-configure_keycloak_idps "$APP_NAME"
 
 popd

@@ -16,6 +16,9 @@ func TestDefaultConfig_NonZeroValues(t *testing.T) {
 		{"Global.ConfigDir", cfg.Global.ConfigDir != ""},
 		{"SchemaFiles", len(cfg.SchemaFiles) > 0},
 		{"FilespecFiles", len(cfg.FilespecFiles) > 0},
+		{"Metrics.Enabled", cfg.Metrics.Enabled},
+		{"Metrics.ListenAddress", cfg.Metrics.ListenAddress != ""},
+		{"Metrics.Path", cfg.Metrics.Path != ""},
 		{"Server.Mode", cfg.Server.Mode != ""},
 		{"Server.Celery.Queue", cfg.Server.Celery.Queue != ""},
 		{"Pipeline.NumWorkers", cfg.Pipeline.NumWorkers > 0},
@@ -80,6 +83,15 @@ func TestDefaultConfig_PreservesExistingDefaults(t *testing.T) {
 	}
 	if cfg.Server.Celery.Queue != "go-parser" {
 		t.Errorf("QueueName = %q, want go-parser", cfg.Server.Celery.Queue)
+	}
+	if !cfg.Metrics.Enabled {
+		t.Error("Metrics.Enabled = false, want true")
+	}
+	if cfg.Metrics.ListenAddress != ":9809" {
+		t.Errorf("Metrics.ListenAddress = %q, want :9809", cfg.Metrics.ListenAddress)
+	}
+	if cfg.Metrics.Path != "/metrics" {
+		t.Errorf("Metrics.Path = %q, want /metrics", cfg.Metrics.Path)
 	}
 }
 

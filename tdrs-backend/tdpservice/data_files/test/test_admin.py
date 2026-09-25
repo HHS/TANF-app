@@ -1,9 +1,10 @@
 """Test DataFileAdmin methods."""
 from datetime import datetime, timedelta, timezone
 
-from django.conf import settings
 from django.contrib.admin.sites import AdminSite
+from django.db import connection
 from django.test import RequestFactory
+from django.test.utils import CaptureQueriesContext
 
 import pytest
 
@@ -11,7 +12,9 @@ from tdpservice.data_files.admin import admin as data_file_admin_module
 from tdpservice.data_files.admin.admin import DataFileAdmin
 from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.parser_error_choices import ParserErrorCategoryChoices
 from tdpservice.data_files.test.factories import DataFileFactory
+from tdpservice.parsers.models import DataFileSummary, ParserError
 from tdpservice.parsers.test.factories import DataFileSummaryFactory
 
 
@@ -24,15 +27,10 @@ def test_DataFileAdmin_status():
 
     assert data_file_admin.status(data_file) == data_file_summary.status
     assert data_file_admin.case_totals(data_file) == data_file_summary.case_aggregates
-    DOMAIN = settings.FRONTEND_BASE_URL
-    assert (
-        data_file_admin.error_report_link(data_file)
-        == f"<a href='{DOMAIN}/admin/parsers/parsererror/?file={data_file.id}'>Parser Errors: 0</a>"
-    )
 
 
-def test_DataFileAdmin_exposes_state_in_admin():
-    """Test DataFileAdmin surfaces state in changelist and detail view."""
+def test_DataFileAdmin_exposes_transitional_fields_in_admin():
+    """Test DataFileAdmin surfaces state and canonical section details."""
     data_file_admin = DataFileAdmin(DataFile, AdminSite())
     properties_fieldset = next(
         fieldset
@@ -42,6 +40,7 @@ def test_DataFileAdmin_exposes_state_in_admin():
 
     assert "parsing_state" in data_file_admin.list_display
     assert "parsing_state" in properties_fieldset[1]["fields"]
+    assert "section_ref" in properties_fieldset[1]["fields"]
 
 
 @pytest.mark.django_db
@@ -51,6 +50,74 @@ def test_DataFileAdmin_parsing_state_uses_choice_label():
     data_file_admin = DataFileAdmin(DataFile, AdminSite())
 
     assert data_file_admin.parsing_state(data_file) == "Parse failed"
+
+
+@pytest.mark.django_db
+def test_DataFileAdmin_changelist_summary_is_eager_loaded(
+    admin_user,
+):
+    """The data file admin should not query per row for summary links."""
+    for _ in range(3):
+        data_file = DataFileFactory()
+        DataFileSummaryFactory(
+            datafile=data_file,
+            status=DataFileSummary.Status.ACCEPTED,
+        )
+        ParserError.objects.create(
+            file=data_file,
+            error_type=ParserErrorCategoryChoices.PRE_CHECK,
+        )
+
+    request = RequestFactory().get("/admin/data_files/datafile/")
+    request.user = admin_user
+    data_file_admin = DataFileAdmin(DataFile, AdminSite())
+
+    data_files = list(data_file_admin.get_queryset(request))
+
+    with CaptureQueriesContext(connection) as captured_queries:
+        for data_file in data_files:
+            str(data_file.stt)
+            data_file_admin.status(data_file)
+            data_file_admin.case_totals(data_file)
+            data_file_admin.data_file_summary(data_file)
+
+    assert len(captured_queries) == 0
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("all_versions", [False, True])
+def test_DataFileAdmin_changelist_does_not_query_parser_errors(
+    admin_user, all_versions: bool
+) -> None:
+    """Pagination and latest-version selection must not scan parser errors."""
+    old_file = DataFileFactory(version=1)
+    latest_file = DataFileFactory(stt=old_file.stt, version=2)
+    for data_file in (old_file, latest_file):
+        DataFileSummaryFactory(datafile=data_file)
+        ParserError.objects.create(
+            file=data_file,
+            error_type=ParserErrorCategoryChoices.PRE_CHECK,
+        )
+
+    params = {"created_at": "1"} if all_versions else {}
+    request = RequestFactory().get("/admin/data_files/datafile/", params)
+    request.user = admin_user
+    model_admin = DataFileAdmin(DataFile, AdminSite())
+
+    with CaptureQueriesContext(connection) as queries:
+        changelist = model_admin.get_changelist_instance(request)
+        result_ids = {data_file.pk for data_file in changelist.result_list}
+
+    expected_ids = {old_file.pk, latest_file.pk} if all_versions else {latest_file.pk}
+    assert result_ids == expected_ids
+    assert changelist.result_count == len(expected_ids)
+    assert changelist.full_result_count == 2
+    assert "error_report_link" not in changelist.list_display
+    assert queries.captured_queries
+    assert all(
+        ParserError._meta.db_table not in query["sql"]
+        for query in queries.captured_queries
+    )
 
 
 @pytest.mark.django_db

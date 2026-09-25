@@ -3,6 +3,7 @@ package validation
 import (
 	"strings"
 	"text/template"
+	"time"
 
 	"go-parser/internal/config/schema"
 	"go-parser/internal/decoder"
@@ -82,6 +83,7 @@ func (o *ValidationOrchestrator) ValidateGroup(group *parser.ParsedGroup, filesp
 	}
 
 	// Phase 1: Group validation (always runs)
+	stageStart := time.Now()
 	groupState := NewGroupValidationState(group, dfCtx)
 	for _, validator := range o.registry.GetGroupValidators(filespecKey) {
 		for _, vr := range ExecuteGroup(validator, groupState) {
@@ -94,13 +96,16 @@ func (o *ValidationOrchestrator) ValidateGroup(group *parser.ParsedGroup, filesp
 			}
 		}
 	}
+	result.Durations.GroupValidation += time.Since(stageStart)
 
 	// Check if blocked by group-level errors
 	groupBlocked := result.HasBlockingGroupErrors()
 
 	// Phase 2: Validate each record
 	for i, rec := range group.Records {
-		o.validateRecord(result.RecordResults[i], rec, groupBlocked, dfCtx)
+		durations := o.validateRecord(result.RecordResults[i], rec, groupBlocked, dfCtx)
+		result.RecordResults[i].Durations = durations
+		result.Durations.Add(durations)
 	}
 
 	return result
@@ -183,7 +188,7 @@ func (o *ValidationOrchestrator) ValidateTrailerRow(
 // ValidateRecord validates a single record.
 func (o *ValidationOrchestrator) ValidateRecord(rec *parser.ParsedRecord, dfCtx *DataFileContext) *RecordValidationResult {
 	result := &RecordValidationResult{Record: rec}
-	o.validateRecord(result, rec, false, dfCtx)
+	result.Durations = o.validateRecord(result, rec, false, dfCtx)
 	return result
 }
 
@@ -193,84 +198,15 @@ func (o *ValidationOrchestrator) ValidateRecord(rec *parser.ParsedRecord, dfCtx 
 // to expressions for cross-validation against submission metadata.
 func (o *ValidationOrchestrator) ValidateHeader(headerRec *parser.ParsedRecord, dfCtx *DataFileContext) *RecordValidationResult {
 	result := &RecordValidationResult{Record: headerRec}
-	schemaKey := validationSchemaKey(headerRec)
-	recordState := NewRecordValidationState(headerRec, dfCtx)
-
-	// Phase 1: Run PRE_CHECK and RECORD_PRE_CHECK validators
-	recordBlocked := false
-	for _, validator := range o.registry.GetRecordValidators(schemaKey) {
-		if validator.ErrorType != ErrorTypeRecordPreCheck && validator.ErrorType != ErrorTypePreCheck {
-			continue
-		}
-		if vr := Execute(validator, recordState); !vr.Valid {
-			vr.DataFileContext = dfCtx
-			vr.ErrorType = validator.ErrorType
-			result.RecordErrors = append(result.RecordErrors, vr)
-			recordBlocked = true
-		}
-	}
-
-	if o.shortCircuit && recordBlocked {
-		result.Skipped = true
-		return result
-	}
-
-	// Phase 2: Field validation
-	fieldState := NewFieldValidationState(headerRec, "", nil, dfCtx)
-	for fieldName, validators := range o.registry.GetFieldValidatorsForRecord(schemaKey) {
-		value := headerRec.Get(fieldName)
-		required := headerRec.IsFieldRequired(fieldName)
-
-		if !required {
-			continue
-		}
-
-		if fieldValueIsEmpty(value) {
-			result.FieldErrors = append(result.FieldErrors, &ValidationResult{
-				Valid:       false,
-				ValidatorID: "field_required",
-				ErrorType:   ErrorTypeFieldValue,
-				FieldName:   fieldName,
-				Validator: &CompiledValidator{
-					ID:         "field_required",
-					Scope:      ScopeField,
-					ErrorType:  ErrorTypeFieldValue,
-					ResultMode: "single",
-					Message:    fieldRequiredMessage,
-				},
-			})
-			continue
-		}
-
-		fieldState.SetField(fieldName, value)
-		for _, cv := range validators {
-			if vr := Execute(cv, fieldState); !vr.Valid {
-				vr.DataFileContext = dfCtx
-				vr.ErrorType = cv.ErrorType
-				vr.FieldName = fieldName
-				result.FieldErrors = append(result.FieldErrors, vr)
-			}
-		}
-	}
-
-	// Phase 3: Non-precheck record validators (consistency checks)
-	for _, cv := range o.registry.GetRecordValidators(schemaKey) {
-		if cv.ErrorType == ErrorTypeRecordPreCheck || cv.ErrorType == ErrorTypePreCheck {
-			continue
-		}
-		if vr := Execute(cv, recordState); !vr.Valid {
-			vr.DataFileContext = dfCtx
-			vr.ErrorType = cv.ErrorType
-			result.RecordErrors = append(result.RecordErrors, vr)
-		}
-	}
-
+	result.Durations = o.validateRecord(result, headerRec, false, dfCtx)
 	return result
 }
 
 // validateRecord validates a single record, updating the provided result.
 // Called internally by ValidateGroup.
-func (o *ValidationOrchestrator) validateRecord(result *RecordValidationResult, rec *parser.ParsedRecord, groupBlocked bool, dfCtx *DataFileContext) {
+func (o *ValidationOrchestrator) validateRecord(result *RecordValidationResult, rec *parser.ParsedRecord, groupBlocked bool, dfCtx *DataFileContext) PhaseDurations {
+	var durations PhaseDurations
+	stageStart := time.Now()
 	schemaKey := validationSchemaKey(rec)
 	recordState := NewRecordValidationState(rec, dfCtx)
 
@@ -285,6 +221,7 @@ func (o *ValidationOrchestrator) validateRecord(result *RecordValidationResult, 
 			}
 		}
 	}
+	durations.RecordValidation += time.Since(stageStart)
 
 	// Check if blocked by record-level errors
 	recordBlocked := result.HasBlockingErrors()
@@ -292,10 +229,11 @@ func (o *ValidationOrchestrator) validateRecord(result *RecordValidationResult, 
 	// Short-circuit: skip field and non-precheck record validators if group or record is blocked
 	if o.shortCircuit && (groupBlocked || recordBlocked) {
 		result.Skipped = true
-		return
+		return durations
 	}
 
 	// Phase 2: Field validation
+	stageStart = time.Now()
 	fieldState := NewFieldValidationState(rec, "", nil, dfCtx) // Reuse state for efficiency
 	for fieldName, validators := range o.registry.GetFieldValidatorsForRecord(schemaKey) {
 		value := rec.Get(fieldName)
@@ -332,8 +270,10 @@ func (o *ValidationOrchestrator) validateRecord(result *RecordValidationResult, 
 			}
 		}
 	}
+	durations.FieldValidation += time.Since(stageStart)
 
 	// Phase 3: Non-precheck record validators (consistency checks)
+	stageStart = time.Now()
 	for _, cv := range o.registry.GetRecordValidators(schemaKey) {
 		if cv.ErrorType == ErrorTypeRecordPreCheck || cv.ErrorType == ErrorTypePreCheck {
 			continue // Already ran in phase 1
@@ -344,6 +284,8 @@ func (o *ValidationOrchestrator) validateRecord(result *RecordValidationResult, 
 			result.RecordErrors = append(result.RecordErrors, vr)
 		}
 	}
+	durations.RecordValidation += time.Since(stageStart)
+	return durations
 }
 
 func validationSchemaKey(rec *parser.ParsedRecord) string {

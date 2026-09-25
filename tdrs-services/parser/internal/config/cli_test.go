@@ -73,6 +73,54 @@ func TestCLI_OverrideGlobalLogLevelFromEnv(t *testing.T) {
 	}
 }
 
+func TestCLI_OverrideMetricsSettings(t *testing.T) {
+	cli, ctx, err := ParseCLI([]string{
+		"--metrics.enabled=false",
+		"--metrics.listen-address=:9810",
+		"--metrics.path=/parser-metrics",
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	cfg := DefaultConfig()
+	cli.ApplyTo(cfg, ctx)
+
+	if cfg.Metrics.Enabled {
+		t.Error("Metrics.Enabled = true, want false")
+	}
+	if cfg.Metrics.ListenAddress != ":9810" {
+		t.Errorf("Metrics.ListenAddress = %q, want :9810", cfg.Metrics.ListenAddress)
+	}
+	if cfg.Metrics.Path != "/parser-metrics" {
+		t.Errorf("Metrics.Path = %q, want /parser-metrics", cfg.Metrics.Path)
+	}
+}
+
+func TestCLI_OverrideMetricsSettingsFromEnv(t *testing.T) {
+	t.Setenv("GO_PARSER_METRICS_ENABLED", "false")
+	t.Setenv("GO_PARSER_METRICS_LISTEN_ADDRESS", ":9811")
+	t.Setenv("GO_PARSER_METRICS_PATH", "/env-metrics")
+
+	cli, ctx, err := ParseCLI([]string{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	cfg := DefaultConfig()
+	cli.ApplyTo(cfg, ctx)
+
+	if cfg.Metrics.Enabled {
+		t.Error("Metrics.Enabled = true, want false from GO_PARSER_METRICS_ENABLED")
+	}
+	if cfg.Metrics.ListenAddress != ":9811" {
+		t.Errorf("Metrics.ListenAddress = %q, want :9811 from env", cfg.Metrics.ListenAddress)
+	}
+	if cfg.Metrics.Path != "/env-metrics" {
+		t.Errorf("Metrics.Path = %q, want /env-metrics from env", cfg.Metrics.Path)
+	}
+}
+
 func TestCLI_OverrideDatabaseTablePrefix(t *testing.T) {
 	cli, ctx, err := ParseCLI([]string{"--database.table-prefix=parser2_"})
 	if err != nil {

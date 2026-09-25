@@ -286,11 +286,16 @@ describe('reducers/reports', () => {
   })
 
   it('should handle FILE_EXT_ERROR', () => {
+    const file = new File(['test'], 'test.pdf', { type: 'application/pdf' })
+
     expect(
       reducer(undefined, {
         type: FILE_EXT_ERROR,
         payload: {
           error: { message: 'Test invalid ext.' },
+          file,
+          fileName: file.name,
+          fileType: file.type,
           section: 'Active Case Data',
         },
       })
@@ -299,12 +304,12 @@ describe('reducers/reports', () => {
       submittedFiles: [
         {
           id: null,
-          file: null,
+          file,
           section: 'Active Case Data',
-          fileName: undefined,
+          fileName: 'test.pdf',
           error: { message: 'Test invalid ext.' },
           uuid: null,
-          fileType: null,
+          fileType: 'application/pdf',
         },
         {
           section: 'Closed Case Data',

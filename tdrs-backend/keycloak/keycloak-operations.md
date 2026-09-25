@@ -51,18 +51,21 @@ cd tdrs-backend/keycloak
 | `KEYCLOAK_ADMIN` | Admin console username |
 | `KEYCLOAK_ADMIN_PASSWORD` | Admin console password |
 | `KC_TDP_DJANGO_CLIENT_SECRET` | `tdp-django` client secret |
-| `LOGIN_GOV_JWT_KEY` | Login.gov RSA private key (PEM or base64) |
+| `KC_TDP_ADMIN_CLIENT_SECRET` | `tdp-admin` client secret |
+| `LOGIN_GOV_JWT_KEY` | Base64-encoded Login.gov RSA private key PEM |
 | `CF_DOCKER_PASSWORD` | Docker registry password/token |
+| `AMS_CLIENT_ID` | AMS OIDC client ID |
+| `AMS_CLIENT_SECRET` | AMS OIDC client secret |
 
 **Optional environment variables:**
 
 | Variable | Description |
 |----------|-------------|
-| `KC_TDP_GRAFANA_CLIENT_SECRET` | `tdp-grafana` client secret |
-| `KC_GRAFANA_REDIRECT_URI` | Grafana OAuth redirect URI |
-| `KC_GRAFANA_WEB_ORIGIN` | Grafana web origin |
-| `KC_GRAFANA_POST_LOGOUT_URI` | Grafana post-logout redirect URI |
+| `KC_TDP_GRAFANA_CLIENT_SECRET` | `tdp-grafana` client secret; defaults to an empty string |
 | `LOGIN_GOV_ACR_VALUES` | Login.gov identity assurance level |
+| `LOGIN_GOV_CLIENT_ID` and endpoint vars | Override Login.gov defaults in the realm import |
+| `AMS_AUTH_URL` and endpoint vars | Override AMS stage defaults in the realm import |
+| `KC_CLI_REDIRECT_URI` / `KC_CLI_WEB_ORIGIN` | Extra `tdp-cli` callback settings |
 
 ### What the Deploy Script Does
 
@@ -70,9 +73,11 @@ cd tdrs-backend/keycloak
 2. Pushes the Docker image to Cloud Foundry with rolling strategy
 3. Maps the **internal** route: `keycloak-<ENV>.apps.internal:8080` (server-to-server)
 4. Maps the **public** route: `<hostname>.app.cloud.gov` (browser redirects, admin console)
-5. Sets `DEPLOY_ENV` so the container selects the correct checked-in realm export before import
+5. Sets `DEPLOY_ENV`, `KC_HOSTNAME`, and all config-cli substitution variables in the app environment
 6. Creates network policies so backend and celery apps can reach Keycloak on port 8080
-7. Runs the `configure-idps.sh` script as a CF task to configure Login.gov signing key, ACR values, master realm security headers, and Grafana client IdP restriction
+7. Starts Keycloak with `KEYCLOAK_CONFIG_IMPORT_ON_STARTUP=true`. The entrypoint waits for Keycloak readiness, calls `/opt/keycloak/normalize-login-gov-key.sh`, decodes `LOGIN_GOV_JWT_KEY`, exports `LOGIN_GOV_JWT_KEY_PEM`, and invokes `keycloak-config-cli` against the selected realm export before nginx starts.
+
+Keycloak no longer starts with native `--import-realm` in cloud.gov. The container starts Keycloak first, then the entrypoint runs config-cli against the local Keycloak port through the Admin API.
 
 ### Per-Space Deployment Examples
 
@@ -86,6 +91,26 @@ cd tdrs-backend/keycloak
 # Production
 ./deploy.sh -e prod -d tdp-keycloak-db-prod -p tdp-keycloak-prod -i ghcr.io/hhs/tdp-keycloak:latest -u myuser
 ```
+
+### Rerun Startup Config Import
+
+Use this when a deploy completed but the startup config import failed, or after rotating a secret that is consumed by the realm export.
+
+```bash
+APP_NAME=keycloak-staging
+cf restage "$APP_NAME"
+cf logs "$APP_NAME" --recent
+```
+
+Choose the app for the target environment:
+
+| Environment | App |
+|-------------|-----|
+| Dev | `keycloak-dev` |
+| Staging | `keycloak-staging` |
+| Prod | `keycloak` |
+
+The import is idempotent and safe to run multiple times. `select-realm-config.sh` chooses the realm export from `DEPLOY_ENV` before Keycloak starts.
 
 ---
 
@@ -163,7 +188,7 @@ cf scale keycloak -m 1G
    cf restage keycloak
    ```
 
-Note: The admin password is only used during Keycloak startup for initial admin user creation and by `configure-idps.sh`. Existing admin sessions use Keycloak-managed credentials in the database.
+Note: The admin password is used during initial admin-user creation and by the startup config import through `KEYCLOAK_USER` / `KEYCLOAK_PASSWORD`. Existing admin sessions use Keycloak-managed credentials in the database.
 
 ### Rotate the `tdp-django` Client Secret
 
@@ -177,7 +202,12 @@ This secret is used by both the Django OIDC flow and the Admin REST API sync lay
    cf restage keycloak
    ```
 
-3. Update **every** backend and celery app in the space:
+3. Confirm the startup config import completed:
+   ```bash
+   cf logs keycloak --recent
+   ```
+
+4. Update **every** backend and celery app in the space:
    ```bash
    # Example for dev space
    for app in tdp-backend-raft tdp-backend-qasp tdp-backend-a11y \
@@ -187,7 +217,7 @@ This secret is used by both the Django OIDC flow and the Admin REST API sync lay
    done
    ```
 
-4. Restage all affected apps:
+5. Restage all affected apps:
    ```bash
    for app in tdp-backend-raft tdp-backend-qasp tdp-backend-a11y \
               tdp-celery-raft tdp-celery-qasp tdp-celery-a11y; do
@@ -200,12 +230,6 @@ This secret is used by both the Django OIDC flow and the Admin REST API sync lay
 ### Rotate the `tdp-admin` Client Secret
 
 The `tdp-admin` client is used by the standalone admin frontend OIDC flow.
-
-For initial production provisioning, or to configure all related admin,
-backend, and Keycloak variables together, use
-[`scripts/configure-admin-production-env.sh`](../../scripts/configure-admin-production-env.sh).
-Its `--help` output contains the required production targeting, secret storage,
-activation, and verification steps.
 
 1. Generate a new secret.
 
@@ -236,15 +260,22 @@ activation, and verification steps.
    cf restage keycloak
    ```
 
-3. Update the Grafana app:
+3. Confirm the startup config import completed so Keycloak updates the `tdp-grafana` client:
+   ```bash
+   cf logs keycloak --recent
+   ```
+
+4. Update the Grafana app:
    ```bash
    cf set-env grafana GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET "<new-secret>"
    cf restage grafana
    ```
 
+If Grafana SSO is not deployed in the environment, `KC_TDP_GRAFANA_CLIENT_SECRET` may be unset. The deploy script injects it as an empty string so config-cli can still resolve the realm placeholder.
+
 ### Rotate the Login.gov JWT Key
 
-The Login.gov private key (`LOGIN_GOV_JWT_KEY`) is used for `private_key_jwt` authentication and Keycloak token signing. See [Secret Key Rotation](secret-key-rotation-steps.md) for key generation procedures.
+The Login.gov private key (`LOGIN_GOV_JWT_KEY`) is used for `private_key_jwt` authentication and Keycloak token signing. The startup config import expects it to be a base64-encoded PEM private key. See [Secret Key Rotation](secret-key-rotation-steps.md) for key generation procedures.
 
 1. Generate a new RSA key pair (see linked doc)
 
@@ -256,16 +287,8 @@ The Login.gov private key (`LOGIN_GOV_JWT_KEY`) is used for `private_key_jwt` au
    cf restage keycloak
    ```
 
-4. Re-run the IdP configuration task to update the signing key component:
+4. Monitor startup logs to verify config-cli updated the `login-gov-signing-key` component:
    ```bash
-   cf run-task keycloak \
-       --command "export SKIP_KEYCLOAK_WAIT=true KEYCLOAK_URL=http://keycloak-<ENV>.apps.internal:8080 KEYCLOAK_MANAGEMENT_URL=http://keycloak-<ENV>.apps.internal:9000 && /opt/keycloak/configure-idps.sh" \
-       --name "configure-idps"
-   ```
-
-5. Monitor the task:
-   ```bash
-   cf tasks keycloak
    cf logs keycloak --recent
    ```
 
@@ -282,6 +305,8 @@ cf set-env keycloak AMS_CLIENT_ID "<new-client-id>"
 cf set-env keycloak AMS_CLIENT_SECRET "<new-secret>"
 cf restage keycloak
 ```
+
+Then confirm the startup config import completed so Keycloak updates the `ams` identity provider. The realm export keeps AMS settings consistent with the old script: `client_secret_post`, stage endpoint defaults, `hhsid` and `email` mappers, and `tdp-first-broker-login`.
 
 ---
 
@@ -302,10 +327,12 @@ The realms are defined in `tdrs-backend/keycloak/realm-configs/`. Changes to cli
 4. Rebuild and push the Docker image
 5. Deploy with `deploy.sh`
 
-**Important:** Keycloak imports the realm on startup with `--import-realm`. This does **not** overwrite existing realm data — it only creates missing resources. To force updates, you need to either:
-- Delete the realm first in the admin console (destructive, loses all user data)
-- Use the Admin REST API to update specific resources
-- Modify realm settings via the admin console manually
+**Important:** cloud.gov deploys do not use `--import-realm`. Realm updates are applied by `keycloak-config-cli` after Keycloak starts. Config-cli can create and update many realm resources through the Admin API, including clients, IdPs, mappers, flows, and the Login.gov key provider. Existing users and sessions remain in the database.
+
+When a checked-in realm change does not appear after deploy:
+- Check startup logs with `cf logs keycloak --recent`.
+- Look for `Running Keycloak config import...` and `Keycloak config import complete.`.
+- Restage Keycloak after fixing missing env vars, malformed JSON, or image issues.
 
 ### Modifying Realm Settings via Admin Console
 
@@ -319,24 +346,23 @@ For one-off changes that don't warrant a full redeployment:
 **Remember to back-port durable realm changes to the matching file in `realm-configs/`** so they persist across redeployments.
 If you export a realm from Keycloak, replace the corresponding checked-in file.
 
-### Running the IdP Configuration Script
+### Startup Config Import
 
-The `configure-idps.sh` script handles post-startup configuration that cannot safely live in the checked-in realm JSON, such as signing keys and ACR values:
+The startup config import handles realm configuration, including client secrets, Login.gov signing key material, Login.gov `acr_values`, AMS settings, browser flow bindings, and IdP mappers. In cloud.gov, `entrypoint.sh` runs it when `KEYCLOAK_CONFIG_IMPORT_ON_STARTUP=true`.
 
 ```bash
-cf run-task keycloak \
-    --command "export SKIP_KEYCLOAK_WAIT=true KEYCLOAK_URL=http://keycloak-<ENV>.apps.internal:8080 KEYCLOAK_MANAGEMENT_URL=http://keycloak-<ENV>.apps.internal:9000 && /opt/keycloak/configure-idps.sh" \
-    --name "configure-idps"
+APP_NAME=keycloak-staging
+cf restage "$APP_NAME"
+cf logs "$APP_NAME" --recent
 ```
 
-The script is idempotent — safe to run multiple times.
+The import is idempotent and safe to run multiple times. It requires all `$(env:...)` placeholders referenced by the selected realm export to be present in the Keycloak app environment. Optional placeholders, such as `KC_TDP_GRAFANA_CLIENT_SECRET`, must exist even if their value is blank.
 
-Realm selection happens before Keycloak starts:
+Realm selection for config-cli:
 
 - `realm-configs/realm-export.dev-local.json` is used for both `local` and `dev`.
 - `realm-configs/realm-export.staging.json` is used for `staging`.
 - `realm-configs/realm-export.prod.json` is used for `prod`.
-- `select-realm-config.sh` copies the selected file into Keycloak's import path using `DEPLOY_ENV`.
 
 ### Updating Token Lifespans
 
@@ -416,7 +442,7 @@ To add a new application that authenticates via Keycloak:
      "enabled": true,
      "protocol": "openid-connect",
      "publicClient": false,
-     "secret": "${MY_NEW_APP_CLIENT_SECRET}",
+     "secret": "$(env:MY_NEW_APP_CLIENT_SECRET)",
      "redirectUris": ["https://my-app.example.com/*"],
      "webOrigins": ["https://my-app.example.com"],
      "defaultClientScopes": ["openid", "email", "profile", "tdp-user-attributes"]
@@ -425,7 +451,7 @@ To add a new application that authenticates via Keycloak:
 
 2. **Add the secret env var to `deploy.sh`** in the `OPTIONAL_ENV_VARS` array
 
-3. **Test locally** by adding the client secret to `docker-compose.yml` Keycloak environment
+3. **Test locally** by adding the client secret to the `keycloak` environment in `docker-compose.yml`
 
 4. **Deploy** with the new secret set:
    ```bash
@@ -438,7 +464,7 @@ To add a new application that authenticates via Keycloak:
    cf add-network-policy my-new-app keycloak --protocol tcp --port 8080
    ```
 
-6. **If the client should only allow specific IdPs** (like `tdp-grafana` only allows AMS), add the restriction in `configure-idps.sh` following the `configure_grafana_client_idps` pattern.
+6. **If the client should only allow specific IdPs**, encode that durable client behavior in the realm export so config-cli can apply it during deploy.
 
 ---
 
@@ -504,12 +530,7 @@ Note: This exports realm configuration but **not** user credentials or sessions.
    ```bash
    cf restart keycloak
    ```
-3. Run the IdP configuration task (signing keys are stored in the database, not the Docker image):
-   ```bash
-   cf run-task keycloak \
-       --command "export SKIP_KEYCLOAK_WAIT=true KEYCLOAK_URL=http://keycloak-<ENV>.apps.internal:8080 KEYCLOAK_MANAGEMENT_URL=http://keycloak-<ENV>.apps.internal:9000 && /opt/keycloak/configure-idps.sh" \
-       --name "configure-idps"
-   ```
+3. Confirm the startup config import completed. This restores checked-in realm settings and recreates or updates the Login.gov signing key component from `LOGIN_GOV_JWT_KEY`.
 4. Run a bulk user sync to reconcile Django and Keycloak state:
    ```bash
    cf ssh tdp-backend-<name>
@@ -527,8 +548,8 @@ If the Keycloak instance is completely lost:
    ```bash
    ./deploy.sh -e <environment> -d <rds_service> -p <hostname> -i <image> -u <username>
    ```
-3. The realm import (`--import-realm`) creates the realm, clients, groups, and IdP configuration
-4. The `configure-idps.sh` task configures the Login.gov signing key and other post-startup items
+3. Keycloak starts empty against the bound database.
+4. The entrypoint runs config-cli, which creates the realm, clients, groups, IdPs, flows, mappers, client scopes, and Login.gov signing key.
 5. Users will need to log in again (Keycloak sessions are gone)
 6. Run bulk sync to push current Django state to Keycloak
 
@@ -562,9 +583,6 @@ cf logs keycloak --recent
 
 # Streaming logs
 cf logs keycloak
-
-# Running tasks (e.g., configure-idps)
-cf tasks keycloak
 ```
 
 ### Key Metrics to Watch
@@ -601,8 +619,29 @@ This should return all OIDC endpoints (authorization, token, userinfo, JWKS, end
 2. Common causes:
    - **Database connection failure**: Verify the RDS service is bound (`cf services`) and credentials are correct. The manifest extracts `VCAP_SERVICES` JSON at startup.
    - **Out of memory**: Increase memory with `cf scale keycloak -m 1G`
-   - **Invalid LOGIN_GOV_JWT_KEY**: Keycloak starts regardless, but `configure-idps.sh` will fail. Check if the key is properly base64-encoded or in PEM format.
+   - **Invalid LOGIN_GOV_JWT_KEY**: Keycloak can start, but the startup config import will fail before nginx starts. Check that the key is a base64-encoded PEM private key.
    - **Port conflict**: The entrypoint uses port 8081 for Keycloak and `$PORT` (assigned by Cloud Foundry) for nginx. These should not conflict.
+
+### Config-cli Startup Import Fails
+
+**Symptoms:** Keycloak restarts during deploy, nginx never starts, or realm/client/IdP changes do not appear.
+
+1. Check startup logs:
+   ```bash
+   cf logs keycloak --recent
+   ```
+
+2. Common errors:
+
+| Error | Meaning | Recovery |
+|-------|---------|----------|
+| `Failed to decode private key` | `LOGIN_GOV_JWT_KEY` decoded to something Keycloak cannot parse as a PEM private key | Re-encode the PEM with `base64`, set `LOGIN_GOV_JWT_KEY`, and restage Keycloak |
+| `Cannot resolve variable 'env:...'` | A `$(env:VAR)` placeholder exists in the realm export but `VAR` is missing from the Keycloak app env | Set the env var or add a default in `deploy.sh`; optional values still need blank defaults |
+| `awk: command not found` | The deployed image has an older `normalize-login-gov-key.sh` that depended on `awk` | Rebuild and redeploy the current Keycloak image |
+| `JAVA_OPTS: unbound variable` | The deployed script referenced optional `JAVA_OPTS` under `set -u` | Rebuild and redeploy the current Keycloak image |
+| Availability check timeout | Config-cli could not reach the local Keycloak port before timeout | Verify Keycloak reached readiness in the same startup logs |
+
+3. After remediation, restage Keycloak so startup config import runs again.
 
 ### Login Redirects Fail
 
@@ -683,7 +722,7 @@ The nginx proxy in the Keycloak container strips `X-Frame-Options: DENY` and rep
 
 2. If it shows `DENY`, the nginx proxy may not be running. Check container logs for nginx startup errors.
 
-3. The `configure-idps.sh` script also sets `SAMEORIGIN` on the master realm's `browserSecurityHeaders` as a belt-and-suspenders fix.
+3. If it shows `DENY`, redeploy or restage the current Keycloak image.
 
 ### Sessions Lost After Restart
 

@@ -16,11 +16,10 @@
 	allowed = ./tdrs-backend/plg/mimir/manifest.yml:*
 	allowed = ./tdrs-backend/plg/tempo/manifest.yml:*
 	allowed = ./tdrs-backend/plg/deploy.sh:*
-	allowed = .*tdrs-backend/docker-compose.yml:[0-9]+:      - LOGIN_GOV_JWT_KEY=[$][{]JWT_KEY[}]
-	allowed = .*tdrs-backend/docker-compose.yml:[0-9]+:      - AWS_SECRET_ACCESS_KEY=test
-	allowed = ./tdrs-backend/docker-compose.yml:106
-	allowed = ./tdrs-backend/docker-compose.yml:362
-	allowed = ./tdrs-backend/docker-compose.yml:364
+	allowed = ./tdrs-backend/docker-compose.yml:[0-9]+:      - LOGIN_GOV_JWT_KEY=[$][{]JWT_KEY[}]
+	allowed = .*tdrs-backend/docker-compose.yml:[0-9]+:      - LOGIN_GOV_JWT_KEY=[$][{]JWT_KEY:-[}]
+	allowed = ./tdrs-backend/docker-compose.yml:[0-9]+:      - JWT_KEY=[$][{]JWT_KEY[}]
+	allowed = ./tdrs-backend/docker-compose.yml:[0-9]+:      - AWS_SECRET_ACCESS_KEY=test
 	allowed = ./tdrs-services/parser/cloudgov_start.sh:69
 	patterns = (A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}
 	patterns = (\"|')?(AWS|aws|Aws)?_?(SECRET|secret|Secret)?_?(ACCESS|access|Access)?_?(KEY|key|Key)(\"|')?\\s*(:|=>|=)\\s*(\"|')?[A-Za-z0-9/\\+=]{40}(\"|')?

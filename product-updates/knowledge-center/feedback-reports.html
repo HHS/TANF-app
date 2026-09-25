@@ -15,12 +15,7 @@
     <script src="components/mobile-navigation.js" defer></script>
     <script src="components/shutdown-banner.js" defer></script>
    
-<style>
 
-html {
-  scroll-behavior: smooth;
-}
-</style>
 
 
   </head>
@@ -255,13 +250,15 @@ html {
             <li>TANF Monthly Cases Summary</li>
             <li>Error Flags</li>
             <li>TANF Cases Review
-            <ul>
+            <li>
+              <ul>
               <li>3.0 Zero Payment</li>
               <li>3.1 Excuse Absense hours >4 hours</li>
               <li>3.2 Holiday hours >4 or 6 hours</li>
               <li>3.3 Work hours >80 hours</li>
               <li>3.4 Disregarded but met work requirement cases</li>
-          </ul></li>
+          </ul>
+        </li>
           <li>Numerator / Denominator and rate</li>
         </ol>
         </div>
@@ -271,7 +268,8 @@ html {
             <li>SSP Monthly Cases Summary</li>
             <li>Error Flags</li>
             <li>SSP Cases Review
-            <ul>
+            <li>
+              <ul>
               <li>3.0 Zero Payment</li>
               <li>3.1 Excuse Absense hours >4 hours</li>
               <li>3.2 Holiday hours >4 or 6 hours</li>
@@ -338,20 +336,26 @@ html {
 
  <h3 style="padding-top: 16px;">SSP WPR Reports</h3>
  <p>SSP WPR feedback reports generally contain the same information as the TANF WPR reports described above but are based on SSP data. The only additional SSP-specific report is the Number of Cases with Cash Assistance Less Than $35 report, which is described below.</p>
-           <ol>
-  <li style="min-width: 100%;"><strong>SSP monthly case summary report</strong> <em> (e.g., SSPXX_summary_FY202X.pdf)</em></li>
-<li style="min-width: 100%;"><strong>Error flags</strong> <em> (e.g., SSPXX_EF_FY202X.pdf) </em></li>
-<li style="min-width: 100%;"><strong>SSP Cases Review</strong></li> 
-<ul>
-  <li style="padding-bottom: 8px;"><strong>Zero payment</strong></li>
-    <li style="padding-bottom: 8px;"><strong>Excuse absence hours greater than 4 hours</strong></li>
+      <ol>
+  <li style="min-width: 100%;">
+    <strong>SSP monthly case summary report</strong> <em> (e.g., SSPXX_summary_FY202X.pdf)</em>
+  </li>
+  <li style="min-width: 100%;">
+    <strong>Error flags</strong> <em> (e.g., SSPXX_EF_FY202X.pdf) </em>
+  </li>
+  <li style="min-width: 100%;">
+    <div><strong>SSP Cases Review</strong></div>
+    <ul>
+      <li style="padding-bottom: 8px;"><strong>Zero payment</strong></li>
+      <li style="padding-bottom: 8px;"><strong>Excuse absence hours greater than 4 hours</strong></li>
       <li style="padding-bottom: 8px;"><strong>Holiday hours greater than 4 or 6 hours</strong></li>
-        <li style="padding-bottom: 8px;"><strong>Work hours greater than 80 hours</strong></li>
-          <li style="padding-bottom: 8px;"><strong>Disregarded but met work requirements</strong></li>
-            <li style="padding-bottom: 8px;"><strong>Numerator/denominator and work participation rate</strong></li> 
-            <li style="padding-bottom: 8px;"><strong>Number of cases each month wwith cash assistance less than $35</strong><em> (e.g., SSPXX_families_less35_FY202X.pdf)</em> contains cases where cash assistance is less than $35, which are excluded from the WPR calculations as of FY2026 according to <a href="https://acf.gov/ofa/law-regulation/tanf-provisions-fra-2023#:~:text=Work%20Participation%20Rate%20(WPR)%20Calculation%20Changes" target="_blank">Section 303 of the Fiscal Responsibility Act of 2023</a>.</li>
-</ul>
-      </ol>
+      <li style="padding-bottom: 8px;"><strong>Work hours greater than 80 hours</strong></li>
+      <li style="padding-bottom: 8px;"><strong>Disregarded but met work requirements</strong></li>
+      <li style="padding-bottom: 8px;"><strong>Numerator/denominator and work participation rate</strong></li>
+      <li style="padding-bottom: 8px;"><strong>Number of cases each month with cash assistance less than $35</strong> <em> (e.g., SSPXX_families_less35_FY202X.pdf)</em> contains cases where cash assistance is less than $35, which are excluded from the WPR calculations as of FY2026 according to <a href="https://acf.gov/ofa/law-regulation/tanf-provisions-fra-2023#:~:text=Work%20Participation%20Rate%20(WPR)%20Calculation%20Changes" target="_blank">Section 303 of the Fiscal Responsibility Act of 2023</a>.</li>
+    </ul>
+  </li>
+</ol>
 
        <h3 style="padding-top: 16px;">Time Limit Reports</h3>
            <ol>
@@ -362,23 +366,24 @@ html {
 </ol>
 
 <h3 style="padding-top: 16px;">TANF/SSP Recipient Review</h3>
-           <ol>
-  <li style="min-width: 100%;"><strong>Invalid SSNs</strong> <em>(e.g., TANXX_adults_invalid_ssn_FY20YY.pdf)</em> contains a list of recipients, by case and reporting month, with invalid SSNs. Invalid SSNs are defined as follows (please also refer to <a href="https://www.ssa.gov/kc/SSAFactSheet--IssuingSSNs.pdf" target="_blank">SSA guidelines</a>):</li>
-<ul>
-  <li style="padding-bottom: 8px;">less than 9 digits (e.g. 12345678)</li>
-  <li style="padding-bottom: 8px;">all the same digit (e.g. 111111111)</li>
-    <li style="padding-bottom: 8px;">start with 000, 666, or 9 (e.g. 000123456, 666234567, 912345678)</li>
-        <li style="padding-bottom: 8px;">start with 000, 666, or 9 (e.g. 000123456, 666234567, 912345678)</li>
-    <li style="padding-bottom: 8px;">have 00 as the fourth and fifth digits (e.g. 123001234)</li>
-    <li style="padding-bottom: 8px;">have 0000 as the last four digits (e.g. 123450000)</li>
+<ol>
+  <li style="min-width: 100%;">
+    <div>
+      <strong>Invalid SSNs</strong> <em>(e.g., TANXX_adults_invalid_ssn_FY20YY.pdf)</em> contains a list of recipients, by case and reporting month, with invalid SSNs. Invalid SSNs are defined as follows (please also refer to <a href="https://www.ssa.gov/kc/SSAFactSheet--IssuingSSNs.pdf" target="_blank">SSA guidelines</a>):
+    </div>
+    <ul>
+      <li style="padding-bottom: 8px;">less than 9 digits (e.g. 12345678)</li>
+      <li style="padding-bottom: 8px;">all the same digit (e.g. 111111111)</li>
+      <li style="padding-bottom: 8px;">start with 000, 666, or 9 (e.g. 000123456, 666234567, 912345678)</li>
+      <li style="padding-bottom: 8px;">have 00 as the fourth and fifth digits (e.g. 123001234)</li>
+      <li style="padding-bottom: 8px;">have 0000 as the last four digits (e.g. 123450000)</li>
     </ul>
-  <li style="min-width: 100%;"><strong>Invalid Dates of Birth (DOBs)</strong> <em>(e.g., TANFXX_children_invalid_dob_FY20YY.pdf)</em> Contains a list of recipients, by case and reporting month, with potentially invalid DOBs. This list is based on an age estimate, which considers the individual’s DOB, the first day of the reporting month, and a standard statistical approximation (dividing by 365.25). Note: This calculation can result in estimated age appearing slightly higher than expected for individuals whose birthdays occur later in the month.  <br><br>
-Please verify that the DOB is correct. For individuals on the adult list, recipients less 	than 12 years of age are unexpected for minor heads of household. For individuals 	on the child list, recipients older than 19 years of age are unexpected. </li>
-
-
-       
-</ul>
-      </ol>
+  </li>
+  <li style="min-width: 100%;">
+    <strong>Invalid Dates of Birth (DOBs)</strong> <em>(e.g., TANFXX_children_invalid_dob_FY20YY.pdf)</em> Contains a list of recipients, by case and reporting month, with potentially invalid DOBs. This list is based on an age estimate, which considers the individual’s DOB, the first day of the reporting month, and a standard statistical approximation (dividing by 365.25). Note: This calculation can result in estimated age appearing slightly higher than expected for individuals whose birthdays occur later in the month. <br><br>
+    Please verify that the DOB is correct. For individuals on the adult list, recipients less than 12 years of age are unexpected for minor heads of household. For individuals on the child list, recipients older than 19 years of age are unexpected.
+  </li>
+</ol>
 
 
               <hr class="releaseHr" style="margin-bottom: 30px;">
@@ -458,3 +463,4 @@ Please verify that the DOB is correct. For individuals on the adult list, recipi
   </div>
 </footer>
 </div>
+</body></html>

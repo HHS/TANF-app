@@ -231,3 +231,41 @@ func TestCSVDecoder_Rows_QuotedFields(t *testing.T) {
 		}
 	}
 }
+
+func TestCSVDecoder_Rows_StripsTrailingSubstituteCharacters(t *testing.T) {
+	tests := []struct {
+		name    string
+		content string
+	}{
+		{
+			name:    "standalone EOF marker",
+			content: "a,b\r\nc,d\r\n\x1a",
+		},
+		{
+			name:    "markers attached to final field",
+			content: "a,b\r\nc,d\x1a\x1a",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			dec := newTestCSVDecoder(tt.content, "TE1")
+			defer dec.Close()
+
+			var rows []Row
+			for row, err := range dec.Rows() {
+				if err != nil {
+					t.Fatalf("Rows() error: %v", err)
+				}
+				rows = append(rows, row)
+			}
+
+			if len(rows) != 2 {
+				t.Fatalf("got %d rows, want 2", len(rows))
+			}
+			if got := rows[1].(*ColumnarRow).Column(1); got != "d" {
+				t.Errorf("last column = %v, want %q", got, "d")
+			}
+		})
+	}
+}

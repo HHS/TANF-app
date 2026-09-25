@@ -3,8 +3,20 @@
 from django import forms
 from django.contrib import admin
 from django.core.exceptions import ValidationError
-from tdpservice.users.models import User, Region
+
 from tdpservice.users.constants import REGIONAL_ROLES
+from tdpservice.users.models import Region, User
+
+
+USER_ADMIN_WORKFLOW_FIELDS = [
+    "username",
+    "first_name",
+    "last_name",
+    "account_approval_status",
+    "groups",
+    "stt",
+    "regions",
+]
 
 
 class UserForm(forms.ModelForm):
@@ -39,15 +51,19 @@ class UserForm(forms.ModelForm):
 
         cleaned_data = super().clean()
 
-        groups = cleaned_data.get("groups", [])
+        groups = cleaned_data.get("groups")
         regions = cleaned_data.get("regions", [])
         stt = cleaned_data.get("stt")
+
+        if groups is None:
+            return cleaned_data
 
         if len(groups) > 1:
             raise ValidationError("User should not have multiple groups.")
 
         # Check if the user belongs to any regional group
-        has_regional_role = any(g.name in REGIONAL_ROLES for g in groups)
+        group_names = {g.name for g in groups}
+        has_regional_role = bool(group_names & REGIONAL_ROLES)
 
         if has_regional_role and not (regions or stt):
             raise ValidationError(
@@ -64,7 +80,37 @@ class UserForm(forms.ModelForm):
                 "Users without regional roles should not be assigned regions."
             )
 
+        if groups and not has_regional_role and stt:
+            raise ValidationError(
+                "Users other than Regional Staff, Developers, Data Analysts do not "
+                "get assigned a location"
+            )
+
+        if "OFA Regional Staff" in group_names and stt:
+            raise ValidationError(
+                "Regional staff cannot have a location type other than region"
+            )
+
+        if "Data Analyst" in group_names and regions:
+            raise ValidationError(
+                "Data Analyst cannot have a location type other than stt"
+            )
+
         return cleaned_data
+
+    def save(self, commit=True):
+        """Attach submitted M2M values before model validation runs."""
+        instance = super().save(commit=False)
+        instance.set_location_validation_context(
+            groups=self.cleaned_data.get("groups"),
+            regions=self.cleaned_data.get("regions"),
+        )
+
+        if commit:
+            instance.save()
+            self.save_m2m()
+
+        return instance
 
     def clean_groups(self):
         """Ensure only one group is assigned."""
@@ -82,3 +128,17 @@ class UserForm(forms.ModelForm):
             feature_flags = {}
 
         return feature_flags
+
+
+class UserAdminWorkflowForm(UserForm):
+    """Constrained user admin form used by the React admin console."""
+
+    class Meta:
+        """Expose only the first migrated admin workflow fields."""
+
+        model = User
+        fields = USER_ADMIN_WORKFLOW_FIELDS
+        labels = {
+            "account_approval_status": "Account approval status",
+            "stt": "STT",
+        }

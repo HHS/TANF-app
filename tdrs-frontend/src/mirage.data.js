@@ -6,13 +6,24 @@ export const AUTH_CHECK_DATA = {
     first_name: faker.person.firstName(),
     last_name: faker.person.lastName(),
     email: faker.internet.email(),
+    idp: 'login.gov',
+    account_approval_status: 'Approved',
     stt: {
       id: 31,
       type: 'state',
       code: 'NJ',
       name: 'New Jersey',
     },
-    roles: [],
+    roles: [
+      {
+        name: 'Data Analyst',
+        permissions: [
+          { codename: 'view_datafile' },
+          { codename: 'add_datafile' },
+        ],
+      },
+    ],
+    permissions: [],
   },
 }
 export const STT_ALPHA_DATA = [

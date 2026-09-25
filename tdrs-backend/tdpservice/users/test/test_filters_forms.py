@@ -11,7 +11,7 @@ from django.test import RequestFactory
 
 from tdpservice.users.constants import REGIONAL_ROLES
 from tdpservice.users.filters import ActiveStatusListFilter
-from tdpservice.users.forms import UserForm
+from tdpservice.users.forms import UserAdminWorkflowForm, UserForm
 from tdpservice.users.models import AccountApprovalStatusChoices, User
 from tdpservice.users.test.factories import UserFactory
 
@@ -175,9 +175,65 @@ def test_user_form_clean_rejects_regions_for_non_regional_roles(region):
 
 
 @pytest.mark.django_db
+def test_user_form_clean_rejects_stt_for_non_regional_roles(stt):
+    """Non-regional users should not have an STT."""
+    form = UserForm()
+    form.cleaned_data = {
+        "groups": [get_group("OFA Admin")],
+        "regions": [],
+        "stt": stt,
+    }
+
+    with pytest.raises(ValidationError) as excinfo:
+        form.clean()
+
+    assert excinfo.value.messages == [
+        "Users other than Regional Staff, Developers, Data Analysts do not get "
+        "assigned a location"
+    ]
+
+
+@pytest.mark.django_db
+def test_user_form_clean_rejects_stt_for_regional_staff(stt):
+    """Regional staff must be assigned regions, not an STT."""
+    form = UserForm()
+    form.cleaned_data = {
+        "groups": [get_group("OFA Regional Staff")],
+        "regions": [],
+        "stt": stt,
+    }
+
+    with pytest.raises(ValidationError) as excinfo:
+        form.clean()
+
+    assert excinfo.value.messages == [
+        "Regional staff cannot have a location type other than region"
+    ]
+
+
+@pytest.mark.django_db
+def test_user_form_clean_rejects_regions_for_data_analyst(region):
+    """Data analysts must be assigned an STT, not regions."""
+    form = UserForm()
+    form.cleaned_data = {
+        "groups": [get_group("Data Analyst")],
+        "regions": [region],
+        "stt": None,
+    }
+
+    with pytest.raises(ValidationError) as excinfo:
+        form.clean()
+
+    assert excinfo.value.messages == [
+        "Data Analyst cannot have a location type other than stt"
+    ]
+
+
+@pytest.mark.django_db
 def test_user_form_clean_accepts_valid_assignments(region, stt):
     """Allow valid regional or non-regional assignments."""
-    regional_group = get_group(next(iter(REGIONAL_ROLES)))
+    regional_group = get_group("OFA Regional Staff")
+    data_analyst_group = get_group("Data Analyst")
     non_regional_group = get_group("OFA Admin")
 
     regional_form = UserForm()
@@ -188,11 +244,19 @@ def test_user_form_clean_accepts_valid_assignments(region, stt):
     }
     assert regional_form.clean() == regional_form.cleaned_data
 
+    data_analyst_form = UserForm()
+    data_analyst_form.cleaned_data = {
+        "groups": [data_analyst_group],
+        "regions": [],
+        "stt": stt,
+    }
+    assert data_analyst_form.clean() == data_analyst_form.cleaned_data
+
     non_regional_form = UserForm()
     non_regional_form.cleaned_data = {
         "groups": [non_regional_group],
         "regions": [],
-        "stt": stt,
+        "stt": None,
     }
     assert non_regional_form.clean() == non_regional_form.cleaned_data
 
@@ -208,6 +272,34 @@ def test_user_form_clean_groups():
     with pytest.raises(ValidationError) as excinfo:
         form.clean_groups()
     assert excinfo.value.messages == ["User should not have multiple groups"]
+
+
+@pytest.mark.django_db
+def test_user_form_save_validates_against_submitted_role_and_location(stt):
+    """Allow a form save when the submitted role and location are valid together."""
+    user = UserFactory.create(groups=(get_group("OFA Admin"),))
+    data_analyst_group = get_group("Data Analyst")
+    form = UserAdminWorkflowForm(
+        data={
+            "username": user.username,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "account_approval_status": user.account_approval_status,
+            "groups": [str(data_analyst_group.pk)],
+            "stt": str(stt.pk),
+            "regions": [],
+        },
+        instance=user,
+    )
+
+    assert form.is_valid(), form.errors
+    instance = form.save(commit=False)
+    instance.save()
+    form.save_m2m()
+
+    user.refresh_from_db()
+    assert user.stt_id == stt.pk
+    assert set(user.groups.values_list("name", flat=True)) == {"Data Analyst"}
 
 
 @pytest.mark.django_db

@@ -4,6 +4,8 @@ import ast
 import datetime
 import logging
 import uuid
+from collections.abc import Iterable
+from typing import Any
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, Permission
@@ -21,9 +23,12 @@ from tdpservice.email.helpers.profile_change_request import (
     send_change_request_status_email,
 )
 from tdpservice.stts.models import STT, Region
+from tdpservice.users.constants import REGIONAL_ROLES
 from tdpservice.users.mixins import ReviewerMixin as Reviewable
 
 logger = logging.getLogger()
+
+_LOCATION_VALIDATION_UNSET: Any = object()
 
 
 class AccountApprovalStatusChoices(models.TextChoices):
@@ -490,26 +495,75 @@ class User(AbstractUser, UserChangeRequestMixin):
             group_names = [group_names]
         return self.groups.filter(name__in=group_names).exists()
 
-    def validate_location(self):
-        """Throw a validation error if a user has a location type incompatable with their role."""
-        regional = self.regions.count()
+    def set_location_validation_context(
+        self,
+        *,
+        groups: Iterable[Any] | None,
+        regions: Iterable[Any] | None,
+    ) -> None:
+        """Use submitted M2M values for location validation during the next save."""
+        self._location_validation_groups = groups
+        self._location_validation_regions = regions
 
-        if self.groups.count() == 0 and (self.stt or regional):
+    def _clear_location_validation_context(self) -> None:
+        """Clear any submitted M2M values used for location validation."""
+        for attr_name in [
+            "_location_validation_groups",
+            "_location_validation_regions",
+        ]:
+            if hasattr(self, attr_name):
+                delattr(self, attr_name)
+
+    def _location_validation_group_names(
+        self, groups: Iterable[Any] | None = _LOCATION_VALIDATION_UNSET
+    ) -> set[str]:
+        """Return role names for current or submitted groups."""
+        if groups is _LOCATION_VALIDATION_UNSET:
+            return set(self.groups.values_list("name", flat=True))
+
+        if groups is None:
+            return set()
+
+        return {
+            group.name if hasattr(group, "name") else str(group) for group in groups
+        }
+
+    def _location_validation_has_regions(
+        self, regions: Iterable[Any] | None = _LOCATION_VALIDATION_UNSET
+    ) -> bool:
+        """Return whether current or submitted regions are present."""
+        if regions is _LOCATION_VALIDATION_UNSET:
+            return self.regions.exists()
+
+        if regions is None:
+            return False
+
+        return bool(regions)
+
+    def validate_location(
+        self,
+        groups: Iterable[Any] | None = _LOCATION_VALIDATION_UNSET,
+        regions: Iterable[Any] | None = _LOCATION_VALIDATION_UNSET,
+    ):
+        """Throw a validation error if a user has a location type incompatable with their role."""
+        group_names = self._location_validation_group_names(groups)
+        has_region = self._location_validation_has_regions(regions)
+        has_location = bool(self.stt or has_region)
+
+        if not group_names and has_location:
             return
 
-        if (
-            not (self.is_regional_staff or self.is_data_analyst or self.is_developer)
-        ) and (self.stt or regional):
+        if not (group_names & REGIONAL_ROLES) and has_location:
             raise ValidationError(
                 _(
                     "Users other than Regional Staff, Developers, Data Analysts do not get assigned a location"
                 )
             )
-        elif self.is_regional_staff and self.stt:
+        elif "OFA Regional Staff" in group_names and self.stt:
             raise ValidationError(
                 _("Regional staff cannot have a location type other than region")
             )
-        elif self.is_data_analyst and regional:
+        elif "Data Analyst" in group_names and has_region:
             raise ValidationError(
                 _("Data Analyst cannot have a location type other than stt")
             )
@@ -588,7 +642,19 @@ class User(AbstractUser, UserChangeRequestMixin):
         regions = kwargs.pop("regions", [])
         updated_fields = kwargs.pop("updated_fields", None)
 
-        self.validate_location()
+        location_validation_groups = getattr(
+            self, "_location_validation_groups", _LOCATION_VALIDATION_UNSET
+        )
+        location_validation_regions = getattr(
+            self, "_location_validation_regions", _LOCATION_VALIDATION_UNSET
+        )
+        try:
+            self.validate_location(
+                groups=location_validation_groups,
+                regions=location_validation_regions,
+            )
+        finally:
+            self._clear_location_validation_context()
 
         if not self._adding:
             if self._loaded_values is None:

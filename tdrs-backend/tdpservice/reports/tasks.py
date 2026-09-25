@@ -7,15 +7,18 @@ import zipfile
 from pathlib import PurePosixPath
 
 from django.core.files.base import ContentFile
+from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 
 from celery import shared_task
-from tdpservice.email.helpers.feedback_report import send_feedback_report_available_email
-from tdpservice.reports.models import ReportFile, ReportSource
-from tdpservice.stts.models import STT
-from tdpservice.users.models import User, AccountApprovalStatusChoices
 
+from tdpservice.email.helpers.feedback_report import (
+    send_feedback_report_available_email,
+)
+from tdpservice.reports.models import ReportFile, ReportSource, ReportType
+from tdpservice.stts.models import STT
+from tdpservice.users.models import AccountApprovalStatusChoices, User
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +74,7 @@ def find_stt_folders(zip_file: zipfile.ZipFile) -> dict:
             continue
 
         # Parse the path: {ZipName}/FY{YYYY}/RO{X}/F{X}/filename
-        parts = info.filename.split('/')
+        parts = info.filename.split("/")
 
         # Must have at least 5 parts: {ZipName}/FY{YYYY}/RO{X}/F{X}/filename
         if len(parts) < 5:
@@ -82,7 +85,7 @@ def find_stt_folders(zip_file: zipfile.ZipFile) -> dict:
 
         # Extract STT code from 4th level folder (index 3) (e.g., "F1" -> "1")
         stt_folder = parts[3]
-        if stt_folder.startswith('F'):
+        if stt_folder.startswith("F"):
             stt_code = stt_folder[1:]  # Strip the "F" prefix
         else:
             stt_code = stt_folder
@@ -102,7 +105,9 @@ def find_stt_folders(zip_file: zipfile.ZipFile) -> dict:
     return stt_files
 
 
-def bundle_stt_files(zip_file: zipfile.ZipFile, file_infos: list, stt_code: str) -> ContentFile:
+def bundle_stt_files(
+    zip_file: zipfile.ZipFile, file_infos: list, stt_code: str
+) -> ContentFile:
     """
     Bundle all files for an STT into a single zip file.
 
@@ -120,7 +125,7 @@ def bundle_stt_files(zip_file: zipfile.ZipFile, file_infos: list, stt_code: str)
     zip_buffer = io.BytesIO()
     bundled_filenames = set()
 
-    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as bundle_zip:
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as bundle_zip:
         for file_info in file_infos:
             # Read file from report source zip
             file_data = zip_file.read(file_info.filename)
@@ -128,8 +133,12 @@ def bundle_stt_files(zip_file: zipfile.ZipFile, file_infos: list, stt_code: str)
             # Keep the folder hierarchy under the STT folder.
             path_parts = PurePosixPath(file_info.filename).parts
             relative_path_parts = path_parts[STT_RELATIVE_PATH_START_INDEX:]
-            if not relative_path_parts or any(part in ("", ".", "..") for part in relative_path_parts):
-                raise ValueError(f"Invalid file path in STT folder: {file_info.filename}")
+            if not relative_path_parts or any(
+                part in ("", ".", "..") for part in relative_path_parts
+            ):
+                raise ValueError(
+                    f"Invalid file path in STT folder: {file_info.filename}"
+                )
             filename = PurePosixPath(*relative_path_parts).as_posix()
             if filename in bundled_filenames:
                 raise ValueError(
@@ -153,6 +162,93 @@ def _mark_source_failed(source: ReportSource, error_message: str):
     source.error_message = error_message
     source.processed_at = timezone.now()
     source.save(update_fields=["status", "error_message", "processed_at"])
+
+
+def _stt_code_candidates(stt_code: str) -> tuple[str, ...]:
+    """Return possible database STT codes for a source ZIP folder code."""
+    candidates = []
+    for pad_length in (2, 3):
+        padded_code = stt_code.zfill(pad_length)
+        if padded_code not in candidates:
+            candidates.append(padded_code)
+
+    return tuple(candidates)
+
+
+def _is_tribal_stt(stt: STT) -> bool:
+    """Return whether an STT is a tribe."""
+    return (stt.type or "").lower() == STT.EntityType.TRIBE
+
+
+def _valid_report_types_for_stt(stt: STT) -> tuple[str, ...]:
+    """Return report types that are valid for an STT."""
+    if _is_tribal_stt(stt):
+        return (ReportType.TRIBAL_TANF,)
+
+    # Should we just assume that all non-tribal stts can receive fra feedback reports?
+    return (ReportType.TANF_SSP, ReportType.FRA)
+
+
+def _expected_report_type_label(stt: STT) -> str:
+    """Return the report type label expected for an STT."""
+    labels = [
+        ReportType(report_type).label
+        for report_type in _valid_report_types_for_stt(stt)
+    ]
+    return " or ".join(labels)
+
+
+def _resolve_stts(stt_files_map: dict[str, list]) -> dict[str, STT]:
+    """Resolve source folder STT codes to STT records."""
+    candidate_codes = {
+        candidate_code
+        for stt_code in stt_files_map
+        for candidate_code in _stt_code_candidates(stt_code)
+    }
+    stts_by_db_code = {
+        stt.stt_code: stt for stt in STT.objects.filter(stt_code__in=candidate_codes)
+    }
+    stts_by_code = {}
+
+    for stt_code in stt_files_map:
+        for candidate_code in _stt_code_candidates(stt_code):
+            stt = stts_by_db_code.get(candidate_code)
+            if stt is not None:
+                stts_by_code[stt_code] = stt
+                break
+        else:
+            raise ValueError(f"STT code '{stt_code}' not found in system.")
+
+    return stts_by_code
+
+
+def _validate_report_type_matches_stts(
+    source: ReportSource, stts_by_code: dict[str, STT]
+):
+    """Validate all STTs in the upload match the selected report type."""
+    mismatches = []
+
+    for stt_code, stt in stts_by_code.items():
+        if source.report_type in _valid_report_types_for_stt(stt):
+            continue
+
+        mismatches.append(
+            f"{stt.name} ({stt.stt_code}; folder F{stt_code}) "
+            f"is {_expected_report_type_label(stt)}"
+        )
+
+    if not mismatches:
+        return
+
+    mismatch_limit = 10
+    mismatch_summary = "; ".join(mismatches[:mismatch_limit])
+    remaining_count = len(mismatches) - mismatch_limit
+    remaining_summary = f"; and {remaining_count} more" if remaining_count > 0 else ""
+    raise ValueError(
+        f"Selected report type {ReportType(source.report_type).label} does not "
+        f"match STT folders in source upload. Mismatched STTs: "
+        f"{mismatch_summary}{remaining_summary}."
+    )
 
 
 def _download_and_validate_zip(source: ReportSource):
@@ -215,81 +311,82 @@ def _send_report_file_notification(report_file: ReportFile):
     # Data Analysts assigned to this STT
     data_analyst_q = Q(stt=report_file.stt, groups__name="Data Analyst")
     # Regional Staff whose region includes this STT
-    regional_staff_q = Q(regions=report_file.stt.region, groups__name="OFA Regional Staff")
+    regional_staff_q = Q(
+        regions=report_file.stt.region, groups__name="OFA Regional Staff"
+    )
 
     recipients = list(
         User.objects.filter(
             data_analyst_q | regional_staff_q,
             account_approval_status=AccountApprovalStatusChoices.APPROVED,
-        ).values_list("email", flat=True).distinct()
+        )
+        .values_list("email", flat=True)
+        .distinct()
     )
 
     if recipients:
         send_feedback_report_available_email(report_file, recipients)
 
 
-def _process_stt_folder(
+def _build_report_file_payload(
     source: ReportSource,
     zip_file: zipfile.ZipFile,
     stt_code: str,
     file_infos: list,
     fiscal_year: int,
-):
-    """
-    Process a single STT folder: validate, bundle files, and create ReportFile.
-
-    Returns
-    -------
-        bool: True if successful, False if failed
-    """
-    # Validate STT exists
-    # STT codes are stored with zero-padding: 2 digits for states/territories, 3 for tribes
-    # Try 2-digit padding first (states/territories), then 3-digit (tribes)
-    stt = None
-    for pad_length in (2, 3):
-        padded_code = stt_code.zfill(pad_length)
-        try:
-            stt = STT.objects.get(stt_code=padded_code)
-            break
-        except STT.DoesNotExist:
-            continue
-
-    if stt is None:
-        _mark_source_failed(source, f"STT code '{stt_code}' not found in system.")
-        return False
-
-    # Check if STT folder is empty
+    stt: STT,
+) -> dict:
+    """Build ReportFile creation data for a single STT folder."""
     if not file_infos:
-        _mark_source_failed(source, f"STT folder '{stt_code}' is empty.")
-        return False
+        raise ValueError(f"STT folder '{stt_code}' is empty.")
 
     # Bundle all files for this STT into a single zip
     try:
         bundled_zip = bundle_stt_files(zip_file, file_infos, stt_code)
     except Exception as e:
-        _mark_source_failed(source, f"Failed to bundle files for STT '{stt_code}': {e}")
-        return False
+        raise ValueError(f"Failed to bundle files for STT '{stt_code}': {e}") from e
 
-    # Create ReportFile record
-    report_file = ReportFile.create_new_version(
-        {
-            "year": fiscal_year,
-            "date_extracted_on": source.date_extracted_on,
-            "stt": stt,
-            "user": source.uploaded_by,
-            "source": source,
-            "report_type": source.report_type,
-            "original_filename": bundled_zip.name,
-            "slug": bundled_zip.name,
-            "extension": "zip",
-            "file": bundled_zip,
-        }
-    )
+    return {
+        "year": fiscal_year,
+        "date_extracted_on": source.date_extracted_on,
+        "stt": stt,
+        "user": source.uploaded_by,
+        "source": source,
+        "report_type": source.report_type,
+        "original_filename": bundled_zip.name,
+        "slug": bundled_zip.name,
+        "extension": "zip",
+        "file": bundled_zip,
+    }
 
-    # Send email notification to Data Analysts for this STT
-    _send_report_file_notification(report_file)
 
-    return True
+def _build_report_file_payloads(
+    source: ReportSource,
+    zip_file: zipfile.ZipFile,
+    stt_files_map: dict[str, list],
+    fiscal_year: int,
+) -> list[dict]:
+    """Validate the full source upload and build ReportFile creation data."""
+    stts_by_code = _resolve_stts(stt_files_map)
+    _validate_report_type_matches_stts(source, stts_by_code)
+
+    return [
+        _build_report_file_payload(
+            source,
+            zip_file,
+            stt_code,
+            file_infos,
+            fiscal_year,
+            stts_by_code[stt_code],
+        )
+        for stt_code, file_infos in stt_files_map.items()
+    ]
+
+
+def _create_report_files(payloads: list[dict]) -> list[ReportFile]:
+    """Create ReportFiles in a single database transaction."""
+    with transaction.atomic():
+        return [ReportFile.create_new_version(payload) for payload in payloads]
 
 
 @shared_task
@@ -313,19 +410,26 @@ def process_report_source(source_id: int):
     if fiscal_year is None:
         return
 
-    # Process each STT folder
-    num_created = 0
-    for stt_code, file_infos in stt_files_map.items():
-        success = _process_stt_folder(
-            source, zip_file, stt_code, file_infos, fiscal_year
+    # Validate every STT before creating rows or sending notifications.
+    try:
+        payloads = _build_report_file_payloads(
+            source, zip_file, stt_files_map, fiscal_year
         )
-        if not success:
-            return
+    except ValueError as e:
+        _mark_source_failed(source, str(e))
+        return
 
-        num_created += 1
+    try:
+        report_files = _create_report_files(payloads)
+    except Exception as e:
+        _mark_source_failed(source, f"Failed to create report files: {e}")
+        return
+
+    for report_file in report_files:
+        _send_report_file_notification(report_file)
 
     # Mark source as succeeded
     source.status = ReportSource.Status.SUCCEEDED
-    source.num_reports_created = num_created
+    source.num_reports_created = len(report_files)
     source.processed_at = timezone.now()
     source.save(update_fields=["status", "num_reports_created", "processed_at"])

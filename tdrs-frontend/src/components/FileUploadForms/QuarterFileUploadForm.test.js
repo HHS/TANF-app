@@ -131,13 +131,17 @@ describe('QuarterFileUploadForm', () => {
     jest.restoreAllMocks()
   })
 
-  const renderComponent = (storeState = initialState, stt = { id: 1 }) => {
+  const renderComponent = (
+    storeState = initialState,
+    stt = { id: 1 },
+    initialEntry = '/'
+  ) => {
     const store = mockStore(storeState)
     mockDispatch = jest.spyOn(store, 'dispatch')
 
     return render(
       <Provider store={store}>
-        <MemoryRouter>
+        <MemoryRouter initialEntries={[initialEntry]}>
           <ReportsProvider>
             <QuarterFileUploadForm stt={stt} />
           </ReportsProvider>
@@ -203,6 +207,61 @@ describe('QuarterFileUploadForm', () => {
 
       // After successful submission the upload panel should be cleared via handleClearFilesOnly
       expect(reportsActions.clearFileList).toHaveBeenCalled()
+    })
+
+    it('does not compare PIA file quarters to the global quarter', async () => {
+      const storeState = {
+        ...initialState,
+        featureFlags: {
+          loading: false,
+          error: null,
+          lastFetched: null,
+          flags: [
+            {
+              feature_name: 'program-integrity-audit',
+              enabled: true,
+              config: {},
+            },
+          ],
+        },
+        reports: {
+          submittedFiles: [
+            {
+              fileName: 'q1.txt',
+              section: 'Quarter 1 (October - December)',
+              validatedYear: '2024',
+              validatedQuarter: 'Q1',
+            },
+            {
+              fileName: 'q2.txt',
+              section: 'Quarter 2 (January - March)',
+              validatedYear: '2024',
+              validatedQuarter: 'Q2',
+            },
+            {
+              fileName: 'q4.txt',
+              section: 'Quarter 4 (July - September)',
+              validatedYear: '2024',
+              validatedQuarter: 'Q4',
+            },
+          ],
+        },
+      }
+      mockExecuteSubmission.mockImplementation(async (fn) => {
+        await fn()
+      })
+
+      const { getByText } = renderComponent(
+        storeState,
+        { id: 1 },
+        '/?fy=2024&q=Q3&type=program-integrity-audit'
+      )
+
+      fireEvent.click(getByText('Submit Data Files'))
+
+      await waitFor(() => {
+        expect(mockExecuteSubmission).toHaveBeenCalled()
+      })
     })
 
     it('formats quarters correctly for multiple files with "and"', () => {

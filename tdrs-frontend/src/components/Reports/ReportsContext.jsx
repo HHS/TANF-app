@@ -261,7 +261,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   // Redux selectors
   const files = useSelector((state) => state.reports.submittedFiles)
   const uploadedFiles = useMemo(
-    () => files?.filter((file) => file.fileName && !file.id),
+    () => files?.filter((file) => file.fileName && !file.id) || [],
     [files]
   )
   const submittedFiles = useMemo(
@@ -271,6 +271,9 @@ export const ReportsProvider = ({ isFra = false, children }) => {
 
   // FRA-specific derived state
   const fraHasUploadedFile = !!fraSelectedFile && !fraSelectedFile.id
+  const hasUnsubmittedFile = isFra
+    ? fraHasUploadedFile
+    : uploadedFiles.length > 0
 
   const { startPolling, isPolling, stopAllTimers } = usePollingTimer()
 
@@ -303,12 +306,6 @@ export const ReportsProvider = ({ isFra = false, children }) => {
         setFileTypeInputValue(pendingChange.value)
         // Reset year if it's invalid for the new file type
         resetPiaYear(pendingChange.value)
-        break
-      case 'year':
-        setYearInputValue(pendingChange.value)
-        break
-      case 'quarter':
-        setQuarterInputValue(pendingChange.value)
         break
       case 'stt':
         setSttInputValue(pendingChange.value)
@@ -374,7 +371,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     setFileTypeTouched(true)
     handleFieldSelection('fileType')
 
-    if (uploadedFiles.length > 0 || fraHasUploadedFile) {
+    if (hasUnsubmittedFile) {
       setModalTriggerSource('input-change')
       setPendingChange({ type: 'fileType', value })
       setErrorModalVisible(true)
@@ -393,15 +390,10 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   const selectYear = ({ target: { value } }) => {
     setYearTouched(true)
     handleFieldSelection('year')
-
-    if (uploadedFiles.length > 0 || fraHasUploadedFile) {
-      setModalTriggerSource('input-change')
-      setPendingChange({ type: 'year', value })
-      setErrorModalVisible(true)
-    } else {
-      setYearInputValue(value)
-      setUploadAlertState({ active: false, type: null, message: null })
-      setProcessingAlertState({ active: false, type: null, message: null })
+    setYearInputValue(value)
+    setUploadAlertState({ active: false, type: null, message: null })
+    setProcessingAlertState({ active: false, type: null, message: null })
+    if (!hasUnsubmittedFile) {
       dispatch(clearFileList({ fileType: fileTypeInputValue }))
       setFraSelectedFile(null)
     }
@@ -410,15 +402,10 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   const selectQuarter = ({ target: { value } }) => {
     setQuarterTouched(true)
     handleFieldSelection('quarter')
-
-    if (uploadedFiles.length > 0 || fraHasUploadedFile) {
-      setModalTriggerSource('input-change')
-      setPendingChange({ type: 'quarter', value })
-      setErrorModalVisible(true)
-    } else {
-      setQuarterInputValue(value)
-      setUploadAlertState({ active: false, type: null, message: null })
-      setProcessingAlertState({ active: false, type: null, message: null })
+    setQuarterInputValue(value)
+    setUploadAlertState({ active: false, type: null, message: null })
+    setProcessingAlertState({ active: false, type: null, message: null })
+    if (!hasUnsubmittedFile) {
       dispatch(clearFileList({ fileType: fileTypeInputValue }))
       setFraSelectedFile(null)
     }
@@ -428,7 +415,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     setSttTouched(true)
     handleFieldSelection('stt')
 
-    if (uploadedFiles.length > 0 || fraHasUploadedFile) {
+    if (hasUnsubmittedFile) {
       setModalTriggerSource('input-change')
       setPendingChange({ type: 'stt', value, sttObject })
       setErrorModalVisible(true)

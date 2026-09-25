@@ -14,6 +14,7 @@ import requests
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 
+from tdpservice.request_attribution import RequestAttribution, set_request_attribution
 from tdpservice.users.oidc import (
     KeycloakOIDCBackend,
     apply_user_updates,
@@ -30,6 +31,39 @@ def _bearer_token_from_request(request):
     if not header.lower().startswith("bearer "):
         return None
     return header[7:].strip() or None
+
+
+def _user_stt_label(claims):
+    """Return the STT metric label from verified Keycloak token claims."""
+    stt = claims.get("stt_id", None)
+    return str(stt) if stt else "none"
+
+
+def _user_group_label(claims):
+    """Return the first user group metric label from verified Keycloak claims."""
+    groups = claims.get("groups", None)
+    if not groups or len(groups) < 1:
+        return "none"
+
+    return groups[0].lstrip("/")
+
+
+def _set_verified_bearer_attribution(request, payload, client_id):
+    """Attach request attribution after JWT verification proves the client."""
+    request._keycloak_client_id = client_id
+    set_request_attribution(
+        request,
+        RequestAttribution(
+            source="api_client",
+            client_id=client_id,
+            auth_method="bearer",
+            user_stt=_user_stt_label(payload),
+            user_group=_user_group_label(payload),
+        ),
+    )
+    django_request = getattr(request, "_request", None)
+    if django_request is not None:
+        django_request._keycloak_client_id = client_id
 
 
 def _expected_keycloak_issuer():
@@ -112,9 +146,7 @@ def _verify_keycloak_bearer_token(token):
 
     expected_client_id = _expected_keycloak_bearer_client_id()
     if payload.get("azp") != expected_client_id:
-        raise jwt.InvalidTokenError(
-            f"Token azp must be {expected_client_id}."
-        )
+        raise jwt.InvalidTokenError(f"Token azp must be {expected_client_id}.")
 
     return payload
 
@@ -150,6 +182,9 @@ class KeycloakBearerTokenAuthentication(BaseAuthentication):
             logger.info("Bearer token verification failed: %s", exc)
             raise AuthenticationFailed(_("Invalid bearer token."))
 
+        client_id = payload.get("azp", "unknown")
+        _set_verified_bearer_attribution(request, payload, client_id)
+
         if not verify_claims(payload):
             raise AuthenticationFailed(_("Token claims rejected."))
 
@@ -170,7 +205,6 @@ class KeycloakBearerTokenAuthentication(BaseAuthentication):
         if user is None:
             raise AuthenticationFailed(_("Could not resolve user from token."))
 
-        client_id = payload.get("azp", "unknown")
         logger.info(
             "Bearer token auth client=%s user=%s path=%s",
             client_id,
@@ -183,9 +217,11 @@ class KeycloakBearerTokenAuthentication(BaseAuthentication):
                 "path": request.path,
             },
         )
-        # Stashed for KeycloakClientRateThrottle to key on; safe attr names.
-        request._keycloak_client_id = client_id
+        # Stashed for KeycloakClientRateThrottle after the user is known.
         request._keycloak_throttle_ident = f"{client_id}:{user.id}"
+        django_request = getattr(request, "_request", None)
+        if django_request is not None:
+            django_request._keycloak_throttle_ident = request._keycloak_throttle_ident
         return user, token
 
     def authenticate_header(self, request):
