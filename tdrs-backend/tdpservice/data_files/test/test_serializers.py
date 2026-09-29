@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 
 import pytest
 
+from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.errors import ImmutabilityError
 from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.validators import (
@@ -69,11 +70,63 @@ def test_created_at(data_file_data, data_analyst):
 
 
 @pytest.mark.django_db
-def test_state_not_exposed_by_serializer(data_file_instance):
-    """Test submission state remains schema-only for serializer output."""
+def test_lifecycle_state_fields_are_serialized(data_file_instance):
+    """Test lifecycle state, label, and valid transitions are exposed."""
+    data_file_instance.state = SubmissionState.PARSED_WITH_ERRORS
     serialized = DataFileSerializer(data_file_instance).data
 
-    assert "state" not in serialized
+    assert serialized["state"] == SubmissionState.PARSED_WITH_ERRORS
+    assert serialized["state_display"] == "Parsed with errors"
+    assert serialized["allowed_next_states"] == [
+        SubmissionState.REPARSE_REQUESTED,
+        SubmissionState.PARSE_STARTED,
+        SubmissionState.COMPLETED,
+        SubmissionState.CANCELED,
+    ]
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "terminal_state",
+    [SubmissionState.COMPLETED, SubmissionState.CANCELED],
+)
+def test_terminal_lifecycle_states_have_no_allowed_transitions(
+    data_file_instance, terminal_state
+):
+    """Test terminal lifecycle states do not advertise follow-up actions."""
+    data_file_instance.state = terminal_state
+
+    serialized = DataFileSerializer(data_file_instance).data
+
+    assert serialized["allowed_next_states"] == []
+
+
+@pytest.mark.django_db
+def test_unknown_lifecycle_state_serializes_safely(data_file_instance):
+    """Test an unexpected database value does not break API serialization."""
+    data_file_instance.state = "future_state"
+
+    serialized = DataFileSerializer(data_file_instance).data
+
+    assert serialized["state"] == "future_state"
+    assert serialized["state_display"] == "future_state"
+    assert serialized["allowed_next_states"] == []
+
+
+@pytest.mark.django_db
+def test_lifecycle_state_is_read_only_on_create(data_file_data, data_analyst):
+    """Test API input cannot override the initial lifecycle state."""
+    data_file_data["state"] = SubmissionState.PARSE_FAILED
+    serializer = DataFileSerializer(context={"user": data_analyst}, data=data_file_data)
+
+    serializer.is_valid(raise_exception=True)
+    data_file = serializer.save()
+
+    assert "state" not in serializer.validated_data
+    assert data_file.state == SubmissionState.UPLOADED
+    assert serializer.fields["state"].read_only is True
+    assert serializer.fields["state_display"].read_only is True
+    assert serializer.fields["allowed_next_states"].read_only is True
 
 
 @pytest.mark.parametrize(

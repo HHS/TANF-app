@@ -140,9 +140,11 @@ tasks:
         queue="go-parser-integration-$(date +%s)-$$"
         post_parse_queue="${queue}-post-parse"
         container="tdrs-backend-go-parser-integration-$(date +%s)-$$"
+        post_parse_container="tdrs-backend-post-parse-integration-$(date +%s)-$$"
 
         cleanup() {
           docker rm -f "${container}" >/dev/null 2>&1 || true
+          docker rm -f "${post_parse_container}" >/dev/null 2>&1 || true
           docker compose -f docker-compose.yml exec -T redis-server \
             redis-cli DEL "${queue}" "${post_parse_queue}" >/dev/null 2>&1 || true
           docker compose -f docker-compose.yml exec -T postgres \
@@ -167,6 +169,15 @@ tasks:
           -e GO_PARSER_QUEUE="${queue}" \
           -e GO_PARSER_POST_PARSE_QUEUE="${post_parse_queue}" \
           go-parser
+
+        docker compose -f docker-compose.yml run --rm --detach \
+          --name "${post_parse_container}" \
+          -e DB_NAME="${db_name}" \
+          -e DJANGO_SETTINGS_MODULE=tdpservice.settings.go_parser_integration \
+          -e DJANGO_CONFIGURATION=GoParserIntegration \
+          -e GO_PARSER_SHADOW_MODE=false \
+          celery \
+          bash -c "./wait_for_services.sh && exec celery -A tdpservice.settings worker --loglevel=INFO --pool=solo --without-gossip --without-mingle --without-heartbeat -Q '${post_parse_queue}' -n 'post-parse@%h'"
 
         docker compose -f docker-compose.yml exec web sh -c "DB_NAME=${db_name} CELERY_GO_PARSER_QUEUE=${queue} DJANGO_SETTINGS_MODULE=tdpservice.settings.go_parser_integration DJANGO_CONFIGURATION=GoParserIntegration pytest -c pytest-go-parser.ini --basetemp=/tmp/tdp-pytest-go-integration tdpservice/parsers/test/integration {{.PYTEST_ARGS}}"
 
@@ -442,12 +453,13 @@ tasks:
     desc: Run Cypress E2E tests locally (Cypress on host, app in docker)
     dir: tdrs-frontend
     cmds:
+      - STALE_PARSE_TIMEOUT_SECONDS=60 STALE_PARSE_CHECK_INTERVAL_SECONDS=5 GO_PARSER_SHADOW_MODE=false CLAMAV_NEEDED=True docker compose -f ../tdrs-backend/docker-compose.yml up -d --force-recreate web celery
       - docker compose -f docker-compose.local.yml up -d --build tdp-frontend
       - |
         if command -v corepack >/dev/null 2>&1; then
-          corepack prepare yarn@4.6.0 --activate && env -u ELECTRON_RUN_AS_NODE yarn test:e2e
+          corepack prepare yarn@4.6.0 --activate && CYPRESS_STUCK_TIMEOUT_TEST=true env -u ELECTRON_RUN_AS_NODE yarn test:e2e
         else
-          env -u ELECTRON_RUN_AS_NODE npx --yes @yarnpkg/cli-dist@4.6.0 test:e2e
+          CYPRESS_STUCK_TIMEOUT_TEST=true env -u ELECTRON_RUN_AS_NODE npx --yes @yarnpkg/cli-dist@4.6.0 test:e2e
         fi
 
   frontend-e2e-ci-local:
@@ -457,14 +469,15 @@ tasks:
       CYPRESS_TOKEN: '{{.CYPRESS_TOKEN | default "local-cypress-token"}}'
     cmds:
       - task: backend-up
+      - STALE_PARSE_TIMEOUT_SECONDS=60 STALE_PARSE_CHECK_INTERVAL_SECONDS=5 GO_PARSER_SHADOW_MODE=false CLAMAV_NEEDED=True docker compose -f ../tdrs-backend/docker-compose.yml up -d --force-recreate web celery
       - task: e2e-env-var-setup
       - docker compose -f docker-compose.local.yml up -d --build tdp-frontend
       - env -u ELECTRON_RUN_AS_NODE npx cypress verify || env -u ELECTRON_RUN_AS_NODE npx cypress install --force
       - |
         if command -v corepack >/dev/null 2>&1; then
-          CYPRESS_TOKEN={{.CYPRESS_TOKEN}} env -u ELECTRON_RUN_AS_NODE yarn test:e2e-ci
+          CYPRESS_TOKEN={{.CYPRESS_TOKEN}} CYPRESS_STUCK_TIMEOUT_TEST=true env -u ELECTRON_RUN_AS_NODE yarn test:e2e-ci
         else
-          CYPRESS_TOKEN={{.CYPRESS_TOKEN}} env -u ELECTRON_RUN_AS_NODE npx --yes @yarnpkg/cli-dist@4.6.0 test:e2e-ci
+          CYPRESS_TOKEN={{.CYPRESS_TOKEN}} CYPRESS_STUCK_TIMEOUT_TEST=true env -u ELECTRON_RUN_AS_NODE npx --yes @yarnpkg/cli-dist@4.6.0 test:e2e-ci
         fi
 
   frontend-e2e-cmd:

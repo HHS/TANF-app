@@ -16,6 +16,9 @@ from django.utils.text import slugify
 
 from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.submission_lifecycle import (
+    record_synthetic_import_completed,
+)
 from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T6, TANF_T7
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
@@ -340,7 +343,7 @@ class Command(BaseCommand):
                 f"No STT with stt_code={stt_code} exists for {spec.record_type}."
             )
 
-        datafile, created = DataFile.objects.get_or_create(
+        datafile, _created = DataFile.objects.get_or_create(
             program_type=DataFile.ProgramType.TANF,
             section=spec.section,
             version=self.version,
@@ -352,7 +355,7 @@ class Command(BaseCommand):
                 "original_filename": self._synthetic_filename(spec, stt_code, quarter),
                 "slug": self._synthetic_slug(spec, stt_code, quarter),
                 "extension": "csv",
-                "state": SubmissionState.PARSE_COMPLETED,
+                "state": SubmissionState.UPLOADED,
                 "user": importer,
                 "file": None,
                 "s3_versioning_id": None,
@@ -364,9 +367,8 @@ class Command(BaseCommand):
                 f"{spec.record_type} FY{self.fiscal_year} {stt_code} {quarter} "
                 f"version {self.version}. Choose a different --datafile-version."
             )
-        if not created and datafile.state != SubmissionState.PARSE_COMPLETED:
-            datafile.state = SubmissionState.PARSE_COMPLETED
-            datafile.save(update_fields=["state"])
+        if datafile.state != SubmissionState.PARSE_COMPLETED:
+            record_synthetic_import_completed(datafile)
 
         self.datafile_ids[key] = datafile.id
         return datafile.id

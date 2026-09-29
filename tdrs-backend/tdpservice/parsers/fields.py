@@ -77,7 +77,7 @@ class Field:
         return False
 
     def parse_value(self, row: RawRow):
-        """Parse the value for a field given a row, posiiton, and field type."""
+        """Parse the value for a field given a row, position, and field type."""
         value = self._get_raw_value(row)
         value_length = self._get_raw_value_length()
 

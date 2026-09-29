@@ -12,12 +12,14 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import File
 from django.db import models
 from django.db.models import Max
+from django.utils import timezone
 from django.utils.html import format_html
 
 from tdpservice.backends import DataFilesS3Storage
 from tdpservice.common.fields import S3VersionedFileField
 from tdpservice.common.models import FileRecord
 from tdpservice.common.shadow_models import create_shadow_model
+from tdpservice.core.models import BaseLog
 from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.util import (
     create_legacy_s3_log_file_path,
@@ -195,7 +197,11 @@ class DataFile(FileRecord):
                     "is_program_audit",
                 ),
                 name="constraint_name",
-            )
+            ),
+            models.CheckConstraint(
+                condition=models.Q(state__in=SubmissionState.values),
+                name="datafile_valid_submission_state",
+            ),
         ]
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -227,6 +233,8 @@ class DataFile(FileRecord):
         choices=SubmissionState.choices,
         default=SubmissionState.UPLOADED,
     )
+    state_changed_at = models.DateTimeField(default=timezone.now)
+    current_parse_token = models.UUIDField(null=True, blank=True, editable=False)
 
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="user", blank=False, null=False
@@ -411,6 +419,55 @@ class DataFile(FileRecord):
         return f"filename: {self.original_filename}"
 
 
+class DataFileStateTransition(BaseLog):
+    """Persistent audit record for a DataFile submission state transition."""
+
+    EVENT_TYPE = "data_file_state_transition"
+
+    previous_state = models.CharField(
+        max_length=32,
+        choices=SubmissionState.choices,
+    )
+    next_state = models.CharField(
+        max_length=32,
+        choices=SubmissionState.choices,
+    )
+    reparse_meta_id = models.PositiveIntegerField(blank=True, null=True)
+
+    class Meta:
+        """Metadata."""
+
+        default_permissions = ()
+        ordering = ["-created_at", "-id"]
+        indexes = [
+            models.Index(
+                fields=["reparse_meta_id"],
+                name="data_files_reparse_4ba50f_idx",
+            ),
+        ]
+
+    @property
+    def data_file_id(self):
+        """Return the associated DataFile id stored by the generic log relation."""
+        try:
+            return int(self.object_id)
+        except (TypeError, ValueError):
+            return self.object_id
+
+    def save(self, *args, **kwargs):
+        """Save the transition with its subclass event type."""
+        if not self.event_type:
+            self.event_type = self.EVENT_TYPE
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        """Return a string representation of the transition."""
+        return (
+            f"DataFile {self.object_id}: "
+            f"{self.previous_state} -> {self.next_state}"
+        )
+
+
 ShadowDataFile = create_shadow_model(
     "ShadowDataFile",
     DataFile,
@@ -433,7 +490,7 @@ ShadowDataFile = create_shadow_model(
             null=False,
         ),
     },
-    exclude_fields={"section_ref"},
+    exclude_fields={"current_parse_token", "section_ref"},
 )
 
 
@@ -451,6 +508,7 @@ def create_or_update_shadow_data_file(data_file):
         "is_program_audit",
         "version",
         "state",
+        "state_changed_at",
         "user",
         "stt",
         "file",
@@ -478,8 +536,8 @@ class LegacyFileTransferManager(models.Manager):
     ) -> "LegacyFileTransfer":
         """Create a new LegacyFileTransfer instance with associated LogEntry."""
         try:
-            # Was their an expectation here? THis wasn't ever defined.
-            # Probbly pseudo code.
+            # Was there an expectation here? This wasn't ever defined.
+            # Probably pseudo code.
             file_shasum = get_file_shasum(file)
         except (AttributeError, TypeError, ValueError) as err:
             logger.error(f"Encountered error deriving file hash: {err}")

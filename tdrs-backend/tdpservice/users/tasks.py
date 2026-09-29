@@ -19,7 +19,7 @@ def reconcile_keycloak_users():
     from tdpservice.users.keycloak_client import KeycloakSyncClient
 
     logger.info("Starting periodic Keycloak user reconciliation")
-    client = KeycloakSyncClient.get_instance()
+    client = KeycloakSyncClient.get_sync_client()
     stats = client.bulk_sync_all_users()
     logger.info("Keycloak reconciliation complete: %s", stats)
     return stats

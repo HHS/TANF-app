@@ -1,5 +1,5 @@
 """Unit tests for OWASP ZAP scan operations."""
-from django.contrib.admin.models import LogEntry
+from django.contrib.admin.models import ADDITION, LogEntry
 
 import pytest
 
@@ -30,6 +30,7 @@ def test_owasp_zap_scan_result(owasp_zap_scan, expected_result):
 
 
 @pytest.mark.django_db
+@pytest.mark.filterwarnings("error:LogEntryManager.log_action.*:DeprecationWarning")
 def test_owasp_zap_scan_manager_record_scan(owasp_zap_scan):
     """Test model manager functionality to record new scans."""
     assert not User.objects.filter(username="system").exists()
@@ -49,6 +50,13 @@ def test_owasp_zap_scan_manager_record_scan(owasp_zap_scan):
     assert User.objects.filter(username="system").exists()
 
     # Assert that the relevant LogEntry was created alongside the OwaspZapScan.
-    assert LogEntry.objects.filter(
+    log_entry = LogEntry.objects.get(
         content_type__model="owaspzapscan", object_id=zap_scan.pk
-    ).exists()
+    )
+    assert log_entry.user == User.objects.get(username="system")
+    assert log_entry.object_repr == str(zap_scan)
+    assert log_entry.action_flag == ADDITION
+    assert log_entry.change_message == (
+        f"OWASP ZAP scan completed with result: {zap_scan.result}. "
+        f"FAIL: {zap_scan.fail_count}, WARN: {zap_scan.warn_count}, PASS: {zap_scan.pass_count}"
+    )

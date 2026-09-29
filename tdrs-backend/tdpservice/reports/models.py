@@ -101,6 +101,7 @@ class ReportFile(FileRecord):
 
     # Model Fields
     created_at = models.DateTimeField(auto_now_add=True)
+    downloaded_at = models.DateTimeField(null=True, blank=True)
     date_extracted_on = models.DateField(null=True, blank=True)
     year = models.IntegerField()
     report_type = models.CharField(

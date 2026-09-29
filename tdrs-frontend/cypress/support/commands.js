@@ -19,6 +19,19 @@ const addBasicAuth = (options = {}) => {
   return { ...options, auth }
 }
 
+const getCurrentCsrfToken = () =>
+  cy
+    .request({
+      method: 'GET',
+      url: `${Cypress.env('apiUrl')}/auth_check`,
+      failOnStatusCode: false,
+    })
+    .then((response) =>
+      cy
+        .getCookie('csrftoken')
+        .then((cookie) => cookie?.value || response.body?.csrf || null)
+    )
+
 // ***********************************************
 // This example commands.js shows you how to
 // create various custom commands and overwrite
@@ -123,7 +136,7 @@ Cypress.Commands.add('adminLogin', (username) =>
 Cypress.Commands.add(
   'adminConsoleFormRequest',
   (method = 'POST', path = '', body = {}) => {
-    options = {
+    const options = {
       method,
       body,
       url: `${Cypress.env('adminUrl')}${path}`,
@@ -133,14 +146,17 @@ Cypress.Commands.add(
       },
     }
 
-    return cy.request(options)
+    return getCurrentCsrfToken().then((csrfToken) => {
+      if (csrfToken) options.headers['X-CSRFToken'] = csrfToken
+      return cy.request(options)
+    })
   }
 )
 
 Cypress.Commands.add(
   'adminApiRequest',
   (method = 'POST', path = '', body = {}, headers = {}) => {
-    options = {
+    const options = {
       method,
       body,
       url: `${Cypress.env('apiUrl')}${path}`,
@@ -150,21 +166,10 @@ Cypress.Commands.add(
       },
     }
 
-    const getCsrfToken = () =>
-      cy
-        .request({
-          method: 'GET',
-          url: `${Cypress.env('apiUrl')}/auth_check`,
-          failOnStatusCode: false,
-        })
-        .then((response) => response.body?.csrf || null)
-
-    return getCsrfToken().then((csrfToken) => {
+    return getCurrentCsrfToken().then((csrfToken) => {
       if (csrfToken) {
         options.headers['X-CSRFToken'] = csrfToken
-        return cy.request(options)
       }
-
       return cy.request(options)
     })
   }

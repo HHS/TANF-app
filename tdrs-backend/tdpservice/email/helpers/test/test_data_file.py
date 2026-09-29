@@ -604,10 +604,7 @@ def test_send_stuck_file_email(user, stt):
     send_stuck_file_email(stuck_files, recipients)
 
     assert len(mail.outbox) == 1
-    assert (
-        mail.outbox[0].subject
-        == "List of submitted files with pending status after 1 hour"
-    )
+    assert mail.outbox[0].subject == "List of submitted files in stuck state"
     assert mail.outbox[0].body == "The system has detected stuck files."
 
 

@@ -1,7 +1,7 @@
 """Tests for Keycloak sync client and signal handlers."""
 
 import logging
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call, patch
 
 from django.contrib.auth.models import Group
 from django.test import override_settings
@@ -26,11 +26,12 @@ def reset_singleton():
 @pytest.fixture
 def mock_keycloak_admin():
     """Provide a mocked KeycloakAdmin instance."""
-    with patch(
-        "tdpservice.users.keycloak_client.KeycloakOpenIDConnection"
-    ) as mock_conn_cls, patch(
-        "tdpservice.users.keycloak_client.KeycloakAdmin"
-    ) as mock_admin_cls:
+    with (
+        patch(
+            "tdpservice.users.keycloak_client.KeycloakOpenIDConnection"
+        ) as mock_conn_cls,
+        patch("tdpservice.users.keycloak_client.KeycloakAdmin") as mock_admin_cls,
+    ):
         mock_admin = MagicMock()
         mock_admin_cls.return_value = mock_admin
         mock_conn_cls.return_value = MagicMock()
@@ -158,6 +159,43 @@ def test_bulk_sync_all_users(mock_keycloak_admin):
     assert stats["failed"] == 0
 
 
+def test_get_sync_client_configures_standard_and_admin_realms(settings):
+    """The aggregate sync client should target both configured Keycloak realms."""
+    settings.KEYCLOAK_SERVER_URL = "https://keycloak.example.gov"
+    settings.KEYCLOAK_REALM = "tdp"
+    settings.KEYCLOAK_ADMIN_CLIENT_ID = "tdp-django"
+    settings.KEYCLOAK_ADMIN_CLIENT_SECRET = "django-secret"
+    settings.KEYCLOAK_TDP_ADMIN_REALM = "tdp-admin"
+    settings.KEYCLOAK_TDP_ADMIN_CLIENT_ID = "tdp-admin"
+    settings.KEYCLOAK_TDP_ADMIN_CLIENT_SECRET = "admin-secret"
+
+    with (
+        patch(
+            "tdpservice.users.keycloak_client.KeycloakOpenIDConnection"
+        ) as mock_conn_cls,
+        patch("tdpservice.users.keycloak_client.KeycloakAdmin"),
+    ):
+        sync_client = KeycloakSyncClient.get_sync_client()
+
+    assert len(sync_client.clients) == 2
+    assert mock_conn_cls.call_args_list == [
+        call(
+            server_url="https://keycloak.example.gov",
+            realm_name="tdp",
+            client_id="tdp-django",
+            client_secret_key="django-secret",
+            verify=True,
+        ),
+        call(
+            server_url="https://keycloak.example.gov",
+            realm_name="tdp-admin",
+            client_id="tdp-admin",
+            client_secret_key="admin-secret",
+            verify=True,
+        ),
+    ]
+
+
 def test_django_to_kc_group_mapping_complete():
     """Verify all expected Django groups have Keycloak mappings."""
     expected_django_groups = [
@@ -270,9 +308,10 @@ def test_reconcile_keycloak_users_task(mock_client_cls):
         "skipped": 2,
         "failed": 0,
     }
-    mock_client_cls.get_instance.return_value = mock_instance
+    mock_client_cls.get_sync_client.return_value = mock_instance
 
     result = reconcile_keycloak_users()
 
+    mock_client_cls.get_sync_client.assert_called_once()
     mock_instance.bulk_sync_all_users.assert_called_once()
     assert result == {"synced": 5, "skipped": 2, "failed": 0}

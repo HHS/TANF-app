@@ -16,6 +16,82 @@ export const ERROR_MESSAGES = {
 export const SUCCESS_MESSAGE =
   'Feedback report uploaded successfully! Processing has begun and STTs will be notified once complete.'
 
+export const DOWNLOAD_STATISTICS_SOURCE_ID = 42
+
+export const stubDownloadStatistics = () => {
+  cy.intercept(
+    {
+      method: 'GET',
+      pathname: '/v1/reports/report-sources/',
+      query: { year: '2025', report_type: 'TANF_SSP' },
+    },
+    {
+      statusCode: 200,
+      body: {
+        count: 1,
+        next: null,
+        previous: null,
+        results: [
+          {
+            id: DOWNLOAD_STATISTICS_SOURCE_ID,
+            created_at: '2026-08-11T14:10:00Z',
+            processed_at: '2026-08-11T14:15:00Z',
+            status: 'SUCCEEDED',
+            error_message: null,
+            original_filename: 'FY2025_feedback_reports.zip',
+            date_extracted_on: '2025-09-30',
+            year: 2025,
+            report_type: 'TANF_SSP',
+            file: 'https://example.com/FY2025_feedback_reports.zip',
+            downloaded_count: 1,
+            total_count: 3,
+          },
+        ],
+      },
+    }
+  ).as('feedbackReportSources')
+
+  cy.intercept(
+    'GET',
+    `/v1/reports/report-sources/${DOWNLOAD_STATISTICS_SOURCE_ID}/download-statistics/`,
+    {
+      statusCode: 200,
+      body: {
+        report_source_id: DOWNLOAD_STATISTICS_SOURCE_ID,
+        downloaded_count: 1,
+        total_count: 3,
+        regions: [
+          {
+            id: 1,
+            stts: [
+              {
+                id: 1,
+                name: 'Alabama',
+                downloaded_at: '2026-08-10T14:10:00Z',
+              },
+              {
+                id: 2,
+                name: 'Alaska',
+                downloaded_at: null,
+              },
+            ],
+          },
+          {
+            id: null,
+            stts: [
+              {
+                id: 3,
+                name: 'Example Tribe',
+                downloaded_at: null,
+              },
+            ],
+          },
+        ],
+      },
+    }
+  ).as('feedbackReportDownloadStatistics')
+}
+
 /**
  * Navigate to the Feedback Reports page and wait for it to load.
  */
@@ -94,4 +170,8 @@ export const getLatestUploadHistoryRow = () => {
     .parents('table')
     .find('tbody > tr')
     .first()
+}
+
+export const getDownloadStatisticsModal = () => {
+  return cy.get('[role="dialog"][aria-modal="true"]')
 }

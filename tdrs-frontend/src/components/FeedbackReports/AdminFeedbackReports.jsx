@@ -4,6 +4,7 @@ import { get, post } from '../../fetch-instance'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
 import FeedbackReportsUpload from './FeedbackReportsUpload'
 import FeedbackReportsHistory from './FeedbackReportsHistory'
+import DownloadStatisticsModal from './DownloadStatisticsModal'
 import { PaginatedComponent } from '../Paginator/Paginator'
 import { Spinner } from '../Spinner'
 import { constructYears } from '../Reports/utils'
@@ -67,10 +68,62 @@ function AdminFeedbackReports() {
   const [dateError, setDateError] = useState(null)
   const [formSubmitAttempted, setFormSubmitAttempted] = useState(false)
   const [dateTouched, setDateTouched] = useState(false)
+  const [downloadStatistics, setDownloadStatistics] = useState({
+    sourceId: null,
+    data: null,
+    loading: false,
+    error: null,
+  })
 
   const inputRef = useRef(null)
   const uploadFormRef = useRef(null)
   const headerRef = useRef(null)
+  const statisticsRequestIdRef = useRef(0)
+
+  const closeDownloadStatistics = () => {
+    statisticsRequestIdRef.current += 1
+    setDownloadStatistics({
+      sourceId: null,
+      data: null,
+      loading: false,
+      error: null,
+    })
+  }
+
+  const viewDownloadStatistics = async (sourceId) => {
+    const requestId = statisticsRequestIdRef.current + 1
+    statisticsRequestIdRef.current = requestId
+    setDownloadStatistics({
+      sourceId,
+      data: null,
+      loading: true,
+      error: null,
+    })
+
+    const { data, ok, error } = await get(
+      `${process.env.REACT_APP_BACKEND_URL}/reports/report-sources/${sourceId}/download-statistics/`
+    )
+
+    if (requestId !== statisticsRequestIdRef.current) return
+
+    if (ok) {
+      setDownloadStatistics({ sourceId, data, loading: false, error: null })
+    } else {
+      console.error('Failed to fetch download statistics:', error)
+      setDownloadStatistics({
+        sourceId,
+        data: null,
+        loading: false,
+        error: 'Failed to load download statistics. Please try again.',
+      })
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      statisticsRequestIdRef.current += 1
+    }
+  }, [])
 
   /**
    * Fetches the upload history from the backend filtered by selected year
@@ -301,6 +354,7 @@ function AdminFeedbackReports() {
    * Resets form state (shared between year and report type changes)
    */
   const resetFormState = () => {
+    closeDownloadStatistics()
     setSelectedFile(null)
     setFileError(null)
     clearDatePicker()
@@ -432,7 +486,11 @@ function AdminFeedbackReports() {
             />
 
             {/* Upload History Section */}
-            <div className="submission-history-section usa-table-container">
+            <div
+              className="submission-history-section usa-table-container--scrollable"
+              tabIndex="0"
+              aria-label="Upload history table"
+            >
               {historyLoading ? (
                 <div className="submission-history-section-spinner margin-y-3">
                   <Spinner visible={true} />
@@ -442,11 +500,23 @@ function AdminFeedbackReports() {
                 </div>
               ) : (
                 <PaginatedComponent pageSize={10} data={uploadHistory}>
-                  <FeedbackReportsHistory formatDateTime={formatDateTime} />
+                  <FeedbackReportsHistory
+                    formatDateTime={formatDateTime}
+                    onViewDownloadStatistics={viewDownloadStatistics}
+                  />
                 </PaginatedComponent>
               )}
             </div>
           </>
+        )}
+        {downloadStatistics.sourceId !== null && (
+          <DownloadStatisticsModal
+            statistics={downloadStatistics.data}
+            loading={downloadStatistics.loading}
+            error={downloadStatistics.error}
+            formatDateTime={formatDateTime}
+            onClose={closeDownloadStatistics}
+          />
         )}
       </div>
     </div>

@@ -15,7 +15,7 @@ This context covers the Keycloak initiative under `tdrs-backend/keycloak/`.
 - `README.md`: setup, environment variables, realm configuration, Django integration, deployment, and troubleshooting overview.
 - `keycloak-operations.md`: operational runbook for deployment, health checks, troubleshooting, Grafana SSO, and sync failures.
 - `realm-configs/`: checked-in realm exports for local/dev, staging, and production.
-- `select-realm-config.sh`: selects the environment-specific realm export before Keycloak starts.
+- `select-realm-config.sh`: selects the environment-specific standard and admin realm exports before Keycloak starts.
 - `normalize-login-gov-key.sh`: decodes the base64 Login.gov private key and runs `keycloak-config-cli`.
 - `deploy.sh`: cloud.gov deployment script; sets routes, network policies, and config-cli substitution variables.
 - `entrypoint.sh`: starts Keycloak on an internal port, runs startup config import when enabled, and starts nginx on the Cloud Foundry `$PORT`.

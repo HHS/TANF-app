@@ -4,6 +4,8 @@ import {
   type AdminLoginSearchParams,
 } from "@/lib/admin-login-errors";
 
+export const dynamic = "force-dynamic";
+
 type LoginPageProps = {
   searchParams?: Promise<AdminLoginSearchParams>;
 };

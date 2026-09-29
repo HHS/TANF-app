@@ -24,42 +24,172 @@ DJANGO_TO_KC_GROUP: dict[str, str] = {
 }
 
 
+class MultiRealmKeycloakSyncClient:
+    """Fan out Django-authoritative user sync to each configured Keycloak realm."""
+
+    def __init__(self, clients: list["KeycloakSyncClient"]) -> None:
+        """Initialize the aggregate sync client."""
+        self.clients = clients
+
+    def sync_user(self, user: Any) -> bool:
+        """Sync user attributes to all configured realms where the user exists."""
+        synced = False
+        for client in self.clients:
+            try:
+                synced = client.sync_user(user) or synced
+            except Exception:
+                logger.exception(
+                    "Failed to sync user %s to Keycloak realm %s",
+                    user.email,
+                    client.realm_name,
+                )
+        return synced
+
+    def sync_user_groups(self, user: Any) -> bool:
+        """Sync group memberships to all configured realms where the user exists."""
+        synced = False
+        for client in self.clients:
+            try:
+                synced = client.sync_user_groups(user) or synced
+            except Exception:
+                logger.exception(
+                    "Failed to sync groups for user %s to Keycloak realm %s",
+                    user.email,
+                    client.realm_name,
+                )
+        return synced
+
+    def bulk_sync_all_users(self) -> dict[str, int]:
+        """Sync all active Django users to all configured realms."""
+        from tdpservice.users.models import User
+
+        stats = {"synced": 0, "skipped": 0, "failed": 0}
+
+        users = (
+            User.objects.filter(is_active=True)
+            .select_related("stt")
+            .prefetch_related("groups", "regions")
+        )
+
+        for user in users:
+            user_synced = False
+            user_failed = False
+            for client in self.clients:
+                try:
+                    attr_ok = client.sync_user(user)
+                    group_ok = client.sync_user_groups(user) if attr_ok else False
+                    user_synced = (attr_ok and group_ok) or user_synced
+                    user_failed = (attr_ok and not group_ok) or user_failed
+                except Exception:
+                    logger.exception(
+                        "Unexpected error syncing user %s to Keycloak realm %s",
+                        user.email,
+                        client.realm_name,
+                    )
+                    user_failed = True
+
+            if user_failed:
+                stats["failed"] += 1
+            elif user_synced:
+                stats["synced"] += 1
+            else:
+                stats["skipped"] += 1
+
+        logger.info("Bulk multi-realm Keycloak sync complete: %s", stats)
+        return stats
+
+
 class KeycloakSyncClient:
     """Client for syncing Django user state to Keycloak via the Admin REST API.
 
-    Uses the tdp-django service account (client credentials grant) to
+    Uses each realm's configured service account client credentials to
     authenticate with Keycloak's Admin REST API. Syncs are idempotent --
     they set absolute state, not deltas.
     """
 
-    _instance: "KeycloakSyncClient | None" = None
+    _instances: dict[tuple[str, str], "KeycloakSyncClient"] = {}
     _lock = threading.Lock()
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        realm_name: str | None = None,
+        client_id: str | None = None,
+        client_secret: str | None = None,
+    ) -> None:
+        """Initialize the realm-specific sync client."""
+        self.realm_name = realm_name or settings.KEYCLOAK_REALM
+        self.client_id = client_id or settings.KEYCLOAK_ADMIN_CLIENT_ID
+        self.client_secret = client_secret or settings.KEYCLOAK_ADMIN_CLIENT_SECRET
         connection = KeycloakOpenIDConnection(
             server_url=settings.KEYCLOAK_SERVER_URL,
-            realm_name=settings.KEYCLOAK_REALM,
-            client_id=settings.KEYCLOAK_ADMIN_CLIENT_ID,
-            client_secret_key=settings.KEYCLOAK_ADMIN_CLIENT_SECRET,
+            realm_name=self.realm_name,
+            client_id=self.client_id,
+            client_secret_key=self.client_secret,
             verify=True,
         )
         self.admin = KeycloakAdmin(connection=connection)
         self._kc_group_cache: dict[str, str] | None = None
 
     @classmethod
-    def get_instance(cls) -> "KeycloakSyncClient":
-        """Return a singleton instance of the client."""
-        if cls._instance is None:
+    def _sync_realm_configs(cls) -> list[tuple[str, str, str]]:
+        """Return the Keycloak realms Django should sync into."""
+        configs = [
+            (
+                settings.KEYCLOAK_REALM,
+                settings.KEYCLOAK_ADMIN_CLIENT_ID,
+                settings.KEYCLOAK_ADMIN_CLIENT_SECRET,
+            ),
+            (
+                settings.KEYCLOAK_TDP_ADMIN_REALM,
+                settings.KEYCLOAK_TDP_ADMIN_CLIENT_ID,
+                settings.KEYCLOAK_TDP_ADMIN_CLIENT_SECRET,
+            ),
+        ]
+
+        return configs
+
+    @classmethod
+    def get_instance(
+        cls,
+        realm_name: str | None = None,
+        client_id: str | None = None,
+        client_secret: str | None = None,
+    ) -> "KeycloakSyncClient":
+        """Return a singleton instance of a realm-specific client."""
+        realm_name = realm_name or settings.KEYCLOAK_REALM
+        client_id = client_id or settings.KEYCLOAK_ADMIN_CLIENT_ID
+        client_secret = client_secret or settings.KEYCLOAK_ADMIN_CLIENT_SECRET
+        key = (realm_name, client_id)
+
+        if key not in cls._instances:
             with cls._lock:
-                if cls._instance is None:
-                    cls._instance = cls()
-        return cls._instance
+                if key not in cls._instances:
+                    cls._instances[key] = cls(
+                        realm_name=realm_name,
+                        client_id=client_id,
+                        client_secret=client_secret,
+                    )
+        return cls._instances[key]
+
+    @classmethod
+    def get_sync_client(cls) -> MultiRealmKeycloakSyncClient:
+        """Return a client that syncs to the standard and admin realms."""
+        return MultiRealmKeycloakSyncClient(
+            [
+                cls.get_instance(
+                    realm_name=realm_name,
+                    client_id=client_id,
+                    client_secret=client_secret,
+                )
+                for realm_name, client_id, client_secret in cls._sync_realm_configs()
+            ]
+        )
 
     @classmethod
     def reset_instance(cls) -> None:
-        """Reset the singleton (useful for tests)."""
+        """Reset cached clients (useful for tests)."""
         with cls._lock:
-            cls._instance = None
+            cls._instances = {}
 
     def _get_kc_group_ids(self) -> dict[str, str]:
         """Return a mapping of Keycloak group name -> group id, cached per instance."""

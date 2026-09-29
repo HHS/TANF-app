@@ -6,7 +6,7 @@
 * User clicks Sign In button on site OR navigates to Django Admin unauthenticated
 * Call is made to /login/oidc - which initiates [LoginRedirectOIDC view](https://github.com/raft-tech/TANF-app/blob/develop/tdrs-backend/tdpservice/users/api/login_redirect_oidc.py)
 * Backend constructs a URL encoded query string for redirect to Login.gov, which consists of:
-  * ACR_VALUES - Authentication Context Class Reference, used to determine the identity + authorization assurance level needed (IAL + AAL) (derived from environment variable) 
+  * ACR_VALUES - Authentication Context Class Reference, used to determine the identity + authorization assurance level needed (IAL + AAL) (derived from environment variable)
   * CLIENT_ID - the ID of our client in Login.gov (derived from environment variable)
   * nonce - a 32 byte token hex used only once
   * state - a 32 byte token hex used only once
@@ -28,7 +28,7 @@
 ## Step 4: Token Request
 * Using the `code` provided to the view above and the `CLIENT_ASSERTION_TYPE` (supplied by environment variable) a request is made to the `OIDC_OP_TOKEN_ENDPOINT` (also env var) to retrieve an ID and Access token for the given user.
 * If the request returns a 200 status code the ID Token will be extracted from the response data.
-* This token will come in a decoded form that we must decode using the `OIDC_OP_ISSUER` and `CLIENT_ID` environment varaibles, along with the `JWKS` provided by Login.gov at the `OIDC_OP_JWKS_ENDPOINT` (env var)
+* This token will come in a decoded form that we must decode using the `OIDC_OP_ISSUER` and `CLIENT_ID` environment variables, along with the `JWKS` provided by Login.gov at the `OIDC_OP_JWKS_ENDPOINT` (env var)
 * Using the decoded payload we will confirm that the nonce and state in the token match the session variables, otherwise raise an exception
 * Then the `email_verified` claim will be checked, otherwise an exception will be raised.
 
