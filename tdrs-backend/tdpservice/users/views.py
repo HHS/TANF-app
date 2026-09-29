@@ -25,6 +25,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from tdpservice.users.api.canary import normalize_idp
+from tdpservice.users.login_destination import LoginDestinationMixin
 from tdpservice.users.models import (
     AccountApprovalStatusChoices,
     ChangeRequestAuditLog,
@@ -336,7 +337,7 @@ class FeedbackViewSet(viewsets.ModelViewSet):
 # ---- Keycloak /v2/ auth views ----
 
 
-class KeycloakLoginDotGovView(OIDCAuthenticationRequestView):
+class KeycloakLoginDotGovView(LoginDestinationMixin, OIDCAuthenticationRequestView):
     """Redirect to Keycloak with kc_idp_hint=login-gov to skip the Keycloak login page."""
 
     def get(self, request, *args, **kwargs):
@@ -355,7 +356,7 @@ class KeycloakLoginDotGovView(OIDCAuthenticationRequestView):
         return {"kc_idp_hint": "login-gov"}
 
 
-class KeycloakLoginAMSView(OIDCAuthenticationRequestView):
+class KeycloakLoginAMSView(LoginDestinationMixin, OIDCAuthenticationRequestView):
     """Redirect to Keycloak with kc_idp_hint=ams to skip the Keycloak login page."""
 
     def get(self, request, *args, **kwargs):

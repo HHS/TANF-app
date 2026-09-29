@@ -113,6 +113,10 @@ ZAP_CLI_OPTIONS="\
   -config globalexcludeurl.url_list.url\(14\).description='Site - FontAwesome.com' \
   -config globalexcludeurl.url_list.url\(14\).enabled=true \
 
+  -config globalexcludeurl.url_list.url\(15\).regex='^https:\/\/.*\.token\.awswaf\.com\/.*$' \
+  -config globalexcludeurl.url_list.url\(15\).description='AWS WAF managed challenge resources' \
+  -config globalexcludeurl.url_list.url\(15\).enabled=true \
+
   -config globalexcludeurl.url_list.url\(16\).regex='^https:\/\/.*\.googletagmanager.com\/.*$' \
   -config globalexcludeurl.url_list.url\(16\).description='Site - googletagmanager.com' \
   -config globalexcludeurl.url_list.url\(16\).enabled=true \

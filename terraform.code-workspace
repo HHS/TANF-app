@@ -1,0 +1,133 @@
+{
+  "folders": [
+    {
+      "name": "Terraform Infrastructure",
+      "path": "terraform"
+    }
+  ],
+  "settings": {
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 1000,
+    "editor.tabSize": 2,
+    "editor.formatOnSave": true,
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "[terraform]": {
+      "editor.defaultFormatter": "hashicorp.terraform",
+      "editor.formatOnSave": true
+    },
+    "[terraform-vars]": {
+      "editor.defaultFormatter": "hashicorp.terraform",
+      "editor.formatOnSave": true
+    },
+    "files.exclude": {
+      "**/.terraform": true,
+      "**/node_modules": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "circleci.circleci",
+      "DavidAnson.vscode-markdownlint",
+      "eamodio.gitlens",
+      "editorconfig.editorconfig",
+      "google.google-antigravity",
+      "hashicorp.terraform",
+      "redhat.vscode-yaml",
+      "streetsidesoftware.code-spell-checker",
+      "task.vscode-task"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Terraform: Format Check (All)",
+        "type": "shell",
+        "command": "terraform fmt -check -recursive",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" },
+        "group": { "kind": "test", "isDefault": true }
+      },
+      {
+        "label": "Terraform: Format Apply (All)",
+        "type": "shell",
+        "command": "terraform fmt -recursive",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" },
+        "group": { "kind": "build", "isDefault": true }
+      },
+      {
+        "label": "Terraform: Dev - Init",
+        "type": "shell",
+        "command": "terraform -chdir=dev init",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Terraform: Dev - Validate",
+        "type": "shell",
+        "command": "terraform -chdir=dev validate",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Terraform: Dev - Plan",
+        "type": "shell",
+        "command": "terraform -chdir=dev plan",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Terraform: Staging - Init",
+        "type": "shell",
+        "command": "terraform -chdir=staging init",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Terraform: Staging - Validate",
+        "type": "shell",
+        "command": "terraform -chdir=staging validate",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Terraform: Staging - Plan",
+        "type": "shell",
+        "command": "terraform -chdir=staging plan",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Terraform: Prod - Init",
+        "type": "shell",
+        "command": "terraform -chdir=production init",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Terraform: Prod - Validate",
+        "type": "shell",
+        "command": "terraform -chdir=production validate",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Terraform: Prod - Plan",
+        "type": "shell",
+        "command": "terraform -chdir=production plan",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Dev: Show Taskfile Help",
+        "type": "shell",
+        "command": "task help",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      }
+    ]
+  }
+}
+

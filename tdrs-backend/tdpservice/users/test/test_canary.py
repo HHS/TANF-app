@@ -3,66 +3,64 @@
 from unittest.mock import patch
 
 from django.conf import settings
-from django.test import Client, RequestFactory, override_settings
+from django.test import Client, RequestFactory
 
 import pytest
 
+from tdpservice.core.models import FeatureFlag
 from tdpservice.users.api.canary import (
+    KEYCLOAK_AUTH_FEATURE_FLAG,
     get_auth_flow,
     set_auth_flow,
     should_use_keycloak,
 )
 
 
+def configure_keycloak_rollout(percentage: int, enabled: bool = True) -> FeatureFlag:
+    """Create or update the Keycloak authentication rollout for a test."""
+    flag, _ = FeatureFlag.objects.update_or_create(
+        feature_name=KEYCLOAK_AUTH_FEATURE_FLAG,
+        defaults={
+            "type": FeatureFlag.Type.RANDOM_ROLLOUT,
+            "enabled": enabled,
+            "rollout_percentage": percentage,
+        },
+    )
+    return flag
+
+
+@pytest.mark.django_db
 class TestShouldUseKeycloak:
     """Test the canary percentage routing function."""
 
-    @override_settings(KEYCLOAK_AUTH_PERCENTAGE=0)
     def test_zero_percent_always_legacy(self):
         """At 0%, should_use_keycloak should always return False."""
-        for _ in range(50):
-            assert should_use_keycloak() is False
+        configure_keycloak_rollout(0)
 
-    @override_settings(KEYCLOAK_AUTH_PERCENTAGE=100)
+        assert should_use_keycloak(random_value=0) is False
+
     def test_hundred_percent_always_keycloak(self):
         """At 100%, should_use_keycloak should always return True."""
-        for _ in range(50):
-            assert should_use_keycloak() is True
+        configure_keycloak_rollout(100)
 
-    @override_settings(KEYCLOAK_AUTH_PERCENTAGE=50)
-    def test_fifty_percent_routes_both(self):
-        """At 50%, should_use_keycloak should yield both True and False over many calls."""
-        results = [should_use_keycloak() for _ in range(200)]
-        # With 200 trials at 50%, both True and False should appear
-        assert True in results
-        assert False in results
+        assert should_use_keycloak(random_value=99.99) is True
 
-    @override_settings(KEYCLOAK_AUTH_PERCENTAGE=-5)
-    def test_negative_percent_always_legacy(self):
-        """A negative percentage should be clamped so the legacy flow is used."""
-        assert should_use_keycloak() is False
+    def test_partial_rollout_routes_on_sample(self):
+        """A partial rollout should route according to the request sample."""
+        configure_keycloak_rollout(50)
 
-    @override_settings(KEYCLOAK_AUTH_PERCENTAGE=150)
-    def test_over_hundred_always_keycloak(self):
-        """A percentage above 100 should be clamped so the Keycloak flow is used."""
-        assert should_use_keycloak() is True
+        assert should_use_keycloak(random_value=49.99) is True
+        assert should_use_keycloak(random_value=50) is False
 
-    def test_default_is_legacy(self):
-        """Without the setting, should default to legacy."""
-        with override_settings():
-            del_attempted = False
-            try:
-                from django.conf import settings
+    def test_disabled_flag_always_routes_to_legacy(self):
+        """A disabled rollout should always use the legacy flow."""
+        configure_keycloak_rollout(100, enabled=False)
 
-                if hasattr(settings, "KEYCLOAK_AUTH_PERCENTAGE"):
-                    # Setting exists, test with 0
-                    with override_settings(KEYCLOAK_AUTH_PERCENTAGE=0):
-                        assert should_use_keycloak() is False
-                        del_attempted = True
-            except Exception:
-                pass
-            if not del_attempted:
-                assert should_use_keycloak() is False
+        assert should_use_keycloak(random_value=0) is False
+
+    def test_missing_flag_defaults_to_legacy(self):
+        """A missing rollout should safely use the legacy flow."""
+        assert should_use_keycloak(random_value=0) is False
 
 
 class TestSetAuthFlow:
@@ -104,9 +102,9 @@ class TestSetAuthFlow:
 class TestCanaryLoginViews:
     """Test the canary login views route to the correct backend."""
 
-    @override_settings(KEYCLOAK_AUTH_PERCENTAGE=0)
     def test_login_dotgov_routes_to_legacy(self):
         """At 0%, /login/dotgov should delegate to the legacy Login.gov redirect."""
+        configure_keycloak_rollout(0)
         client = Client()
         with patch(
             "tdpservice.users.api.canary_views.LoginRedirectLoginDotGov"
@@ -115,9 +113,9 @@ class TestCanaryLoginViews:
             client.get("/login/dotgov")
             mock_legacy.as_view.assert_called_once()
 
-    @override_settings(KEYCLOAK_AUTH_PERCENTAGE=100)
     def test_login_dotgov_routes_to_keycloak(self):
         """At 100%, /login/dotgov should delegate to the Keycloak login view."""
+        configure_keycloak_rollout(100)
         client = Client()
         with patch(
             "tdpservice.users.api.canary_views.KeycloakLoginDotGovView"
@@ -126,27 +124,27 @@ class TestCanaryLoginViews:
             client.get("/login/dotgov")
             mock_kc.as_view.assert_called_once()
 
-    @override_settings(KEYCLOAK_AUTH_PERCENTAGE=0)
     def test_login_ams_routes_to_legacy(self):
         """At 0%, /login/ams should delegate to the legacy AMS redirect."""
+        configure_keycloak_rollout(0)
         client = Client()
         with patch("tdpservice.users.api.canary_views.LoginRedirectAMS") as mock_legacy:
             mock_legacy.as_view.return_value = lambda req, *a, **kw: _mock_response(302)
             client.get("/login/ams")
             mock_legacy.as_view.assert_called_once()
 
-    @override_settings(KEYCLOAK_AUTH_PERCENTAGE=100)
     def test_login_ams_routes_to_keycloak(self):
         """At 100%, /login/ams should delegate to the Keycloak AMS view."""
+        configure_keycloak_rollout(100)
         client = Client()
         with patch("tdpservice.users.api.canary_views.KeycloakLoginAMSView") as mock_kc:
             mock_kc.as_view.return_value = lambda req, *a, **kw: _mock_response(302)
             client.get("/login/ams")
             mock_kc.as_view.assert_called_once()
 
-    @override_settings(KEYCLOAK_AUTH_PERCENTAGE=0)
     def test_session_marker_set_for_legacy(self):
         """Login views should set auth_flow=legacy in session at 0%."""
+        configure_keycloak_rollout(0)
         client = Client()
         with patch(
             "tdpservice.users.api.canary_views.LoginRedirectLoginDotGov"
@@ -156,9 +154,9 @@ class TestCanaryLoginViews:
             assert client.session.get("auth_flow") == "legacy"
             assert client.session.get("auth_idp") == "login-gov"
 
-    @override_settings(KEYCLOAK_AUTH_PERCENTAGE=100)
     def test_session_marker_set_for_keycloak(self):
         """Login views should set auth_flow=keycloak in session at 100%."""
+        configure_keycloak_rollout(100)
         client = Client()
         with patch("tdpservice.users.api.canary_views.KeycloakLoginAMSView") as mock_kc:
             mock_kc.as_view.return_value = lambda req, *a, **kw: _mock_response(302)

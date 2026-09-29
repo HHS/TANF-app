@@ -46,7 +46,7 @@ func NewConfig(cfg *config.Config) PipelineConfig {
 		IncludeSchemas:      cfg.Writer.IncludeSchemas,
 		IncludeRecords:      cfg.Writer.IncludeRecords,
 		IncludeErrors:       cfg.Writer.IncludeErrors,
-		TablePrefix:         cfg.Database.EffectiveTablePrefix(),
+		TablePrefix:         cfg.Database.TablePrefix,
 		ShortCircuit:        cfg.Validation.ShortCircuit,
 	}
 }

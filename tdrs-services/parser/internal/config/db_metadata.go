@@ -138,15 +138,24 @@ func schemaPathToModelName(schemaPath string) string {
 // contentTypes is a map from model name (e.g., "tanf_t1") to content type ID.
 // This should be called after buildAllMetadata and after querying django_content_type.
 func (r *Registry) SetContentTypeIDs(contentTypes map[string]int32) {
+	r.contentTypes = make(map[string]int32, len(contentTypes))
+	for modelName, id := range contentTypes {
+		r.contentTypes[modelName] = id
+	}
+	r.applyContentTypeIDs()
+}
+
+func (r *Registry) applyContentTypeIDs() {
 	for path, meta := range r.metadata {
+		meta.ContentTypeID = nil
 		modelName := schemaPathToModelName(path)
 		if r.tablePrefix != "" && strings.HasPrefix(meta.TableName, r.tablePrefix) {
-			if id, ok := contentTypes["shadow"+modelName]; ok {
+			if id, ok := r.contentTypes["shadow"+modelName]; ok {
 				meta.ContentTypeID = &id
 				continue
 			}
 		}
-		if id, ok := contentTypes[modelName]; ok {
+		if id, ok := r.contentTypes[modelName]; ok {
 			meta.ContentTypeID = &id
 		}
 	}

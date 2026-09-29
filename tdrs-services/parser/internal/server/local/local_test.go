@@ -52,10 +52,9 @@ func TestNeedsDatabase_DefaultMode(t *testing.T) {
 	}
 }
 
-func TestDataFileTableNameUsesConfiguredShadowMode(t *testing.T) {
-	t.Run("shadow mode", func(t *testing.T) {
+func TestDataFileTableNameUsesConfiguredPrefix(t *testing.T) {
+	t.Run("shadow prefix", func(t *testing.T) {
 		cfg := config.DefaultConfig()
-		cfg.Database.ShadowMode = true
 		cfg.Database.TablePrefix = config.DefaultTablePrefix
 
 		m := New(cfg, nil, nil)
@@ -65,10 +64,9 @@ func TestDataFileTableNameUsesConfiguredShadowMode(t *testing.T) {
 		}
 	})
 
-	t.Run("production mode", func(t *testing.T) {
+	t.Run("empty prefix", func(t *testing.T) {
 		cfg := config.DefaultConfig()
-		cfg.Database.ShadowMode = false
-		cfg.Database.TablePrefix = config.DefaultTablePrefix
+		cfg.Database.TablePrefix = ""
 
 		m := New(cfg, nil, nil)
 

@@ -68,7 +68,7 @@ describe('LoginCallback.js', () => {
 
     render(
       <Provider store={store}>
-        <MemoryRouter initialEntries={['/login', '/']}>
+        <MemoryRouter initialEntries={['/login']}>
           <Routes>
             <Route exact path="/" element={<SplashPage />} />
             <Route exact path="/login" element={<LoginCallback />} />
@@ -96,7 +96,7 @@ describe('LoginCallback.js', () => {
 
     render(
       <Provider store={store}>
-        <MemoryRouter initialEntries={['/login', '/']}>
+        <MemoryRouter initialEntries={['/login']}>
           <Routes>
             <Route exact path="/" element={<SplashPage />} />
             <Route exact path="/login" element={<LoginCallback />} />

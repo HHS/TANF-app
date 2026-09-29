@@ -1,0 +1,562 @@
+{
+  "folders": [
+    {
+      "name": "TANF Monorepo",
+      "path": "."
+    }
+  ],
+  "settings": {
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 1000,
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2,
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.associations": {
+      "Pipfile": "toml",
+      "Pipfile.lock": "json",
+      "Taskfile.yml": "yaml",
+      "docker-compose*.yml": "yaml"
+    },
+    "python.linting.enabled": true,
+    "python.linting.flake8Enabled": true,
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestArgs": [
+      "tdrs-backend/tdpservice/test"
+    ],
+    "eslint.workingDirectories": [
+      "./tdrs-frontend",
+      "./tdp-admin"
+    ],
+    "markdownlint.config": {
+      "default": true,
+      "MD013": false
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "alexkrechik.cucumberautocomplete",
+      "batisteo.vscode-django",
+      "bierner.markdown-mermaid",
+      "circleci.circleci",
+      "DavidAnson.vscode-markdownlint",
+      "eamodio.gitlens",
+      "editorconfig.editorconfig",
+      "esbenp.prettier-vscode",
+      "golang.go",
+      "google.google-antigravity",
+      "hashicorp.terraform",
+      "mathematic.vscode-pdf",
+      "ms-azuretools.vscode-containers",
+      "ms-azuretools.vscode-docker",
+      "ms-ossdata.vscode-pgsql",
+      "ms-python.black-formatter",
+      "ms-python.flake8",
+      "ms-python.python",
+      "ms-python.vscode-pylance",
+      "ms-vscode-remote.remote-containers",
+      "ms-vscode.remote-repositories",
+      "ms-vsliveshare.vsliveshare",
+      "numso.prettier-standard-vscode",
+      "orta.vscode-jest",
+      "redhat.vscode-yaml",
+      "streetsidesoftware.code-spell-checker",
+      "task.vscode-task",
+      "yzhang.markdown-all-in-one"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Dev: Start All (Backend + Frontend)",
+        "type": "shell",
+        "command": "task up",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" },
+        "group": { "kind": "build", "isDefault": true }
+      },
+      {
+        "label": "Dev: Start All with Admin (Backend + Frontend + Admin)",
+        "type": "shell",
+        "command": "task up-with-admin",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Dev: Stop All (Backend + Frontend)",
+        "type": "shell",
+        "command": "task down",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Dev: Stop All with Admin (Backend + Frontend + Admin)",
+        "type": "shell",
+        "command": "task down-with-admin",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Dev: Rebuild & Update Dependencies",
+        "type": "shell",
+        "command": "task update-deps",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Dev: Rebuild & Update All (with Admin)",
+        "type": "shell",
+        "command": "task update-all",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Dev: Create External Docker Network",
+        "type": "shell",
+        "command": "task create-network",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Dev: Configure Git Hooks",
+        "type": "shell",
+        "command": "task gitcfg",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Dev: Clean All Containers & Volumes (Dangerous)",
+        "type": "shell",
+        "command": "task clean",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Dev: Show Taskfile Help",
+        "type": "shell",
+        "command": "task help",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Backend: Start Web Server",
+        "type": "shell",
+        "command": "task backend-up",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Backend: Stop Web Server",
+        "type": "shell",
+        "command": "task backend-down",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Backend: Restart Web Server",
+        "type": "shell",
+        "command": "task backend-restart",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Backend: Follow Web Server Logs",
+        "type": "shell",
+        "command": "task backend-logs",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Backend: Open Shell (Bash)",
+        "type": "shell",
+        "command": "task backend-bash",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Backend: Open Django Shell (shell_plus)",
+        "type": "shell",
+        "command": "task backend-shell",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Backend: Initialize Backend Project",
+        "type": "shell",
+        "command": "task init-backend",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Backend: Rebuild Image & Apply Migrations",
+        "type": "shell",
+        "command": "task backend-update",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Backend: Make Migrations",
+        "type": "shell",
+        "command": "task backend-makemigrations",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Backend: Run Migrations",
+        "type": "shell",
+        "command": "task backend-migrate",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Backend: Clean & Recreate DB (Dev Only)",
+        "type": "shell",
+        "command": "task backend-clean-db",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Backend: Drop DB Volume",
+        "type": "shell",
+        "command": "task drop-db",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Backend: Seed DB with Initial Data",
+        "type": "shell",
+        "command": "task backend-exec-seed-db",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Backend: Open PostgreSQL Shell",
+        "type": "shell",
+        "command": "task psql",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Backend: Run Flake8 Linter",
+        "type": "shell",
+        "command": "task backend-lint",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Backend: Run Pytest Suite",
+        "type": "shell",
+        "command": "task backend-pytest",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" },
+        "group": { "kind": "test", "isDefault": false }
+      },
+      {
+        "label": "Backend: Run All Tests & Linters",
+        "type": "shell",
+        "command": "task backend-test-all",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" },
+        "group": { "kind": "test", "isDefault": false }
+      },
+      {
+        "label": "Backend: Run Pytest with Coverage",
+        "type": "shell",
+        "command": "task backend-pytest-cov",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Backend: Run Go Parser Integration Suite",
+        "type": "shell",
+        "command": "task backend-pytest-go-integration",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Backend: Run Go Parser Integration (Active DB)",
+        "type": "shell",
+        "command": "task backend-pytest-go-integration-active",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Backend: Run ETL Integration Suite",
+        "type": "shell",
+        "command": "task backend-pytest-etl-integration",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Backend: Lock Pip Dependencies",
+        "type": "shell",
+        "command": "task backend-pip-lock",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Backend: Remove Volumes",
+        "type": "shell",
+        "command": "task backend-remove-volumes",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Backend: Start ClamAV Service",
+        "type": "shell",
+        "command": "task clamav-up",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Backend: Create ClamAV Infected Test File",
+        "type": "shell",
+        "command": "task create-infected-test-file",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Frontend: Start Web Server",
+        "type": "shell",
+        "command": "task frontend-up",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Frontend: Stop Web Server",
+        "type": "shell",
+        "command": "task frontend-down",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Frontend: Restart Web Server",
+        "type": "shell",
+        "command": "task frontend-restart",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Frontend: Follow Web Server Logs",
+        "type": "shell",
+        "command": "task frontend-logs",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Frontend: Open Shell in Container",
+        "type": "shell",
+        "command": "task frontend-bash",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Frontend: Initialize Project (Docker + Yarn)",
+        "type": "shell",
+        "command": "task frontend-init",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Frontend: Install Dependencies on Host",
+        "type": "shell",
+        "command": "task frontend-install",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Frontend: Rebuild Localdev Image & Install Deps",
+        "type": "shell",
+        "command": "task frontend-update",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Frontend: Start with ClamAV",
+        "type": "shell",
+        "command": "task frontend-av",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Frontend: Run ESLint in Docker",
+        "type": "shell",
+        "command": "task frontend-lint",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Frontend: Run Unit Tests in Docker",
+        "type": "shell",
+        "command": "task frontend-test",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" },
+        "group": { "kind": "test", "isDefault": false }
+      },
+      {
+        "label": "Frontend: Run Unit Tests with Coverage in Docker",
+        "type": "shell",
+        "command": "task frontend-test-cov",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Frontend: Run Unit Tests on Host",
+        "type": "shell",
+        "command": "task frontend-test-local",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Frontend: Run Unit Tests on Host (Watch)",
+        "type": "shell",
+        "command": "task frontend-test-watch",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Frontend: Run Unit Tests with Coverage on Host",
+        "type": "shell",
+        "command": "task frontend-test-cov-local",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Frontend: Run Cypress E2E Tests Locally",
+        "type": "shell",
+        "command": "task frontend-e2e-local",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Frontend: Run Cypress E2E Tests Headless (CI Mode)",
+        "type": "shell",
+        "command": "task frontend-e2e-ci-local",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Frontend: Run Cypress E2E Tests Headless (Command Mode)",
+        "type": "shell",
+        "command": "task frontend-e2e-cmd",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Frontend: Setup E2E Test Users & Env Vars",
+        "type": "shell",
+        "command": "task e2e-env-var-setup",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Admin: Start Web Server",
+        "type": "shell",
+        "command": "task admin-up",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Admin: Stop Web Server",
+        "type": "shell",
+        "command": "task admin-down",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Admin: Restart Web Server",
+        "type": "shell",
+        "command": "task admin-restart",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Admin: Follow Web Server Logs",
+        "type": "shell",
+        "command": "task admin-logs",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Admin: Open Shell in Container",
+        "type": "shell",
+        "command": "task admin-bash",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Admin: Initialize Project (Docker + Yarn)",
+        "type": "shell",
+        "command": "task admin-init",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Admin: Run Unit Tests (Vitest) in Docker",
+        "type": "shell",
+        "command": "task admin-test",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Admin: Run Unit Tests in Watch Mode in Docker",
+        "type": "shell",
+        "command": "task admin-test-watch",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Parser: Compile Check Packages & Tests",
+        "type": "shell",
+        "command": "task parser:compile-check",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Parser: Run Static Analysis (Lint)",
+        "type": "shell",
+        "command": "task parser:lint",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Parser: Validate Config & Coverage",
+        "type": "shell",
+        "command": "task parser:validate-config",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Parser: Run All Tests with Coverage",
+        "type": "shell",
+        "command": "task parser:test-all-coverage",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Parser: Generate Coverage Report",
+        "type": "shell",
+        "command": "task parser:coverage-report",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Parser: Run CI Checks",
+        "type": "shell",
+        "command": "task parser:ci-checks",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Perf: Run k6 Performance Tests",
+        "type": "shell",
+        "command": "task k6",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      }
+    ]
+  }
+}
+

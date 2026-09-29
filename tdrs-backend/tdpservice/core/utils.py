@@ -61,10 +61,12 @@ def log(msg, logger_context={}, level="info"):
         )
 
 
-def get_feature_flag(feature_name):
+def get_feature_flag(
+    feature_name: str, random_value: float | None = None
+) -> tuple[bool, dict]:
     """Return a tuple of (enabled, config) for a feature flag if it exists, or a disabled default."""
     try:
         flag = FeatureFlag.objects.get(feature_name=feature_name)
-        return flag.enabled, flag.config
+        return flag.is_enabled(random_value=random_value), flag.config
     except FeatureFlag.DoesNotExist:
         return False, {}

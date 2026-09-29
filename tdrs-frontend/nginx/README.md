@@ -85,15 +85,17 @@ The deploy script generates ```deployment/.htpasswd``` from the ```FRONTEND_BASI
 To rotate the shared non-production password, update those CI secrets and redeploy the affected non-production frontend environments.
 
 ### Security Headers
-All security headers are following best practices from [Mozilla](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers) and [OWASP](https://owasp.org/www-project-secure-headers/) and are added with comments on the config files.
+The deployed frontend adds CSP, HSTS, COOP, Permissions Policy, Referrer Policy, X-Content-Type-Options, and X-Frame-Options headers to frontend responses, including error responses. These headers follow guidance from [MDN](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers) and [OWASP](https://owasp.org/www-project-secure-headers/).
+
+Cross-Origin-Embedder-Policy is intentionally not enabled in the deployed frontend. The AWS WAF challenge is loaded from a cross-origin, dynamically generated script, and `require-corp` can block that challenge unless every resource opts into compatible CORS or CORP behavior. Reassess COEP if the WAF integration changes.
 
 ### CORS
 
-Cross-Origin Resource Sharing (CORS) header allows a server to indicate any origin such as domain or port other than its own from which a browser can load resources. By adding HTTP headers that let server know which origins are permitted to read that information from the web browser. It should be noted that request might be passed without implications on CORS, this includes most form requests.
+Frontend HTML and static resources do not support cross-origin reads and therefore do not emit CORS response headers. The React application reaches the API through the same public Nginx hostname, so normal frontend API traffic does not require CORS.
 
-Since the frontend has to send requests to the backend server, the security headers are being set when serving the frontend requests as well as when Nginx acts as proxy server for the backend API. This is to ensure the sercurity headers cannot be tampered with and are always set to the correct values.
+Django is the source of truth for API CORS policy. Nginx forwards the request `Origin` to the backend without adding or replacing API CORS response headers. The backend uses [django-cors-headers](https://github.com/adamchainz/django-cors-headers) and the explicit HTTPS origins in `CORS_ALLOWED_ORIGINS` to decide whether a cross-origin client may read a response.
 
-The backend server then checks the request origin and verifies the request against existing whitelisted origins. The backend uses [django-cors-headers](https://github.com/adamchainz/django-cors-headers) to verify and add CORS headers which consiquesntly allow the response to be accessed on other domains. The list of accepted domains are defined in settings file using ```CORS_ALLOWED_ORIGINS```.
+AWS WAF challenge resources under `*.token.awswaf.com` are generated and hosted by AWS rather than this application. ZAP excludes that vendor hostname from application scanning, while all `*.tanfdata.acf.hhs.gov` responses remain in scope.
 
 ### CSP Headers
 CSP headers are added in the following block:
@@ -106,7 +108,7 @@ set $CSP "${CSP}style-src 'self' 'unsafe-inline';";
 set $CSP "${CSP}style-src-elem 'self';";
 set $CSP "${CSP}style-src-attr 'none';";
 set $CSP "${CSP}worker-src 'none';";
-add_header Content-Security-Policy $CSP;
+add_header Content-Security-Policy $CSP always;
 ```
 
 The ```default-src``` header sets all the CSP headers to a default value. Any of the CSP headers then can override the default value. As an example, in the above config default value is set to 'none', however ```script-src``` is set to self which means scripts from the same source are secure to run and can be accepted.

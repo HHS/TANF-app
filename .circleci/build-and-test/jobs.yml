@@ -65,12 +65,10 @@
             cd tdrs-backend
             STALE_PARSE_TIMEOUT_SECONDS=60 \
               STALE_PARSE_CHECK_INTERVAL_SECONDS=5 \
-              GO_PARSER_SHADOW_MODE=false \
               docker-compose up -d --force-recreate web celery
             docker-compose exec -T celery sh -c '
               test "$STALE_PARSE_TIMEOUT_SECONDS" = 60 &&
-              test "$STALE_PARSE_CHECK_INTERVAL_SECONDS" = 5 &&
-              test "$GO_PARSER_SHADOW_MODE" = false
+              test "$STALE_PARSE_CHECK_INTERVAL_SECONDS" = 5
             '
       - docker-compose-up-frontend
       - install-nodejs-machine

@@ -1,0 +1,313 @@
+{
+  "folders": [
+    {
+      "name": "Backend (Django & Celery)",
+      "path": "tdrs-backend"
+    },
+    {
+      "name": "Parser Service (Go)",
+      "path": "tdrs-services/parser"
+    }
+  ],
+  "settings": {
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 1000,
+    "editor.formatOnSave": true,
+    "editor.tabSize": 4,
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.associations": {
+      "Pipfile": "toml",
+      "Pipfile.lock": "json",
+      "docker-compose*.yml": "yaml"
+    },
+    // "python.linting.enabled": true,
+    // "python.linting.flake8Enabled": true,
+    // "python.testing.pytestEnabled": true,
+    // "python.testing.unittestEnabled": false,
+    // "python.testing.pytestArgs": [
+    //   "tdpservice/test"
+    // ],
+    "files.exclude": {
+      "**/node_modules": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "batisteo.vscode-django",
+      "circleci.circleci",
+      "DavidAnson.vscode-markdownlint",
+      "eamodio.gitlens",
+      "editorconfig.editorconfig",
+      "golang.go",
+      "google.google-antigravity",
+      "ms-azuretools.vscode-containers",
+      "ms-azuretools.vscode-docker",
+      "ms-ossdata.vscode-pgsql",
+      "ms-python.black-formatter",
+      "ms-python.flake8",
+      "ms-python.python",
+      "ms-python.vscode-pylance",
+      "ms-vscode-remote.remote-containers",
+      "ms-vscode.remote-repositories",
+      "ms-vsliveshare.vsliveshare",
+      "redhat.vscode-yaml",
+      "streetsidesoftware.code-spell-checker",
+      "task.vscode-task"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Backend: Start Web Server",
+        "type": "shell",
+        "command": "task backend-up",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" },
+        "group": { "kind": "build", "isDefault": true }
+      },
+      {
+        "label": "Backend: Stop Web Server",
+        "type": "shell",
+        "command": "task backend-down",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Backend: Restart Web Server",
+        "type": "shell",
+        "command": "task backend-restart",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Backend: Follow Web Server Logs",
+        "type": "shell",
+        "command": "task backend-logs",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Backend: Open Shell (Bash)",
+        "type": "shell",
+        "command": "task backend-bash",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Backend: Open Django Shell (shell_plus)",
+        "type": "shell",
+        "command": "task backend-shell",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Backend: Initialize Backend Project",
+        "type": "shell",
+        "command": "task init-backend",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Backend: Rebuild Image & Apply Migrations",
+        "type": "shell",
+        "command": "task backend-update",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Backend: Make Migrations",
+        "type": "shell",
+        "command": "task backend-makemigrations",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Backend: Run Migrations",
+        "type": "shell",
+        "command": "task backend-migrate",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Backend: Clean & Recreate DB (Dev Only)",
+        "type": "shell",
+        "command": "task backend-clean-db",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Backend: Drop DB Volume",
+        "type": "shell",
+        "command": "task drop-db",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Backend: Seed DB with Initial Data",
+        "type": "shell",
+        "command": "task backend-exec-seed-db",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Backend: Open PostgreSQL Shell",
+        "type": "shell",
+        "command": "task psql",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Backend: Run Flake8 Linter",
+        "type": "shell",
+        "command": "task backend-lint",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Backend: Run Pytest Suite",
+        "type": "shell",
+        "command": "task backend-pytest",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" },
+        "group": { "kind": "test", "isDefault": true }
+      },
+      {
+        "label": "Backend: Run All Tests & Linters",
+        "type": "shell",
+        "command": "task backend-test-all",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" },
+        "group": { "kind": "test", "isDefault": false }
+      },
+      {
+        "label": "Backend: Run Pytest with Coverage",
+        "type": "shell",
+        "command": "task backend-pytest-cov",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Backend: Run Go Parser Integration Suite",
+        "type": "shell",
+        "command": "task backend-pytest-go-integration",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Backend: Run Go Parser Integration (Active DB)",
+        "type": "shell",
+        "command": "task backend-pytest-go-integration-active",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Backend: Run ETL Integration Suite",
+        "type": "shell",
+        "command": "task backend-pytest-etl-integration",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Backend: Lock Pip Dependencies",
+        "type": "shell",
+        "command": "task backend-pip-lock",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Backend: Remove Volumes",
+        "type": "shell",
+        "command": "task backend-remove-volumes",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Backend: Start ClamAV Service",
+        "type": "shell",
+        "command": "task clamav-up",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Backend: Create ClamAV Infected Test File",
+        "type": "shell",
+        "command": "task create-infected-test-file",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Parser: Compile Check Packages & Tests",
+        "type": "shell",
+        "command": "task parser:compile-check",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Parser: Run Static Analysis (Lint)",
+        "type": "shell",
+        "command": "task parser:lint",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Parser: Validate Config & Coverage",
+        "type": "shell",
+        "command": "task parser:validate-config",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Parser: Run All Tests with Coverage",
+        "type": "shell",
+        "command": "task parser:test-all-coverage",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Parser: Generate Coverage Report",
+        "type": "shell",
+        "command": "task parser:coverage-report",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Parser: Run CI Checks",
+        "type": "shell",
+        "command": "task parser:ci-checks",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Dev: Start Full Environment (Backend + Frontend)",
+        "type": "shell",
+        "command": "task up",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Dev: Stop Full Environment",
+        "type": "shell",
+        "command": "task down",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Dev: Create External Docker Network",
+        "type": "shell",
+        "command": "task create-network",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Dev: Show Taskfile Help",
+        "type": "shell",
+        "command": "task help",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      }
+    ]
+  }
+}
+

@@ -34,7 +34,6 @@ server:
   mode: grpc
 database:
   max_conns: 20
-  shadow_mode: false
   table_prefix: "custom_"
 `
 	path := filepath.Join(dir, "parser.yaml")
@@ -62,14 +61,8 @@ database:
 	if cfg.Database.MaxConns != 20 {
 		t.Errorf("Database.MaxConns = %d, want 20", cfg.Database.MaxConns)
 	}
-	if cfg.Database.ShadowMode {
-		t.Error("Database.ShadowMode = true, want false")
-	}
 	if cfg.Database.TablePrefix != "custom_" {
 		t.Errorf("Database.TablePrefix = %q, want custom_", cfg.Database.TablePrefix)
-	}
-	if cfg.Database.EffectiveTablePrefix() != "" {
-		t.Errorf("EffectiveTablePrefix = %q, want empty production prefix", cfg.Database.EffectiveTablePrefix())
 	}
 }
 
