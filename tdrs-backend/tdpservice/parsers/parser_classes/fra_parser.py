@@ -22,8 +22,8 @@ class FRAParser(BaseParser):
     EXIT_DATE_POSITION = Position(0)
     SSN_POSITION = Position(1)
 
-    def __init__(self, datafile, dfs, section):
-        super().__init__(datafile, dfs, section)
+    def __init__(self, datafile, dfs, section, parse_token=None):
+        super().__init__(datafile, dfs, section, parse_token=parse_token)
 
     def _create_header_error(self):
         """Create FRA header error and return invalid HeaderResult."""
@@ -112,7 +112,7 @@ class FRAParser(BaseParser):
 
         self.bulk_create_errors(flush=True)
 
-        self.dfs.save()
+        self.save_summary()
 
         return
 

@@ -8,6 +8,7 @@ import Feedback from './components/Feedback/Feedback'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchSttList } from './actions/sttList'
 import { useRUM } from './hooks/useRUM'
+import { accountStatusIsApproved } from './selectors/auth'
 
 /**
  * The root component
@@ -26,6 +27,8 @@ import { useRUM } from './hooks/useRUM'
 function App() {
   const dispatch = useDispatch()
   const user = useSelector((state) => state.auth.user)
+  const authenticated = useSelector((state) => state.auth.authenticated)
+  const isApproved = useSelector(accountStatusIsApproved)
   const { setUserInfo } = useRUM()
 
   /* istanbul ignore next */
@@ -56,7 +59,7 @@ function App() {
         <Routes />
       </main>
       <Footer />
-      <Feedback />
+      {authenticated && isApproved && <Feedback />}
     </>
   )
 }

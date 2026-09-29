@@ -9,8 +9,8 @@
   line-height: 1.5;
 }
 
-.usa-button,
-.usa-button:hover {
+.usa-button:not(.usa-button--unstyled),
+.usa-button:not(.usa-button--unstyled):hover {
   background-color: $primary-medium-blue;
 }
 
@@ -40,4 +40,3 @@ a.button-anchor:focus {
   font-weight: 600;
   text-underline-offset: 0.08em;
 }
-

@@ -54,7 +54,10 @@ class TestParserUtil:
         schema = HeaderSchema(model=None, preparsing_validators=[deprecated_validator()])
 
         schema.prepare(None)
-        is_valid, errors = schema.run_preparsing_validators(row, None)
+        with pytest.warns(
+            DeprecationWarning, match="deprecated_validator has been deprecated"
+        ):
+            is_valid, errors = schema.run_preparsing_validators(row, None)
         assert is_valid is False
         assert len(errors) == 1
 

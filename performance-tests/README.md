@@ -161,7 +161,7 @@ The "type" of performance test is generally defined by how the load is applied t
 * Spike tests - how the system handles a sudden, high increase in load over a short period
 * Breakpoint tests - gradually increased load to identify the system's limits
 
-Different types of tests can help to identify different issues. The type of test you choose should reflect the use-case for which you're writing the test. In k6, the load applied is managed by Scenarios. The same test script can be used with different scenarios, making it easy to change the test type on-the-fly, or incoporate the same script into multiple tests. Multiple test types should be incorporated to assess different failure points in the system.
+Different types of tests can help to identify different issues. The type of test you choose should reflect the use-case for which you're writing the test. In k6, the load applied is managed by Scenarios. The same test script can be used with different scenarios, making it easy to change the test type on-the-fly, or incorporate the same script into multiple tests. Multiple test types should be incorporated to assess different failure points in the system.
 
 #### Scenarios
 

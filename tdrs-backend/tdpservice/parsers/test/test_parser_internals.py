@@ -1,8 +1,19 @@
 """Unit tests for parser factory and schema manager internals."""
 
+from types import SimpleNamespace
+from unittest.mock import MagicMock
+
 import pytest
 
+from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.submission_lifecycle import (
+    StaleParseOwnership,
+    begin_parse,
+    claim_parse,
+    mark_stuck,
+)
+from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.parsers.dataclasses import RawRow
 from tdpservice.parsers.factory import ParserFactory
 from tdpservice.parsers.fields import TransformField
@@ -12,6 +23,7 @@ from tdpservice.parsers.parser_classes.fra_parser import FRAParser
 from tdpservice.parsers.parser_classes.program_audit_parser import ProgramAuditParser
 from tdpservice.parsers.parser_classes.tdr_parser import TanfDataReportParser
 from tdpservice.parsers.schema_manager import SchemaManager
+from tdpservice.parsers.util import FrozenDict
 
 
 class TestParserFactory:
@@ -212,3 +224,53 @@ class TestBaseParserMessages:
 
         assert "Duplicated fields causing error:" in msg
         assert "Item 4 (Case Number), and Item 5 (Reporting Month Year)." in msg
+
+
+class TestBaseParserWriteOwnership:
+    """Ensure every destructive production write honors parser ownership."""
+
+    @staticmethod
+    def stale_parser():
+        """Build a parser whose token has been revoked by the stale monitor."""
+        data_file = DataFileFactory(state=SubmissionState.VIRUS_SCAN_COMPLETED)
+        parse_token = claim_parse(data_file)
+        begin_parse(data_file, parse_token)
+        mark_stuck(data_file)
+
+        parser = DummyParser()
+        parser.datafile = data_file
+        parser.parse_token = parse_token
+        parser.dfs = SimpleNamespace(total_number_of_records_created=2)
+        return parser
+
+    @pytest.mark.django_db
+    def test_duplicate_delete_rejects_revoked_parse_token(self):
+        """A timed-out parser cannot delete duplicate rows."""
+        parser = self.stale_parser()
+        parser.is_active_or_closed = False
+        parser.serialized_cases = set()
+        duplicate_records = MagicMock()
+        duplicate_records.db = "default"
+
+        with pytest.raises(StaleParseOwnership, match="may no longer write"):
+            parser._delete_duplicates(
+                SimpleNamespace(RecordType="T1"),
+                duplicate_records,
+            )
+
+        duplicate_records._raw_delete.assert_not_called()
+
+    @pytest.mark.django_db
+    def test_serialized_case_delete_rejects_revoked_parse_token(self):
+        """A timed-out parser cannot delete serialized case rows."""
+        parser = self.stale_parser()
+        record_model = MagicMock()
+        parser.serialized_cases = {FrozenDict(RecordType="T1")}
+        parser.schema_manager = SimpleNamespace(
+            schema_map={"T1": [SimpleNamespace(model=record_model)]}
+        )
+
+        with pytest.raises(StaleParseOwnership, match="may no longer write"):
+            parser._delete_serialized_cases()
+
+        record_model.objects.filter.assert_not_called()

@@ -67,6 +67,12 @@ func (b *Base) ConnectDB(ctx context.Context) (*pgxpool.Pool, error) {
 // and runs the parsing pipeline. It centralizes the shared orchestration logic
 // used by all server modes.
 func (b *Base) RunPipeline(ctx context.Context, source reader.FileSource, sink writer.Sink, dfCtx pipeline.DataFileContext) (result *pipeline.ParsingResult, err error) {
+	return b.RunPipelineWithTablePrefix(ctx, source, sink, dfCtx, b.Registry.TablePrefix())
+}
+
+// RunPipelineWithTablePrefix runs the pipeline against the table family
+// selected for an immutable parse task.
+func (b *Base) RunPipelineWithTablePrefix(ctx context.Context, source reader.FileSource, sink writer.Sink, dfCtx pipeline.DataFileContext, tablePrefix string) (result *pipeline.ParsingResult, err error) {
 	startTime := time.Now()
 	defer func() {
 		status := "success"
@@ -85,7 +91,8 @@ func (b *Base) RunPipeline(ctx context.Context, source reader.FileSource, sink w
 	defer file.Close()
 	defer source.Cleanup()
 
-	spec := b.Registry.GetFileSpec(dfCtx.Program, dfCtx.Section)
+	registry := b.Registry.WithTablePrefix(tablePrefix)
+	spec := registry.GetFileSpec(dfCtx.Program, dfCtx.Section)
 	if spec == nil {
 		return nil, fmt.Errorf("no file spec for %s section %d", dfCtx.Program, dfCtx.Section)
 	}
@@ -93,13 +100,15 @@ func (b *Base) RunPipeline(ctx context.Context, source reader.FileSource, sink w
 	dec, err := decoder.CreateDecoder(file, spec)
 	if err != nil {
 		if errors.Is(err, sentinel.ErrDecoderUnknown) {
-			return b.handleDecoderUnknown(ctx, sink, dfCtx, startTime)
+			return b.handleDecoderUnknown(ctx, sink, dfCtx, tablePrefix, startTime)
 		}
 		return nil, fmt.Errorf("failed to create decoder: %w", err)
 	}
 	defer dec.Close()
 
-	pipeln := pipeline.NewPipeline(sink, b.Registry, b.Validators, pipeline.NewConfig(b.Config))
+	pipelineConfig := pipeline.NewConfig(b.Config)
+	pipelineConfig.TablePrefix = tablePrefix
+	pipeln := pipeline.NewPipeline(sink, registry, b.Validators, pipelineConfig)
 	result, err = pipeln.Process(ctx, dec, dfCtx, time.Since(startTime))
 	return result, err
 }
@@ -122,14 +131,15 @@ func recordResultMetrics(dfCtx pipeline.DataFileContext, result *pipeline.Parsin
 	}
 }
 
-func (b *Base) handleDecoderUnknown(ctx context.Context, sink writer.Sink, dfCtx pipeline.DataFileContext, startTime time.Time) (*pipeline.ParsingResult, error) {
+func (b *Base) handleDecoderUnknown(ctx context.Context, sink writer.Sink, dfCtx pipeline.DataFileContext, tablePrefix string, startTime time.Time) (*pipeline.ParsingResult, error) {
 	parserErr := writer.SerializeParserError(
 		1,
 		sentinel.DecoderUnknownMessage,
 		validation.ErrorTypePreCheck,
 		dfCtx.DatafileID,
 	)
-	if _, err := sink.Flush(ctx, "parser_error", writer.ParserErrorColumns(), [][]any{parserErr}); err != nil {
+	errorTable := config.ParserErrorTableName(tablePrefix)
+	if _, err := sink.Flush(ctx, errorTable, writer.ParserErrorColumns(), [][]any{parserErr}); err != nil {
 		return nil, fmt.Errorf("write decoder unknown parser error: %w", err)
 	}
 	return &pipeline.ParsingResult{

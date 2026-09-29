@@ -7,7 +7,10 @@ from django.core.management.base import BaseCommand
 from tdpservice.core.utils import log
 from tdpservice.etl.pipelines.sources import validate_no_active_pipeline_source_overlap
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
-from tdpservice.search_indexes.reparse import handle_datafiles
+from tdpservice.search_indexes.reparse import (
+    handle_datafiles,
+    prepare_datafiles_for_reparse,
+)
 from tdpservice.search_indexes.utils import (
     assert_sequential_execution,
     backup,
@@ -173,6 +176,7 @@ class Command(BaseCommand):
         meta_model.total_num_records_initial = count_total_num_records(log_context)
         meta_model.save()
 
+        prepare_datafiles_for_reparse(files)
         delete_associated_models(meta_model, file_ids, log_context)
 
         meta_model.timeout_at = meta_model.created_at + calculate_timeout(

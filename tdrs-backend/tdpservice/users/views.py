@@ -1,12 +1,11 @@
 """Define API views for user class."""
 
-import datetime
 import logging
 from urllib.parse import parse_qs, urlencode, urlparse
 
 from django.conf import settings
 from django.contrib.auth import logout
-from django.contrib.auth.models import AnonymousUser, Group, Permission
+from django.contrib.auth.models import Group, Permission
 from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
@@ -26,6 +25,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from tdpservice.users.api.canary import normalize_idp
+from tdpservice.users.login_destination import LoginDestinationMixin
 from tdpservice.users.models import (
     AccountApprovalStatusChoices,
     ChangeRequestAuditLog,
@@ -162,7 +162,7 @@ class UserViewSet(
         serializer.is_valid(raise_exception=True)
         instance = serializer.save(
             account_approval_status=AccountApprovalStatusChoices.ACCESS_REQUEST,
-            access_requested_date=datetime.datetime.now(),
+            access_requested_date=timezone.now(),
         )  # DRF ignores commit, but semantically clearer
         for field, value in serializer.validated_data.items():
             try:
@@ -308,10 +308,6 @@ class FeedbackViewSet(viewsets.ModelViewSet):
         feedback_id = response.data["id"]
         feedback = Feedback.objects.get(id=feedback_id)
 
-        # Force anonymity if user is None to prevent us from know if authenticated users chose to remain anonymous
-        if request.user is None or isinstance(request.user, AnonymousUser):
-            feedback.anonymous = True
-
         if not feedback.anonymous:
             feedback.user = request.user
         feedback.save()
@@ -341,7 +337,7 @@ class FeedbackViewSet(viewsets.ModelViewSet):
 # ---- Keycloak /v2/ auth views ----
 
 
-class KeycloakLoginDotGovView(OIDCAuthenticationRequestView):
+class KeycloakLoginDotGovView(LoginDestinationMixin, OIDCAuthenticationRequestView):
     """Redirect to Keycloak with kc_idp_hint=login-gov to skip the Keycloak login page."""
 
     def get(self, request, *args, **kwargs):
@@ -360,7 +356,7 @@ class KeycloakLoginDotGovView(OIDCAuthenticationRequestView):
         return {"kc_idp_hint": "login-gov"}
 
 
-class KeycloakLoginAMSView(OIDCAuthenticationRequestView):
+class KeycloakLoginAMSView(LoginDestinationMixin, OIDCAuthenticationRequestView):
     """Redirect to Keycloak with kc_idp_hint=ams to skip the Keycloak login page."""
 
     def get(self, request, *args, **kwargs):

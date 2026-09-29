@@ -11,7 +11,7 @@ This directory contains system and architecture documentation including diagrams
 - [TDP-environments-README.md](./TDP-environments-README.md) : Provides an architecture-level view of our cloud environments.
 - [Zap-Scan-HTML-Report.md](./Zap-Scan-HTML-Report.md) : Provides a summary of how OWASP's ZAP tool is leveraged in our project.
 - [buildpack-changelog.md](./buildpack-changelog.md) : A running log of updates to our Cloud.gov buildpacks in use.
-- [circle-ci-audit-template.md](./circle-ci-audit-template.md) : This is a checklist document used during audits of our continuous intergration pipeline tool.
+- [circle-ci-audit-template.md](./circle-ci-audit-template.md) : This is a checklist document used during audits of our continuous integration pipeline tool.
 - [circle-ci.md](./circle-ci.md) : Overview of our CI/CD platform jobs.
 - [clamav.md](./clamav.md) : How to access ClamAV from different apps/spaces.
 - [cypress-integration-tests.md](./cypress-integration-tests.md) : Shows how we use Cypress to manage our end to end integration testing.

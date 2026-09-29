@@ -3,6 +3,7 @@
 import logging
 from datetime import datetime
 from datetime import timezone as dt_timezone
+from typing import Any
 
 from django.utils import timezone
 
@@ -120,6 +121,11 @@ class SecurityEventHandler:
         SecurityEventType.ACCOUNT_PURGED,
     }
 
+    email_identifier_event_types = {
+        SecurityEventType.EMAIL_CHANGED,
+        SecurityEventType.EMAIL_RECYCLED,
+    }
+
     @classmethod
     def _get_issued_at(cls, decoded_jwt):
         """Convert the SET issued-at timestamp to a datetime."""
@@ -153,6 +159,28 @@ class SecurityEventHandler:
         security_event.processed = True
         security_event.processed_at = timezone.now()
         security_event.save()
+
+    @classmethod
+    def _record_unmatched_email_receipt(
+        cls, event_type: str, decoded_jwt: dict[str, Any]
+    ) -> None:
+        """Record a completed no-op without retaining an unassociated email payload."""
+        _, created = SecurityEventToken.objects.get_or_create(
+            jwt_id=decoded_jwt.get("jti"),
+            defaults={
+                "event_type": event_type,
+                "event_data": {"outcome": "unmatched_subject"},
+                "issuer": decoded_jwt.get("iss"),
+                "issued_at": cls._get_issued_at(decoded_jwt),
+                "processed": True,
+                "processed_at": timezone.now(),
+            },
+        )
+        if created:
+            logger.info(
+                "Recorded %s receipt with unmatched subject; no user action required.",
+                event_type,
+            )
 
     @classmethod
     def _has_subject_identifier(cls, subject):
@@ -192,9 +220,20 @@ class SecurityEventHandler:
         raise ValueError("No user info found in subject of security event.")
 
     @classmethod
-    def handle_event(cls, event_type, event_data, decoded_jwt):
+    def handle_event(
+        cls, event_type: str, event_data: dict[str, Any], decoded_jwt: dict[str, Any]
+    ) -> None:
         """Handle specific event types."""
         try:
+            # A later email match must not reassociate a completed receipt on redelivery.
+            if (
+                event_type in cls.email_identifier_event_types
+                and SecurityEventToken.objects.filter(
+                    jwt_id=decoded_jwt.get("jti"), processed=True
+                ).exists()
+            ):
+                return
+
             subject = event_data.get("subject", {})
             try:
                 user = cls._get_user(subject)
@@ -203,6 +242,10 @@ class SecurityEventHandler:
                     event_type
                 ) or not cls._has_subject_identifier(subject):
                     raise
+
+                if event_type in cls.email_identifier_event_types:
+                    cls._record_unmatched_email_receipt(event_type, decoded_jwt)
+                    return
 
                 security_event = cls._create_security_event(
                     None, event_type, event_data, decoded_jwt

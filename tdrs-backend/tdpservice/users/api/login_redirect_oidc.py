@@ -13,6 +13,8 @@ from django.views.generic.base import RedirectView
 import requests
 from rest_framework import status
 
+from tdpservice.users.login_destination import validate_login_destination
+
 from .canary import normalize_idp
 
 logger = logging.getLogger(__name__)
@@ -81,6 +83,7 @@ class LoginRedirectLoginDotGov(RedirectView):
                 "nonce": nonce,
                 "state": state,
                 "added_on": time.time(),
+                "next": validate_login_destination(request.GET.get("next")),
             },
         )
 
@@ -167,6 +170,7 @@ class LoginRedirectAMS(RedirectView):
                 "nonce": nonce,
                 "state": state,
                 "added_on": time.time(),
+                "next": validate_login_destination(request.GET.get("next")),
                 "ams": True,
             },
         )

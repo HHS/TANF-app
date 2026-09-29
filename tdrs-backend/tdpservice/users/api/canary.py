@@ -1,18 +1,13 @@
-"""Canary routing utilities for gradual Keycloak migration.
-
-Controls what percentage of new login requests are routed through Keycloak
-vs. the legacy direct OIDC flow. The percentage is controlled by the
-KEYCLOAK_AUTH_PERCENTAGE Django setting (0-100, default 0).
-"""
+"""Canary routing utilities for gradual Keycloak migration."""
 
 import logging
-import random
 
-from django.conf import settings
-
+from tdpservice.core.utils import get_feature_flag
 from tdpservice.users.oidc import STANDARD_SESSION_SCOPE
 
 logger = logging.getLogger(__name__)
+
+KEYCLOAK_AUTH_FEATURE_FLAG = "keycloak_auth"
 
 
 def normalize_idp(idp: str | None) -> str | None:
@@ -22,14 +17,14 @@ def normalize_idp(idp: str | None) -> str | None:
     return idp
 
 
-def should_use_keycloak() -> bool:
-    """Return True if this request should use the Keycloak flow based on canary percentage."""
-    percentage = getattr(settings, "KEYCLOAK_AUTH_PERCENTAGE", 0)
-    if percentage <= 0:
-        return False
-    if percentage >= 100:
-        return True
-    return random.randint(1, 100) <= percentage
+def should_use_keycloak(random_value: float | None = None) -> bool:
+    """Return whether this request should use the Keycloak flow."""
+    enabled, _ = get_feature_flag(
+        KEYCLOAK_AUTH_FEATURE_FLAG,
+        random_value=random_value,
+    )
+
+    return enabled
 
 
 def set_auth_flow(request, flow: str, idp: str) -> None:

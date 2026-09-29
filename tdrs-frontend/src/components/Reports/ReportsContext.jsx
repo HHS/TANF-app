@@ -15,7 +15,7 @@ import {
   setStt,
 } from '../../actions/reports'
 import { openFeedbackWidget } from '../../reducers/feedbackWidget'
-import { useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { accountCanSelectStt } from '../../selectors/auth'
 import { usePollingTimer } from '../../hooks/usePollingTimer'
 import { getCurrentFiscalYear, quarters } from './utils'
@@ -154,7 +154,9 @@ export const ReportsProvider = ({ isFra = false, children }) => {
   )
 
   // Search params
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchParams] = useSearchParams()
+  const { hash } = useLocation()
+  const navigate = useNavigate()
   const [hasValidatedParams, setHasValidatedParams] = useState(false)
 
   // Get validated params (without STT validation since it will never be loaded since we have to wait for fetchSTTs to
@@ -210,13 +212,15 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     if (sttInputValue) {
       newParams.set('stt', sttInputValue)
     }
-    setSearchParams(newParams)
+    // Query updates must retain the fragment restored after sign-in.
+    navigate({ search: `?${newParams}`, hash })
   }, [
     yearInputValue,
     quarterInputValue,
     fileTypeInputValue,
     sttInputValue,
-    setSearchParams,
+    navigate,
+    hash,
   ])
 
   // Touched state for validation

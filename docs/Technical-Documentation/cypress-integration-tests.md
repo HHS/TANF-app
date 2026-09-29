@@ -40,7 +40,7 @@ All tests added into the `tdrs-frontend/cypress/e2e/` folder will be run against
 
 It is highly recommended that you check out the [Cypress Test Runner](https://docs.cypress.io/guides/core-concepts/cypress-app#The-Test-Runner) feature overview. Here are the main highlights
 
-* Command log - Cypress will show you each `cy` command that executes in the command log, alongside the rendered page. 
+* Command log - Cypress will show you each `cy` command that executes in the command log, alongside the rendered page.
    * You can hover over past commands to "time travel" and replay individual steps, and clicking on a command in the log will "pin" the point in time in the runner, and log output information about that command in the console.
    * The command log also shows network requests and other dispatched events.
 * Dev tools - you can open up chrome's devtools (right click and click "Inspect") and see all the normal DOM information about the page, including for pinned commands which is useful when debugging. The console will also show output from the page as well as the tests.
@@ -72,7 +72,7 @@ Each line within a `Scenario` is a "step", which should describe the user intera
 * `When` steps define user actions needed to perform the task.
 * `Then` steps describe validation or confirmationt that the user receives, indicating success of the task.
 
-In general, all `Given`, `When`, and `Then` steps should reflect things the _user_ of the system knows about the system. This is intended to hide both technical and administrator implemenation details and focus on the end-user experience.
+In general, all `Given`, `When`, and `Then` steps should reflect things the _user_ of the system knows about the system. This is intended to hide both technical and administrator implementation details and focus on the end-user experience.
 
 Each step defined in a `Scenario` must have a corresponding "step implementation" (loaded from a `.js` file). Here is an example step implementation file
 

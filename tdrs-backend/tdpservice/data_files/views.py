@@ -23,16 +23,12 @@ from rest_framework.viewsets import ModelViewSet
 from tdpservice.core.utils import get_feature_flag
 from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.error_reports import ErrorReportFactory
-from tdpservice.data_files.models import (
-    DataFile,
-    ReparseFileMeta,
-    create_or_update_shadow_data_file,
-)
+from tdpservice.data_files.models import DataFile, ReparseFileMeta
 from tdpservice.data_files.s3_client import S3Client
 from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.submission_lifecycle import (
     complete_datafile_av_scan,
-    transition_datafile,
+    start_datafile_av_scan,
 )
 from tdpservice.log_handler import S3FileHandler
 from tdpservice.parsers.models import ParserError
@@ -98,10 +94,7 @@ class DataFileViewSet(ModelViewSet):
         )
         .annotate(
             has_error=Exists(
-                ParserError.objects.filter(
-                    file=OuterRef("pk"),
-                    deprecated=False
-                )
+                ParserError.objects.filter(file=OuterRef("pk"), deprecated=False)
             )
         )
     )
@@ -192,9 +185,7 @@ class DataFileViewSet(ModelViewSet):
 
         return (
             Response(
-                {
-                    "detail": "Rejected: uploaded file did not pass security inspection"
-                },
+                {"detail": "Rejected: uploaded file did not pass security inspection"},
                 status=HTTP_400_BAD_REQUEST,
             ),
             "infected",
@@ -215,13 +206,8 @@ class DataFileViewSet(ModelViewSet):
         data_file = serializer.save(file=None)
         event_id = uuid.uuid4()
 
-        transition_datafile(
-            data_file,
-            SubmissionState.VIRUS_SCAN_STARTED,
-            note="virus scan started",
-            actor=request.user,
-            source="api",
-            event_id=event_id,
+        start_datafile_av_scan(
+            data_file, actor=request.user, source="api", event_id=event_id
         )
 
         scan_failure_response, scan_result = self._scan_uploaded_file(
@@ -238,7 +224,6 @@ class DataFileViewSet(ModelViewSet):
                 source="api",
                 event_id=event_id,
             )
-            data_file.delete()
             return scan_failure_response
 
         complete_datafile_av_scan(
@@ -252,9 +237,6 @@ class DataFileViewSet(ModelViewSet):
 
         data_file.file = uploaded_file
         data_file.save()
-        if settings.GO_PARSER_SHADOW_MODE:
-            create_or_update_shadow_data_file(data_file)
-
         logger.info(
             f"Preparing parse task: User META -> user: {request.user}, stt: {data_file.stt}. "
             + f"Datafile META -> datafile: {data_file.id}, program type: {data_file.program_type}, "
@@ -274,7 +256,10 @@ class DataFileViewSet(ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         """Override to handle the list request with url param validation."""
-        queryset = self.get_queryset()
+        # A failed security inspection returns HTTP 400 and never persists the
+        # uploaded bytes. Keep that audit row available to administrators, but
+        # do not present it to submitters as a perpetually Pending submission.
+        queryset = self.get_queryset().exclude(state=SubmissionState.VIRUS_SCAN_FAILED)
 
         file_type = self.request.query_params.get("file_type", None)
 

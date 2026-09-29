@@ -271,7 +271,7 @@ def test_data_files_filename_prefers_section_key_with_legacy_fallback(
     ],
 )
 def test_prog_type(base_data_file_data, data_analyst, stt, section, program_type):
-    """Test propert prog_type."""
+    """Test proper prog_type."""
     df = DataFile.create_new_version(
         {
             "year": base_data_file_data["year"],

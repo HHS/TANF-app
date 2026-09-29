@@ -1,7 +1,7 @@
 # Codex configuration for the TANF-app repository.
 # Reference: https://developers.openai.com/codex/config-advanced
 
-model                  = "gpt-5.6"
+model                  = "gpt-5.6-sol"
 model_provider         = "openai"
 
 approval_policy = "on-request"

@@ -1,0 +1,105 @@
+{
+  "folders": [
+    {
+      "name": "System Documentation",
+      "path": "docs"
+    },
+    {
+      "name": "API Documentation (MkDocs)",
+      "path": "tdrs-backend/docs"
+    },
+    {
+      "name": "Product Updates",
+      "path": "product-updates"
+    },
+    {
+      "name": "Project Docs & Guidelines",
+      "path": "."
+    }
+  ],
+  "settings": {
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 1000,
+    "editor.wordWrap": "on",
+    "editor.tabSize": 2,
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "markdownlint.config": {
+      "default": true,
+      "MD013": false
+    },
+    "cSpell.words": [
+      "tdrs",
+      "tdpservice",
+      "mkdocs",
+      "localdev",
+      "cloudgov",
+      "localstack",
+      "uswds",
+      "clamav",
+      "Keycloak",
+      "Pipfile"
+    ],
+    "files.exclude": {
+      "**/.git": true,
+      "**/.DS_Store": true,
+      "**/node_modules": true,
+      "**/__pycache__": true,
+      "tdrs-frontend": true,
+      "tdp-admin": true,
+      "tdrs-services": true,
+      "terraform": true,
+      "performance-tests": true,
+      ".circleci": true,
+      ".githooks": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "bierner.markdown-mermaid",
+      "DavidAnson.vscode-markdownlint",
+      "eamodio.gitlens",
+      "editorconfig.editorconfig",
+      "google.google-antigravity",
+      "mathematic.vscode-pdf",
+      "redhat.vscode-yaml",
+      "streetsidesoftware.code-spell-checker",
+      "task.vscode-task",
+      "yzhang.markdown-all-in-one"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Docs: Serve MkDocs (Backend API Docs)",
+        "type": "shell",
+        "command": "docker compose -f tdrs-backend/docker-compose.yml exec web mkdocs serve -a 0.0.0.0:8001",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Docs: Start Backend for MkDocs",
+        "type": "shell",
+        "command": "task backend-up",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Docs: Configure Git Hooks",
+        "type": "shell",
+        "command": "task gitcfg",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Docs: Show Taskfile Help",
+        "type": "shell",
+        "command": "task help",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      }
+    ]
+  }
+}
+

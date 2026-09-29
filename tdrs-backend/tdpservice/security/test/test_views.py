@@ -1,6 +1,7 @@
 """Tests for the views in the security app."""
 
 import logging
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 from django.contrib.auth.models import Group
@@ -14,7 +15,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 
-from tdpservice.security.models import SecurityEventType
+from tdpservice.security.models import SecurityEventToken, SecurityEventType
 from tdpservice.security.views import token_is_valid
 from tdpservice.users.models import AccountApprovalStatusChoices, User
 
@@ -198,6 +199,73 @@ class TestSecurityEventTokenView:
             {"subject": {"sub": mock_sub_claim}},
             mock_decoded_jwt,
         )
+
+    @pytest.mark.django_db
+    @pytest.mark.parametrize(
+        "event_type", [SecurityEventType.EMAIL_CHANGED, SecurityEventType.EMAIL_RECYCLED]
+    )
+    def test_unmatched_email_deliveries_are_acknowledged_without_payload_retention(
+        self,
+        client: Client,
+        settings: Any,
+        caplog: pytest.LogCaptureFixture,
+        rsa_key_pair: rsa.RSAPrivateKey,
+        event_type: str,
+    ) -> None:
+        """Valid email SETs and retries receive success with one metadata-only receipt."""
+        settings.DEBUG = False
+        event_data = {
+            "subject": {"email": "unknown@example.com", "subject_type": "email"},
+            "new-value": "another_unknown@example.com",
+        }
+        payload = {
+            "events": {event_type: event_data},
+            "iss": "https://login.gov",
+            "aud": settings.LOGIN_GOV_SET_AUDIENCE,
+            "iat": 1620000000,
+            "jti": "unmatched-email-jti",
+        }
+        signed_token = jwt.encode(
+            payload, rsa_key_pair, algorithm="RS256", headers={"kid": "test_kid"}
+        )
+        public_jwk = jwt.algorithms.RSAAlgorithm.to_jwk(
+            rsa_key_pair.public_key(), as_dict=True
+        )
+        public_jwk["kid"] = "test_kid"
+        with patch("tdpservice.security.views.requests.get") as mock_requests_get:
+            mock_requests_get.side_effect = [
+                MagicMock(json=lambda: {"jwks_uri": "https://login.gov/jwks"}),
+                MagicMock(json=lambda: {"keys": [public_jwk]}),
+            ] * 2
+            with caplog.at_level(logging.INFO):
+                first_response = client.post(
+                    reverse("event-token"),
+                    data=signed_token,
+                    content_type="application/secevent+jwt",
+                )
+                original_receipt = SecurityEventToken.objects.values().get()
+                retry_response = client.post(
+                    reverse("event-token"),
+                    data=signed_token,
+                    content_type="application/secevent+jwt",
+                )
+
+        assert first_response.status_code == status.HTTP_200_OK
+        assert retry_response.status_code == status.HTTP_200_OK
+        assert SecurityEventToken.objects.count() == 1
+        assert SecurityEventToken.objects.values().get() == original_receipt
+        receipt = SecurityEventToken.objects.get()
+        assert receipt.jwt_id == payload["jti"]
+        assert receipt.user is None
+        assert receipt.email is None
+        assert receipt.event_type == event_type
+        assert receipt.event_data == {"outcome": "unmatched_subject"}
+        assert receipt.processed is True
+        assert receipt.processed_at is not None
+        assert "unknown@example.com" not in caplog.text
+        assert "another_unknown@example.com" not in caplog.text
+        assert signed_token not in caplog.text
+        assert all(record.levelno < logging.WARNING for record in caplog.records)
 
     @pytest.mark.django_db
     def test_invalid_content_type(self, client):

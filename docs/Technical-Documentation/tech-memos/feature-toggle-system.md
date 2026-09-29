@@ -55,13 +55,23 @@ The `FeatureFlag` model is the core of the system.
 
 ```python
 class FeatureFlag(models.Model):
+    class Type(models.TextChoices):
+        ON_OFF = "on_off", "On/off"
+        RANDOM_ROLLOUT = "random_rollout", "Random rollout"
+
     class Meta:
         ordering = ['feature_name']
         verbose_name = 'Feature Flag'
         verbose_name_plural = 'Feature Flags'
 
     feature_name = models.CharField(max_length=100, unique=True, db_index=True)
+    type = models.CharField(
+        max_length=50,
+        choices=Type.choices,
+        default=Type.ON_OFF,
+    )
     enabled = models.BooleanField(default=False)
+    rollout_percentage = models.PositiveSmallIntegerField(null=True, blank=True)
     config = models.JSONField(null=False, blank=False, default=dict)
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -70,7 +80,11 @@ class FeatureFlag(models.Model):
 
 **Design rationale**:
 - `feature_name`: Unique identifier, indexed for fast lookups
-- `enabled`: Boolean toggle, defaults to `False` for safety
+- `type`: Evaluation strategy. Initially supports `on_off` and `random_rollout`,
+  with choices providing an extension point for future strategies
+- `enabled`: Master switch that defaults to `False` for safety
+- `rollout_percentage`: Required for percentage rollouts and constrained to 0-100;
+  left empty for on/off flags. Rollout selection is random per request and is not sticky.
 - `config`: Flexible JSON configuration for feature-specific settings, cannot be null to avoid NoneType errors
 - `description`: Human-readable documentation for admins
 - Timestamps: Audit trail for when features were created/modified
@@ -145,8 +159,9 @@ flags in Redis will help us keep the latency low. Django's cache framework provi
 which makes implementing a cache service to handle multiple cache instances quite easy.
 
 **Caching strategy**:
-- Individual flags cached for `DEFAULT_CACHE_TIMEOUT` seconds
-- Bulk "all flags" query cached for `DEFAULT_CACHE_TIMEOUT` seconds
+- Individual flag configuration cached for `DEFAULT_CACHE_TIMEOUT` seconds
+- Bulk "all flags" configuration cached for `DEFAULT_CACHE_TIMEOUT` seconds
+- Rollout decisions evaluated after cache retrieval so every request gets a fresh sample
 - Cache automatically updated on feature flag save/delete via Django signals
 
 **Performance impact**:

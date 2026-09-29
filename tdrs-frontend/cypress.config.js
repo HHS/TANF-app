@@ -24,6 +24,7 @@ module.exports = defineConfig({
       apiUrl: process.env.CYPRESS_API_URL || 'http://localhost:8989/v1',
       adminUrl: process.env.CYPRESS_ADMIN_URL || 'http://localhost:8989/admin',
       cypressToken: process.env.CYPRESS_TOKEN || 'local-cypress-token',
+      stuckTimeoutTest: process.env.CYPRESS_STUCK_TIMEOUT_TEST === 'true',
     },
 
     viewportHeight: 1000,

@@ -36,16 +36,16 @@ For creating a DB backup, please see: `/tdpservice/scheduling/BACKUP_README.md`
 
 #### Drop and Recreate
 
-e.g: 
+e.g:
 >`cf connect-to-service tdp-backend-qasp tdp-db-dev`
 
 After connection to the DB is made (the step above will make a psql connection), then the following Postgres commands have to run:
 
 1. List the DBs: `\l`
-2. Potgres does not _DROP_ a database when you are connected to the same DB. As such, you will have to connect to a different DB using command:  
+2. PostgreSQL does not _DROP_ a database when you are connected to the same DB. As such, you will have to connect to a different DB using command:
 >`\c {a_database}`
-   
-   A good candiadate is:
+
+   A good candidate is:
 >`\c postgres`
 3. find the associated DB name with instance. E.g: `tdp_db_dev_qasp`
 4. use the following command to delete the DB:

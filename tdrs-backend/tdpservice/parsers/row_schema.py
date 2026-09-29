@@ -48,7 +48,7 @@ class RowSchema(ABC):
 
     @abstractmethod
     def parse_and_validate(self, row: RawRow) -> SchemaResult:
-        """To be overriden in child class."""
+        """To be overridden in child class."""
         pass
 
     def parse_row(self, row: RawRow):

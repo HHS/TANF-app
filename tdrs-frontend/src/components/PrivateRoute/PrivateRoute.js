@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { setAlert, clearAlert } from '../../actions/alert'
 import { ALERT_INFO } from '../Alert'
@@ -25,12 +25,16 @@ function PrivateRoute({
   const authLoading = useSelector((state) => state.auth.loading)
 
   const navigate = useNavigate()
+  const location = useLocation()
   const dispatch = useDispatch()
 
   useEffect(() => {
     if (!authenticated && !authLoading) {
+      const next = new URLSearchParams({
+        next: `${location.pathname}${location.search}${location.hash}`,
+      })
       dispatch(setAlert({ heading: 'Please sign in first', type: ALERT_INFO }))
-      navigate('/')
+      navigate(`/?${next}`, { replace: true })
     }
 
     if (authLoading) {
@@ -40,7 +44,7 @@ function PrivateRoute({
     if (authenticated) {
       dispatch(clearAlert())
     }
-  }, [authenticated, authLoading, dispatch, navigate])
+  }, [authenticated, authLoading, dispatch, navigate, location])
 
   if (authenticated) {
     return (

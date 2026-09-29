@@ -1,11 +1,16 @@
 import React from 'react'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { thunk } from 'redux-thunk'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, useLocation } from 'react-router-dom'
 
 import Routes from './Routes'
+
+const CurrentLocation = () => {
+  const { pathname, search, hash } = useLocation()
+  return <output data-testid="location">{`${pathname}${search}${hash}`}</output>
+}
 
 let mockHomeEditMode = false
 let mockProfileEditMode = false
@@ -80,6 +85,172 @@ describe('Routes.js', () => {
   beforeEach(() => {
     mockHomeEditMode = false
     mockProfileEditMode = false
+  })
+
+  describe('login destinations', () => {
+    const destination =
+      '/data-files/2026/1/tanf/1/history?type=tanf&filter=a%2Bb#results'
+    const approvedUser = {
+      email: 'grantee@example.com',
+      account_approval_status: 'Approved',
+      roles: [],
+      permissions: [
+        { codename: 'view_datafile' },
+        { codename: 'add_datafile' },
+      ],
+    }
+
+    const renderEntry = (entry, auth = {}) => {
+      const state = makeState({ authUser: approvedUser })
+      const store = mockStore({ ...state, auth: { ...state.auth, ...auth } })
+      return render(
+        <React.StrictMode>
+          <Provider store={store}>
+            <MemoryRouter initialEntries={[entry]}>
+              <Routes />
+              <CurrentLocation />
+            </MemoryRouter>
+          </Provider>
+        </React.StrictMode>
+      )
+    }
+
+    it.each(['/data-files?type=tanf', destination, '/profile#contact'])(
+      'opens %s directly for authenticated users',
+      (entry) => {
+        renderEntry(entry)
+        expect(screen.getByTestId('location')).toHaveTextContent(entry)
+      }
+    )
+
+    describe.each([
+      ['legacy', '/v1', '/login'],
+      ['Keycloak', '/v2', '/'],
+      ['canary legacy', '', '/login'],
+      ['canary Keycloak', '', '/'],
+    ])('%s authentication', (flow, authPath, callback) => {
+      it.each([
+        ['Login.gov', /Sign in with.*Login\.gov.*for grantees/i, 'dotgov'],
+        ['AMS', /Sign in with ACF AMS for ACF staff/i, 'ams'],
+      ])(
+        'restores the requested URL after %s sign-in',
+        (provider, button, idp) => {
+          const originalLocation = window.location
+          const originalAuthUrl = process.env.REACT_APP_AUTH_URL
+          const authUrl = `https://tdp.example.com${authPath}`
+          process.env.REACT_APP_AUTH_URL = authUrl
+          Object.defineProperty(window, 'location', {
+            configurable: true,
+            value: {
+              origin: originalLocation.origin,
+              href: originalLocation.href,
+            },
+          })
+
+          try {
+            const initialVisit = renderEntry(destination, {
+              authenticated: false,
+            })
+            expect(
+              screen.getByText('Sign into TANF Data Portal')
+            ).toBeInTheDocument()
+            expect(screen.queryByText('Reports')).not.toBeInTheDocument()
+            expect(screen.getByTestId('location').textContent).toBe(
+              `/?${new URLSearchParams({ next: destination })}`
+            )
+            initialVisit.unmount()
+
+            // A refresh before sign-in must not lose the destination.
+            const refreshedVisit = renderEntry(
+              `/?${new URLSearchParams({ next: destination })}`,
+              { authenticated: false }
+            )
+            fireEvent.click(screen.getByRole('button', { name: button }))
+            expect(window.location.href).toBe(
+              `${authUrl}/login/${idp}?${new URLSearchParams({ next: destination })}`
+            )
+            refreshedVisit.unmount()
+
+            // The IdP returns to a fresh app instance with an authenticated session.
+            const signedInVisit = renderEntry(destination)
+            expect(screen.getByText('Reports')).toBeInTheDocument()
+            expect(screen.getByTestId('location')).toHaveTextContent(
+              destination
+            )
+            signedInVisit.unmount()
+
+            renderEntry(callback)
+            expect(screen.getByTestId('location')).toHaveTextContent('/home')
+          } finally {
+            Object.defineProperty(window, 'location', {
+              value: originalLocation,
+            })
+            if (originalAuthUrl === undefined) {
+              delete process.env.REACT_APP_AUTH_URL
+            } else {
+              process.env.REACT_APP_AUTH_URL = originalAuthUrl
+            }
+          }
+        }
+      )
+    })
+
+    it('waits for authentication before leaving the requested page', () => {
+      renderEntry(destination, { authenticated: false, loading: true })
+      expect(screen.getByTestId('location')).toHaveTextContent(destination)
+    })
+
+    it.each(['/', '/login'])(
+      'waits for authentication on %s before restoring a destination',
+      (callback) => {
+        const callbackUrl = `${callback}?${new URLSearchParams({ next: destination })}`
+        const pendingVisit = renderEntry(callbackUrl, { loading: true })
+        expect(screen.getByTestId('location').textContent).toBe(callbackUrl)
+        expect(screen.queryByText('Reports')).not.toBeInTheDocument()
+        pendingVisit.unmount()
+
+        renderEntry(callbackUrl)
+        expect(screen.getByTestId('location')).toHaveTextContent(destination)
+      }
+    )
+
+    it('preserves the destination after a failed login so the user can retry', () => {
+      const callback = `/login?${new URLSearchParams({ next: destination })}`
+      const failedVisit = renderEntry(callback, { authenticated: false })
+      expect(screen.getByText('Sign into TANF Data Portal')).toBeInTheDocument()
+      failedVisit.unmount()
+
+      renderEntry(callback)
+      expect(screen.getByTestId('location')).toHaveTextContent(destination)
+    })
+
+    it.each([
+      { ...approvedUser, permissions: [] },
+      { ...approvedUser, account_approval_status: 'Pending' },
+    ])('enforces page access after sign-in for user %j', (user) => {
+      renderEntry(destination, { user })
+      expect(screen.getByTestId('location')).toHaveTextContent('/home')
+      expect(screen.queryByText('Reports')).not.toBeInTheDocument()
+    })
+
+    it('sends ACF OCIO users to the admin site regardless of the destination', () => {
+      const originalLocation = window.location
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        writable: true,
+        value: originalLocation,
+      })
+
+      try {
+        renderEntry('/login', { user: { roles: [{ name: 'ACF OCIO' }] } })
+        expect(window.location).toBe(
+          `${process.env.REACT_APP_BACKEND_HOST}/admin/`
+        )
+        expect(screen.queryByText('Reports')).not.toBeInTheDocument()
+      } finally {
+        Object.defineProperty(window, 'location', { value: originalLocation })
+      }
+    })
   })
 
   it('routes to a 404 page when there is no matching route', () => {

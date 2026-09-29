@@ -570,9 +570,6 @@ class Common(Configuration):
     # Keycloak Settings        #
     ############################
 
-    # Canary cutover: percentage of new login requests routed through Keycloak (0-100).
-    # 0 = 100% legacy (default), 100 = 100% Keycloak. Changeable via cf set-env.
-    KEYCLOAK_AUTH_PERCENTAGE = int(os.getenv("KEYCLOAK_AUTH_PERCENTAGE", "0"))
     KEYCLOAK_SYNC_ENABLED = bool(strtobool(os.getenv("KEYCLOAK_SYNC_ENABLED", "yes")))
     KEYCLOAK_SERVER_URL = os.getenv("KEYCLOAK_SERVER_URL", "http://keycloak:8080")
     KEYCLOAK_REALM = os.getenv("KEYCLOAK_REALM", "tdp")
@@ -712,6 +709,7 @@ class Common(Configuration):
     CELERY_RESULT_BACKEND = REDIS_URI + "/0"
     CELERY_TASK_DEFAULT_QUEUE = os.getenv("CELERY_TASK_DEFAULT_QUEUE", "celery")
     CELERY_GO_PARSER_QUEUE = os.getenv("CELERY_GO_PARSER_QUEUE", "go-parser")
+    CELERY_LIFECYCLE_QUEUE = os.getenv("CELERY_LIFECYCLE_QUEUE", "lifecycle")
     CELERY_ACCEPT_CONTENT = ["application/json"]
     CELERY_TASK_SERIALIZER = "json"
     CELERY_RESULT_SERIALIZER = "json"
@@ -720,10 +718,26 @@ class Common(Configuration):
     CELERY_ENABLE_UTC = True
     CELERY_TASK_PROTOCOL = 1
     CELERY_TASK_ROUTES = {
-        "tdpservice.scheduling.parser_task.go_parse": {"queue": CELERY_GO_PARSER_QUEUE}
+        "tdpservice.scheduling.parser_task.go_parse": {"queue": CELERY_GO_PARSER_QUEUE},
+        "tdpservice.data_files.tasks.mark_stale_files_stuck": {
+            "queue": CELERY_LIFECYCLE_QUEUE
+        },
     }
     GO_PARSER_QUEUE = os.getenv("GO_PARSER_QUEUE", "go-parser")
-    GO_PARSER_SHADOW_MODE = bool(strtobool(os.getenv("GO_PARSER_SHADOW_MODE", "true")))
+    # Production submissions get a full day before they are considered stale.
+    # The interval override lets local/CI browser tests exercise the real timeout
+    # task without waiting for the hourly production schedule.
+    STALE_PARSE_TIMEOUT_SECONDS = int(
+        os.getenv("STALE_PARSE_TIMEOUT_SECONDS", str(24 * 60 * 60))
+    )
+    _STALE_PARSE_CHECK_INTERVAL_SECONDS = os.getenv(
+        "STALE_PARSE_CHECK_INTERVAL_SECONDS"
+    )
+    STALE_PARSE_CHECK_SCHEDULE = (
+        int(_STALE_PARSE_CHECK_INTERVAL_SECONDS)
+        if _STALE_PARSE_CHECK_INTERVAL_SECONDS
+        else crontab(minute="30")
+    )
 
     CELERY_BEAT_SCHEDULE = {
         "Database Backup": {
@@ -768,6 +782,10 @@ class Common(Configuration):
                 day_of_month="*",
                 month_of_year="*",
             ),  # Every day at 1am UTC (9pm EST)
+        },
+        "Mark Stale Data Files Stuck": {
+            "task": "tdpservice.data_files.tasks.mark_stale_files_stuck",
+            "schedule": STALE_PARSE_CHECK_SCHEDULE,
         },
         "Schedule Statistical Weights ETL": {
             "task": "tdpservice.etl.tasks.schedule_statistical_weights",

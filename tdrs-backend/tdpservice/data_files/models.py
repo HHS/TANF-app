@@ -12,6 +12,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import File
 from django.db import models
 from django.db.models import Max
+from django.utils import timezone
 from django.utils.html import format_html
 
 from tdpservice.backends import DataFilesS3Storage
@@ -19,7 +20,7 @@ from tdpservice.common.fields import S3VersionedFileField
 from tdpservice.common.models import FileRecord
 from tdpservice.common.shadow_models import create_shadow_model
 from tdpservice.core.models import BaseLog
-from tdpservice.data_files.enums import SubmissionState
+from tdpservice.data_files.enums import GoParserMode, SubmissionState
 from tdpservice.data_files.util import (
     create_legacy_s3_log_file_path,
     create_s3_log_file_path,
@@ -196,7 +197,11 @@ class DataFile(FileRecord):
                     "is_program_audit",
                 ),
                 name="constraint_name",
-            )
+            ),
+            models.CheckConstraint(
+                condition=models.Q(state__in=SubmissionState.values),
+                name="datafile_valid_submission_state",
+            ),
         ]
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -228,6 +233,13 @@ class DataFile(FileRecord):
         choices=SubmissionState.choices,
         default=SubmissionState.UPLOADED,
     )
+    parser_mode = models.CharField(
+        max_length=16,
+        choices=GoParserMode.choices,
+        null=True,
+    )
+    state_changed_at = models.DateTimeField(default=timezone.now)
+    current_parse_token = models.UUIDField(null=True, blank=True, editable=False)
 
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="user", blank=False, null=False
@@ -456,8 +468,7 @@ class DataFileStateTransition(BaseLog):
     def __str__(self):
         """Return a string representation of the transition."""
         return (
-            f"DataFile {self.object_id}: "
-            f"{self.previous_state} -> {self.next_state}"
+            f"DataFile {self.object_id}: " f"{self.previous_state} -> {self.next_state}"
         )
 
 
@@ -483,7 +494,7 @@ ShadowDataFile = create_shadow_model(
             null=False,
         ),
     },
-    exclude_fields={"section_ref"},
+    exclude_fields={"current_parse_token", "parser_mode", "section_ref"},
 )
 
 
@@ -501,6 +512,7 @@ def create_or_update_shadow_data_file(data_file):
         "is_program_audit",
         "version",
         "state",
+        "state_changed_at",
         "user",
         "stt",
         "file",
@@ -528,8 +540,8 @@ class LegacyFileTransferManager(models.Manager):
     ) -> "LegacyFileTransfer":
         """Create a new LegacyFileTransfer instance with associated LogEntry."""
         try:
-            # Was their an expectation here? THis wasn't ever defined.
-            # Probbly pseudo code.
+            # Was there an expectation here? This wasn't ever defined.
+            # Probably pseudo code.
             file_shasum = get_file_shasum(file)
         except (AttributeError, TypeError, ValueError) as err:
             logger.error(f"Encountered error deriving file hash: {err}")

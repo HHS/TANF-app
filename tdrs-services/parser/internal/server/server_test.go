@@ -80,8 +80,8 @@ func TestRunPipeline_DecoderUnknownWritesPreCheckError(t *testing.T) {
 	if result.ErrorCount != 1 {
 		t.Fatalf("ErrorCount = %d, want 1", result.ErrorCount)
 	}
-	if sink.table != "parser_error" {
-		t.Fatalf("table = %q, want parser_error", sink.table)
+	if sink.table != "shadow_parser_error" {
+		t.Fatalf("table = %q, want shadow_parser_error", sink.table)
 	}
 	if len(sink.rows) != 1 {
 		t.Fatalf("rows = %d, want 1", len(sink.rows))

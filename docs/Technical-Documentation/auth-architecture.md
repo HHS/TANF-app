@@ -47,6 +47,12 @@ Same as above, except:
 
 Users with `@acf.hhs.gov` email addresses **must** authenticate via AMS, not Login.gov. This is enforced in `KeycloakOIDCBackend.verify_claims()` — if the email ends with `@acf.hhs.gov` and the `identity_provider` claim is `login-gov`, the authentication is rejected.
 
+### Returning to a Requested Page
+
+When a signed-out user opens a protected frontend page, `PrivateRoute` puts its path, query string, and fragment in a URL-encoded `next` query parameter and routes to the sign-in page. `SplashPage` validates the destination and forwards it to the selected backend login endpoint.
+
+The backend validates `next` again and stores it with the OIDC state in the Django session for the Login.gov or AMS round trip. Keycloak login destinations are associated with their individual OIDC states so concurrent sign-ins do not overwrite one another. After authentication succeeds, the callback redirects directly to the requested frontend URL. The frontend also handles authenticated arrivals at `/` or the legacy `/login` callback by reading a validated `next` parameter. The destination must be a local path and cannot point back to the sign-in page; missing or invalid destinations fall back to `/home`. Normal permission and account approval checks still apply, and the ACF OCIO redirect to the admin site takes precedence.
+
 ## System Architecture
 
 ### Environment Topology

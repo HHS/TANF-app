@@ -30,8 +30,8 @@ logger = logging.getLogger(__name__)
 class TanfDataReportParser(BaseParser):
     """Parser for TANF, SSP, and Tribal datafiles."""
 
-    def __init__(self, datafile, dfs, section):
-        super().__init__(datafile, dfs, section)
+    def __init__(self, datafile, dfs, section, parse_token=None):
+        super().__init__(datafile, dfs, section, parse_token=parse_token)
         self.case_consistency_validator = None
         self.multiple_trailer_errors = False
         self.header_count = 0
@@ -216,7 +216,7 @@ class TanfDataReportParser(BaseParser):
         )
 
         self.bulk_create_errors(flush=True)
-        self.dfs.save()
+        self.save_summary()
 
         return
 
