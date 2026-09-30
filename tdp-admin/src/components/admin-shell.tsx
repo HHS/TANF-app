@@ -122,7 +122,12 @@ export default function AdminShell({
         <AdminGovBanner />
         <AdminHeader session={session} />
         <div className="grid-container-widescreen admin-app__body">
-          <AdminNavigation roles={session.user?.roles} />
+          <AdminNavigation
+            roles={session.user?.roles}
+            hasDjangoAdminAccess={Boolean(
+              session.user?.is_staff && session.user?.is_superuser
+            )}
+          />
           <main className="admin-app__content" id="main-content">
             {children}
           </main>

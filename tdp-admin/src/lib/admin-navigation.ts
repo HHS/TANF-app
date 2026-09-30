@@ -235,15 +235,23 @@ function hasAllowedRole(
 
 export function getVisibleAdminNavItems(
   roleValues?: readonly AdminRoleValue[] | null,
-  items: readonly AdminNavItem[] = ADMIN_PRIMARY_NAV_ITEMS
+  items: readonly AdminNavItem[] = ADMIN_PRIMARY_NAV_ITEMS,
+  hasDjangoAdminAccess = false
 ): AdminNavItem[] {
   const roleNames = getAdminRoleNames(roleValues);
 
   return items
-    .filter((item) => hasAllowedRole(roleNames, item.allowedRoles))
+    .filter(
+      (item) =>
+        hasDjangoAdminAccess || hasAllowedRole(roleNames, item.allowedRoles)
+    )
     .map((item) => {
       const visibleChildren = item.children
-        ? getVisibleAdminNavItems(roleNames, item.children)
+        ? getVisibleAdminNavItems(
+            roleNames,
+            item.children,
+            hasDjangoAdminAccess
+          )
         : undefined;
 
       return {
@@ -284,11 +292,13 @@ export function getDefaultExpandedAdminNavIds(
 }
 
 export function getAdminNavigationTitle(
-  roles?: readonly AdminRoleValue[] | null
+  roles?: readonly AdminRoleValue[] | null,
+  hasDjangoAdminAccess = false
 ) {
   const roleNames = getAdminRoleNames(roles);
 
   if (
+    hasDjangoAdminAccess ||
     roleNames.includes(OFA_SYSTEM_ADMIN_ROLE) ||
     roleNames.includes(DEVELOPER_ROLE)
   ) {

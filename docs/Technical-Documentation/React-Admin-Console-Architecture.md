@@ -325,7 +325,7 @@ The admin console should use Keycloak SSO through a dedicated admin client rathe
 
 Target model:
 
-- `tdp-admin` is served from a separate hostname, such as `tdp-admin-raft.app.cloud.gov` in development and `admin.tanfdata.acf.hhs.gov` in production.
+- `tdp-admin` is served from a separate hostname, such as `admin-test.tanfdata.acf.hhs.gov` (or the temporary `tdp-admin-test.app.cloud.gov` fallback) in development and `admin.tanfdata.acf.hhs.gov` in production.
 - Keycloak registers `tdp-admin` as a separate client with admin-specific redirect URIs and web origins.
 - Keycloak preserves seamless SSO for users who already have an active SSO session, but the admin browser session is scoped to the admin hostname.
 - Django remains the application session authority for backend API enforcement after the Keycloak login callback completes.

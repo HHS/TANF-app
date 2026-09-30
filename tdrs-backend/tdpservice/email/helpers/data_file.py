@@ -304,11 +304,11 @@ def send_data_submitted_email(datafile_summary, recipients, is_reprocessed=False
 
 
 def send_stuck_file_email(stuck_files, recipients):
-    """Send an email to sys admins with details of files stuck in Pending."""
+    """Send an email to sys admins with details of stuck files."""
     logger_context = {"user_id": User.objects.get_or_create(username="system")[0].pk}
 
     template_path = AdminEmail.STUCK_FILE_LIST.value
-    subject = "List of submitted files with pending status after 1 hour"
+    subject = "List of submitted files in stuck state"
     text_message = "The system has detected stuck files."
 
     context = {

@@ -18,9 +18,13 @@ describe('STTFeedbackReportsTable', () => {
     jest.restoreAllMocks()
   })
 
-  const renderComponent = (data = []) => {
+  const renderComponent = (data = [], showDownloadedAt = false) => {
     return render(
-      <STTFeedbackReportsTable data={data} setAlert={mockSetAlert} />
+      <STTFeedbackReportsTable
+        data={data}
+        setAlert={mockSetAlert}
+        showDownloadedAt={showDownloadedAt}
+      />
     )
   }
 
@@ -62,6 +66,40 @@ describe('STTFeedbackReportsTable', () => {
         screen.getByText('Reflects data submitted through')
       ).toBeInTheDocument()
       expect(screen.getByText('Files')).toBeInTheDocument()
+      expect(screen.queryByText('Downloaded At')).not.toBeInTheDocument()
+    })
+
+    it('shows pending download status for Regional Staff', () => {
+      const mockData = [
+        {
+          id: 1,
+          date_extracted_on: '2025-02-28',
+          created_at: '2025-03-05T10:41:00Z',
+          original_filename: 'test.zip',
+          downloaded_at: null,
+        },
+      ]
+
+      renderComponent(mockData, true)
+
+      expect(screen.getByText('Downloaded At')).toBeInTheDocument()
+      expect(screen.getByText('Not yet downloaded')).toBeInTheDocument()
+    })
+
+    it('shows the first download timestamp for Regional Staff', () => {
+      const mockData = [
+        {
+          id: 1,
+          date_extracted_on: '2025-02-28',
+          created_at: '2025-03-05T10:41:00Z',
+          original_filename: 'test.zip',
+          downloaded_at: '2026-08-10T14:10:00Z',
+        },
+      ]
+
+      renderComponent(mockData, true)
+
+      expect(screen.getByText(/08\/10\/2026/)).toBeInTheDocument()
     })
 
     it('renders report data correctly with formatted date_extracted_on', () => {
@@ -213,7 +251,6 @@ describe('STTFeedbackReportsTable', () => {
         status: 200,
         error: null,
       })
-
       const mockData = [
         {
           id: 1,

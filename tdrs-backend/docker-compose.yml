@@ -54,6 +54,8 @@ services:
       context: ./keycloak
     environment:
       - DEPLOY_ENV=local
+      - KEYCLOAK_REALM=tdp
+      - KEYCLOAK_TDP_ADMIN_REALM=tdp-admin
       - KC_DB=postgres
       - KC_DB_URL=jdbc:postgresql://keycloak-pg:5432/keycloak
       - KC_DB_USERNAME=keycloak
@@ -283,6 +285,8 @@ services:
       - REDIS_SERVER_LOCAL=TRUE
       - GO_PARSER_QUEUE=${GO_PARSER_QUEUE:-go-parser}
       - GO_PARSER_SHADOW_MODE=${GO_PARSER_SHADOW_MODE:-true}
+      - STALE_PARSE_TIMEOUT_SECONDS
+      - STALE_PARSE_CHECK_INTERVAL_SECONDS
       - CYPRESS_TOKEN
       - DJANGO_DEBUG
       - SENDGRID_API_KEY
@@ -308,6 +312,7 @@ services:
       - KEYCLOAK_ADMIN_CLIENT_SECRET=tdp-django-local-secret
       - KEYCLOAK_DJANGO_CLIENT_ID=tdp-django
       - KEYCLOAK_DJANGO_CLIENT_SECRET=tdp-django-local-secret
+      - KEYCLOAK_TDP_ADMIN_REALM=tdp-admin
       - KEYCLOAK_TDP_ADMIN_CLIENT_ID=tdp-admin
       - KEYCLOAK_TDP_ADMIN_CLIENT_SECRET=tdp-admin-local-secret
       - KEYCLOAK_AUTH_PERCENTAGE
@@ -404,9 +409,12 @@ services:
       - REDIS_URI=redis://redis-server:6379
       - CELERY_WORKER_QUEUES=celery
       - CELERY_GO_PARSER_QUEUE=go-parser
+      - CELERY_LIFECYCLE_QUEUE=lifecycle
       - REDIS_SERVER_LOCAL=TRUE
       - GO_PARSER_QUEUE=go-parser
       - GO_PARSER_SHADOW_MODE=${GO_PARSER_SHADOW_MODE:-true}
+      - STALE_PARSE_TIMEOUT_SECONDS
+      - STALE_PARSE_CHECK_INTERVAL_SECONDS
       - CYPRESS_TOKEN
       - DJANGO_DEBUG
       - SENDGRID_API_KEY
@@ -425,6 +433,7 @@ services:
       - KEYCLOAK_ADMIN_CLIENT_SECRET=tdp-django-local-secret
       - KEYCLOAK_DJANGO_CLIENT_ID=tdp-django
       - KEYCLOAK_DJANGO_CLIENT_SECRET=tdp-django-local-secret
+      - KEYCLOAK_TDP_ADMIN_REALM=tdp-admin
       - KEYCLOAK_TDP_ADMIN_CLIENT_ID=tdp-admin
       - KEYCLOAK_TDP_ADMIN_CLIENT_SECRET=tdp-admin-local-secret
     volumes:

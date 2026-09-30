@@ -1,7 +1,13 @@
 """Module for testing the core model."""
 import pytest
+from django.db import models
 
-from tdpservice.core.models import FeatureFlag, GlobalPermission
+from tdpservice.core.models import BaseLog, FeatureFlag, GlobalPermission
+
+
+def test_base_log_primary_key_matches_initial_migration():
+    """Keep the model state aligned with the BigAutoField created by migration 0007."""
+    assert isinstance(BaseLog._meta.get_field("id"), models.BigAutoField)
 
 
 @pytest.mark.django_db
@@ -12,6 +18,23 @@ def test_manager_get_queryset():
     )
     global_permissions = GlobalPermission.objects.first()
     assert global_permissions.name == "Can View User Data"
+
+
+@pytest.mark.django_db
+def test_base_log_manager_attaches_logs_to_any_model_instance():
+    """Test BaseLog stores and queries generic model relations."""
+    flag = FeatureFlag.objects.create(feature_name="logged_feature")
+
+    log = BaseLog.objects.create_for_object(
+        flag,
+        event_type="feature_flag_test",
+        note="Feature flag changed during test",
+    )
+
+    assert BaseLog.objects.for_object(flag).get() == log
+    assert log.content_object == flag
+    assert log.object_id == str(flag.pk)
+    assert log.event_id is not None
 
 
 @pytest.mark.django_db

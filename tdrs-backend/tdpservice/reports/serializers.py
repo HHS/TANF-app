@@ -5,6 +5,30 @@ from tdpservice.reports.models import ReportFile, ReportSource, ReportType
 from tdpservice.stts.models import STT
 
 
+class ReportDownloadStatisticsSTTSerializer(serializers.Serializer):
+    """Serialize one STT's feedback report download status."""
+
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    downloaded_at = serializers.DateTimeField(allow_null=True)
+
+
+class ReportDownloadStatisticsRegionSerializer(serializers.Serializer):
+    """Serialize feedback report download statuses grouped by region."""
+
+    id = serializers.IntegerField(allow_null=True)
+    stts = ReportDownloadStatisticsSTTSerializer(many=True)
+
+
+class ReportSourceDownloadStatisticsSerializer(serializers.Serializer):
+    """Serialize download statistics for one report source."""
+
+    report_source_id = serializers.IntegerField()
+    downloaded_count = serializers.IntegerField()
+    total_count = serializers.IntegerField()
+    regions = ReportDownloadStatisticsRegionSerializer(many=True)
+
+
 class ReportFileSerializer(serializers.ModelSerializer):
     """Serializer for Report Files."""
 
@@ -27,6 +51,7 @@ class ReportFileSerializer(serializers.ModelSerializer):
             "original_filename",
             "extension",
             "created_at",
+            "downloaded_at",
             "file",
         ]
 
@@ -38,6 +63,7 @@ class ReportFileSerializer(serializers.ModelSerializer):
             "slug",
             "extension",
             "created_at",
+            "downloaded_at",
         ]
 
     def create(self, validated_data):
@@ -68,6 +94,9 @@ class ReportFileSerializer(serializers.ModelSerializer):
 class ReportSourceSerializer(serializers.ModelSerializer):
     """Serializer for Report Source."""
 
+    downloaded_count = serializers.SerializerMethodField()
+    total_count = serializers.SerializerMethodField()
+
     class Meta:
         """Metadata."""
 
@@ -85,6 +114,8 @@ class ReportSourceSerializer(serializers.ModelSerializer):
             "year",
             "report_type",
             "file",
+            "downloaded_count",
+            "total_count",
         ]
         read_only_fields = [
             "id",
@@ -96,6 +127,14 @@ class ReportSourceSerializer(serializers.ModelSerializer):
             "num_reports_created",
             "error_message",
         ]
+
+    def get_downloaded_count(self, obj):
+        """Return the annotated distinct count without issuing another query."""
+        return getattr(obj, "downloaded_count", 0)
+
+    def get_total_count(self, obj):
+        """Return the annotated distinct count without issuing another query."""
+        return getattr(obj, "total_count", 0)
 
     def create(self, validated_data):
         """Create a ReportSource record for a report source zip file upload."""

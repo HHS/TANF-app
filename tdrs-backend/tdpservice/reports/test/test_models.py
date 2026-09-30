@@ -37,6 +37,12 @@ def test_create_new_version_increments(report_file_instance):
 
 
 @pytest.mark.django_db
+def test_downloaded_at_defaults_to_none(report_file_instance):
+    """New report files have not been downloaded."""
+    assert report_file_instance.downloaded_at is None
+
+
+@pytest.mark.django_db
 def test_find_latest_version_number(report_file_instance):
     """find_latest_version_number returns the max version for a group."""
     base = report_file_instance

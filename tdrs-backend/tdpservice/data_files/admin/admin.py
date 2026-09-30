@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 
 from django.conf import settings
 from django.contrib import admin, messages
+from django.contrib.contenttypes.admin import GenericTabularInline
 from django.db import transaction
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -17,6 +18,7 @@ from tdpservice.core.utils import ReadOnlyAdminMixin
 from tdpservice.data_files.admin.filters import LatestReparseEvent, VersionFilter
 from tdpservice.data_files.models import (
     DataFile,
+    DataFileStateTransition,
     LegacyFileTransfer,
     Program,
     Section,
@@ -49,6 +51,48 @@ class DataFileInline(admin.TabularInline):
 
     def has_change_permission(self, request, obj=None):
         """Read only permissions."""
+        return False
+
+
+class DataFileStateTransitionInline(GenericTabularInline):
+    """Read-only inline for DataFile state transition history."""
+
+    model = DataFileStateTransition
+    ct_field = "content_type"
+    ct_fk_field = "object_id"
+    fields = [
+        "created_at",
+        "event_id",
+        "previous_state",
+        "next_state",
+        "note",
+        "source",
+        "task_name",
+        "celery_task_id",
+        "reparse_meta_id",
+        "actor",
+        "metadata",
+    ]
+    readonly_fields = fields
+    extra = 0
+    can_delete = False
+    ordering = ["-created_at", "-id"]
+    show_change_link = False
+
+    def has_view_permission(self, request, obj=None):
+        """Allow viewing audit records from the parent DataFile admin page."""
+        return True
+
+    def has_add_permission(self, request, obj=None):
+        """Prevent creating audit records from admin."""
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        """Prevent editing audit records from admin."""
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """Prevent deleting audit records from admin."""
         return False
 
 
@@ -140,6 +184,8 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
             {
                 "fields": (
                     "created_at",
+                    "state",
+                    "state_changed_at",
                     "parsing_state",
                     "quarter",
                     "year",
@@ -170,7 +216,13 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
             },
         ),
     )
-    readonly_fields = ("year", "parsing_state", "versioned_file_download_link")
+    readonly_fields = (
+        "year",
+        "state",
+        "state_changed_at",
+        "parsing_state",
+        "versioned_file_download_link",
+    )
 
     def get_fieldsets(self, request, obj):
         """Return the fieldsets."""
@@ -211,7 +263,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         else:
             return qs
 
-    def _prepare_and_enqueue_reparse(self, queryset):
+    def _prepare_and_enqueue_reparse(self, queryset, actor=None):
         """Transition selected files, commit, then enqueue the reparse task.
 
         Returns ``(file_ids, original_states, reparse_requested_count, skipped,
@@ -240,7 +292,11 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
                 for data_file in queryset.iterator(chunk_size=500):
                     pre_transition_state = data_file.state
                     try:
-                        _, reparse_requested = prepare_datafile_for_reparse(data_file)
+                        _, reparse_requested = prepare_datafile_for_reparse(
+                            data_file,
+                            actor=actor,
+                            source="django_admin",
+                        )
                     except ReparsePreparationError as exc:
                         skipped.append(f"{data_file.id}: {exc}")
                         continue
@@ -271,13 +327,17 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
                     "reverting state.",
                     file_ids,
                 )
-                self._revert_committed_reparse_requests(file_ids, original_states)
+                self._revert_committed_reparse_requests(
+                    file_ids,
+                    original_states,
+                    actor=actor,
+                )
                 return [], {}, 0, skipped, True
 
         return file_ids, original_states, reparse_requested_count, skipped, False
 
     @staticmethod
-    def _revert_committed_reparse_requests(file_ids, original_states):
+    def _revert_committed_reparse_requests(file_ids, original_states, actor=None):
         """Best-effort revert when a post-commit broker enqueue fails."""
         for data_file in DataFile.objects.filter(id__in=file_ids):
             original = original_states.get(data_file.id)
@@ -288,6 +348,8 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
                     data_file,
                     original,
                     note="admin broker enqueue failure",
+                    actor=actor,
+                    source="django_admin",
                 )
             except Exception:
                 logger.exception(
@@ -374,7 +436,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
             reparse_requested_count,
             skipped,
             enqueue_failed,
-        ) = self._prepare_and_enqueue_reparse(queryset)
+        ) = self._prepare_and_enqueue_reparse(queryset, actor=request.user)
 
         self._report_reparse_outcome(
             request,
@@ -505,7 +567,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
             else:
                 return queryset
 
-    inlines = [DataFileInline]
+    inlines = [DataFileStateTransitionInline, DataFileInline]
 
     list_display = [
         "id",
@@ -553,7 +615,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
 class ShadowDataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     """Shadow admin model for convenience."""
 
-    inlines = []
+    inlines = [DataFileStateTransitionInline]
     list_display = [
         "id",
         "stt",

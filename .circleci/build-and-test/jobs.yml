@@ -59,6 +59,19 @@
       - docker-set-registry-owner
       - docker-compose-check
       - docker-compose-up-backend
+      - run:
+          name: Configure accelerated stale-submission E2E timeout
+          command: |
+            cd tdrs-backend
+            STALE_PARSE_TIMEOUT_SECONDS=60 \
+              STALE_PARSE_CHECK_INTERVAL_SECONDS=5 \
+              GO_PARSER_SHADOW_MODE=false \
+              docker-compose up -d --force-recreate web celery
+            docker-compose exec -T celery sh -c '
+              test "$STALE_PARSE_TIMEOUT_SECONDS" = 60 &&
+              test "$STALE_PARSE_CHECK_INTERVAL_SECONDS" = 5 &&
+              test "$GO_PARSER_SHADOW_MODE" = false
+            '
       - docker-compose-up-frontend
       - install-nodejs-machine
       - install-yarn-packages:
@@ -89,8 +102,121 @@
             cd tdrs-backend
             docker-compose exec web python manage.py loaddata cypress/users cypress/data_files cypress/regions cypress/profile_editing_regions cypress/profile_editing_users cypress/feature_flags
       - run:
+          name: Verify stale-submission lifecycle processing
+          command: |
+            cd tdrs-backend
+            # Celery can initially start before a fresh database has the
+            # django-celery-beat tables. Remove the schedule created by that
+            # initial default-configured beat, then restart it after migrations
+            # so the accelerated interval is persisted before Cypress runs.
+            docker-compose stop celery
+            docker-compose exec -T web python manage.py shell -c "
+            from django_celery_beat.models import PeriodicTask
+
+            PeriodicTask.objects.filter(name='Mark Stale Data Files Stuck').delete()
+            "
+            celery_start_time="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            docker-compose start celery
+            for lifecycle_probe_attempt in $(seq 1 60); do
+              celery_logs="$(docker-compose logs --since "$celery_start_time" --no-color celery 2>/dev/null)"
+              if [[ "$celery_logs" == *"DatabaseScheduler: Schedule changed"* ]]; then
+                break
+              fi
+              if [ "$lifecycle_probe_attempt" -eq 60 ]; then
+                docker-compose logs --no-color --tail=300 celery
+                exit 1
+              fi
+              sleep 2
+            done
+            docker-compose exec -T celery python manage.py shell -c "
+            from django.conf import settings
+            from django_celery_beat.models import IntervalSchedule, PeriodicTask
+            from tdpservice.data_files.tasks import mark_stale_files_stuck
+
+            interval, _ = IntervalSchedule.objects.get_or_create(
+                every=5,
+                period=IntervalSchedule.SECONDS,
+            )
+            schedule = PeriodicTask.objects.get(name='Mark Stale Data Files Stuck')
+            schedule.interval = interval
+            schedule.crontab = None
+            schedule.solar = None
+            schedule.clocked = None
+            schedule.enabled = True
+            schedule.args = '[60]'
+            schedule.save()
+            result = mark_stale_files_stuck.delay(60)
+            marked_count = result.get(timeout=15)
+            assert isinstance(marked_count, int)
+            print(
+                'Lifecycle smoke task completed; '
+                f'marked {marked_count} file(s); '
+                f'Django timeout setting={settings.STALE_PARSE_TIMEOUT_SECONDS!r}.'
+            )
+            "
+      - run:
           name: Run Cypress e2e tests
-          command: cd tdrs-frontend; yarn test:e2e-ci
+          command: |
+            cd tdrs-frontend
+            export CYPRESS_ADMIN_URL=http://localhost:3000/admin
+            export CYPRESS_STUCK_TIMEOUT_TEST=true
+
+            # Exercise lifecycle timeouts and reparsing before the upload-heavy
+            # suite puts sustained load on the single parser and LocalStack.
+            yarn test:e2e-ci --spec cypress/e2e/data-files/submission_lifecycle.feature
+
+            # The timeout scenario revokes a deliberately long parser task.
+            # Reset the disposable worker so that task cannot delay later specs.
+            cd ../tdrs-backend
+            docker-compose restart celery
+            cd ../tdrs-frontend
+
+            remaining_specs="$(find cypress/e2e -type f -name '*.feature' ! -path '*/submission_lifecycle.feature' | sort | paste -sd, -)"
+            test -n "$remaining_specs"
+            yarn test:e2e-ci --spec "$remaining_specs"
+      - run:
+          name: Show backend logs after an E2E failure
+          when: on_fail
+          command: |
+            cd tdrs-backend
+            docker-compose logs --no-color --tail=500 web celery localstack
+            docker-compose exec -T web python manage.py shell -c "
+            from django.conf import settings
+            from django_celery_beat.models import PeriodicTask
+            from django.db.models import Q
+            from tdpservice.data_files.models import DataFile
+
+            schedule = PeriodicTask.objects.get(name='Mark Stale Data Files Stuck')
+            print(
+                'Stale lifecycle diagnostics:',
+                {
+                    'django_timeout': settings.STALE_PARSE_TIMEOUT_SECONDS,
+                    'schedule_args': schedule.args,
+                    'schedule_enabled': schedule.enabled,
+                    'schedule_last_run_at': schedule.last_run_at,
+                    'schedule_total_run_count': schedule.total_run_count,
+                },
+            )
+            files = DataFile.objects.filter(
+                Q(original_filename='long_running_tanf_active_case.txt')
+                | Q(original_filename__startswith='accepted_tanf_reparse_')
+            )
+            for data_file in files:
+                summary = getattr(data_file, 'summary', None)
+                print(
+                    'Lifecycle DataFile:',
+                    {
+                        'id': data_file.id,
+                        'filename': data_file.original_filename,
+                        'state': data_file.state,
+                        'state_changed_at': data_file.state_changed_at,
+                        'parse_token': data_file.current_parse_token,
+                        'summary_status': getattr(summary, 'status', None),
+                    },
+                )
+            "
+            docker-compose exec -T celery sh -c \
+              "find /tmp -maxdepth 1 -type f -name '*.log' -size -5M -print -exec tail -n 200 {} \\;"
       - store_artifacts:
           path: tdrs-frontend/cypress/screenshots/
       - store_artifacts:

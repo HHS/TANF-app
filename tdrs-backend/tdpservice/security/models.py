@@ -162,12 +162,9 @@ class OwaspZapScanManager(models.Manager):
         )
 
         # Create a new LogEntry that is tied to this model instance.
-        content_type = ContentType.objects.get_for_model(OwaspZapScan)
-        LogEntry.objects.log_action(
+        LogEntry.objects.log_actions(
             user_id=system_user.pk,
-            content_type_id=content_type.pk,
-            object_id=zap_scan.pk,
-            object_repr=str(zap_scan),
+            queryset=[zap_scan],
             action_flag=ADDITION,
             change_message=msg,
         )

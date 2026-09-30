@@ -12,6 +12,7 @@ import (
 	"sync"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"go-parser/internal/logging"
@@ -35,7 +36,10 @@ type Sink interface {
 
 // DatabaseSink writes rows to PostgreSQL via pgx CopyFrom.
 type DatabaseSink struct {
-	pool *pgxpool.Pool
+	pool        *pgxpool.Pool
+	datafileID  int32
+	parseToken  string
+	guardWrites bool
 }
 
 // NewDatabaseSink creates a sink that writes to PostgreSQL.
@@ -43,16 +47,84 @@ func NewDatabaseSink(pool *pgxpool.Pool) *DatabaseSink {
 	return &DatabaseSink{pool: pool}
 }
 
+// CreateGuardedDatabaseSink fences every production flush with parse token ownership.
+func CreateGuardedDatabaseSink(pool *pgxpool.Pool, datafileID int32, parseToken string, guardWrites bool) (Sink, error) {
+	if pool == nil {
+		return nil, errors.New("database pool is required")
+	}
+	if guardWrites && parseToken == "" {
+		return nil, errors.New("production database writes require a parse token")
+	}
+	return &DatabaseSink{
+		pool:        pool,
+		datafileID:  datafileID,
+		parseToken:  parseToken,
+		guardWrites: guardWrites,
+	}, nil
+}
+
+type databaseExecer interface {
+	Exec(context.Context, string, ...any) (pgconn.CommandTag, error)
+}
+
+const lockCurrentParseToken = `
+	SELECT 1
+	FROM data_files_datafile AS data_file
+	WHERE data_file.id = $1
+	  AND data_file.state = 'parse_started'
+	  AND data_file.current_parse_token = $2::uuid
+	FOR UPDATE
+`
+
+func (s *DatabaseSink) withTokenOwnership(ctx context.Context, write func(pgx.Tx) error) error {
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx) // no-op after Commit
+
+	var ownsToken int
+	if err := tx.QueryRow(ctx, lockCurrentParseToken, s.datafileID, s.parseToken).Scan(&ownsToken); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return fmt.Errorf("parse token %s no longer owns datafile %d", s.parseToken, s.datafileID)
+		}
+		return err
+	}
+	if err := write(tx); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
+
 func (s *DatabaseSink) Flush(ctx context.Context, tableName string, columns []string, rows [][]any) (int64, error) {
-	return s.pool.CopyFrom(ctx, pgx.Identifier{tableName}, columns, pgx.CopyFromRows(rows))
+	if !s.guardWrites {
+		return s.pool.CopyFrom(ctx, pgx.Identifier{tableName}, columns, pgx.CopyFromRows(rows))
+	}
+
+	var copied int64
+	err := s.withTokenOwnership(ctx, func(tx pgx.Tx) error {
+		var err error
+		copied, err = tx.CopyFrom(ctx, pgx.Identifier{tableName}, columns, pgx.CopyFromRows(rows))
+		return err
+	})
+	return copied, err
 }
 
 func (s *DatabaseSink) RollbackDatafile(ctx context.Context, datafileID int32, tables []string, errorTableName string) error {
+	if s.guardWrites {
+		return s.withTokenOwnership(ctx, func(tx pgx.Tx) error {
+			return rollbackDatafile(ctx, tx, datafileID, tables, errorTableName)
+		})
+	}
+	return rollbackDatafile(ctx, s.pool, datafileID, tables, errorTableName)
+}
+
+func rollbackDatafile(ctx context.Context, executor databaseExecer, datafileID int32, tables []string, errorTableName string) error {
 	var errs []error
 
 	// Always clean up parser errors
 	errorTable := pgx.Identifier{errorTableName}.Sanitize()
-	if _, err := s.pool.Exec(ctx, fmt.Sprintf("DELETE FROM %s WHERE file_id = $1", errorTable), datafileID); err != nil {
+	if _, err := executor.Exec(ctx, fmt.Sprintf("DELETE FROM %s WHERE file_id = $1", errorTable), datafileID); err != nil {
 		logging.Error(ctx, "rollback failed to delete parser errors",
 			slog.Int(logging.KeyFileID, int(datafileID)),
 			slog.String("table_name", errorTableName),
@@ -64,7 +136,7 @@ func (s *DatabaseSink) RollbackDatafile(ctx context.Context, datafileID int32, t
 	// Only delete from tables relevant to the current file spec
 	for _, table := range tables {
 		query := fmt.Sprintf("DELETE FROM %s WHERE datafile_id = $1", pgx.Identifier{table}.Sanitize())
-		if _, err := s.pool.Exec(ctx, query, datafileID); err != nil {
+		if _, err := executor.Exec(ctx, query, datafileID); err != nil {
 			logging.Error(ctx, "rollback failed to delete records",
 				slog.Int(logging.KeyFileID, int(datafileID)),
 				slog.String("table_name", table),

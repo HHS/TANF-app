@@ -31,7 +31,7 @@ const formatDate = (dateString) => {
  * STTFeedbackReportsTable component displays the feedback reports table
  * for STT Data Analysts with download functionality
  */
-function STTFeedbackReportsTable({ data, setAlert }) {
+function STTFeedbackReportsTable({ data, setAlert, showDownloadedAt = false }) {
   const [downloadingId, setDownloadingId] = useState(null)
 
   /**
@@ -68,6 +68,7 @@ function STTFeedbackReportsTable({ data, setAlert }) {
               <th>Uploaded on</th>
               <th>Reflects data submitted through</th>
               <th>Files</th>
+              {showDownloadedAt && <th>Downloaded At</th>}
             </tr>
           </thead>
           <tbody>
@@ -94,6 +95,13 @@ function STTFeedbackReportsTable({ data, setAlert }) {
                       : report.original_filename || 'Download'}
                   </button>
                 </td>
+                {showDownloadedAt && (
+                  <td>
+                    {report.downloaded_at
+                      ? formatDateTime(report.downloaded_at)
+                      : 'Not yet downloaded'}
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
@@ -102,7 +110,7 @@ function STTFeedbackReportsTable({ data, setAlert }) {
         <tbody>
           <tr>
             <td
-              colSpan="3"
+              colSpan={showDownloadedAt ? 4 : 3}
               style={{
                 border: '0',
                 backgroundColor: 'white',

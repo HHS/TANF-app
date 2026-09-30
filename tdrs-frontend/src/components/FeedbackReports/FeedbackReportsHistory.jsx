@@ -72,7 +72,11 @@ function formatDate(dateString) {
  * FeedbackReportsHistory component displays the upload history table
  * with loading and empty states
  */
-function FeedbackReportsHistory({ data, formatDateTime }) {
+function FeedbackReportsHistory({
+  data,
+  formatDateTime,
+  onViewDownloadStatistics,
+}) {
   return (
     <table className="usa-table usa-table--striped">
       <caption>Upload History</caption>
@@ -86,6 +90,7 @@ function FeedbackReportsHistory({ data, formatDateTime }) {
               <th>Status</th>
               <th style={{ minWidth: '200px' }}>Error</th>
               <th>File</th>
+              <th>Downloaded by</th>
             </tr>
           </thead>
           <tbody>
@@ -112,6 +117,21 @@ function FeedbackReportsHistory({ data, formatDateTime }) {
                     'N/A'
                   )}
                 </td>
+                <td>
+                  <button
+                    type="button"
+                    className="usa-button usa-button--unstyled text-no-wrap"
+                    aria-label={`View download statistics for ${
+                      report.original_filename || `report source ${report.id}`
+                    }`}
+                    onClick={() => onViewDownloadStatistics(report.id)}
+                  >
+                    {report.downloaded_count || 0}{' '}
+                    {report.downloaded_count === 1
+                      ? 'jurisdiction'
+                      : 'jurisdictions'}
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -120,7 +140,7 @@ function FeedbackReportsHistory({ data, formatDateTime }) {
         <tbody>
           <tr>
             <td
-              colSpan="6"
+              colSpan="7"
               style={{
                 border: '0',
                 backgroundColor: 'white',
@@ -139,6 +159,7 @@ function FeedbackReportsHistory({ data, formatDateTime }) {
 FeedbackReportsHistory.propTypes = {
   data: PropTypes.array,
   formatDateTime: PropTypes.func.isRequired,
+  onViewDownloadStatistics: PropTypes.func.isRequired,
 }
 
 export default FeedbackReportsHistory

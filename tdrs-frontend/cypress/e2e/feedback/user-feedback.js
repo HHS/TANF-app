@@ -9,8 +9,13 @@ Given('user visits the home page', () => {
   cy.contains('Sign into TANF Data Portal', { timeout: 30000 })
 })
 
-When('user clicks on Give Feedback button on home page', () => {
-  cy.url().should('include', '/') // confirm on homepage
+Then('feedback controls should not be displayed', () => {
+  cy.contains('button', 'Give Feedback').should('not.exist')
+  cy.get('#feedback-modal').should('not.exist')
+  cy.get('[data-testid="feedback-widget"]').should('not.exist')
+})
+
+When('user clicks on Give Feedback button', () => {
   cy.contains('button', 'Give Feedback', { timeout: 10000 })
     .should('be.visible')
     .click()
@@ -33,10 +38,16 @@ Then('an error message should be displayed indicating the issue', () => {
 })
 
 When('user submits valid feedback', () => {
+  cy.intercept('POST', '**/v1/feedback/').as('createFeedback')
+  cy.intercept('PATCH', '**/v1/feedback/*/', (request) => {
+    request.on('response', (response) => response.setDelay(500))
+  }).as('updateFeedback')
+
   // Select a required rating
   cy.get('[data-testid="feedback-radio-input-2"]')
     .check({ force: true })
     .should('be.checked')
+  cy.wait('@createFeedback').its('response.statusCode').should('eq', 201)
   // Error message should disappear
   cy.contains('There is 1 error in this form').should('not.exist')
   // User enters feedback
@@ -47,7 +58,20 @@ When('user submits valid feedback', () => {
   cy.contains('button', 'Send Feedback')
     .scrollIntoView()
     .should('be.visible')
+    .and('not.be.disabled')
     .click()
+  cy.contains('button', 'Send Feedback').should('be.disabled')
+  cy.wait('@updateFeedback').then(({ request, response }) => {
+    expect(request.body.anonymous).to.equal(true)
+    expect(response.statusCode).to.equal(200)
+    expect(response.body.anonymous).to.equal(true)
+  })
+})
+
+When('user chooses to send feedback anonymously', () => {
+  cy.get('#feedback-anonymous-input')
+    .check({ force: true })
+    .should('be.checked')
 })
 
 Then('the feedback is successfully submitted', () => {

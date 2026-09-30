@@ -51,7 +51,7 @@ class ErrorReportBase(ABC):
 
     @abstractmethod
     def generate(self):
-        """To be overriden in child class."""
+        """To be overridden in child class."""
         pass
 
     @abstractmethod

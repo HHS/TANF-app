@@ -44,7 +44,7 @@ These classes are simple for the moment, but they provide a consistent and well 
 The `RowSchema` class as it stands is very coupled to the current datafile structure. Many of the features of the `RowSchema` class are not applicable to what an FRA `RowSchema` would leverage. To support using the `RowSchema` in a more general way, it needs to be updated to keep the most generic logic in a base class and let subclasses add extra functionality to suite their needs. The templates below outline a suggested path forward to accommodate a more generic `RowSchema`.
 
 ```python
-# Other imports ommitted for brevity
+# Other imports omitted for brevity
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from django.db.models import Model

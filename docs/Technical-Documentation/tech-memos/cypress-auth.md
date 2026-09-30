@@ -48,7 +48,7 @@ After:
         Then 'new-cypress@teamraft.com' sees the request still submitted
 ```
 
-Setup/Teardown hook psuedo-code:
+Setup/Teardown hook pseudo-code:
 ```JavaScript
 describe('E2E User Approval Flow', ()=> {
   beforeEach(() => {
@@ -75,9 +75,9 @@ When('The admin sets the approval status of {string} to {string}',
 ### Abstracted utility authentication functions
 Our current Cypress implementation has Gherkin scenarios `accounts.feature` which relies on definitions in `accounts.js`, `common-steps.js`, and finally `commands.js` which handle authentication in different ways for different scenarios (e.g., `login()`, `adminLogin()`, and `adminApiRequest()`)
 
-These current functions do not handle the new django `crsf_middleware_token` which may be required for smooth operation. We will move to a standardized authentication function with wrappers which will make the Gherkin scenarios uniform in their approach to authentication and session management.  
+These current functions do not handle the new django `crsf_middleware_token` which may be required for smooth operation. We will move to a standardized authentication function with wrappers which will make the Gherkin scenarios uniform in their approach to authentication and session management.
 
-### Session Management 
+### Session Management
 These new implementations will need to leverage newer Cypress commands `session` and `intercept` for managing our two-user scenarios.
 
 ```Javascript

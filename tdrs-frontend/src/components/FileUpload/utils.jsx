@@ -16,6 +16,7 @@ export const HIDDEN_CLASS = 'display-none'
 export const INSTRUCTIONS_CLASS = `${PREFIX}-file-input__instructions`
 export const INVALID_FILE_CLASS = 'has-invalid-file'
 export const ACCEPTED_FILE_MESSAGE_CLASS = `${PREFIX}-file-input__accepted-files-message`
+const LOADING_CLASS = 'is-loading'
 
 const SPACER_GIF =
   'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
@@ -87,6 +88,13 @@ export const handlePreview = (fileName, targetClassName) => {
 
   const dropTarget = deps.dropTarget
   const instructions = deps.instructions
+  const loadingPreview = dropTarget.querySelector(
+    `.${GENERIC_PREVIEW_CLASS_NAME}.${LOADING_CLASS}`
+  )
+
+  // USWDS accesses its loading image from FileReader.onloadend. Leave the
+  // preview in place until that callback finishes so it cannot dereference null.
+  if (loadingPreview) return false
 
   removeOldPreviews(dropTarget, instructions)
 
