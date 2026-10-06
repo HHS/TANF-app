@@ -95,7 +95,16 @@ function FeedbackReportsHistory({
                 <th style={{ minWidth: '200px' }}>Error</th>
                 <th>File</th>
                 <th>Downloaded by</th>
-                <th style={{ width: '100ch', maxWidth: '100ch' }}>Notes</th>
+                <th
+                  style={{
+                    width: '100ch',
+                    minWidth: '100ch',
+                    maxWidth: '100ch',
+                    whiteSpace: 'normal',
+                  }}
+                >
+                  Notes
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -137,18 +146,28 @@ function FeedbackReportsHistory({
                         : 'jurisdictions'}
                     </button>
                   </td>
-                  <td style={{ width: '100ch', maxWidth: '100ch' }}>
+                  <td
+                    style={{
+                      width: '100ch',
+                      minWidth: '100ch',
+                      maxWidth: '100ch',
+                      whiteSpace: 'normal',
+                    }}
+                  >
                     {report.notes ? (
                       <div
                         style={{
                           display: 'flex',
                           flexDirection: 'column',
-                          width: '100%',
+                          width: '100ch',
+                          minWidth: '100ch',
                           maxWidth: '100ch',
+                          whiteSpace: 'normal',
                         }}
                       >
                         <span
                           style={{
+                            whiteSpace: 'normal',
                             wordBreak: 'break-word',
                             overflowWrap: 'break-word',
                           }}
