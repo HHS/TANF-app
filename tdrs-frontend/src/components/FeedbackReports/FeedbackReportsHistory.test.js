@@ -667,9 +667,8 @@ describe('FeedbackReportsHistory', () => {
       expect(screen.queryByText('Read more')).not.toBeInTheDocument()
     })
 
-    it('displays truncated note with Read more button when notes exceed 3 lines, and opens modal on click', () => {
-      const longNote =
-        'This is a very long note that exceeds two hundred and forty characters in length so that it will be wrapped across more than three lines in the 100-character column and show a Read more link in the table cell. Additional text is provided here to ensure it easily surpasses the 3-line limit.'
+    it('displays truncated note with Read more button when notes exceed 290 characters, and opens modal on click', () => {
+      const longNote = 'A'.repeat(320)
       const mockData = [
         {
           id: 1,
@@ -685,6 +684,7 @@ describe('FeedbackReportsHistory', () => {
 
       renderComponent({ data: mockData })
 
+      expect(screen.getByText(`${'A'.repeat(290)}...`)).toBeInTheDocument()
       expect(screen.getByText('Read more')).toBeInTheDocument()
 
       // Click Read more to open modal
@@ -702,8 +702,8 @@ describe('FeedbackReportsHistory', () => {
       ).not.toBeInTheDocument()
     })
 
-    it('shows Read more for notes with more than 3 newline-separated lines', () => {
-      const fourLineNote = 'Line 1\nLine 2\nLine 3\nLine 4'
+    it('does not show Read more for notes with 290 or fewer characters', () => {
+      const note290 = 'B'.repeat(290)
       const mockData = [
         {
           id: 1,
@@ -713,30 +713,12 @@ describe('FeedbackReportsHistory', () => {
           processed_at: '2025-03-05T10:41:00Z',
           status: 'SUCCEEDED',
           original_filename: 'test.zip',
-          notes: fourLineNote,
+          notes: note290,
         },
       ]
 
       renderComponent({ data: mockData })
-      expect(screen.getByText('Read more')).toBeInTheDocument()
-    })
-
-    it('does not show Read more for notes with 3 or fewer lines', () => {
-      const threeLineNote = 'Line 1\nLine 2\nLine 3'
-      const mockData = [
-        {
-          id: 1,
-          year: 2025,
-          date_extracted_on: '2025-02-28',
-          created_at: '2025-03-05T10:31:00Z',
-          processed_at: '2025-03-05T10:41:00Z',
-          status: 'SUCCEEDED',
-          original_filename: 'test.zip',
-          notes: threeLineNote,
-        },
-      ]
-
-      renderComponent({ data: mockData })
+      expect(screen.getByText(note290)).toBeInTheDocument()
       expect(screen.queryByText('Read more')).not.toBeInTheDocument()
     })
 

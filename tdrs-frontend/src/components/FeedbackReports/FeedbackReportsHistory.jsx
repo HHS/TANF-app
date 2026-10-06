@@ -70,21 +70,6 @@ function formatDate(dateString) {
 }
 
 /**
- * Determines if notes text exceeds 3 lines in the table column.
- * Accounts for explicit line breaks and wrapped characters (~80 chars/line in a 100-character column).
- */
-function isNotesLongerThanThreeLines(notes) {
-  if (!notes) return false
-  const lines = notes.split('\n')
-  if (lines.length > 3) return true
-  const approxWrappedLines = lines.reduce(
-    (total, line) => total + Math.max(1, Math.ceil(line.length / 80)),
-    0
-  )
-  return approxWrappedLines > 3 || notes.length > 240
-}
-
-/**
  * FeedbackReportsHistory component displays the upload history table
  * with loading and empty states
  */
@@ -110,7 +95,7 @@ function FeedbackReportsHistory({
                 <th style={{ minWidth: '200px' }}>Error</th>
                 <th>File</th>
                 <th>Downloaded by</th>
-                <th style={{ minWidth: '180px', maxWidth: '100ch' }}>Notes</th>
+                <th style={{ width: '100ch', maxWidth: '100ch' }}>Notes</th>
               </tr>
             </thead>
             <tbody>
@@ -152,35 +137,31 @@ function FeedbackReportsHistory({
                         : 'jurisdictions'}
                     </button>
                   </td>
-                  <td
-                    style={{
-                      minWidth: '180px',
-                      maxWidth: '100ch',
-                      wordBreak: 'break-word',
-                    }}
-                  >
+                  <td style={{ width: '100ch', maxWidth: '100ch' }}>
                     {report.notes ? (
-                      <div>
-                        <div
-                          style={
-                            isNotesLongerThanThreeLines(report.notes)
-                              ? {
-                                  display: '-webkit-box',
-                                  WebkitLineClamp: 3,
-                                  WebkitBoxOrient: 'vertical',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                }
-                              : {}
-                          }
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          width: '100%',
+                          maxWidth: '100ch',
+                        }}
+                      >
+                        <span
+                          style={{
+                            wordBreak: 'break-word',
+                            overflowWrap: 'break-word',
+                          }}
                         >
-                          {report.notes}
-                        </div>
-                        {isNotesLongerThanThreeLines(report.notes) && (
+                          {report.notes.length > 290
+                            ? `${report.notes.slice(0, 290)}... `
+                            : report.notes}
+                        </span>
+                        {report.notes.length > 290 && (
                           <button
                             type="button"
                             className="usa-button usa-button--unstyled margin-top-05"
-                            style={{ display: 'block' }}
+                            style={{ alignSelf: 'flex-start' }}
                             aria-label={`Read more notes for ${
                               report.original_filename ||
                               `report source ${report.id}`
