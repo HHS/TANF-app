@@ -179,9 +179,32 @@ const FeedbackReportsUpload = forwardRef(function FeedbackReportsUpload(
         >
           Notes (optional)
         </label>
-        <div className="usa-hint" id="notes-hint" style={{ maxWidth: '470px' }}>
-          Notes will be displayed to STTs when additional detail is needed to
-          contextualize a report
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-end',
+            maxWidth: '470px',
+            gap: '1rem',
+          }}
+        >
+          <div className="usa-hint" id="notes-hint" style={{ marginTop: 0 }}>
+            Notes will be displayed to STTs when additional detail is needed to
+            contextualize a report
+          </div>
+          <div
+            className="usa-character-count__message"
+            aria-live="polite"
+            id="notes-count-message"
+            style={{
+              whiteSpace: 'nowrap',
+              textAlign: 'right',
+              marginTop: 0,
+              flexShrink: 0,
+            }}
+          >
+            {`${notes.length}/2000`}
+          </div>
         </div>
         {notesError && (
           <div className="usa-error-message" id="notes-error" role="alert">
@@ -200,14 +223,6 @@ const FeedbackReportsUpload = forwardRef(function FeedbackReportsUpload(
           rows={4}
           style={{ maxWidth: '470px' }}
         />
-        <div
-          className="usa-character-count__message"
-          aria-live="polite"
-          id="notes-count-message"
-          style={{ marginTop: '4px' }}
-        >
-          {`${notes.length}/2000`}
-        </div>
       </div>
 
       <Button

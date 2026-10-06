@@ -70,6 +70,21 @@ function formatDate(dateString) {
 }
 
 /**
+ * Determines if notes text exceeds 3 lines in the table column.
+ * Accounts for explicit line breaks and wrapped characters (~80 chars/line in a 100-character column).
+ */
+function isNotesLongerThanThreeLines(notes) {
+  if (!notes) return false
+  const lines = notes.split('\n')
+  if (lines.length > 3) return true
+  const approxWrappedLines = lines.reduce(
+    (total, line) => total + Math.max(1, Math.ceil(line.length / 80)),
+    0
+  )
+  return approxWrappedLines > 3 || notes.length > 240
+}
+
+/**
  * FeedbackReportsHistory component displays the upload history table
  * with loading and empty states
  */
@@ -82,7 +97,7 @@ function FeedbackReportsHistory({
 
   return (
     <>
-      <table className="usa-table usa-table--striped">
+      <table className="usa-table usa-table--striped" style={{ width: '100%' }}>
         <caption>Upload History</caption>
         {data && data.length > 0 ? (
           <>
@@ -94,13 +109,13 @@ function FeedbackReportsHistory({
                 <th>Status</th>
                 <th style={{ minWidth: '200px' }}>Error</th>
                 <th>File</th>
-                <th>Notes</th>
                 <th>Downloaded by</th>
+                <th style={{ minWidth: '180px', maxWidth: '100ch' }}>Notes</th>
               </tr>
             </thead>
             <tbody>
               {data.map((report) => (
-                <tr key={report.id}>
+                <tr key={report.id} style={{ verticalAlign: 'top' }}>
                   <td>{formatDateTime(report.created_at)}</td>
                   <td>{formatDate(report.date_extracted_on)}</td>
                   <td>{formatDateTime(report.processed_at)}</td>
@@ -123,32 +138,6 @@ function FeedbackReportsHistory({
                     )}
                   </td>
                   <td>
-                    {report.notes ? (
-                      <div>
-                        <span>
-                          {report.notes.length > 120
-                            ? `${report.notes.slice(0, 120)}... `
-                            : report.notes}
-                        </span>
-                        {report.notes.length > 120 && (
-                          <button
-                            type="button"
-                            className="usa-button usa-button--unstyled"
-                            aria-label={`Read more notes for ${
-                              report.original_filename ||
-                              `report source ${report.id}`
-                            }`}
-                            onClick={() => setActiveNotesReport(report)}
-                          >
-                            Read more
-                          </button>
-                        )}
-                      </div>
-                    ) : (
-                      'No Notes'
-                    )}
-                  </td>
-                  <td>
                     <button
                       type="button"
                       className="usa-button usa-button--unstyled text-no-wrap"
@@ -162,6 +151,49 @@ function FeedbackReportsHistory({
                         ? 'jurisdiction'
                         : 'jurisdictions'}
                     </button>
+                  </td>
+                  <td
+                    style={{
+                      minWidth: '180px',
+                      maxWidth: '100ch',
+                      wordBreak: 'break-word',
+                    }}
+                  >
+                    {report.notes ? (
+                      <div>
+                        <div
+                          style={
+                            isNotesLongerThanThreeLines(report.notes)
+                              ? {
+                                  display: '-webkit-box',
+                                  WebkitLineClamp: 3,
+                                  WebkitBoxOrient: 'vertical',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }
+                              : {}
+                          }
+                        >
+                          {report.notes}
+                        </div>
+                        {isNotesLongerThanThreeLines(report.notes) && (
+                          <button
+                            type="button"
+                            className="usa-button usa-button--unstyled margin-top-05"
+                            style={{ display: 'block' }}
+                            aria-label={`Read more notes for ${
+                              report.original_filename ||
+                              `report source ${report.id}`
+                            }`}
+                            onClick={() => setActiveNotesReport(report)}
+                          >
+                            Read more
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      'No Notes'
+                    )}
                   </td>
                 </tr>
               ))}

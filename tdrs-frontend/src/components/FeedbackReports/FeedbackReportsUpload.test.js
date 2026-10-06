@@ -423,13 +423,13 @@ describe('FeedbackReportsUpload', () => {
       const textarea = screen.getByLabelText('Notes (optional)')
       expect(textarea).toBeInTheDocument()
       expect(textarea).toHaveAttribute('maxlength', '2000')
-      expect(screen.getByText('0/2000 (2000 remaining)')).toBeInTheDocument()
+      expect(screen.getByText('0/2000')).toBeInTheDocument()
     })
 
     it('displays dynamic character count when notes prop is provided', () => {
       renderComponent({ notes: 'Testing 1 2 3' })
 
-      expect(screen.getByText('13/2000 (1987 remaining)')).toBeInTheDocument()
+      expect(screen.getByText('13/2000')).toBeInTheDocument()
     })
 
     it('triggers onNotesChange when user types in textarea', () => {
