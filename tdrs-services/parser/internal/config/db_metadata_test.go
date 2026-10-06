@@ -166,7 +166,7 @@ func TestRealConfig_MetadataTableNamesProductionMode(t *testing.T) {
 		Global:        GlobalConfig{ConfigDir: dir},
 		SchemaFiles:   []string{"schemas/**/*.yaml"},
 		FilespecFiles: []string{"filespecs/**/*.yaml"},
-		Database:      DatabaseConfig{ShadowMode: false, TablePrefix: DefaultTablePrefix},
+		Database:      DatabaseConfig{TablePrefix: ""},
 	}
 	reg, err := NewRegistry(cfg)
 	if err != nil {
@@ -481,6 +481,34 @@ func TestSetContentTypeIDs_ProductionModeUsesProductionModels(t *testing.T) {
 	meta := reg.GetSchemaMetadata("tanf/t1")
 	if meta == nil || meta.ContentTypeID == nil || *meta.ContentTypeID != 11 {
 		t.Error("tanf/t1 production content type should be 11")
+	}
+}
+
+func TestWithTablePrefixSelectsTaskTableFamily(t *testing.T) {
+	schemas := map[string]*schema.CompiledSchema{
+		"tanf/t1": (&schema.SchemaDef{RecordType: "T1", Shared: []schema.FieldDef{{Name: "RecordType"}}}).Compile(),
+	}
+	schemas["tanf/t1"].Path = "tanf/t1"
+
+	registry := NewTestRegistry(schemas)
+	registry.buildAllMetadata()
+	registry.SetContentTypeIDs(map[string]int32{
+		"shadowtanf_t1": 10,
+		"tanf_t1":       11,
+	})
+
+	shadowMeta := registry.WithTablePrefix(DefaultTablePrefix).GetSchemaMetadata("tanf/t1")
+	productionMeta := registry.WithTablePrefix("").GetSchemaMetadata("tanf/t1")
+	originalMeta := registry.GetSchemaMetadata("tanf/t1")
+
+	if shadowMeta.TableName != "shadow_search_indexes_tanf_t1" || *shadowMeta.ContentTypeID != 10 {
+		t.Errorf("shadow metadata = %#v, want shadow table and content type 10", shadowMeta)
+	}
+	if productionMeta.TableName != "search_indexes_tanf_t1" || *productionMeta.ContentTypeID != 11 {
+		t.Errorf("production metadata = %#v, want production table and content type 11", productionMeta)
+	}
+	if originalMeta.TableName != "shadow_search_indexes_tanf_t1" || *originalMeta.ContentTypeID != 10 {
+		t.Errorf("original metadata changed after task routing: %#v", originalMeta)
 	}
 }
 

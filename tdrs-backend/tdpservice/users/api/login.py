@@ -308,8 +308,13 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 request, state, token_data
             )
             id_token = token_data.get("id_token")
+            destination = request.session.get("state_nonce_tracker", {}).get("next")
             user = self.handle_user(request, id_token, decoded_payload)
-            return response_redirect(user, id_token)
+            if "state_nonce_tracker" in request.session:
+                tracker = request.session["state_nonce_tracker"].copy()
+                tracker.pop("next", None)
+                request.session["state_nonce_tracker"] = tracker
+            return response_redirect(user, id_token, destination)
         except (InactiveUser, ExpiredToken) as e:
             logger.exception(e)
             return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)

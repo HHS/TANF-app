@@ -36,7 +36,7 @@ func (local *Server) needsDatabase() bool {
 }
 
 func (local *Server) dataFileTableName() string {
-	return config.DataFileTableName(local.Config.Database.EffectiveTablePrefix())
+	return config.DataFileTableName(local.Config.Database.TablePrefix)
 }
 
 // dbResources holds the database-related resources created for a local run.

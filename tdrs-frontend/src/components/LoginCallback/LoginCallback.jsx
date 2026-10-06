@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { setAlert, clearAlert } from '../../actions/alert'
 import { ALERT_INFO } from '../Alert'
 import { useRUM } from '../../hooks/useRUM'
+import PostLoginRedirect from './PostLoginRedirect'
 
 /**
  * This component renders momentarily after the user logs in.
@@ -18,13 +19,14 @@ import { useRUM } from '../../hooks/useRUM'
  * to the home page.
  *
  * If the user is logged in, when landing on this component
- * the user is redirected to his/her Dashboard.
+ * the user is redirected to their requested page, or their Dashboard.
  *
  * @param {boolean} authLoading
  *  - whether there is an authentication check in progress
  * @param {boolean} authenticated - whether user is authenticated
  */
 function LoginCallback() {
+  const location = useLocation()
   const authLoading = useSelector((state) => state.auth.loading)
   const authenticated = useSelector((state) => state.auth.authenticated)
   const dispatch = useDispatch()
@@ -40,20 +42,21 @@ function LoginCallback() {
     }
   }, [authenticated, authLoading, dispatch])
 
-  /* istanbul ignore next */
-  if (!authLoading) {
-    if (!authenticated) {
-      return <Navigate to="/" />
-    } else if (isACFOCIO) {
-      window.location = `${process.env.REACT_APP_BACKEND_HOST}/admin/`
-    }
-  }
-  if (authenticated) {
-    setUserInfo(user)
-    return <Navigate to="/home" />
+  if (authLoading) {
+    return null
   }
 
-  return null
+  if (!authenticated) {
+    return <Navigate to={`/${location.search}`} replace />
+  }
+
+  if (isACFOCIO) {
+    window.location = `${process.env.REACT_APP_BACKEND_HOST}/admin/`
+    return null
+  }
+
+  setUserInfo(user)
+  return <PostLoginRedirect />
 }
 
 export default LoginCallback

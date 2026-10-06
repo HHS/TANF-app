@@ -58,7 +58,6 @@ set_cf_envs()
   "SENDGRID_API_KEY"
   "OFA_READ_ONLY_PASSWORD"
   "OFA_ADMIN_READ_ONLY_PASSWORD"
-  "KEYCLOAK_AUTH_PERCENTAGE"
   "KEYCLOAK_ADMIN_CLIENT_SECRET"
   "KEYCLOAK_DJANGO_CLIENT_SECRET"
   "KEYCLOAK_TDP_ADMIN_REALM"
@@ -94,6 +93,9 @@ set_cf_envs()
     echo "Setting var : $var_name"
     $cf_cmd
   done
+
+  # The Keycloak canary is now managed by the keycloak_auth database feature flag.
+  cf unset-env "$APP" KEYCLOAK_AUTH_PERCENTAGE
 
   set_alloy_envs "$APP"
 }

@@ -39,8 +39,9 @@ tdrs-backend/plg/grafana_views/user_views/*
 /staticfiles/*
 /mediafiles/*
 __pycache__/
-/.vscode/
+# /.vscode/
 venv
+/.venv/
 *.sqlite3
 *.sqlite3-journal
 **/__pycache__

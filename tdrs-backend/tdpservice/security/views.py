@@ -121,7 +121,7 @@ class SecurityEventTokenView(APIView):
                 raise ValidationError("No events found in JWT")
 
             # Process each event in the JWT
-            logger.info(f"Processing security events: {events}")
+            logger.info("Processing security event types: %s", list(events))
             for event_type, event_data in events.items():
                 SecurityEventHandler.handle_event(event_type, event_data, decoded_jwt)
             logger.info("Successfully processed security events.")
