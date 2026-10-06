@@ -65,6 +65,7 @@ class ReportSource(FileRecord):
     )
     num_reports_created = models.PositiveIntegerField(default=0)
     error_message = models.TextField(null=True, blank=True)
+    notes = models.TextField(blank=True, default="", max_length=2000)
 
     file = models.FileField(
         storage=DataFilesS3Storage,
@@ -109,6 +110,7 @@ class ReportFile(FileRecord):
         choices=ReportType.choices,
         default=ReportType.TANF_SSP,
     )
+    notes = models.TextField(blank=True, default="", max_length=2000)
 
     version = models.IntegerField()
 

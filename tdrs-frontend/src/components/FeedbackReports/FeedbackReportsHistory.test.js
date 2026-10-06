@@ -1,5 +1,5 @@
 import React from 'react'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import FeedbackReportsHistory from './FeedbackReportsHistory'
 
 describe('FeedbackReportsHistory', () => {
@@ -86,6 +86,7 @@ describe('FeedbackReportsHistory', () => {
       expect(screen.getByText('Status')).toBeInTheDocument()
       expect(screen.getByText('Error')).toBeInTheDocument()
       expect(screen.getByText('File')).toBeInTheDocument()
+      expect(screen.getByText('Notes')).toBeInTheDocument()
       expect(screen.getByText('Downloaded by')).toBeInTheDocument()
     })
 
@@ -133,10 +134,10 @@ describe('FeedbackReportsHistory', () => {
       expect(mockViewDownloadStatistics).toHaveBeenCalledWith(42)
     })
 
-    it('spans all seven columns in the empty state', () => {
+    it('spans all eight columns in the empty state', () => {
       const { container } = renderComponent({ data: [] })
 
-      expect(container.querySelector('td')).toHaveAttribute('colspan', '7')
+      expect(container.querySelector('td')).toHaveAttribute('colspan', '8')
     })
   })
 
@@ -621,6 +622,84 @@ describe('FeedbackReportsHistory', () => {
 
       expect(screen.getByText('Parsed & Notified')).toBeInTheDocument()
       expect(screen.getByText('None')).toBeInTheDocument()
+    })
+  })
+
+  describe('Notes Column', () => {
+    it('displays "No Notes" when notes field is empty or not provided', () => {
+      const mockData = [
+        {
+          id: 1,
+          year: 2025,
+          date_extracted_on: '2025-02-28',
+          created_at: '2025-03-05T10:31:00Z',
+          processed_at: '2025-03-05T10:41:00Z',
+          status: 'SUCCEEDED',
+          original_filename: 'test.zip',
+          notes: '',
+        },
+      ]
+
+      renderComponent({ data: mockData })
+
+      expect(screen.getByText('No Notes')).toBeInTheDocument()
+    })
+
+    it('displays short note text directly without Read more button', () => {
+      const mockData = [
+        {
+          id: 1,
+          year: 2025,
+          date_extracted_on: '2025-02-28',
+          created_at: '2025-03-05T10:31:00Z',
+          processed_at: '2025-03-05T10:41:00Z',
+          status: 'SUCCEEDED',
+          original_filename: 'test.zip',
+          notes: 'Short note for this upload.',
+        },
+      ]
+
+      renderComponent({ data: mockData })
+
+      expect(
+        screen.getByText('Short note for this upload.')
+      ).toBeInTheDocument()
+      expect(screen.queryByText('Read more')).not.toBeInTheDocument()
+    })
+
+    it('displays truncated note with Read more button when notes exceed 120 chars, and opens modal on click', () => {
+      const longNote =
+        'This is a very long note that exceeds one hundred and twenty characters in length so that it will be truncated and show a Read more link in the table cell.'
+      const mockData = [
+        {
+          id: 1,
+          year: 2025,
+          date_extracted_on: '2025-02-28',
+          created_at: '2025-03-05T10:31:00Z',
+          processed_at: '2025-03-05T10:41:00Z',
+          status: 'SUCCEEDED',
+          original_filename: 'test.zip',
+          notes: longNote,
+        },
+      ]
+
+      renderComponent({ data: mockData })
+
+      expect(screen.getByText('Read more')).toBeInTheDocument()
+
+      // Click Read more to open modal
+      fireEvent.click(screen.getByText('Read more'))
+
+      const dialog = screen.getByRole('dialog', { name: 'Notes' })
+      expect(dialog).toBeInTheDocument()
+      expect(within(dialog).getByText(longNote)).toBeInTheDocument()
+      expect(within(dialog).getByText('test.zip')).toBeInTheDocument()
+
+      // Close modal
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Close' }))
+      expect(
+        screen.queryByRole('dialog', { name: 'Notes' })
+      ).not.toBeInTheDocument()
     })
   })
 })

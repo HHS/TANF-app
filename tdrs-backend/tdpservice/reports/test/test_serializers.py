@@ -200,3 +200,71 @@ def test_report_source_download_statistics_serializer_contract():
 
     assert output == data
     assert "file" not in output
+
+
+@pytest.mark.django_db
+def test_report_source_serializer_with_valid_notes(report_source_data, data_analyst):
+    """Test ReportSourceSerializer accepts and persists valid plain text notes."""
+    report_source_data["notes"] = "Valid notes for report upload."
+    ser = ReportSourceSerializer(
+        context={"user": data_analyst}, data=report_source_data
+    )
+    assert ser.is_valid(), ser.errors
+    obj = ser.save()
+    assert obj.notes == "Valid notes for report upload."
+
+    # Test serialized output includes notes
+    serialized = ReportSourceSerializer(obj).data
+    assert serialized["notes"] == "Valid notes for report upload."
+
+
+@pytest.mark.django_db
+def test_report_source_serializer_rejects_notes_exceeding_max_length(
+    report_source_data, data_analyst
+):
+    """Test ReportSourceSerializer rejects notes exceeding 2000 characters."""
+    report_source_data["notes"] = "a" * 2001
+    ser = ReportSourceSerializer(
+        context={"user": data_analyst}, data=report_source_data
+    )
+    with pytest.raises(ValidationError) as exc:
+        ser.is_valid(raise_exception=True)
+    assert "notes" in exc.value.detail
+    assert "2000 characters" in str(exc.value.detail["notes"])
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "prohibited_note",
+    [
+        "<script>alert('xss')</script>",
+        "<p>Some html paragraph</p>",
+        "<b>Bold text</b>",
+        "<img src=x onerror=alert(1)>",
+        "javascript:alert(1)",
+        "Please visit: javascript:void(0)",
+    ],
+)
+def test_report_source_serializer_rejects_html_and_javascript(
+    report_source_data, data_analyst, prohibited_note
+):
+    """Test ReportSourceSerializer rejects HTML tags and javascript protocol in notes."""
+    report_source_data["notes"] = prohibited_note
+    ser = ReportSourceSerializer(
+        context={"user": data_analyst}, data=report_source_data
+    )
+    with pytest.raises(ValidationError) as exc:
+        ser.is_valid(raise_exception=True)
+    assert "notes" in exc.value.detail
+    assert "HTML and JavaScript are not allowed" in str(exc.value.detail["notes"])
+
+
+@pytest.mark.django_db
+def test_report_file_serializer_includes_notes(report_file_instance):
+    """Test ReportFileSerializer includes notes in output."""
+    report_file_instance.notes = "STT specific notes."
+    report_file_instance.save(update_fields=["notes"])
+
+    output = ReportFileSerializer(report_file_instance).data
+    assert "notes" in output
+    assert output["notes"] == "STT specific notes."

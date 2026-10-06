@@ -195,3 +195,35 @@ class TestSendFeedbackReportAvailableEmail:
             context = call_kwargs["email_context"]
             assert context["report_type"] == "TRIBAL_TANF"
             assert context["report_type_label"] == "Tribal TANF"
+
+    def test_email_with_notes_includes_notes_in_context_and_text_message(
+        self, mock_report_file
+    ):
+        """Test that notes are included in email context and body when present."""
+        mock_report_file.notes = "Special notes regarding recalculation."
+        recipients = ["user@example.com"]
+
+        with patch(
+            "tdpservice.email.helpers.feedback_report.automated_email"
+        ) as mock_email:
+            send_feedback_report_available_email(mock_report_file, recipients)
+
+            call_kwargs = mock_email.call_args[1]
+            assert call_kwargs["email_context"]["notes"] == "Special notes regarding recalculation."
+            assert "Notes:\nSpecial notes regarding recalculation." in call_kwargs["text_message"]
+
+    def test_email_without_notes_omits_notes_from_text_message(
+        self, mock_report_file
+    ):
+        """Test that notes section is omitted from text message when empty."""
+        mock_report_file.notes = ""
+        recipients = ["user@example.com"]
+
+        with patch(
+            "tdpservice.email.helpers.feedback_report.automated_email"
+        ) as mock_email:
+            send_feedback_report_available_email(mock_report_file, recipients)
+
+            call_kwargs = mock_email.call_args[1]
+            assert call_kwargs["email_context"]["notes"] == ""
+            assert "Notes:\n" not in call_kwargs["text_message"]

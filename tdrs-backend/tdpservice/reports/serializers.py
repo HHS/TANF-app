@@ -1,4 +1,8 @@
 """Serialize report data."""
+
+import re
+
+from django.utils.html import strip_tags
 from rest_framework import serializers
 
 from tdpservice.reports.models import ReportFile, ReportSource, ReportType
@@ -47,6 +51,7 @@ class ReportFileSerializer(serializers.ModelSerializer):
             "date_extracted_on",
             "year",
             "report_type",
+            "notes",
             "version",
             "original_filename",
             "extension",
@@ -58,6 +63,7 @@ class ReportFileSerializer(serializers.ModelSerializer):
         read_only_fields = [
             "id",
             "user",
+            "notes",
             "version",
             "original_filename",
             "slug",
@@ -110,6 +116,7 @@ class ReportSourceSerializer(serializers.ModelSerializer):
             "processed_at",
             "num_reports_created",
             "error_message",
+            "notes",
             "date_extracted_on",
             "year",
             "report_type",
@@ -136,11 +143,28 @@ class ReportSourceSerializer(serializers.ModelSerializer):
         """Return the annotated distinct count without issuing another query."""
         return getattr(obj, "total_count", 0)
 
+    def validate_notes(self, value):
+        """Ensure notes do not exceed max length and contain no HTML or JavaScript."""
+        if not value:
+            return ""
+        if len(value) > 2000:
+            raise serializers.ValidationError("Notes cannot exceed 2000 characters.")
+        if strip_tags(value) != value or "<" in value or ">" in value:
+            raise serializers.ValidationError(
+                "HTML and JavaScript are not allowed in the notes field."
+            )
+        if re.search(r"javascript\s*:", value, re.IGNORECASE):
+            raise serializers.ValidationError(
+                "HTML and JavaScript are not allowed in the notes field."
+            )
+        return value.strip()
+
     def create(self, validated_data):
         """Create a ReportSource record for a report source zip file upload."""
         file = validated_data.get("file")
         date_extracted_on = validated_data.get("date_extracted_on")  # optional
         year = validated_data.get("year")  # optional
+        notes = validated_data.get("notes", "")
         user = self.context["user"]
 
         source = ReportSource.objects.create(
@@ -150,6 +174,7 @@ class ReportSourceSerializer(serializers.ModelSerializer):
             uploaded_by=user,
             date_extracted_on=date_extracted_on,
             year=year,
+            notes=notes,
             report_type=validated_data.get("report_type", ReportType.TANF_SSP),
             file=file,
         )

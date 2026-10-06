@@ -1,7 +1,7 @@
 """Tests for ReportFile model logic (versioning helpers etc.)."""
 
 import pytest
-from tdpservice.reports.models import ReportFile, ReportType
+from tdpservice.reports.models import ReportFile, ReportSource, ReportType
 from tdpservice.reports.test.factories import (
     FRAReportFileFactory,
     FRAReportSourceFactory,
@@ -264,3 +264,37 @@ def test_tribal_tanf_report_source_factory():
 
     assert tribal_tanf_source.pk is not None
     assert tribal_tanf_source.report_type == ReportType.TRIBAL_TANF
+
+
+@pytest.mark.django_db
+def test_reportsource_and_reportfile_notes_default_and_custom(report_file_instance):
+    """Test notes field defaults to empty string and supports custom text up to 2000 chars."""
+    assert report_file_instance.notes == ""
+
+    base = report_file_instance
+    custom_notes = "Important note regarding Q2 data correction."
+    new_report = ReportFile.create_new_version(
+        {
+            "year": base.year,
+            "date_extracted_on": base.date_extracted_on,
+            "stt": base.stt,
+            "original_filename": base.original_filename,
+            "slug": base.slug,
+            "extension": base.extension,
+            "user": base.user,
+            "file": base.file,
+            "notes": custom_notes,
+        }
+    )
+    assert new_report.notes == custom_notes
+
+    # Verify ReportSource default and custom notes
+    source = ReportSource.objects.create(
+        original_filename="test.zip",
+        slug="test.zip",
+        extension="zip",
+        uploaded_by=base.user,
+        year=2025,
+        notes=custom_notes,
+    )
+    assert source.notes == custom_notes

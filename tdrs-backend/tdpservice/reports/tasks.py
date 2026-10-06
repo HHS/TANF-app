@@ -353,6 +353,7 @@ def _build_report_file_payload(
         "user": source.uploaded_by,
         "source": source,
         "report_type": source.report_type,
+        "notes": source.notes or "",
         "original_filename": bundled_zip.name,
         "slug": bundled_zip.name,
         "extension": "zip",

@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { get } from '../../fetch-instance'
 import { downloadBlob } from '../../utils/fileDownload'
+import NotesModal from './NotesModal'
 
 /**
  * Formats a timestamp to a readable date string with time
@@ -33,6 +34,7 @@ const formatDate = (dateString) => {
  */
 function STTFeedbackReportsTable({ data, setAlert, showDownloadedAt = false }) {
   const [downloadingId, setDownloadingId] = useState(null)
+  const [activeNotesReport, setActiveNotesReport] = useState(null)
 
   /**
    * Handle file download
@@ -60,69 +62,105 @@ function STTFeedbackReportsTable({ data, setAlert, showDownloadedAt = false }) {
   }
 
   return (
-    <table className="usa-table usa-table--striped">
-      {data && data.length > 0 ? (
-        <>
-          <thead>
-            <tr>
-              <th>Uploaded on</th>
-              <th>Reflects data submitted through</th>
-              <th>Files</th>
-              {showDownloadedAt && <th>Downloaded At</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((report) => (
-              <tr key={report.id}>
-                <td>{formatDateTime(report.created_at)}</td>
-                <td>{formatDate(report.date_extracted_on)}</td>
-                <td>
-                  <button
-                    type="button"
-                    className="usa-link"
-                    onClick={() => handleDownload(report)}
-                    disabled={downloadingId === report.id}
-                    aria-label={`Download ${report.original_filename}`}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      padding: 0,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {downloadingId === report.id
-                      ? 'Downloading...'
-                      : report.original_filename || 'Download'}
-                  </button>
-                </td>
-                {showDownloadedAt && (
-                  <td>
-                    {report.downloaded_at
-                      ? formatDateTime(report.downloaded_at)
-                      : 'Not yet downloaded'}
-                  </td>
-                )}
+    <>
+      <table className="usa-table usa-table--striped">
+        {data && data.length > 0 ? (
+          <>
+            <thead>
+              <tr>
+                <th>Uploaded on</th>
+                <th>Reflects data submitted through</th>
+                <th>Files</th>
+                <th>Notes</th>
+                {showDownloadedAt && <th>Downloaded At</th>}
               </tr>
-            ))}
+            </thead>
+            <tbody>
+              {data.map((report) => (
+                <tr key={report.id}>
+                  <td>{formatDateTime(report.created_at)}</td>
+                  <td>{formatDate(report.date_extracted_on)}</td>
+                  <td>
+                    <button
+                      type="button"
+                      className="usa-link"
+                      onClick={() => handleDownload(report)}
+                      disabled={downloadingId === report.id}
+                      aria-label={`Download ${report.original_filename}`}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        padding: 0,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {downloadingId === report.id
+                        ? 'Downloading...'
+                        : report.original_filename || 'Download'}
+                    </button>
+                  </td>
+                  <td>
+                    {report.notes ? (
+                      <div>
+                        <span>
+                          {report.notes.length > 120
+                            ? `${report.notes.slice(0, 120)}... `
+                            : report.notes}
+                        </span>
+                        {report.notes.length > 120 && (
+                          <button
+                            type="button"
+                            className="usa-button usa-button--unstyled"
+                            aria-label={`Read more notes for ${
+                              report.original_filename || `report ${report.id}`
+                            }`}
+                            onClick={() => setActiveNotesReport(report)}
+                          >
+                            Read more
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      'No notes'
+                    )}
+                  </td>
+                  {showDownloadedAt && (
+                    <td>
+                      {report.downloaded_at
+                        ? formatDateTime(report.downloaded_at)
+                        : 'Not yet downloaded'}
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </>
+        ) : (
+          <tbody>
+            <tr>
+              <td
+                colSpan={showDownloadedAt ? 5 : 4}
+                style={{
+                  border: '0',
+                  backgroundColor: 'white',
+                  padding: '1rem 0',
+                }}
+              >
+                No feedback reports available for this fiscal year.
+              </td>
+            </tr>
           </tbody>
-        </>
-      ) : (
-        <tbody>
-          <tr>
-            <td
-              colSpan={showDownloadedAt ? 4 : 3}
-              style={{
-                border: '0',
-                backgroundColor: 'white',
-                padding: '1rem 0',
-              }}
-            >
-              No feedback reports available for this fiscal year.
-            </td>
-          </tr>
-        </tbody>
+        )}
+      </table>
+
+      {activeNotesReport && (
+        <NotesModal
+          filename={activeNotesReport.original_filename}
+          notes={activeNotesReport.notes}
+          onClose={() => setActiveNotesReport(null)}
+        />
       )}
-    </table>
+    </>
   )
 }
 

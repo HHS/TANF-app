@@ -12,6 +12,13 @@
         The report was uploaded on <b>{{ report_date }}</b>. Please review the feedback and, if needed, resubmit complete and accurate data.
     </p>
 
+    {% if notes %}
+    <div style="margin: 20px 0; padding: 16px; background-color: #f0f0f0; border-left: 4px solid #005ea2;">
+        <p style="margin: 0 0 8px 0; font-weight: bold; font-size: 16px;">Notes from OFA:</p>
+        <p style="margin: 0; white-space: pre-wrap; font-size: 14px; line-height: 1.5;">{{ notes }}</p>
+    </div>
+    {% endif %}
+
     <p>
         <a
             class="button"

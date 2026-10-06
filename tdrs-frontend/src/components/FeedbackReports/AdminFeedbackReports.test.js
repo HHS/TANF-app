@@ -652,6 +652,84 @@ describe('AdminFeedbackReports', () => {
       expect(formData.get('report_type')).toBe('TANF_SSP')
     })
 
+    it('successfully uploads a file with optional notes included in FormData and clears notes on success', async () => {
+      post.mockResolvedValue({
+        data: {
+          id: 1,
+          status: 'PENDING',
+          original_filename: 'FY2025.zip',
+        },
+        ok: true,
+        status: 200,
+        error: null,
+      })
+
+      get.mockResolvedValue({
+        data: { results: [] },
+        ok: true,
+        status: 200,
+        error: null,
+      })
+
+      renderComponent()
+
+      await selectFiscalYear('2025')
+      await selectFile('FY2025.zip')
+      setDateInputValue('2025-02-28')
+
+      // Fill out notes
+      const notesTextarea = screen.getByLabelText('Notes (optional)')
+      fireEvent.change(notesTextarea, {
+        target: { value: 'Important notes regarding data update' },
+      })
+
+      const uploadButton = screen.getByRole('button', {
+        name: /Upload & Notify STTs/i,
+      })
+      fireEvent.click(uploadButton)
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(
+            /Feedback report uploaded successfully! Processing has begun/
+          )
+        ).toBeInTheDocument()
+      })
+
+      const formData = post.mock.calls[0][1]
+      expect(formData.get('notes')).toBe(
+        'Important notes regarding data update'
+      )
+
+      // Notes should be cleared after success
+      expect(notesTextarea.value).toBe('')
+    })
+
+    it('blocks upload and displays error when notes contain HTML tags or JavaScript', async () => {
+      renderComponent()
+
+      await selectFiscalYear('2025')
+      await selectFile('FY2025.zip')
+      setDateInputValue('2025-02-28')
+
+      const notesTextarea = screen.getByLabelText('Notes (optional)')
+      fireEvent.change(notesTextarea, {
+        target: { value: '<script>alert("xss")</script>' },
+      })
+
+      const uploadButton = screen.getByRole('button', {
+        name: /Upload & Notify STTs/i,
+      })
+      fireEvent.click(uploadButton)
+
+      expect(
+        screen.getByText(
+          'HTML and JavaScript are not allowed in the notes field.'
+        )
+      ).toBeInTheDocument()
+      expect(post).not.toHaveBeenCalled()
+    })
+
     it('shows error message when upload fails', async () => {
       post.mockResolvedValue({
         data: {

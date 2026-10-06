@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
@@ -6,6 +6,7 @@ import {
   faXmarkCircle,
   faClock,
 } from '@fortawesome/free-solid-svg-icons'
+import NotesModal from './NotesModal'
 
 /**
  * ReportSourceStatusIcon displays a status icon for report source processing states.
@@ -77,82 +78,121 @@ function FeedbackReportsHistory({
   formatDateTime,
   onViewDownloadStatistics,
 }) {
+  const [activeNotesReport, setActiveNotesReport] = useState(null)
+
   return (
-    <table className="usa-table usa-table--striped">
-      <caption>Upload History</caption>
-      {data && data.length > 0 ? (
-        <>
-          <thead>
-            <tr>
-              <th>Feedback Uploaded On</th>
-              <th>Data Extracted On</th>
-              <th>Notifications Sent On</th>
-              <th>Status</th>
-              <th style={{ minWidth: '200px' }}>Error</th>
-              <th>File</th>
-              <th>Downloaded by</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((report) => (
-              <tr key={report.id}>
-                <td>{formatDateTime(report.created_at)}</td>
-                <td>{formatDate(report.date_extracted_on)}</td>
-                <td>{formatDateTime(report.processed_at)}</td>
-                <td style={{ textWrap: 'nowrap' }}>
-                  <ReportSourceStatusIcon status={report.status} />
-                  {formatStatusDisplay(report.status)}
-                </td>
-                <td>{report.error_message || 'None'}</td>
-                <td>
-                  {report.original_filename ? (
-                    <a
-                      href={report.file}
-                      download={report.original_filename}
-                      className="usa-link"
-                    >
-                      {report.original_filename}
-                    </a>
-                  ) : (
-                    'N/A'
-                  )}
-                </td>
-                <td>
-                  <button
-                    type="button"
-                    className="usa-button usa-button--unstyled text-no-wrap"
-                    aria-label={`View download statistics for ${
-                      report.original_filename || `report source ${report.id}`
-                    }`}
-                    onClick={() => onViewDownloadStatistics(report.id)}
-                  >
-                    {report.downloaded_count || 0}{' '}
-                    {report.downloaded_count === 1
-                      ? 'jurisdiction'
-                      : 'jurisdictions'}
-                  </button>
-                </td>
+    <>
+      <table className="usa-table usa-table--striped">
+        <caption>Upload History</caption>
+        {data && data.length > 0 ? (
+          <>
+            <thead>
+              <tr>
+                <th>Feedback Uploaded On</th>
+                <th>Data Extracted On</th>
+                <th>Notifications Sent On</th>
+                <th>Status</th>
+                <th style={{ minWidth: '200px' }}>Error</th>
+                <th>File</th>
+                <th>Notes</th>
+                <th>Downloaded by</th>
               </tr>
-            ))}
+            </thead>
+            <tbody>
+              {data.map((report) => (
+                <tr key={report.id}>
+                  <td>{formatDateTime(report.created_at)}</td>
+                  <td>{formatDate(report.date_extracted_on)}</td>
+                  <td>{formatDateTime(report.processed_at)}</td>
+                  <td style={{ textWrap: 'nowrap' }}>
+                    <ReportSourceStatusIcon status={report.status} />
+                    {formatStatusDisplay(report.status)}
+                  </td>
+                  <td>{report.error_message || 'None'}</td>
+                  <td>
+                    {report.original_filename ? (
+                      <a
+                        href={report.file}
+                        download={report.original_filename}
+                        className="usa-link"
+                      >
+                        {report.original_filename}
+                      </a>
+                    ) : (
+                      'N/A'
+                    )}
+                  </td>
+                  <td>
+                    {report.notes ? (
+                      <div>
+                        <span>
+                          {report.notes.length > 120
+                            ? `${report.notes.slice(0, 120)}... `
+                            : report.notes}
+                        </span>
+                        {report.notes.length > 120 && (
+                          <button
+                            type="button"
+                            className="usa-button usa-button--unstyled"
+                            aria-label={`Read more notes for ${
+                              report.original_filename ||
+                              `report source ${report.id}`
+                            }`}
+                            onClick={() => setActiveNotesReport(report)}
+                          >
+                            Read more
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      'No Notes'
+                    )}
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      className="usa-button usa-button--unstyled text-no-wrap"
+                      aria-label={`View download statistics for ${
+                        report.original_filename || `report source ${report.id}`
+                      }`}
+                      onClick={() => onViewDownloadStatistics(report.id)}
+                    >
+                      {report.downloaded_count || 0}{' '}
+                      {report.downloaded_count === 1
+                        ? 'jurisdiction'
+                        : 'jurisdictions'}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </>
+        ) : (
+          <tbody>
+            <tr>
+              <td
+                colSpan="8"
+                style={{
+                  border: '0',
+                  backgroundColor: 'white',
+                  padding: '0',
+                }}
+              >
+                No data available.
+              </td>
+            </tr>
           </tbody>
-        </>
-      ) : (
-        <tbody>
-          <tr>
-            <td
-              colSpan="7"
-              style={{
-                border: '0',
-                backgroundColor: 'white',
-                padding: '0',
-              }}
-            >
-              No data available.
-            </td>
-          </tr>
-        </tbody>
+        )}
+      </table>
+
+      {activeNotesReport && (
+        <NotesModal
+          filename={activeNotesReport.original_filename}
+          notes={activeNotesReport.notes}
+          onClose={() => setActiveNotesReport(null)}
+        />
       )}
-    </table>
+    </>
   )
 }
 

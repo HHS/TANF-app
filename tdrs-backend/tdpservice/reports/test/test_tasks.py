@@ -507,6 +507,61 @@ class TestProcessReportSource:
         assert report_file.year == 2024
         assert report_file.date_extracted_on == date(2024, 9, 30)
 
+    def test_process_copies_source_notes_to_report_files(self, ofa_admin):
+        """Should copy source notes to all created ReportFile records."""
+        from tdpservice.stts.models import STT, Region
+
+        region = Region.objects.create(id=9030, name="Test Region Notes")
+        STT.objects.create(
+            id=8030,
+            stt_code="01",
+            name="Test STT Notes 1",
+            region=region,
+            postal_code="N1",
+            type="STATE",
+        )
+        STT.objects.create(
+            id=8031,
+            stt_code="02",
+            name="Test STT Notes 2",
+            region=region,
+            postal_code="N2",
+            type="STATE",
+        )
+
+        structure = {
+            "FY2025": {
+                "RO9030": {"F1": ["report1.pdf"], "F2": ["report2.pdf"]}
+            }
+        }
+        zip_buffer = create_nested_zip(structure, "FY2025_test")
+
+        uploaded_file = SimpleUploadedFile(
+            "report_source.zip", zip_buffer.read(), content_type="application/zip"
+        )
+
+        test_notes = "Important notes for FY2025 batch upload."
+        source = ReportSource.objects.create(
+            uploaded_by=ofa_admin,
+            original_filename="report_source.zip",
+            slug="report_source.zip",
+            file=uploaded_file,
+            year=2025,
+            notes=test_notes,
+            date_extracted_on=date(2025, 1, 31),
+        )
+
+        process_report_source(source.id)
+
+        source.refresh_from_db()
+        assert source.status == ReportSource.Status.SUCCEEDED
+        assert source.num_reports_created == 2
+
+        report_files = ReportFile.objects.filter(source=source)
+        assert report_files.count() == 2
+        for rf in report_files:
+            assert rf.notes == test_notes
+
 
 @pytest.mark.django_db
 class TestProcessReportSourceReportType:

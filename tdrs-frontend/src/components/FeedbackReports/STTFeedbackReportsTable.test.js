@@ -1,5 +1,11 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import STTFeedbackReportsTable from './STTFeedbackReportsTable'
 import { get } from '../../fetch-instance'
 import { downloadBlob } from '../../utils/fileDownload'
@@ -66,6 +72,7 @@ describe('STTFeedbackReportsTable', () => {
         screen.getByText('Reflects data submitted through')
       ).toBeInTheDocument()
       expect(screen.getByText('Files')).toBeInTheDocument()
+      expect(screen.getByText('Notes')).toBeInTheDocument()
       expect(screen.queryByText('Downloaded At')).not.toBeInTheDocument()
     })
 
@@ -493,6 +500,73 @@ describe('STTFeedbackReportsTable', () => {
         })
         expect(secondButton).not.toHaveAttribute('disabled')
       })
+    })
+  })
+
+  describe('Notes column', () => {
+    it('displays "No notes" when report has no notes', () => {
+      const mockData = [
+        {
+          id: 1,
+          date_extracted_on: '2025-02-28',
+          created_at: '2025-03-05T10:41:00Z',
+          original_filename: 'report.zip',
+          notes: '',
+        },
+      ]
+
+      renderComponent(mockData)
+
+      expect(screen.getByText('No notes')).toBeInTheDocument()
+    })
+
+    it('displays short note text directly without Read more button', () => {
+      const mockData = [
+        {
+          id: 1,
+          date_extracted_on: '2025-02-28',
+          created_at: '2025-03-05T10:41:00Z',
+          original_filename: 'report.zip',
+          notes: 'Short note for this STT.',
+        },
+      ]
+
+      renderComponent(mockData)
+
+      expect(screen.getByText('Short note for this STT.')).toBeInTheDocument()
+      expect(screen.queryByText('Read more')).not.toBeInTheDocument()
+    })
+
+    it('displays truncated note with Read more button when notes exceed 120 chars, and opens modal on click', () => {
+      const longNote =
+        'This is a very long note for STTs that exceeds one hundred and twenty characters in length so that it will be truncated and show a Read more link in the table.'
+      const mockData = [
+        {
+          id: 1,
+          date_extracted_on: '2025-02-28',
+          created_at: '2025-03-05T10:41:00Z',
+          original_filename: 'report.zip',
+          notes: longNote,
+        },
+      ]
+
+      renderComponent(mockData)
+
+      expect(screen.getByText('Read more')).toBeInTheDocument()
+
+      // Click Read more to open modal
+      fireEvent.click(screen.getByText('Read more'))
+
+      const dialog = screen.getByRole('dialog', { name: 'Notes' })
+      expect(dialog).toBeInTheDocument()
+      expect(within(dialog).getByText(longNote)).toBeInTheDocument()
+      expect(within(dialog).getByText('report.zip')).toBeInTheDocument()
+
+      // Close modal
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Close' }))
+      expect(
+        screen.queryByRole('dialog', { name: 'Notes' })
+      ).not.toBeInTheDocument()
     })
   })
 })

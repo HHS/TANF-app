@@ -409,4 +409,49 @@ describe('FeedbackReportsUpload', () => {
       document.body.removeChild(externalInput)
     })
   })
+
+  describe('Notes field', () => {
+    it('renders label, hint, textarea, and character counter', () => {
+      renderComponent()
+
+      expect(screen.getByText('Notes (optional)')).toBeInTheDocument()
+      expect(
+        screen.getByText(
+          'Notes will be displayed to STTs when additional detail is needed to contextualize a report'
+        )
+      ).toBeInTheDocument()
+      const textarea = screen.getByLabelText('Notes (optional)')
+      expect(textarea).toBeInTheDocument()
+      expect(textarea).toHaveAttribute('maxlength', '2000')
+      expect(screen.getByText('0/2000 (2000 remaining)')).toBeInTheDocument()
+    })
+
+    it('displays dynamic character count when notes prop is provided', () => {
+      renderComponent({ notes: 'Testing 1 2 3' })
+
+      expect(screen.getByText('13/2000 (1987 remaining)')).toBeInTheDocument()
+    })
+
+    it('triggers onNotesChange when user types in textarea', () => {
+      const mockOnNotesChange = jest.fn()
+      renderComponent({ onNotesChange: mockOnNotesChange })
+
+      const textarea = screen.getByLabelText('Notes (optional)')
+      fireEvent.change(textarea, { target: { value: 'New note' } })
+
+      expect(mockOnNotesChange).toHaveBeenCalledTimes(1)
+    })
+
+    it('displays notesError when provided', () => {
+      renderComponent({
+        notesError: 'HTML and JavaScript are not allowed in the notes field.',
+      })
+
+      expect(
+        screen.getByText(
+          'HTML and JavaScript are not allowed in the notes field.'
+        )
+      ).toBeInTheDocument()
+    })
+  })
 })
