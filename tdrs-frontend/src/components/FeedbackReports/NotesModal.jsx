@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import { useFocusTrap } from '../../hooks/useFocusTrap'
-import '../../assets/NotesModal.scss'
 
 /**
  * NotesModal component displays the full notes associated with a feedback report upload.
