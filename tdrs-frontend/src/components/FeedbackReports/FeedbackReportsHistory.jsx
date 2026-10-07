@@ -101,6 +101,8 @@ function FeedbackReportsHistory({
                     minWidth: '100ch',
                     maxWidth: '100ch',
                     whiteSpace: 'normal',
+                    paddingRight: '2rem',
+                    boxSizing: 'border-box',
                   }}
                 >
                   Notes
@@ -152,15 +154,19 @@ function FeedbackReportsHistory({
                       minWidth: '100ch',
                       maxWidth: '100ch',
                       whiteSpace: 'normal',
+                      paddingRight: '2rem',
+                      boxSizing: 'border-box',
                     }}
                   >
                     {report.notes ? (
                       <div
                         style={{
-                          width: '100ch',
-                          minWidth: '100ch',
-                          maxWidth: '100ch',
+                          width: '100%',
+                          maxWidth: '100%',
+                          boxSizing: 'border-box',
                           whiteSpace: 'normal',
+                          wordBreak: 'break-word',
+                          overflowWrap: 'break-word',
                         }}
                       >
                         <span
