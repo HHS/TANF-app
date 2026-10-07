@@ -136,3 +136,18 @@
   }
 }
 
+.notes-read-more-button {
+  display: inline !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  vertical-align: baseline;
+  text-decoration: underline;
+
+  &:focus,
+  &:active {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+}
+
+

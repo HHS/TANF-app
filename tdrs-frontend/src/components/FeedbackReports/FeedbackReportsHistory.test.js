@@ -664,10 +664,12 @@ describe('FeedbackReportsHistory', () => {
       expect(
         screen.getByText('Short note for this upload.')
       ).toBeInTheDocument()
-      expect(screen.queryByText('Read more')).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: /Read more notes for/i })
+      ).not.toBeInTheDocument()
     })
 
-    it('displays truncated note with Read more button when notes exceed 290 characters, and opens modal on click', () => {
+    it('displays truncated note with inline ... button when notes exceed 290 characters, and opens modal on click', () => {
       const longNote = 'A'.repeat(320)
       const mockData = [
         {
@@ -684,11 +686,15 @@ describe('FeedbackReportsHistory', () => {
 
       renderComponent({ data: mockData })
 
-      expect(screen.getByText(`${'A'.repeat(290)}...`)).toBeInTheDocument()
-      expect(screen.getByText('Read more')).toBeInTheDocument()
+      expect(screen.getByText('A'.repeat(290))).toBeInTheDocument()
+      const ellipsisButton = screen.getByRole('button', {
+        name: /Read more notes for/i,
+      })
+      expect(ellipsisButton).toBeInTheDocument()
+      expect(ellipsisButton).toHaveTextContent('...')
 
-      // Click Read more to open modal
-      fireEvent.click(screen.getByText('Read more'))
+      // Click ... to open modal
+      fireEvent.click(ellipsisButton)
 
       const dialog = screen.getByRole('dialog', { name: 'Notes' })
       expect(dialog).toBeInTheDocument()
@@ -702,7 +708,7 @@ describe('FeedbackReportsHistory', () => {
       ).not.toBeInTheDocument()
     })
 
-    it('does not show Read more for notes with 290 or fewer characters', () => {
+    it('does not show ... button for notes with 290 or fewer characters', () => {
       const note290 = 'B'.repeat(290)
       const mockData = [
         {
@@ -719,7 +725,9 @@ describe('FeedbackReportsHistory', () => {
 
       renderComponent({ data: mockData })
       expect(screen.getByText(note290)).toBeInTheDocument()
-      expect(screen.queryByText('Read more')).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: /Read more notes for/i })
+      ).not.toBeInTheDocument()
     })
 
     it('applies vertical-align: top to data rows', () => {

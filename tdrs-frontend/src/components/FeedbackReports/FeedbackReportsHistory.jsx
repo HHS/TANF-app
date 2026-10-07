@@ -157,8 +157,6 @@ function FeedbackReportsHistory({
                     {report.notes ? (
                       <div
                         style={{
-                          display: 'flex',
-                          flexDirection: 'column',
                           width: '100ch',
                           minWidth: '100ch',
                           maxWidth: '100ch',
@@ -172,24 +170,30 @@ function FeedbackReportsHistory({
                             overflowWrap: 'break-word',
                           }}
                         >
-                          {report.notes.length > 290
-                            ? `${report.notes.slice(0, 290)}... `
-                            : report.notes}
+                          {report.notes.length > 290 ? (
+                            <>
+                              {report.notes.slice(0, 290)}
+                              <button
+                                type="button"
+                                className="usa-button usa-button--unstyled notes-read-more-button"
+                                style={{
+                                  display: 'inline',
+                                  outline: 'none',
+                                  boxShadow: 'none',
+                                }}
+                                aria-label={`Read more notes for ${
+                                  report.original_filename ||
+                                  `report source ${report.id}`
+                                }`}
+                                onClick={() => setActiveNotesReport(report)}
+                              >
+                                ...
+                              </button>
+                            </>
+                          ) : (
+                            report.notes
+                          )}
                         </span>
-                        {report.notes.length > 290 && (
-                          <button
-                            type="button"
-                            className="usa-button usa-button--unstyled margin-top-05"
-                            style={{ alignSelf: 'flex-start' }}
-                            aria-label={`Read more notes for ${
-                              report.original_filename ||
-                              `report source ${report.id}`
-                            }`}
-                            onClick={() => setActiveNotesReport(report)}
-                          >
-                            Read more
-                          </button>
-                        )}
                       </div>
                     ) : (
                       'No Notes'
