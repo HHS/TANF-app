@@ -82,15 +82,11 @@ class ParserModelSet:
 
 def _program_code(data_file):
     """Project a parser protocol program code from production or shadow data."""
-    if isinstance(data_file, ShadowDataFile):
-        return data_file.program_type
     return data_file.program.code
 
 
 def _section_name(data_file):
     """Project a parser protocol section name from production or shadow data."""
-    if isinstance(data_file, ShadowDataFile):
-        return data_file.section
     return data_file.section.name
 
 

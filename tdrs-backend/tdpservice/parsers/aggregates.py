@@ -2,7 +2,6 @@
 
 from django.db.models import Q as Query
 
-from tdpservice.data_files.models import ShadowDataFile
 from tdpservice.parsers.models import ParserError, ParserErrorCategoryChoices
 from tdpservice.parsers.schema_defs.utils import ProgramManager
 from tdpservice.parsers.util import (
@@ -20,16 +19,12 @@ def case_aggregates_by_month(
     record_model_resolver=lambda model: model,
 ):
     """Return case aggregates by month."""
-    is_shadow = isinstance(df, ShadowDataFile)
-    program_type = df.program_type if is_shadow else df.program.code
-    section_name = df.section if is_shadow else df.section.name
-
     # from datafile year/quarter, generate short month names for each month in quarter ala 'Jan', 'Feb', 'Mar'
     calendar_year, calendar_qtr = fiscal_to_calendar(df.year, df.quarter)
     month_list = transform_to_months(calendar_qtr)
 
     schemas = ProgramManager.get_schemas(
-        program_type, section_name, df.is_program_audit
+        df.program.code, df.section.name, df.is_program_audit
     )
 
     aggregate_data = {"months": [], "rejected": 0}

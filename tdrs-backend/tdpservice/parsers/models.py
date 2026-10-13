@@ -11,7 +11,7 @@ from django.db.models import Case, Count, IntegerField, When
 
 from tdpservice.backends import DataFilesS3Storage
 from tdpservice.common.shadow_models import create_shadow_model
-from tdpservice.data_files.models import DataFile, ShadowDataFile
+from tdpservice.data_files.models import DataFile
 from tdpservice.data_files.parser_error_choices import ParserErrorCategoryChoices
 
 logger = logging.getLogger(__name__)
@@ -20,13 +20,7 @@ logger = logging.getLogger(__name__)
 def get_s3_upload_path(instance, filename):
     """Produce a unique upload path for S3 files for a given STT and Quarter."""
     df = instance.datafile
-    is_shadow = isinstance(df, ShadowDataFile)
-    program_code = df.program_type if is_shadow else df.program.code
-    section_name = df.section if is_shadow else df.section.name
-
-    file_path = (
-        f"data_files/{df.year}/{df.quarter}/{df.stt.id}/{program_code}/{section_name}/"
-    )
+    file_path = f"data_files/{df.year}/{df.quarter}/{df.stt.id}/{df.program.code}/{df.section.name}/"
 
     file_name_info = filename
 

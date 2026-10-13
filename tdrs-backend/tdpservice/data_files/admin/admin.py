@@ -620,13 +620,14 @@ class ShadowDataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     """Shadow admin model for convenience."""
 
     inlines = [DataFileStateTransitionInline]
+    list_select_related = ["section__program", "stt"]
     list_display = [
         "id",
         "stt",
         # "parsing_state",
         "year",
         "quarter",
-        "program_type",
+        "program",
         "section",
         "is_program_audit",
         "version",
@@ -635,7 +636,7 @@ class ShadowDataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "stt",
         "year",
         "quarter",
-        "program_type",
+        "section__program",
         "section",
         "is_program_audit",
         "stt__type",

@@ -59,23 +59,25 @@ func stateTransitionTestPool(t *testing.T) (*pgxpool.Pool, context.Context) {
 		CREATE TABLE data_files_datafile (
 			id integer PRIMARY KEY, original_filename text NOT NULL, slug text NOT NULL,
 			extension text NOT NULL, quarter text NOT NULL, year integer NOT NULL,
-			section text NOT NULL, version integer NOT NULL, stt_id integer NOT NULL,
+			version integer NOT NULL, stt_id integer NOT NULL,
 			user_id uuid NOT NULL, created_at timestamptz NOT NULL, file text,
-			s3_versioning_id text, program_type text NOT NULL,
+			s3_versioning_id text,
 			is_program_audit boolean NOT NULL, state text NOT NULL,
 			state_changed_at timestamptz NOT NULL DEFAULT NOW(),
-			section_id integer REFERENCES data_files_section
+			section_id integer NOT NULL REFERENCES data_files_section
 		);
 		CREATE TABLE shadow_data_files_datafile (LIKE data_files_datafile INCLUDING ALL);
+		ALTER TABLE shadow_data_files_datafile
+		ADD FOREIGN KEY (section_id) REFERENCES data_files_section;
 		INSERT INTO data_files_program VALUES (1, 'TAN');
 		INSERT INTO data_files_section VALUES (1, 'Active Case Data', 1);
 		INSERT INTO data_files_datafile (
-			id, original_filename, slug, extension, quarter, year, section, version,
-			stt_id, user_id, created_at, program_type, is_program_audit, state,
+			id, original_filename, slug, extension, quarter, year, version,
+			stt_id, user_id, created_at, is_program_audit, state,
 			section_id
 		) VALUES (
-			42, 'data.txt', 'data-txt', 'txt', 'Q1', 2026, 'Legacy Section', 1,
-			1, '123e4567-e89b-12d3-a456-426614174000', NOW(), 'LEGACY', false,
+			42, 'data.txt', 'data-txt', 'txt', 'Q1', 2026, 1,
+			1, '123e4567-e89b-12d3-a456-426614174000', NOW(), false,
 			'parse_started', 1
 		);
 		INSERT INTO shadow_data_files_datafile
@@ -103,36 +105,50 @@ func stateTransitionTestPool(t *testing.T) (*pgxpool.Pool, context.Context) {
 	return pool, ctx
 }
 
-func TestGetDataFileProjectsCanonicalProductionValuesIntoShadow(t *testing.T) {
+func TestDataFileCanonicalSectionRoundTrip(t *testing.T) {
 	pool, ctx := stateTransitionTestPool(t)
 
 	dataFile, err := GetDataFile(ctx, pool, productionDataFileTable, 42)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if dataFile.ProgramType != "TAN" || dataFile.Section != "Active Case Data" {
+	if dataFile.SectionID != 1 || dataFile.ProgramType != "TAN" || dataFile.Section != "Active Case Data" {
 		t.Fatalf("production lookup returned program=%q section=%q", dataFile.ProgramType, dataFile.Section)
 	}
 
-	if err := EnsureDataFile(ctx, pool, shadowDataFileTable, dataFile); err != nil {
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO data_files_program VALUES (2, 'SSP');
+		INSERT INTO data_files_section VALUES (2, 'Closed Case Data', 2);
+		DELETE FROM shadow_data_files_datafile WHERE id = 42;
+	`); err != nil {
 		t.Fatal(err)
 	}
-	shadowDataFile, err := GetDataFile(ctx, pool, shadowDataFileTable, 42)
-	if err != nil {
+	for _, sectionID := range []int32{1, 2} {
+		dataFile.SectionID = sectionID
+		if err := EnsureDataFile(ctx, pool, shadowDataFileTable, dataFile); err != nil {
+			t.Fatal(err)
+		}
+		shadowDataFile, err := GetDataFile(ctx, pool, shadowDataFileTable, 42)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if shadowDataFile.SectionID != sectionID {
+			t.Fatalf("shadow section ID = %d, want %d", shadowDataFile.SectionID, sectionID)
+		}
+		if sectionID == 2 && (shadowDataFile.ProgramType != "SSP" || shadowDataFile.Section != "Closed Case Data") {
+			t.Fatalf("shadow lookup returned program=%q section=%q", shadowDataFile.ProgramType, shadowDataFile.Section)
+		}
+	}
+	var productionSectionID int32
+	if err := pool.QueryRow(ctx, "SELECT section_id FROM data_files_datafile WHERE id = 42").Scan(&productionSectionID); err != nil {
 		t.Fatal(err)
 	}
-	if shadowDataFile.ProgramType != "TAN" || shadowDataFile.Section != "Active Case Data" {
-		t.Fatalf("shadow lookup returned program=%q section=%q", shadowDataFile.ProgramType, shadowDataFile.Section)
+	if productionSectionID != 1 {
+		t.Fatalf("production section changed to %d", productionSectionID)
 	}
-
-	var legacyProgram, legacySection string
-	if err := pool.QueryRow(ctx, `
-		SELECT program_type, section FROM data_files_datafile WHERE id = 42
-	`).Scan(&legacyProgram, &legacySection); err != nil {
-		t.Fatal(err)
-	}
-	if legacyProgram != "LEGACY" || legacySection != "Legacy Section" {
-		t.Fatalf("production legacy values were changed to program=%q section=%q", legacyProgram, legacySection)
+	dataFile.SectionID = 999
+	if err := EnsureDataFile(ctx, pool, shadowDataFileTable, dataFile); err == nil {
+		t.Fatal("expected unknown Section foreign key to be rejected")
 	}
 }
 

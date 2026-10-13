@@ -452,3 +452,124 @@ def test_program_section_choices_migration_rejects_unknown_values(
             migration.validate_program_and_section_values(apps, None)
     finally:
         record.delete()
+
+
+@pytest.mark.django_db(transaction=True)
+def test_shadow_section_migration_preserves_classifications_and_reverses() -> None:
+    """Canonical conversion and rollback preserve shadow rows and audit flags."""
+    executor = MigrationExecutor(connection)
+    before = _migration_targets(
+        executor, "0037_merge_program_section_choices_and_parser_mode"
+    )
+    after = _migration_targets(executor, "0038_shadowdatafile_canonical_section")
+    try:
+        executor.migrate(before)
+        apps = executor.loader.project_state(before).apps
+        ShadowDataFile = apps.get_model("data_files", "ShadowDataFile")
+        Program = apps.get_model("data_files", "Program")
+        Section = apps.get_model("data_files", "Section")
+        user = apps.get_model("users", "User").objects.create(
+            username="shadow-migration"
+        )
+        stt = apps.get_model("stts", "STT").objects.create(name="Shadow migration STT")
+        expected = [
+            ("TAN", "Active Case Data", False),
+            ("SSP", "Active Case Data", False),
+            ("TRIBAL", "Aggregate Data", False),
+            ("FRA", "Work Outcomes of TANF Exiters", False),
+            ("TAN", "Active Case Data", True),
+            ("TRIBAL", "Closed Case Data", True),
+        ]
+        rows = []
+        for index, (code, name, audit) in enumerate(expected):
+            program, _ = Program.objects.get_or_create(
+                code=code, defaults={"slug": code.lower(), "name": code}
+            )
+            section, _ = Section.objects.get_or_create(program=program, name=name)
+            datafile = _create_data_file(
+                ShadowDataFile,
+                user,
+                stt,
+                slug=f"shadow-{index}",
+                program_type=code,
+                section=name,
+                audit=audit,
+            )
+            rows.append((datafile.pk, section.pk))
+
+        executor = MigrationExecutor(connection)
+        executor.migrate(after)
+        ShadowDataFile = executor.loader.project_state(after).apps.get_model(
+            "data_files", "ShadowDataFile"
+        )
+        for (file_id, section_id), (_, _, audit) in zip(rows, expected):
+            datafile = ShadowDataFile.objects.get(pk=file_id)
+            assert datafile.section_id == section_id
+            assert datafile.is_program_audit is audit
+        assert ShadowDataFile._meta.get_field("section").null is False
+        assert "program_type" not in {
+            field.name for field in ShadowDataFile._meta.fields
+        }
+
+        executor = MigrationExecutor(connection)
+        executor.migrate(before)
+        ShadowDataFile = executor.loader.project_state(before).apps.get_model(
+            "data_files", "ShadowDataFile"
+        )
+        for (file_id, _), (code, name, audit) in zip(rows, expected):
+            datafile = ShadowDataFile.objects.get(pk=file_id)
+            assert (datafile.program_type, datafile.section) == (code, name)
+            assert datafile.is_program_audit is audit
+    finally:
+        executor = MigrationExecutor(connection)
+        executor.migrate(executor.loader.graph.leaf_nodes())
+
+
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.parametrize(
+    "code,name",
+    [
+        ("UNKNOWN", "Active Case Data"),
+        ("TAN", "Unknown Section"),
+        ("FRA", "Active Case Data"),
+    ],
+)
+def test_shadow_section_migration_rejects_unmapped_classifications(
+    code: str, name: str
+) -> None:
+    """Unmapped classifications fail without discarding the legacy columns."""
+    executor = MigrationExecutor(connection)
+    before = _migration_targets(
+        executor, "0037_merge_program_section_choices_and_parser_mode"
+    )
+    after = _migration_targets(executor, "0038_shadowdatafile_canonical_section")
+    invalid_id = None
+    try:
+        executor.migrate(before)
+        apps = executor.loader.project_state(before).apps
+        ShadowDataFile = apps.get_model("data_files", "ShadowDataFile")
+        user = apps.get_model("users", "User").objects.create(username="invalid-shadow")
+        stt = apps.get_model("stts", "STT").objects.create(name="Invalid shadow STT")
+        catalog_migration = importlib.import_module(
+            "tdpservice.data_files.migrations.0031_backfill_datafile_section_ref"
+        )
+        catalog_migration.ensure_canonical_sections(apps)
+        datafile = _create_data_file(
+            ShadowDataFile,
+            user,
+            stt,
+            slug="invalid-shadow",
+            program_type=code,
+            section=name,
+        )
+        invalid_id = datafile.pk
+        executor = MigrationExecutor(connection)
+        with pytest.raises(RuntimeError, match="unmapped classifications"):
+            executor.migrate(after)
+        datafile.refresh_from_db()
+        assert (datafile.program_type, datafile.section) == (code, name)
+    finally:
+        if invalid_id is not None:
+            ShadowDataFile.objects.filter(pk=invalid_id).delete()
+        executor = MigrationExecutor(connection)
+        executor.migrate(executor.loader.graph.leaf_nodes())

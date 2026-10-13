@@ -5,16 +5,83 @@ from io import BytesIO
 import pytest
 from openpyxl import load_workbook
 
-from tdpservice.data_files.error_reports import ActiveClosedErrorReport
-from tdpservice.data_files.models import Program, Section
+from tdpservice.data_files.error_reports import (
+    ActiveClosedErrorReport,
+    ErrorReportFactory,
+)
+from tdpservice.data_files.models import (
+    Program,
+    Section,
+    ShadowDataFile,
+    create_or_update_shadow_data_file,
+)
 from tdpservice.data_files.parser_error_choices import ParserErrorCategoryChoices
 from tdpservice.data_files.test.factories import DataFileFactory
+from tdpservice.parsers.models import ParserError, ShadowParserError
 from tdpservice.parsers.test.factories import ParserErrorFactory
 
 KNOWLEDGE_CENTER_URL = (
     "https://tdp-project-updates.app.cloud.gov/knowledge-center/"
     "viewing-error-reports.html"
 )
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("is_shadow", [False, True])
+@pytest.mark.parametrize(
+    "section_name,program_code,sheet_name,first_column",
+    [
+        (Section.Name.ACTIVE_CASE_DATA, Program.Code.TANF, "Critical", "Case Number"),
+        (Section.Name.CLOSED_CASE_DATA, Program.Code.TANF, "Critical", "Case Number"),
+        (Section.Name.AGGREGATE_DATA, Program.Code.TANF, "Critical", "Year"),
+        (Section.Name.STRATUM_DATA, Program.Code.TANF, "Critical", "Year"),
+        (Section.Name.FRA_WORK_OUTCOMES, Program.Code.FRA, "Error Report", "Exit Date"),
+    ],
+)
+def test_error_report_factory_generates_section_specific_workbook(
+    section_name: str,
+    program_code: str,
+    sheet_name: str,
+    first_column: str,
+    is_shadow: bool,
+) -> None:
+    """Production and shadow files produce the appropriate report layout."""
+    datafile = DataFileFactory.create(
+        section=section_name, program_type=program_code, file=None
+    )
+    parser_error_model = ParserError
+    if is_shadow:
+        datafile = create_or_update_shadow_data_file(datafile)
+        parser_error_model = ShadowParserError
+
+    report = ErrorReportFactory.get_error_report_generator(datafile, parser_error_model)
+    output = report.generate()
+    workbook = load_workbook(BytesIO(output.getvalue()))
+
+    assert workbook[sheet_name]["A1"].value == first_column
+
+
+@pytest.mark.parametrize("is_shadow", [False, True])
+@pytest.mark.parametrize(
+    "section_name",
+    [
+        f"{Section.Name.ACTIVE_CASE_DATA} Extra",
+        f"{Section.Name.CLOSED_CASE_DATA} Extra",
+        f"{Section.Name.AGGREGATE_DATA} Extra",
+        f"{Section.Name.STRATUM_DATA} Extra",
+    ],
+)
+def test_error_report_factory_rejects_partial_section_matches(
+    section_name: str, is_shadow: bool
+) -> None:
+    """Unsupported names containing a valid name must not select a report."""
+    if is_shadow:
+        datafile = ShadowDataFile(section=Section(name=section_name))
+    else:
+        datafile = DataFileFactory.build(section=section_name)
+
+    with pytest.raises(ValueError, match=f"Unsupported section: {section_name}"):
+        ErrorReportFactory.get_error_report_generator(datafile)
 
 
 @pytest.fixture

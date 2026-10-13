@@ -150,16 +150,23 @@ def test_data_file_uniqueness_uses_canonical_section(data_file_instance):
 
 
 @pytest.mark.django_db
-def test_shadow_data_file_projects_scalar_canonical_values():
-    """Shadow rows store canonical classifications as unrestricted strings."""
+def test_shadow_data_file_uses_canonical_section():
+    """Shadow rows share production's required, protected classification."""
     data_file = DataFileFactory.create()
 
     shadow_data_file = create_or_update_shadow_data_file(data_file)
 
-    assert shadow_data_file.program_type == data_file.program.code == "TAN"
-    assert shadow_data_file.section == data_file.section.name == "Active Case Data"
-    assert ShadowDataFile._meta.get_field("program_type").choices is None
-    assert ShadowDataFile._meta.get_field("section").choices is None
+    assert shadow_data_file.section == data_file.section
+    assert shadow_data_file.program == data_file.program
+    field = ShadowDataFile._meta.get_field("section")
+    assert field.null is False
+    assert field.remote_field.on_delete is PROTECT
+    with pytest.raises(FieldDoesNotExist):
+        ShadowDataFile._meta.get_field("program_type")
+
+    data_file.delete()
+    with pytest.raises(ProtectedError):
+        shadow_data_file.section.delete()
 
 
 @pytest.mark.django_db

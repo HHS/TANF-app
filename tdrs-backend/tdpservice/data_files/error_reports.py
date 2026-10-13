@@ -10,7 +10,7 @@ from django.db.models import Count, Q
 
 import xlsxwriter
 
-from tdpservice.data_files.models import Section
+from tdpservice.data_files.models import DataFile, Section, ShadowDataFile
 from tdpservice.data_files.parser_error_choices import ParserErrorCategoryChoices
 from tdpservice.parsers.models import ParserError
 
@@ -19,21 +19,19 @@ class ErrorReportFactory:
     """Factory class for error report generators."""
 
     @staticmethod
-    def get_error_report_generator(datafile, parser_error_model=ParserError):
+    def get_error_report_generator(
+        datafile: DataFile | ShadowDataFile, parser_error_model=ParserError
+    ) -> "ErrorReportBase":
         """Get error report generator."""
-        section_name = (
-            datafile.section
-            if isinstance(datafile.section, str)
-            else datafile.section.name
-        )
-        if (
-            Section.Name.ACTIVE_CASE_DATA in section_name
-            or Section.Name.CLOSED_CASE_DATA in section_name
+        section_name = datafile.section.name
+        if section_name in (
+            Section.Name.ACTIVE_CASE_DATA,
+            Section.Name.CLOSED_CASE_DATA,
         ):
             return ActiveClosedErrorReport(datafile, parser_error_model)
-        elif (
-            Section.Name.AGGREGATE_DATA in section_name
-            or Section.Name.STRATUM_DATA in section_name
+        elif section_name in (
+            Section.Name.AGGREGATE_DATA,
+            Section.Name.STRATUM_DATA,
         ):
             return AggregateStratumErrorReport(datafile, parser_error_model)
         elif section_name == Section.Name.FRA_WORK_OUTCOMES:
