@@ -134,9 +134,7 @@ class DataFileSerializer(serializers.ModelSerializer):
             program_code = Program.Code.SSP
         elif validated_data.get("stt").type == "tribe":
             program_code = Program.Code.TRIBAL
-        elif Section.objects.filter(
-            program__code=Program.Code.FRA, name=section_name
-        ).exists():
+        elif Section.is_fra(section_name):
             program_code = Program.Code.FRA
         else:
             program_code = Program.Code.TANF
@@ -170,18 +168,14 @@ class DataFileSerializer(serializers.ModelSerializer):
         if file and section:
             validate_file_extension(
                 file.name,
-                is_fra=Section.objects.filter(
-                    program__code=Program.Code.FRA, name=section
-                ).exists(),
+                is_fra=Section.is_fra(section),
             )
 
         return data
 
     def validate_section(self, section):
         """Validate the section field."""
-        if Section.objects.filter(
-            program__code=Program.Code.FRA, name=section
-        ).exists():
+        if Section.is_fra(section):
             user = self.context.get("user")
             if not user.has_fra_access and not user.is_ofa_sys_admin:
                 raise serializers.ValidationError("Section cannot be FRA")

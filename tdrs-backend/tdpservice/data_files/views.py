@@ -270,9 +270,7 @@ class DataFileViewSet(ModelViewSet):
 
         if file_type == DataFileViewSet.SSP_FILE_TYPE:
             queryset = queryset.filter(section__program__code=Program.Code.SSP)
-        elif Section.objects.filter(
-            program__code=Program.Code.FRA, name=file_type
-        ).exists():
+        elif Section.is_fra(file_type):
             queryset = queryset.filter(
                 section__program__code=Program.Code.FRA, section__name=file_type
             )

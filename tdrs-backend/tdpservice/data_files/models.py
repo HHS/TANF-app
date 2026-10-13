@@ -79,6 +79,15 @@ class Section(models.Model):
     )
     name = models.CharField(max_length=100, choices=Name.choices)
 
+    @classmethod
+    def is_fra(cls, section_name: str | None) -> bool:
+        """Classify an API section name without querying the relationship catalog."""
+        return section_name in (
+            cls.Name.FRA_WORK_OUTCOMES,
+            cls.Name.FRA_SECONDARY_SCHOOL_ATTAINMENT,
+            cls.Name.FRA_SUPPLEMENTAL_WORK_OUTCOMES,
+        )
+
     class Meta:
         """Metadata."""
 
@@ -91,6 +100,7 @@ class Section(models.Model):
     def __str__(self):
         """Return the section name."""
         return f"{self.program.name} - {self.name}"
+
 
 def get_file_shasum(file: Union[File, StringIO]) -> str:
     """Derive the SHA256 checksum of a file."""
