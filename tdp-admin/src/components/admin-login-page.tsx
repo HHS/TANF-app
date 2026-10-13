@@ -1,12 +1,9 @@
 import { GridContainer, Link } from "@trussworks/react-uswds";
 import {
-  getAuthBaseUrl,
   getAdminLoginUrl,
-  getBackendBaseUrl,
   getAdminProviderLoginPath,
   checkBackendHealth,
 } from "@/lib/admin-auth";
-import { getBackendHealthSummary } from "@/lib/backend-health-display";
 
 type AdminLoginPageProps = {
   loginErrorMessage?: string;
@@ -15,10 +12,7 @@ type AdminLoginPageProps = {
 export default async function AdminLoginPage({
   loginErrorMessage = "",
 }: AdminLoginPageProps) {
-  const backendBaseUrl = getBackendBaseUrl();
-  const authBaseUrl = getAuthBaseUrl();
   const backendHealth = await checkBackendHealth();
-  const backendHealthSummary = getBackendHealthSummary(backendHealth);
   const loginGovUrl = getAdminLoginUrl("dotgov");
   const acfAmsUrl = getAdminLoginUrl("ams");
   const loginGovPath = getAdminProviderLoginPath("dotgov");
@@ -32,14 +26,13 @@ export default async function AdminLoginPage({
           <GridContainer className="grid-container-widescreen admin-login-page__shell">
             <div className="usa-hero__callout admin-login-page__callout">
               <h1 className="usa-hero__heading">
-                <span className="usa-hero__heading--alt font-serif-2xl margin-bottom-5">
-                  Sign in to TANF Admin Page
+                <span className="usa-hero__heading--alt">
+                  Sign in to TANF Admin
                 </span>
               </h1>
-              <p className="text-black margin-bottom-5 admin-login-page__lede">
-                Our vision is to build a secure, web-based reporting system that
-                improves the federal reporting experience for TANF grantees and
-                federal staff.
+              <p className="admin-login-page__lede">
+                Manage user accounts and support TANF reporting. Choose your
+                sign-in provider to continue.
               </p>
 
               {loginErrorMessage && (
@@ -111,17 +104,17 @@ export default async function AdminLoginPage({
 
               </div>
 
-              <div className="admin-login-page__details">
-                <p>
-                  <strong>Configured auth base:</strong> {authBaseUrl ?? "Not configured"}
-                </p>
-                <p>
-                  <strong>Configured backend:</strong> {backendBaseUrl ?? "Not configured"}
-                </p>
-                <p>
-                  <strong>Backend health:</strong> {backendHealthSummary}
-                </p>
-              </div>
+              {!backendHealth.ok && (
+                <div className="admin-login-page__details" role="status">
+                  <p>
+                    Sign-in services may be temporarily unavailable. If you cannot
+                    sign in, try again later or contact{" "}
+                    <a className="admin-login-page__inline-link" href="mailto:tanfdata@acf.hhs.gov">
+                      tanfdata@acf.hhs.gov
+                    </a>.
+                  </p>
+                </div>
+              )}
             </div>
           </GridContainer>
         </section>
