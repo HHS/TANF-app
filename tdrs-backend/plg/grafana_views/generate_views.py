@@ -14,6 +14,14 @@ import os
 
 CWD = os.path.dirname(os.path.abspath(__file__))
 
+DATAFILE_VIEW_SQL = """
+CREATE OR REPLACE VIEW data_files_datafile_view AS
+SELECT data_file.*, section.name AS section, program.code AS program_type
+FROM data_files_datafile AS data_file
+INNER JOIN data_files_section AS section ON section.id = data_file.section_id
+INNER JOIN data_files_program AS program ON program.id = section.program_id;
+"""
+
 query_template = """
 SELECT {fields}
     section.name AS section,
@@ -245,6 +253,9 @@ def main(is_admin):
 
     # Write helper functions SQL (required for date validation in views)
     write_helper_functions(output_dir)
+
+    with open(os.path.join(output_dir, "data_files_datafile_view.sql"), "w") as f:
+        f.write(DATAFILE_VIEW_SQL)
 
     # Process each schema type and its schemas
     for schema_type, schemas in schema_data.items():
