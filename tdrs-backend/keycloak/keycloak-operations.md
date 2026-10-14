@@ -37,35 +37,35 @@ cd tdrs-backend/keycloak
 
 **Parameters:**
 
-| Flag | Description | Example |
-|------|-------------|---------|
-| `-d` | Cloud Foundry RDS service name | `tdp-keycloak-db-dev` |
-| `-p` | Public hostname (creates `<hostname>.app.cloud.gov`) | `tdp-keycloak-dev` |
-| `-i` | Docker image URI | `ghcr.io/hhs/tdp-keycloak:latest` |
-| `-u` | Docker registry username | `myuser` |
+| Flag | Description                                          | Example                           |
+| ---- | ---------------------------------------------------- | --------------------------------- |
+| `-d` | Cloud Foundry RDS service name                       | `tdp-keycloak-db-dev`             |
+| `-p` | Public hostname (creates `<hostname>.app.cloud.gov`) | `tdp-keycloak-dev`                |
+| `-i` | Docker image URI                                     | `ghcr.io/hhs/tdp-keycloak:latest` |
+| `-u` | Docker registry username                             | `myuser`                          |
 
 **Required environment variables:**
 
-| Variable | Description |
-|----------|-------------|
-| `KEYCLOAK_ADMIN` | Admin console username |
-| `KEYCLOAK_ADMIN_PASSWORD` | Admin console password |
-| `KC_TDP_DJANGO_CLIENT_SECRET` | `tdp-django` client secret |
-| `KC_TDP_ADMIN_CLIENT_SECRET` | `tdp-admin` client secret |
-| `LOGIN_GOV_JWT_KEY` | Base64-encoded Login.gov RSA private key PEM |
-| `CF_DOCKER_PASSWORD` | Docker registry password/token |
-| `AMS_CLIENT_ID` | AMS OIDC client ID |
-| `AMS_CLIENT_SECRET` | AMS OIDC client secret |
+| Variable                      | Description                                  |
+| ----------------------------- | -------------------------------------------- |
+| `KEYCLOAK_ADMIN`              | Admin console username                       |
+| `KEYCLOAK_ADMIN_PASSWORD`     | Admin console password                       |
+| `KC_TDP_DJANGO_CLIENT_SECRET` | `tdp-django` client secret                   |
+| `KC_TDP_ADMIN_CLIENT_SECRET`  | `tdp-admin` client secret                    |
+| `LOGIN_GOV_JWT_KEY`           | Base64-encoded Login.gov RSA private key PEM |
+| `CF_DOCKER_PASSWORD`          | Docker registry password/token               |
+| `AMS_CLIENT_ID`               | AMS OIDC client ID                           |
+| `AMS_CLIENT_SECRET`           | AMS OIDC client secret                       |
 
 **Optional environment variables:**
 
-| Variable | Description |
-|----------|-------------|
-| `KC_TDP_GRAFANA_CLIENT_SECRET` | `tdp-grafana` client secret; defaults to an empty string |
-| `LOGIN_GOV_ACR_VALUES` | Login.gov identity assurance level |
-| `LOGIN_GOV_CLIENT_ID` and endpoint vars | Override Login.gov defaults in the realm import |
-| `AMS_AUTH_URL` and endpoint vars | Override AMS stage defaults in the realm import |
-| `KC_CLI_REDIRECT_URI` / `KC_CLI_WEB_ORIGIN` | Extra `tdp-cli` callback settings |
+| Variable                                    | Description                                              |
+| ------------------------------------------- | -------------------------------------------------------- |
+| `KC_TDP_GRAFANA_CLIENT_SECRET`              | `tdp-grafana` client secret; defaults to an empty string |
+| `LOGIN_GOV_ACR_VALUES`                      | Login.gov identity assurance level                       |
+| `LOGIN_GOV_CLIENT_ID` and endpoint vars     | Override Login.gov defaults in the realm import          |
+| `AMS_AUTH_URL` and endpoint vars            | Override AMS stage defaults in the realm import          |
+| `KC_CLI_REDIRECT_URI` / `KC_CLI_WEB_ORIGIN` | Extra `tdp-cli` callback settings                        |
 
 ### What the Deploy Script Does
 
@@ -104,11 +104,11 @@ cf logs "$APP_NAME" --recent
 
 Choose the app for the target environment:
 
-| Environment | App |
-|-------------|-----|
-| Dev | `keycloak-dev` |
-| Staging | `keycloak-staging` |
-| Prod | `keycloak` |
+| Environment | App                |
+| ----------- | ------------------ |
+| Dev         | `keycloak-dev`     |
+| Staging     | `keycloak-staging` |
+| Prod        | `keycloak`         |
 
 The import is idempotent and safe to run multiple times. `select-realm-config.sh` chooses the standard and admin realm exports from `DEPLOY_ENV` before Keycloak starts.
 
@@ -140,25 +140,27 @@ cf restart keycloak --strategy rolling
 If Keycloak exits unexpectedly (either the Keycloak or nginx process within the container):
 
 1. Check recent logs:
-   ```bash
-   cf logs keycloak --recent
-   ```
+
+    ```bash
+    cf logs keycloak --recent
+    ```
 
 2. Look for common causes:
-   - **Memory exhaustion**: Check `cf app keycloak` for memory usage. Default is 768M.
-   - **Database connection failure**: The RDS instance may be down or credentials may have changed.
-   - **Startup timeout**: Keycloak may not reach healthy state within the 90-attempt window.
+    - **Memory exhaustion**: Check `cf app keycloak` for memory usage. Default is 768M.
+    - **Database connection failure**: The RDS instance may be down or credentials may have changed.
+    - **Startup timeout**: Keycloak may not reach healthy state within the 90-attempt window.
 
 3. If the issue is transient, restart:
-   ```bash
-   cf restart keycloak
-   ```
+
+    ```bash
+    cf restart keycloak
+    ```
 
 4. If restarting doesn't help, redeploy:
-   ```bash
-   cd tdrs-backend/keycloak
-   ./deploy.sh -e <environment> -d <rds_service> -p <hostname> -i <image> -u <username>
-   ```
+    ```bash
+    cd tdrs-backend/keycloak
+    ./deploy.sh -e <environment> -d <rds_service> -p <hostname> -i <image> -u <username>
+    ```
 
 ### Scale Keycloak
 
@@ -174,19 +176,21 @@ cf scale keycloak -m 1G
 ### Rotate the Keycloak Admin Password
 
 1. Set the new password in your shell:
-   ```bash
-   export KEYCLOAK_ADMIN_PASSWORD="new-secure-password"
-   ```
+
+    ```bash
+    export KEYCLOAK_ADMIN_PASSWORD="new-secure-password"
+    ```
 
 2. Update the Cloud Foundry environment:
-   ```bash
-   cf set-env keycloak KEYCLOAK_ADMIN_PASSWORD "$KEYCLOAK_ADMIN_PASSWORD"
-   ```
+
+    ```bash
+    cf set-env keycloak KEYCLOAK_ADMIN_PASSWORD "$KEYCLOAK_ADMIN_PASSWORD"
+    ```
 
 3. Restage the app:
-   ```bash
-   cf restage keycloak
-   ```
+    ```bash
+    cf restage keycloak
+    ```
 
 Note: The admin password is used during initial admin-user creation and by the startup config import through `KEYCLOAK_USER` / `KEYCLOAK_PASSWORD`. Existing admin sessions use Keycloak-managed credentials in the database.
 
@@ -197,33 +201,36 @@ This secret is used by both the Django OIDC flow and the Admin REST API sync lay
 1. Generate a new secret (e.g., `openssl rand -hex 32`)
 
 2. Update the Keycloak app:
-   ```bash
-   cf set-env keycloak KC_TDP_DJANGO_CLIENT_SECRET "<new-secret>"
-   cf restage keycloak
-   ```
+
+    ```bash
+    cf set-env keycloak KC_TDP_DJANGO_CLIENT_SECRET "<new-secret>"
+    cf restage keycloak
+    ```
 
 3. Confirm the startup config import completed:
-   ```bash
-   cf logs keycloak --recent
-   ```
+
+    ```bash
+    cf logs keycloak --recent
+    ```
 
 4. Update **every** backend and celery app in the space:
-   ```bash
-   # Example for dev space
-   for app in tdp-backend-raft tdp-backend-qasp tdp-backend-a11y \
-              tdp-celery-raft tdp-celery-qasp tdp-celery-a11y; do
-       cf set-env $app KEYCLOAK_ADMIN_CLIENT_SECRET "<new-secret>"
-       cf set-env $app KEYCLOAK_DJANGO_CLIENT_SECRET "<new-secret>"
-   done
-   ```
+
+    ```bash
+    # Example for dev space
+    for app in tdp-backend-raft tdp-backend-qasp tdp-backend-a11y \
+               tdp-celery-raft tdp-celery-qasp tdp-celery-a11y; do
+        cf set-env $app KEYCLOAK_ADMIN_CLIENT_SECRET "<new-secret>"
+        cf set-env $app KEYCLOAK_DJANGO_CLIENT_SECRET "<new-secret>"
+    done
+    ```
 
 5. Restage all affected apps:
-   ```bash
-   for app in tdp-backend-raft tdp-backend-qasp tdp-backend-a11y \
-              tdp-celery-raft tdp-celery-qasp tdp-celery-a11y; do
-       cf restage $app
-   done
-   ```
+    ```bash
+    for app in tdp-backend-raft tdp-backend-qasp tdp-backend-a11y \
+               tdp-celery-raft tdp-celery-qasp tdp-celery-a11y; do
+        cf restage $app
+    done
+    ```
 
 **Impact:** During the window between restaging Keycloak and restaging the backends, auth and sync will fail. Coordinate to minimize this window.
 
@@ -234,42 +241,46 @@ The `tdp-admin` client is used by the standalone admin frontend OIDC flow.
 1. Generate a new secret.
 
 2. Update the Keycloak app:
-   ```bash
-   cf set-env keycloak KC_TDP_ADMIN_CLIENT_SECRET "<new-secret>"
-   cf restage keycloak
-   ```
+
+    ```bash
+    cf set-env keycloak KC_TDP_ADMIN_CLIENT_SECRET "<new-secret>"
+    cf restage keycloak
+    ```
 
 3. Confirm the startup config import completed so Keycloak updates the `tdp-admin` client:
-   ```bash
-   cf logs keycloak --recent
-   ```
+
+    ```bash
+    cf logs keycloak --recent
+    ```
 
 4. Update and restage every backend app that serves admin auth routes:
-   ```bash
-   cf set-env tdp-backend-<name> KEYCLOAK_TDP_ADMIN_CLIENT_SECRET "<new-secret>"
-   cf restage tdp-backend-<name>
-   ```
+    ```bash
+    cf set-env tdp-backend-<name> KEYCLOAK_TDP_ADMIN_CLIENT_SECRET "<new-secret>"
+    cf restage tdp-backend-<name>
+    ```
 
 ### Rotate the `tdp-grafana` Client Secret
 
 1. Generate a new secret
 
 2. Update the Keycloak app:
-   ```bash
-   cf set-env keycloak KC_TDP_GRAFANA_CLIENT_SECRET "<new-secret>"
-   cf restage keycloak
-   ```
+
+    ```bash
+    cf set-env keycloak KC_TDP_GRAFANA_CLIENT_SECRET "<new-secret>"
+    cf restage keycloak
+    ```
 
 3. Confirm the startup config import completed so Keycloak updates the `tdp-grafana` client:
-   ```bash
-   cf logs keycloak --recent
-   ```
+
+    ```bash
+    cf logs keycloak --recent
+    ```
 
 4. Update the Grafana app:
-   ```bash
-   cf set-env grafana GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET "<new-secret>"
-   cf restage grafana
-   ```
+    ```bash
+    cf set-env grafana GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET "<new-secret>"
+    cf restage grafana
+    ```
 
 If Grafana SSO is not deployed in the environment, `KC_TDP_GRAFANA_CLIENT_SECRET` may be unset. The deploy script injects it as an empty string so config-cli can still resolve the realm placeholder.
 
@@ -282,15 +293,16 @@ The Login.gov private key (`LOGIN_GOV_JWT_KEY`) is used for `private_key_jwt` au
 2. Upload the new public key to Login.gov (sandbox or production dashboard)
 
 3. Update Keycloak with the new private key:
-   ```bash
-   cf set-env keycloak LOGIN_GOV_JWT_KEY "<base64-encoded-private-key>"
-   cf restage keycloak
-   ```
+
+    ```bash
+    cf set-env keycloak LOGIN_GOV_JWT_KEY "<base64-encoded-private-key>"
+    cf restage keycloak
+    ```
 
 4. Monitor startup logs to verify config-cli updated the `login-gov-signing-key` component:
-   ```bash
-   cf logs keycloak --recent
-   ```
+    ```bash
+    cf logs keycloak --recent
+    ```
 
 **Impact:** Login.gov production key changes require a change request to Login.gov support (~2 weeks). Sandbox keys can be updated immediately.
 
@@ -318,18 +330,32 @@ The realms are defined in `tdrs-backend/keycloak/realm-configs/`. Changes to cli
 
 1. Make changes to the relevant file in `realm-configs/`
 2. Test locally:
-   ```bash
-   cd tdrs-backend
-   docker compose down keycloak keycloak-pg
-   docker compose up --build keycloak
-   ```
+    ```bash
+    cd tdrs-backend
+    docker compose down keycloak keycloak-pg
+    docker compose up --build keycloak
+    ```
 3. Verify changes in the admin console at http://localhost:8443/admin
 4. Rebuild and push the Docker image
+    ```bash
+    cd keycloak
+    docker buildx build -t ghcr.io/raft-tech/keycloak_26:latest -f Dockerfile . --platform linux/amd64 --push
+    ```
 5. Deploy with `deploy.sh`
+
+For the HHS GHCR, the image can be built by fetching the latest raft-tech image, re-tagging, and pushing to HHS
+
+```bash
+docker pull ghcr.io/raft-tech/keycloak_26:latest
+docker images # need to grab the ID for the next step
+docker tag {image ID} ghcr.io/HHS/keycloak_26:latest
+docker push ghcr.io/HHS/keycloak_26:latest
+```
 
 **Important:** cloud.gov deploys do not use `--import-realm`. Realm updates are applied by `keycloak-config-cli` after Keycloak starts. Config-cli can create and update many realm resources through the Admin API, including clients, IdPs, mappers, flows, and the Login.gov key provider. Existing users and sessions remain in the database.
 
 When a checked-in realm change does not appear after deploy:
+
 - Check startup logs with `cf logs keycloak --recent`.
 - Look for `Running Keycloak config import...` and `Keycloak config import complete.`.
 - Restage Keycloak after fixing missing env vars, malformed JSON, or image issues.
@@ -369,13 +395,14 @@ Realm selection for config-cli:
 
 Current settings in the checked-in realm exports:
 
-| Setting | Value |
-|---------|-------|
-| Access token lifespan | 300 seconds (5 minutes) |
+| Setting                  | Value                     |
+| ------------------------ | ------------------------- |
+| Access token lifespan    | 300 seconds (5 minutes)   |
 | SSO session idle timeout | 1800 seconds (30 minutes) |
-| SSO session max lifespan | 43200 seconds (12 hours) |
+| SSO session max lifespan | 43200 seconds (12 hours)  |
 
 To change, update either:
+
 - the relevant file in `realm-configs/` and redeploy, **or**
 - Admin console → Realm settings → Sessions/Tokens tabs
 
@@ -410,6 +437,7 @@ docker compose exec web python manage.py sync_users_to_keycloak
 Output: `Sync complete: N synced, N skipped (not in Keycloak), N failed`
 
 Use bulk sync:
+
 - After initial Keycloak deployment (once users have started logging in)
 - After restoring a Keycloak database backup
 - As a periodic reconciliation (also runs via Celery beat)
@@ -437,33 +465,41 @@ In spaces with multiple backend pairs (e.g., dev has raft, qasp, a11y), all back
 To add a new application that authenticates via Keycloak:
 
 1. **Define the client in the appropriate file under `realm-configs/`:**
-   ```json
-   {
-     "clientId": "my-new-app",
-     "enabled": true,
-     "protocol": "openid-connect",
-     "publicClient": false,
-     "secret": "$(env:MY_NEW_APP_CLIENT_SECRET)",
-     "redirectUris": ["https://my-app.example.com/*"],
-     "webOrigins": ["https://my-app.example.com"],
-     "defaultClientScopes": ["openid", "email", "profile", "tdp-user-attributes"]
-   }
-   ```
+
+    ```json
+    {
+        "clientId": "my-new-app",
+        "enabled": true,
+        "protocol": "openid-connect",
+        "publicClient": false,
+        "secret": "$(env:MY_NEW_APP_CLIENT_SECRET)",
+        "redirectUris": ["https://my-app.example.com/*"],
+        "webOrigins": ["https://my-app.example.com"],
+        "defaultClientScopes": [
+            "openid",
+            "email",
+            "profile",
+            "tdp-user-attributes"
+        ]
+    }
+    ```
 
 2. **Add the secret env var to `deploy.sh`** in the `OPTIONAL_ENV_VARS` array
 
 3. **Test locally** by adding the client secret to the `keycloak` environment in `docker-compose.yml`
 
 4. **Deploy** with the new secret set:
-   ```bash
-   export MY_NEW_APP_CLIENT_SECRET="$(openssl rand -hex 32)"
-   ./deploy.sh ...
-   ```
+
+    ```bash
+    export MY_NEW_APP_CLIENT_SECRET="$(openssl rand -hex 32)"
+    ./deploy.sh ...
+    ```
 
 5. **If the new app needs a network policy:**
-   ```bash
-   cf add-network-policy my-new-app keycloak --protocol tcp --port 8080
-   ```
+
+    ```bash
+    cf add-network-policy my-new-app keycloak --protocol tcp --port 8080
+    ```
 
 6. **If the client should only allow specific IdPs**, encode that durable client behavior in the realm export so config-cli can apply it during deploy.
 
@@ -479,13 +515,13 @@ Developer accounts for Grafana are **local Keycloak accounts** in the prod Keycl
 2. Select the `tdp` realm
 3. Go to **Users** → **Add user**
 4. Fill in:
-   - **Username**: developer's email or identifier
-   - **Email**: developer's email
-   - **Email verified**: On
+    - **Username**: developer's email or identifier
+    - **Email**: developer's email
+    - **Email verified**: On
 5. Click **Create**
 6. Go to the **Credentials** tab → **Set password**
-   - Set a temporary password
-   - Toggle **Temporary** to On (forces password change on first login)
+    - Set a temporary password
+    - Toggle **Temporary** to On (forces password change on first login)
 7. Go to the **Groups** tab → **Join Group** → select `developer`
 
 The developer can now log into Grafana at the Keycloak login page using username/password. The `developer` group maps to Grafana `Admin` role.
@@ -530,17 +566,17 @@ Note: This exports realm configuration but **not** user credentials or sessions.
 
 1. Restore the RDS instance from a Cloud.gov backup (contact Cloud.gov support)
 2. Restart Keycloak:
-   ```bash
-   cf restart keycloak
-   ```
+    ```bash
+    cf restart keycloak
+    ```
 3. Confirm the startup config import completed. This restores checked-in realm settings and recreates or updates the Login.gov signing key component from `LOGIN_GOV_JWT_KEY`.
 4. Run a bulk user sync to reconcile Django and Keycloak state:
-   ```bash
-   cf ssh tdp-backend-<name>
-   /tmp/lifecycle/shell
-   cd /home/vcap/app
-   ./manage.py sync_users_to_keycloak
-   ```
+    ```bash
+    cf ssh tdp-backend-<name>
+    /tmp/lifecycle/shell
+    cd /home/vcap/app
+    ./manage.py sync_users_to_keycloak
+    ```
 
 ### Full Recovery (New Keycloak Instance)
 
@@ -548,9 +584,9 @@ If the Keycloak instance is completely lost:
 
 1. Ensure the RDS instance exists (create a new one via Terraform if needed)
 2. Run the full deploy:
-   ```bash
-   ./deploy.sh -e <environment> -d <rds_service> -p <hostname> -i <image> -u <username>
-   ```
+    ```bash
+    ./deploy.sh -e <environment> -d <rds_service> -p <hostname> -i <image> -u <username>
+    ```
 3. Keycloak starts empty against the bound database.
 4. The entrypoint runs config-cli, which creates the realm, clients, groups, IdPs, flows, mappers, client scopes, and Login.gov signing key.
 5. Users will need to log in again (Keycloak sessions are gone)
@@ -562,10 +598,10 @@ If the Keycloak instance is completely lost:
 
 ### Health Endpoints
 
-| Endpoint | Route | Description |
-|----------|-------|-------------|
+| Endpoint        | Route              | Description                                           |
+| --------------- | ------------------ | ----------------------------------------------------- |
 | `/health/ready` | Internal or public | Keycloak readiness (database connected, realm loaded) |
-| `/health/live` | Internal or public | Keycloak liveness (process running) |
+| `/health/live`  | Internal or public | Keycloak liveness (process running)                   |
 
 ```bash
 # Via public route
@@ -615,34 +651,36 @@ This should return all OIDC endpoints (authorization, token, userinfo, JWKS, end
 **Symptoms:** App crashes on startup, health check never passes.
 
 1. Check logs:
-   ```bash
-   cf logs keycloak --recent
-   ```
+
+    ```bash
+    cf logs keycloak --recent
+    ```
 
 2. Common causes:
-   - **Database connection failure**: Verify the RDS service is bound (`cf services`) and credentials are correct. The manifest extracts `VCAP_SERVICES` JSON at startup.
-   - **Out of memory**: Increase memory with `cf scale keycloak -m 1G`
-   - **Invalid LOGIN_GOV_JWT_KEY**: Keycloak can start, but the startup config import will fail before nginx starts. Check that the key is a base64-encoded PEM private key.
-   - **Port conflict**: The entrypoint uses port 8081 for Keycloak and `$PORT` (assigned by Cloud Foundry) for nginx. These should not conflict.
+    - **Database connection failure**: Verify the RDS service is bound (`cf services`) and credentials are correct. The manifest extracts `VCAP_SERVICES` JSON at startup.
+    - **Out of memory**: Increase memory with `cf scale keycloak -m 1G`
+    - **Invalid LOGIN_GOV_JWT_KEY**: Keycloak can start, but the startup config import will fail before nginx starts. Check that the key is a base64-encoded PEM private key.
+    - **Port conflict**: The entrypoint uses port 8081 for Keycloak and `$PORT` (assigned by Cloud Foundry) for nginx. These should not conflict.
 
 ### Config-cli Startup Import Fails
 
 **Symptoms:** Keycloak restarts during deploy, nginx never starts, or realm/client/IdP changes do not appear.
 
 1. Check startup logs:
-   ```bash
-   cf logs keycloak --recent
-   ```
+
+    ```bash
+    cf logs keycloak --recent
+    ```
 
 2. Common errors:
 
-| Error | Meaning | Recovery |
-|-------|---------|----------|
-| `Failed to decode private key` | `LOGIN_GOV_JWT_KEY` decoded to something Keycloak cannot parse as a PEM private key | Re-encode the PEM with `base64`, set `LOGIN_GOV_JWT_KEY`, and restage Keycloak |
+| Error                               | Meaning                                                                                              | Recovery                                                                                   |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `Failed to decode private key`      | `LOGIN_GOV_JWT_KEY` decoded to something Keycloak cannot parse as a PEM private key                  | Re-encode the PEM with `base64`, set `LOGIN_GOV_JWT_KEY`, and restage Keycloak             |
 | `Cannot resolve variable 'env:...'` | A `$(env:VAR)` placeholder exists in the realm export but `VAR` is missing from the Keycloak app env | Set the env var or add a default in `deploy.sh`; optional values still need blank defaults |
-| `awk: command not found` | The deployed image has an older `normalize-login-gov-key.sh` that depended on `awk` | Rebuild and redeploy the current Keycloak image |
-| `JAVA_OPTS: unbound variable` | The deployed script referenced optional `JAVA_OPTS` under `set -u` | Rebuild and redeploy the current Keycloak image |
-| Availability check timeout | Config-cli could not reach the local Keycloak port before timeout | Verify Keycloak reached readiness in the same startup logs |
+| `awk: command not found`            | The deployed image has an older `normalize-login-gov-key.sh` that depended on `awk`                  | Rebuild and redeploy the current Keycloak image                                            |
+| `JAVA_OPTS: unbound variable`       | The deployed script referenced optional `JAVA_OPTS` under `set -u`                                   | Rebuild and redeploy the current Keycloak image                                            |
+| Availability check timeout          | Config-cli could not reach the local Keycloak port before timeout                                    | Verify Keycloak reached readiness in the same startup logs                                 |
 
 3. After remediation, restage Keycloak so startup config import runs again.
 
@@ -651,14 +689,16 @@ This should return all OIDC endpoints (authorization, token, userinfo, JWKS, end
 **Symptoms:** User clicks login button but gets an error, redirect loop, or blank page.
 
 1. **Verify `KEYCLOAK_BROWSER_URL`** on the backend matches the public Keycloak route:
-   ```bash
-   cf env tdp-backend-<name> | grep KEYCLOAK_BROWSER_URL
-   ```
-   This must be the URL the user's browser can reach (not the internal route).
+
+    ```bash
+    cf env tdp-backend-<name> | grep KEYCLOAK_BROWSER_URL
+    ```
+
+    This must be the URL the user's browser can reach (not the internal route).
 
 2. **Verify redirect URIs** in the `tdp-django` client match the frontend URLs:
-   - Admin console → Clients → `tdp-django` → Valid redirect URIs
-   - Must include the frontend domain with `/*` suffix
+    - Admin console → Clients → `tdp-django` → Valid redirect URIs
+    - Must include the frontend domain with `/*` suffix
 
 3. **Verify the IdP is enabled**: Admin console → Identity providers → check `login-gov` or `ams` is enabled
 
@@ -669,44 +709,49 @@ This should return all OIDC endpoints (authorization, token, userinfo, JWKS, end
 **Symptoms:** Django group changes don't appear in Keycloak, bulk sync reports failures.
 
 1. **Verify sync is enabled:**
-   ```bash
-   cf env tdp-backend-<name> | grep KEYCLOAK_SYNC_ENABLED
-   ```
+
+    ```bash
+    cf env tdp-backend-<name> | grep KEYCLOAK_SYNC_ENABLED
+    ```
 
 2. **Verify the user exists in Keycloak:** Sync only works for users who have logged in via Keycloak at least once. Check admin console → Users → search by email.
 
 3. **Verify `tdp-django` service account roles:** Admin console → Clients → `tdp-django` → Service account roles. Must have `realm-management` roles: `view-users`, `manage-users`, `query-users`, `view-realm`, `query-groups`.
 
 4. **Check backend logs for errors:**
-   ```bash
-   cf logs tdp-backend-<name> --recent | grep -i keycloak
-   ```
+    ```bash
+    cf logs tdp-backend-<name> --recent | grep -i keycloak
+    ```
 
 ### Grafana SSO Issues
 
 **Symptoms:** Grafana login fails, shows "Login provider denied" or wrong role.
 
 1. **Verify Grafana OAuth client secret matches:**
-   ```bash
-   cf env grafana | grep GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET
-   ```
+
+    ```bash
+    cf env grafana | grep GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET
+    ```
 
 2. **Verify network policy:**
-   ```bash
-   cf network-policies --source grafana
-   ```
-   Must show a policy allowing TCP port 8080 to keycloak.
+
+    ```bash
+    cf network-policies --source grafana
+    ```
+
+    Must show a policy allowing TCP port 8080 to keycloak.
 
 3. **Check Grafana's token URL**: In `custom.ini`, `token_url` should use the **internal** route (`http://keycloak-<ENV>.apps.internal:8080/...`), while `auth_url` should use the **public** route.
 
 4. **Verify role mapping**: If a user gets the wrong Grafana role, check their Keycloak group membership (admin console → Users → select user → Groups). The JMESPath expression maps:
-   - `ofa-system-admin` or `developer` → Admin
-   - `digit-team` → Editor
-   - All others → Viewer
+    - `ofa-system-admin` or `developer` → Admin
+    - `digit-team` → Editor
+    - All others → Viewer
 
 ### `NoReverseMatch` Errors on `/v2/` Endpoints
 
 Verify that `OIDC_EXEMPT_URLS` entries in Django settings start with `/`:
+
 ```python
 OIDC_EXEMPT_URLS = ["/v1/", "/admin/", "/prometheus/", "/plg_auth_check/"]
 ```
@@ -718,10 +763,12 @@ The `/v2/` routes are **not** exempt — they are handled by `mozilla-django-oid
 The nginx proxy in the Keycloak container strips `X-Frame-Options: DENY` and replaces it with `SAMEORIGIN`. If the admin console still fails to load:
 
 1. Verify the response header:
-   ```bash
-   curl -sI https://<hostname>.app.cloud.gov/ | grep -i x-frame
-   ```
-   Should show `X-Frame-Options: SAMEORIGIN`.
+
+    ```bash
+    curl -sI https://<hostname>.app.cloud.gov/ | grep -i x-frame
+    ```
+
+    Should show `X-Frame-Options: SAMEORIGIN`.
 
 2. If it shows `DENY`, the nginx proxy may not be running. Check container logs for nginx startup errors.
 
@@ -732,9 +779,10 @@ The nginx proxy in the Keycloak container strips `X-Frame-Options: DENY` and rep
 Keycloak stores sessions in its database by default. Sessions should survive restarts. If sessions are lost:
 
 1. Verify the same RDS instance is bound after restart:
-   ```bash
-   cf services
-   cf env keycloak | grep VCAP_SERVICES
-   ```
+
+    ```bash
+    cf services
+    cf env keycloak | grep VCAP_SERVICES
+    ```
 
 2. Check if the RDS instance was replaced or restored from a backup (this would lose sessions created after the backup point).
