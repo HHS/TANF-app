@@ -67,7 +67,7 @@ def test_pipeline_run_admin_add_creates_and_enqueues_pipeline_run(
         "section": "1",
     }
     assert pipeline_run.trigger_source == ETLPipelineRun.TriggerSource.ADMIN
-    assert str(pipeline_run.triggered_by_id) == str(admin_user.id)
+    assert str(pipeline_run.triggered_by_id) == str(ofa_system_admin.id)
     assert list(pipeline_run.node_runs.values_list("node_key", flat=True)) == [
         node.key for node in get_pipeline_definition("statistical_weights").nodes
     ]
@@ -150,7 +150,7 @@ def test_pipeline_run_admin_final_output_link_filters_statistical_weights_table(
 
 @pytest.mark.django_db
 def test_pipeline_run_admin_final_output_link_opens_filtered_admin_table(
-    client, admin_user
+    client, ofa_system_admin
 ):
     """The generated table link opens the admin changelist scoped to that output."""
     pipeline_run = _create_pipeline_run()
@@ -201,7 +201,7 @@ def test_pipeline_run_admin_final_output_link_opens_filtered_admin_table(
     link = str(pipeline_run_admin.final_output_link(pipeline_run))
     match = re.search("href='([^']+)'", link)
     assert match is not None
-    assert client.login(username=admin_user.username, password="test_password")
+    assert client.login(username=ofa_system_admin.username, password="test_password")
 
     response = client.get(unescape(match.group(1)))
 
