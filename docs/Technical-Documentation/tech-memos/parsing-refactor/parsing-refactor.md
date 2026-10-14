@@ -348,26 +348,26 @@ from tdpservice.parsers.parsers.factory import ParserFactory
 # Other functions omitted
 
 @shared_task
-def parse(data_file_id, reparse_id=None):
+def parse(raw_file_id, reparse_id=None):
     """Send data file for processing."""
     # passing the data file FileField across redis was rendering non-serializable failures, doing the below lookup
     # to avoid those. I suppose good practice to not store/serializer large file contents in memory when stored in redis
     # for undetermined amount of time.
     try:
-        data_file = DataFile.objects.get(id=data_file_id)
-        logger.info(f"DataFile parsing started for file {data_file.filename}")
+        raw_file = DataFile.objects.get(id=raw_file_id)
+        logger.info(f"DataFile parsing started for file {raw_file.filename}")
 
         file_meta = None
         if reparse_id:
-            file_meta = ReparseFileMeta.objects.get(data_file_id=data_file_id, reparse_meta_id=reparse_id)
+            file_meta = ReparseFileMeta.objects.get(raw_file_id=raw_file_id, reparse_meta_id=reparse_id)
             file_meta.started_at = timezone.now()
             file_meta.save()
 
-        dfs = DataFileSummary.objects.create(datafile=data_file, status=DataFileSummary.Status.PENDING)
-        parser = ParserFactory.get_instance(datafile=data_file, dfs=dfs,
-                                            section=data_file.section,
-                                            program_type=data_file.program_type,
-                                            is_program_audit=data_file.is_program_audit)
+        dfs = DataFileSummary.objects.create(datafile=raw_file, status=DataFileSummary.Status.PENDING)
+        parser = ParserFactory.get_instance(datafile=raw_file, dfs=dfs,
+                                            section=raw_file.section,
+                                            program_type=raw_file.program_type,
+                                            is_program_audit=raw_file.is_program_audit)
         errors = parser.parse_and_validate()
         # Rest of the file is exactly the same and is omitted for brevity.
 ```

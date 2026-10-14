@@ -79,7 +79,7 @@ class BaseParser(ABC):
         pass
 
     def _init_decoder(self):
-        """Initialize the decoder."""
+        """Initialize the decoder. Note that the file is opened and read to determine the type of encoding."""
         try:
             self.decoder = DecoderFactory.get_instance(self.datafile.file)
         except ValueError as e:

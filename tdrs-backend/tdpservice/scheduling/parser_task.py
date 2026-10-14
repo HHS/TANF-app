@@ -855,6 +855,13 @@ def parse(data_file_id, reparse_id=None, parse_token=None, event_id=None):
         )
         reparse_success = False
     finally:
+        if (
+            data_file
+            and getattr(data_file, "file", None)
+            and not getattr(data_file.file, "closed", True)
+        ):
+            data_file.file.close()
+
         if not stale_owner:
             _finalize_reparse(
                 data_file,

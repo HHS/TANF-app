@@ -382,6 +382,7 @@ class TestParse:
         assert err.error_message == expected["error_message"]
         assert err.content_type is None
         assert err.object_id is None
+        assert datafile.file.closed is True
 
     @pytest.mark.django_db
     def test_bad_trailer_file_trailer_error(self, parsed_bad_trailer_file):
@@ -2104,3 +2105,27 @@ class TestParse:
         assert TANF_T1.objects.count() == 3
         assert TANF_T2.objects.count() == 3
         assert TANF_T3.objects.count() == 6
+
+    @pytest.mark.django_db
+    def test_file_closed_after_parsing_valid_file(self, small_correct_file, dfs):
+        """Test that datafile.file is closed after successfully parsing a valid file."""
+        small_correct_file.year = 2021
+        small_correct_file.quarter = "Q1"
+        parse_datafile(dfs, small_correct_file)
+        assert small_correct_file.file.closed is True
+
+    @pytest.mark.django_db
+    def test_file_closed_after_parsing_with_errors(self, t2_invalid_dob_file, dfs):
+        """Test that datafile.file is closed after parsing a file with errors."""
+        t2_invalid_dob_file.year = 2021
+        t2_invalid_dob_file.quarter = "Q1"
+        parse_datafile(dfs, t2_invalid_dob_file)
+        assert t2_invalid_dob_file.file.closed is True
+
+    @pytest.mark.django_db
+    def test_file_closed_after_parsing_tribal_file(self, tribal_section_1_file, dfs):
+        """Test that datafile.file is closed after parsing a Tribal file."""
+        tribal_section_1_file.year = 2022
+        tribal_section_1_file.quarter = "Q1"
+        parse_datafile(dfs, tribal_section_1_file)
+        assert tribal_section_1_file.file.closed is True

@@ -6,9 +6,11 @@ import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from types import SimpleNamespace
+from unittest.mock import patch
 
 from django.contrib.admin.models import LogEntry
 from django.core.exceptions import FieldDoesNotExist
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import close_old_connections, connection
 from django.db.utils import DatabaseError
 
@@ -33,6 +35,7 @@ from tdpservice.parsers.models import (
     ShadowDataFileSummary,
     ShadowParserError,
 )
+from tdpservice.parsers.decoders import Utf8Decoder
 from tdpservice.parsers.util import DecoderUnknownException
 from tdpservice.scheduling import parser_task
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
@@ -1594,3 +1597,110 @@ def test_parse_pre_dfs_failure_surfaces_original_exception(monkeypatch, stt):
 
     with pytest.raises(ValueError, match="Cannot queue parsing.*uploaded"):
         parser_task.parse(datafile.id)
+
+
+@pytest.mark.django_db
+def test_parse_close_exception_cancels_successful_return_and_fails_submission(
+    monkeypatch, data_analyst
+):
+    """Verify sequence: parser writes records, close raises in __exit__, parse_task marks PARSE_FAILED."""
+    datafile = DataFileFactory(
+        stt=data_analyst.stt,
+        version=17,
+        state=SubmissionState.VIRUS_SCAN_COMPLETED,
+    )
+    ensure_stt_filenames(datafile.stt)
+    setup_parse_mocks(monkeypatch)
+
+    class FailingCloseDecoder:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            # Step 4 & 5: decoder.__exit__() calls close(), which raises an exception
+            raise OSError("Simulated close failure that escapes __exit__")
+
+    class SampleParser:
+        def __init__(self, datafile, dfs):
+            self.datafile = datafile
+            self.dfs = dfs
+
+        def parse_and_validate(self):
+            # Step 1: Parser reads the file (simulated)
+            # Step 2: Parser writes valid records and errors to the database
+            ParserError.objects.create(
+                file=self.datafile,
+                row_number=1,
+                error_message="Sample error written during parse",
+            )
+            # Step 3: Parser prepares to return successfully
+            with FailingCloseDecoder():
+                pass
+            # Step 6: Successful return is cancelled by the escaping close exception
+
+    monkeypatch.setattr(
+        parser_task.ParserFactory,
+        "get_instance",
+        lambda **kwargs: SampleParser(kwargs["datafile"], kwargs["dfs"]),
+    )
+    monkeypatch.setattr(parser_task, "send_data_submitted_email", lambda *a, **k: None)
+
+    # Execute parser_task.parse
+    parser_task.parse(datafile.id)
+
+    # Step 7 & 8: parser_task sees unexpected exception and marks submission rejected / PARSE_FAILED
+    datafile.refresh_from_db()
+    dfs = DataFileSummary.objects.get(datafile=datafile)
+    assert datafile.state == SubmissionState.PARSE_FAILED
+    assert dfs.status == DataFileSummary.Status.REJECTED
+    # The record written in Step 2 remains persisted in the database
+    assert ParserError.objects.filter(file=datafile).count() >= 1
+
+
+@pytest.mark.django_db
+def test_parse_base_decoder_suppresses_close_exception_preventing_failed_submission(
+    monkeypatch, data_analyst
+):
+    """Verify that BaseDecoder suppressing close exception allows submission to succeed."""
+    datafile = DataFileFactory(
+        stt=data_analyst.stt,
+        version=18,
+        state=SubmissionState.VIRUS_SCAN_COMPLETED,
+    )
+    ensure_stt_filenames(datafile.stt)
+    setup_parse_mocks(monkeypatch)
+
+    class SampleParserWithRealDecoder:
+        def __init__(self, datafile, dfs):
+            self.datafile = datafile
+            self.dfs = dfs
+
+        def parse_and_validate(self):
+            # Parser writes valid records and errors
+            ParserError.objects.create(
+                file=self.datafile,
+                row_number=1,
+                error_message="Sample error written during parse",
+            )
+            uploaded = SimpleUploadedFile("test.txt", b"HEADER20204A06\n")
+            decoder = Utf8Decoder(uploaded)
+            # When raw_file.close() throws an exception during __exit__
+            with patch.object(uploaded, "close", side_effect=OSError("Close error")):
+                with decoder:
+                    pass
+            # BaseDecoder handles the close exception, so execution completes successfully!
+
+    monkeypatch.setattr(
+        parser_task.ParserFactory,
+        "get_instance",
+        lambda **kwargs: SampleParserWithRealDecoder(kwargs["datafile"], kwargs["dfs"]),
+    )
+    monkeypatch.setattr(parser_task, "send_data_submitted_email", lambda *a, **k: None)
+
+    parser_task.parse(datafile.id)
+
+    datafile.refresh_from_db()
+    dfs = DataFileSummary.objects.get(datafile=datafile)
+    # The submission succeeds instead of being marked PARSE_FAILED
+    assert datafile.state == SubmissionState.PARSE_COMPLETED
+    assert dfs.status == DataFileSummary.Status.ACCEPTED
