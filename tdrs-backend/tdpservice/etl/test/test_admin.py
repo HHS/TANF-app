@@ -29,11 +29,11 @@ def _create_pipeline_run() -> ETLPipelineRun:
 @pytest.mark.django_db
 def test_pipeline_run_admin_add_creates_and_enqueues_pipeline_run(
     client,
-    admin_user,
+    ofa_system_admin,
     django_capture_on_commit_callbacks,
 ):
     """Admin additions use the validated pipeline creation and launch flow."""
-    assert client.login(username=admin_user.username, password="test_password")
+    assert client.login(username=ofa_system_admin.username, password="test_password")
 
     with (
         patch("tdpservice.etl.admin.enqueue_pipeline_run") as enqueue_pipeline_run,
@@ -75,9 +75,9 @@ def test_pipeline_run_admin_add_creates_and_enqueues_pipeline_run(
 
 
 @pytest.mark.django_db
-def test_pipeline_run_admin_add_rejects_invalid_parameters(client, admin_user):
+def test_pipeline_run_admin_add_rejects_invalid_parameters(client, ofa_system_admin):
     """Admin additions display pipeline parameter validation errors."""
-    assert client.login(username=admin_user.username, password="test_password")
+    assert client.login(username=ofa_system_admin.username, password="test_password")
 
     response = client.post(
         reverse("admin:etl_etlpipelinerun_add"),
@@ -98,10 +98,10 @@ def test_pipeline_run_admin_add_rejects_invalid_parameters(client, admin_user):
 
 
 @pytest.mark.django_db
-def test_pipeline_run_admin_add_rejects_active_duplicate(client, admin_user):
+def test_pipeline_run_admin_add_rejects_active_duplicate(client, ofa_system_admin):
     """Admin additions report an active run conflict without creating a duplicate."""
     pipeline_run = _create_pipeline_run()
-    assert client.login(username=admin_user.username, password="test_password")
+    assert client.login(username=ofa_system_admin.username, password="test_password")
 
     response = client.post(
         reverse("admin:etl_etlpipelinerun_add"),
