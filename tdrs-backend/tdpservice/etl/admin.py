@@ -64,7 +64,7 @@ class ETLPipelineRunAdminForm(forms.ModelForm):
 
 
 @admin.register(ETLPipelineRun)
-class ETLPipelineRunAdmin(admin.ModelAdmin):
+class ETLPipelineRunAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     """Admin view for pipeline runs."""
 
     list_display = (
