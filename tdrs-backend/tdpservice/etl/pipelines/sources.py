@@ -109,8 +109,8 @@ class DataFileSourceSnapshot:
         """Return latest accepted DataFile ids by STT and quarter for a source."""
         accepted_files = DataFile.objects.filter(
             year=fiscal_year,
-            program_type=source.program_type,
-            section=source.section,
+            section__program__code=source.program_type,
+            section__name=source.section,
             is_program_audit=source.is_program_audit,
             state=source.parser_state,
         )
@@ -118,8 +118,8 @@ class DataFileSourceSnapshot:
         latest_version = (
             DataFile.objects.filter(
                 year=fiscal_year,
-                program_type=source.program_type,
-                section=source.section,
+                section__program__code=source.program_type,
+                section__name=source.section,
                 is_program_audit=source.is_program_audit,
                 state=source.parser_state,
                 stt_id=OuterRef("stt_id"),

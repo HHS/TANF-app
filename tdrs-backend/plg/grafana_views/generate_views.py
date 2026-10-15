@@ -14,16 +14,24 @@ import os
 
 CWD = os.path.dirname(os.path.abspath(__file__))
 
+DATAFILE_VIEW_SQL = """
+CREATE OR REPLACE VIEW data_files_datafile_view AS
+SELECT data_file.*, section.name AS section, program.code AS program_type
+FROM data_files_datafile AS data_file
+INNER JOIN data_files_section AS section ON section.id = data_file.section_id
+INNER JOIN data_files_program AS program ON program.id = section.program_id;
+"""
+
 query_template = """
 SELECT {fields}
-    data_files.section,
+    section.name AS section,
     data_files.version,
     data_files.year,
     data_files.quarter,
     stt.name AS "STT",                                                     -- Select stt_name from the stts table
     stt.stt_code AS "STT_CODE",                                            -- Select stt_code from the stts table
     stt.region_id AS "REGION",                                             -- Select region from the stts table
-    data_files.program_type
+    program.code AS program_type
 FROM {table} {record_type}
 INNER JOIN
         data_files_datafile data_files                                     -- Join with data_files_datafile
@@ -31,22 +39,26 @@ INNER JOIN
     INNER JOIN (
         SELECT
             stt_id,                                                        -- Select stt_id
-            section,                                                       -- Select section
+            section_id,                                                    -- Select canonical section
             year,                                                          -- Select fiscal_year
             quarter,                                                       -- Select fiscal_quarter
-            MAX(version) AS version,                                       -- Get the maximum version for each group
-            program_type                                                   -- Select program_type
+            MAX(version) AS version                                        -- Get the maximum version for each group
         FROM
             data_files_datafile                                            -- Subquery table
         GROUP BY
-            stt_id, program_type, section, year, quarter                   -- Group by columns
+            stt_id, section_id, year, quarter                              -- Group by columns
     ) most_recent
         ON data_files.stt_id = most_recent.stt_id
-        AND data_files.section = most_recent.section
+        AND data_files.section_id = most_recent.section_id
         AND data_files.version = most_recent.version
         AND data_files.year = most_recent.year
         AND data_files.quarter = most_recent.quarter
-        AND data_files.program_type = most_recent.program_type
+    INNER JOIN
+        data_files_section section                                         -- Join canonical section
+        ON data_files.section_id = section.id
+    INNER JOIN
+        data_files_program program                                         -- Join canonical program
+        ON section.program_id = program.id
     INNER JOIN
         stts_stt stt                                                       -- Join with the stts table (aliased as stt)
         ON data_files.stt_id = stt.id                                      -- Join condition to match stt_id
@@ -209,6 +221,16 @@ def handle_where_clause(record_type):
         return ""
 
 
+def render_query(fields, table, record_type, custom_where_clause=""):
+    """Render a Grafana record query."""
+    return query_template.format(
+        fields=fields,
+        table=table,
+        record_type=record_type,
+        custom_where_clause=custom_where_clause,
+    )
+
+
 def main(is_admin):
     """Generate views."""
     # Log start of script execution
@@ -232,6 +254,9 @@ def main(is_admin):
     # Write helper functions SQL (required for date validation in views)
     write_helper_functions(output_dir)
 
+    with open(os.path.join(output_dir, "data_files_datafile_view.sql"), "w") as f:
+        f.write(DATAFILE_VIEW_SQL)
+
     # Process each schema type and its schemas
     for schema_type, schemas in schema_data.items():
         for schema_name, fields in schemas.items():
@@ -253,11 +278,11 @@ def main(is_admin):
             custom_where_clause = handle_where_clause(record_type)
 
             # Construct query
-            query = query_template.format(
-                fields=formatted_fields_str,
-                table=table_name,
-                record_type=record_type,
-                custom_where_clause=custom_where_clause,
+            query = render_query(
+                formatted_fields_str,
+                table_name,
+                record_type,
+                custom_where_clause,
             )
 
             # Create the header comment with warning, timestamp, and transformation details

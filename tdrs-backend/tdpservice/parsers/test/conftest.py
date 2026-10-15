@@ -2,7 +2,7 @@
 
 import pytest
 
-from tdpservice.data_files.models import DataFile, Program, Section
+from tdpservice.data_files.models import Program, Section
 from tdpservice.parsers import util
 from tdpservice.parsers.test.factories import DataFileSummaryFactory, ParsingFileFactory
 
@@ -86,12 +86,12 @@ def t3_cat2_invalid_citizenship_file():
 def big_file(stt_user, stt):
     """Fixture for ADS.E2J.FTP1.TS06."""
     program, _ = Program.objects.get_or_create(
-        code=DataFile.ProgramType.TANF,
+        code=Program.Code.TANF,
         defaults={"slug": "tanf", "name": "TANF"},
     )
     Section.objects.get_or_create(
         program=program,
-        name=DataFile.Section.ACTIVE_CASE_DATA,
+        name=Section.Name.ACTIVE_CASE_DATA,
     )
     return util.create_test_datafile("ADS.E2J.FTP1.TS06", stt_user, stt, year=2022)
 
@@ -154,7 +154,7 @@ def small_ssp_section1_datafile(stt_user, stt):
         stt_user,
         stt,
         "Active Case Data",
-        DataFile.ProgramType.SSP,
+        Program.Code.SSP,
         2024,
         "Q1",
     )
@@ -168,7 +168,7 @@ def ssp_section1_datafile(stt_user, stt):
         stt_user,
         stt,
         "Active Case Data",
-        DataFile.ProgramType.SSP,
+        Program.Code.SSP,
         2019,
         "Q1",
     )
@@ -208,7 +208,7 @@ def bad_ssp_s1__row_missing_required_field(stt_user, stt):
         stt_user,
         stt,
         "Active Case Data",
-        DataFile.ProgramType.SSP,
+        Program.Code.SSP,
         2019,
     )
 
@@ -275,7 +275,7 @@ def ssp_section4_file(stt_user, stt):
         stt_user,
         stt,
         "Stratum Data",
-        DataFile.ProgramType.SSP,
+        Program.Code.SSP,
         year=2022,
     )
 
@@ -288,7 +288,7 @@ def ssp_section2_rec_oadsi_file(stt_user, stt):
         stt_user,
         stt,
         "Closed Case Data",
-        DataFile.ProgramType.SSP,
+        Program.Code.SSP,
         year=2019,
     )
 
@@ -301,7 +301,7 @@ def oasdi_age_first_ssp_section2_file(stt_user, stt):
         stt_user,
         stt,
         "Closed Case Data",
-        DataFile.ProgramType.SSP,
+        Program.Code.SSP,
         year=2019,
     )
 
@@ -314,7 +314,7 @@ def ssp_section2_file(stt_user, stt):
         stt_user,
         stt,
         "Closed Case Data",
-        DataFile.ProgramType.SSP,
+        Program.Code.SSP,
         year=2019,
     )
 
@@ -327,7 +327,7 @@ def ssp_section3_file(stt_user, stt):
         stt_user,
         stt,
         "Aggregate Data",
-        DataFile.ProgramType.SSP,
+        Program.Code.SSP,
         year=2022,
     )
 
@@ -340,7 +340,7 @@ def tribal_section_1_file(stt_user, stt):
         stt_user,
         stt,
         "Active Case Data",
-        DataFile.ProgramType.TRIBAL,
+        Program.Code.TRIBAL,
     )
 
 
@@ -352,7 +352,7 @@ def tribal_section_1_inconsistency_file(stt_user, stt):
         stt_user,
         stt,
         "Active Case Data",
-        DataFile.ProgramType.TRIBAL,
+        Program.Code.TRIBAL,
         year=2020,
     )
 
@@ -365,7 +365,7 @@ def tribal_section_2_file(stt_user, stt):
         stt_user,
         stt,
         "Closed Case Data",
-        DataFile.ProgramType.TRIBAL,
+        Program.Code.TRIBAL,
     )
 
 
@@ -377,7 +377,7 @@ def oasdi_age_first_tribal_section2_file(stt_user, stt):
         stt_user,
         stt,
         "Closed Case Data",
-        DataFile.ProgramType.TRIBAL,
+        Program.Code.TRIBAL,
     )
 
 
@@ -389,7 +389,7 @@ def tribal_section_3_file(stt_user, stt):
         stt_user,
         stt,
         "Aggregate Data",
-        DataFile.ProgramType.TRIBAL,
+        Program.Code.TRIBAL,
     )
 
 
@@ -401,7 +401,7 @@ def tribal_section_4_file(stt_user, stt):
         stt_user,
         stt,
         "Stratum Data",
-        DataFile.ProgramType.TRIBAL,
+        Program.Code.TRIBAL,
     )
 
 
@@ -413,7 +413,7 @@ def tanf_section_4_file_with_errors(stt_user, stt):
         stt_user,
         stt,
         "Stratum Data",
-        DataFile.ProgramType.TANF,
+        Program.Code.TANF,
         year=2022,
     )
 
@@ -448,7 +448,7 @@ def tribal_section_4_bad_quarter(stt_user, stt):
         stt_user,
         stt,
         "Stratum Data",
-        DataFile.ProgramType.TRIBAL,
+        Program.Code.TRIBAL,
     )
 
 
@@ -460,9 +460,9 @@ def t4_t5_empty_values():
         year=2021,
         quarter="Q3",
         original_filename="t4_t5_empty_values.txt",
-        section=DataFile.Section.CLOSED_CASE_DATA,
+        section=Section.Name.CLOSED_CASE_DATA,
         file__filename="t4_t5_empty_values.txt",
-        program_type=DataFile.ProgramType.TANF,
+        program_type=Program.Code.TANF,
         file__data=(
             b"HEADER20212C06   TAN1ED\n"
             + b"T420210411111111158253  400141123113                                   \n"
@@ -482,8 +482,8 @@ def second_child_only_space_t3_file():
         quarter="Q3",
         original_filename="second_child_only_space_t3_file.txt",
         file__name="second_child_only_space_t3_file.txt",
-        file__section=DataFile.Section.ACTIVE_CASE_DATA,
-        program_type=DataFile.ProgramType.TANF,
+        file__section=Section.Name.ACTIVE_CASE_DATA,
+        program_type=Program.Code.TANF,
         file__data=(
             b"HEADER20212A25   TAN1 D\n"
             + b"T120210400028221R0112014122311110232110374300000000000005450"
@@ -505,8 +505,8 @@ def one_child_t3_file():
         quarter="Q3",
         original_filename="one_child_t3_file.txt",
         file__name="one_child_t3_file.txt",
-        file__section=DataFile.Section.ACTIVE_CASE_DATA,
-        program_type=DataFile.ProgramType.TANF,
+        file__section=Section.Name.ACTIVE_CASE_DATA,
+        program_type=Program.Code.TANF,
         file__data=(
             b"HEADER20212A25   TAN1 D\n"
             + b"T120210400028221R0112014122311110232110374300000000000005450"
@@ -528,8 +528,8 @@ def t3_file():
         quarter="Q3",
         original_filename="t3_file.txt",
         file__name="t3_file.txt",
-        file__section=DataFile.Section.ACTIVE_CASE_DATA,
-        program_type=DataFile.ProgramType.TANF,
+        file__section=Section.Name.ACTIVE_CASE_DATA,
+        program_type=Program.Code.TANF,
         file__data=(
             b"HEADER20212A25   TAN1ED\n"
             + b"T12021044111111111512014122311110232110374300000000000005450"
@@ -553,8 +553,8 @@ def t3_file_two_child():
         quarter="Q2",
         original_filename="t3_file.txt",
         file__name="t3_file.txt",
-        file__section=DataFile.Section.ACTIVE_CASE_DATA,
-        program_type=DataFile.ProgramType.TANF,
+        file__section=Section.Name.ACTIVE_CASE_DATA,
+        program_type=Program.Code.TANF,
         file__data=(
             b"HEADER20211A25   TAN1ED\n"
             + b"T12021021111111115712014122311110232110374300000000000005450"
@@ -577,8 +577,8 @@ def t3_file_two_child_with_space_filled():
         quarter="Q2",
         original_filename="t3_file_two_child_with_space_filled.txt",
         file__name="t3_file_two_child_with_space_filled.txt",
-        file__section=DataFile.Section.ACTIVE_CASE_DATA,
-        program_type=DataFile.ProgramType.TANF,
+        file__section=Section.Name.ACTIVE_CASE_DATA,
+        program_type=Program.Code.TANF,
         file__data=(
             b"HEADER20211A25   TAN1ED\n"
             + b"T12021021111111115712014122311110232110374300000000000005450"
@@ -601,8 +601,8 @@ def two_child_second_filled():
         quarter="Q2",
         original_filename="two_child_second_filled.txt",
         file__name="two_child_second_filled.txt",
-        file__section=DataFile.Section.ACTIVE_CASE_DATA,
-        program_type=DataFile.ProgramType.TANF,
+        file__section=Section.Name.ACTIVE_CASE_DATA,
+        program_type=Program.Code.TANF,
         file__data=(
             b"HEADER20211A25   TAN1ED\n"
             + b"T12021021111111111512014122311110232110374300000000000005450"
@@ -626,8 +626,8 @@ def t3_file_zero_filled_second():
         quarter="Q3",
         original_filename="t3_file_zero_filled_second.txt",
         file__name="t3_file_zero_filled_second.txt",
-        file__section=DataFile.Section.ACTIVE_CASE_DATA,
-        program_type=DataFile.ProgramType.TANF,
+        file__section=Section.Name.ACTIVE_CASE_DATA,
+        program_type=Program.Code.TANF,
         file__data=(
             b"HEADER20212A25   TAN1ED\n"
             + b"T12021044111111111512014122311110232110374300000000000005450"
@@ -650,7 +650,7 @@ def m2_cat2_invalid_37_38_39_file():
         quarter="Q1",
         file__name="m2_cat2_invalid_37_38_39_file.txt",
         section="Active Case Data",
-        program_type=DataFile.ProgramType.SSP,
+        program_type=Program.Code.SSP,
         file__data=(
             b"HEADER20234A24   SSP1ED\n"
             b"M2202310111111111275219811103WTTT#PW@W22212222222250122000010119350000000000000000000000000000000"
@@ -669,7 +669,7 @@ def m3_cat2_invalid_68_69_file():
         quarter="Q1",
         file__name="m3_cat2_invalid_68_69_file.txt",
         section="Active Case Data",
-        program_type=DataFile.ProgramType.SSP,
+        program_type=Program.Code.SSP,
         file__data=(
             b"HEADER20234A24   SSP1ED\n"
             b"M320231011111111127420110615WTTTP99B#22212222204300000000000\n"
@@ -689,7 +689,7 @@ def m3_go_cat2_invalid_68_69_file():
         quarter="Q1",
         file__name="m3_go_cat2_invalid_68_69_file.txt",
         section="Active Case Data",
-        program_type=DataFile.ProgramType.SSP,
+        program_type=Program.Code.SSP,
         file__data=(
             b"HEADER20234A24   SSP1ED\n"
             b"M120231011111111127214014003510213311002730000000000000001054"
@@ -709,7 +709,7 @@ def m5_cat2_invalid_23_24_file():
         quarter="Q1",
         file__name="m5_cat2_invalid_23_24_file.txt",
         section="Closed Case Data",
-        program_type=DataFile.ProgramType.SSP,
+        program_type=Program.Code.SSP,
         file__data=(
             b"HEADER20184C24   SSP1ED\n"
             b"M520181011111111161519791106WTTTY0ZB922212222222210112000112970000\n"
@@ -727,7 +727,7 @@ def m5_go_cat2_invalid_23_24_file():
         quarter="Q1",
         file__name="m5_go_cat2_invalid_23_24_file.txt",
         section="Closed Case Data",
-        program_type=DataFile.ProgramType.SSP,
+        program_type=Program.Code.SSP,
         file__data=(
             b"HEADER20184C24   SSP1ED\n"
             b"M42018101111111116120000406911161112                              \n"
@@ -746,7 +746,7 @@ def test_file_zero_filled_fips_code():
         quarter="Q2",
         file__name="test_file_zero_filled_fips_code.txt",
         file__section="Active Case Data",
-        program_type=DataFile.ProgramType.TANF,
+        program_type=Program.Code.TANF,
         file__data=(
             b"HEADER20241A01000TAN2ED\n"
             b"T120240111111111112   034033611102131200003000000000000087300100000000000000000000000000000000"
@@ -767,7 +767,7 @@ def tanf_s1_exact_dup_file():
         quarter="Q1",
         file__name="s1_exact_duplicate.txt",
         file__section="Active Case Data",
-        program_type=DataFile.ProgramType.TANF,
+        program_type=Program.Code.TANF,
         file__data=(
             b"HEADER20204A06   TAN1 D\n"
             b"T12020101111111111223003403361110212120000300000000000008730010000000000000000000000"
@@ -789,7 +789,7 @@ def tanf_s2_exact_dup_file():
         section="Closed Case Data",
         file__name="s2_exact_duplicate.txt",
         file__section="Closed Case Data",
-        program_type=DataFile.ProgramType.TANF,
+        program_type=Program.Code.TANF,
         file__data=(
             b"HEADER20204C06   TAN1ED\n"
             b"T42020101111111115825301400141123113                                   \n"
@@ -809,7 +809,7 @@ def tanf_s3_exact_dup_file():
         section="Aggregate Data",
         file__name="s3_exact_duplicate.txt",
         file__section="Aggregate Data",
-        program_type=DataFile.ProgramType.TANF,
+        program_type=Program.Code.TANF,
         file__data=(
             b"HEADER20214G06   TAN1 D\n"
             b"T620214000127470001104500011146000043010000397700003924000084460000706800007222"
@@ -837,7 +837,7 @@ def tanf_s4_exact_dup_file():
         section="Stratum Data",
         file__name="s4_exact_duplicate.txt",
         file__section="Stratum Data",
-        program_type=DataFile.ProgramType.TANF,
+        program_type=Program.Code.TANF,
         file__data=(
             b"HEADER20214S06   TAN1 D\n"
             b"T720214101006853700680540068454103000312400037850003180104000347400036460003583106"
@@ -861,7 +861,7 @@ def ssp_s1_exact_dup_file():
         section="Active Case Data",
         file__name="s1_exact_duplicate.txt",
         file__section="Active Case Data",
-        program_type=DataFile.ProgramType.SSP,
+        program_type=Program.Code.SSP,
         file__data=(
             b"HEADER20184A24   SSP1ED\n"
             b"M12018101111111112721401400351021331100273000000000000000105400000000000000000000000000000"
@@ -883,7 +883,7 @@ def ssp_s2_exact_dup_file():
         section="Closed Case Data",
         file__name="s2_exact_duplicate.txt",
         file__section="Closed Case Data",
-        program_type=DataFile.ProgramType.SSP,
+        program_type=Program.Code.SSP,
         file__data=(
             b"HEADER20184C24   SSP1ED\n"
             b"M42018101111111116120000406911161113                              \n"
@@ -903,7 +903,7 @@ def ssp_s3_exact_dup_file():
         section="Aggregate Data",
         file__name="s3_exact_duplicate.txt",
         file__section="Aggregate Data",
-        program_type=DataFile.ProgramType.SSP,
+        program_type=Program.Code.SSP,
         file__data=(
             b"HEADER20214G24   SSP1 D\n"
             b"M6202140001586900016008000159560000086100000851000008450001490500015055000150130000010300000"
@@ -927,7 +927,7 @@ def ssp_s4_exact_dup_file():
         section="Stratum Data",
         file__name="s4_exact_duplicate.txt",
         file__section="Stratum Data",
-        program_type=DataFile.ProgramType.SSP,
+        program_type=Program.Code.SSP,
         file__data=(
             b"HEADER20214S24   SSP1 D\n"
             b"M7202141010001769000131000011111020000748000076700007681030013352001393100140772000001202000"
@@ -950,7 +950,7 @@ def tanf_s1_partial_dup_file():
         quarter="Q1",
         file__name="s1_partial_duplicate.txt",
         file__section="Active Case Data",
-        program_type=DataFile.ProgramType.TANF,
+        program_type=Program.Code.TANF,
         file__data=(
             b"HEADER20204A06   TAN1 D\n"
             b"T120201011111111112230034033611102121200003000000000000087300100000000000000"
@@ -972,7 +972,7 @@ def tanf_s2_partial_dup_file():
         section="Closed Case Data",
         file__name="s2_partial_duplicate.txt",
         file__section="Closed Case Data",
-        program_type=DataFile.ProgramType.TANF,
+        program_type=Program.Code.TANF,
         file__data=(
             b"HEADER20204C06   TAN1ED\n"
             b"T520201011111111158120160206WTTTT90TY2222212 2  2 0422981      00000000\n"
@@ -992,7 +992,7 @@ def ssp_s1_partial_dup_file():
         section="Active Case Data",
         file__name="s1_exact_duplicate.txt",
         file__section="Active Case Data",
-        program_type=DataFile.ProgramType.SSP,
+        program_type=Program.Code.SSP,
         file__data=(
             b"HEADER20184A24   SSP1ED\n"
             b"M12018101111111112721401400351021331100273000000000000000105400000000000000000000000000"
@@ -1012,7 +1012,7 @@ def ssp_s2_partial_dup_file():
         year=2019,
         quarter="Q1",
         section="Closed Case Data",
-        program_type=DataFile.ProgramType.SSP,
+        program_type=Program.Code.SSP,
         file__name="s2_exact_duplicate.txt",
         file__section="Closed Case Data",
         file__data=(
@@ -1086,8 +1086,8 @@ def fra_work_outcome_exiter_csv_file(stt_user, stt):
         "fra.csv",
         stt_user,
         stt,
-        DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
-        DataFile.ProgramType.FRA,
+        Section.Name.FRA_WORK_OUTCOMES,
+        Program.Code.FRA,
     )
 
 
@@ -1098,8 +1098,8 @@ def fra_work_outcome_exiter_xlsx_file(stt_user, stt):
         "fra.xlsx",
         stt_user,
         stt,
-        DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
-        DataFile.ProgramType.FRA,
+        Section.Name.FRA_WORK_OUTCOMES,
+        Program.Code.FRA,
     )
 
 
@@ -1110,8 +1110,8 @@ def fra_empty_first_row_xlsx(stt_user, stt):
         "fra_empty_first_row.xlsx",
         stt_user,
         stt,
-        DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
-        DataFile.ProgramType.FRA,
+        Section.Name.FRA_WORK_OUTCOMES,
+        Program.Code.FRA,
     )
 
 
@@ -1122,8 +1122,8 @@ def fra_empty_first_row_csv(stt_user, stt):
         "fra_empty_first_row.csv",
         stt_user,
         stt,
-        DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
-        DataFile.ProgramType.FRA,
+        Section.Name.FRA_WORK_OUTCOMES,
+        Program.Code.FRA,
     )
 
 
@@ -1134,8 +1134,8 @@ def fra_bad_header_csv(stt_user, stt):
         "fra_bad_header.csv",
         stt_user,
         stt,
-        DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
-        DataFile.ProgramType.FRA,
+        Section.Name.FRA_WORK_OUTCOMES,
+        Program.Code.FRA,
     )
 
 
@@ -1146,8 +1146,8 @@ def fra_bad_header_xlsx(stt_user, stt):
         "fra_bad_header.xlsx",
         stt_user,
         stt,
-        DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
-        DataFile.ProgramType.FRA,
+        Section.Name.FRA_WORK_OUTCOMES,
+        Program.Code.FRA,
     )
 
 
@@ -1158,8 +1158,8 @@ def fra_ofa_test_csv(stt_user, stt):
         "fra_ofa_test.csv",
         stt_user,
         stt,
-        DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
-        DataFile.ProgramType.FRA,
+        Section.Name.FRA_WORK_OUTCOMES,
+        Program.Code.FRA,
     )
 
 
@@ -1170,8 +1170,8 @@ def fra_ofa_test_xlsx(stt_user, stt):
         "fra_ofa_test.xlsx",
         stt_user,
         stt,
-        DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
-        DataFile.ProgramType.FRA,
+        Section.Name.FRA_WORK_OUTCOMES,
+        Program.Code.FRA,
     )
 
 
@@ -1182,8 +1182,8 @@ def fra_formula_fields_test_xlsx(stt_user, stt):
         "fra_formula_fields.xlsx",
         stt_user,
         stt,
-        DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
-        DataFile.ProgramType.FRA,
+        Section.Name.FRA_WORK_OUTCOMES,
+        Program.Code.FRA,
     )
 
 
@@ -1194,8 +1194,8 @@ def fra_decoder_unknown(stt_user, stt):
         "fra_decoder_unknown.xlsx",
         stt_user,
         stt,
-        DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
-        DataFile.ProgramType.FRA,
+        Section.Name.FRA_WORK_OUTCOMES,
+        Program.Code.FRA,
     )
 
 
@@ -1208,7 +1208,7 @@ def section2_no_records():
         section="Closed Case Data",
         file__name="section2_no_records.txt",
         file__section="Closed Case Data",
-        program_type=DataFile.ProgramType.TANF,
+        program_type=Program.Code.TANF,
         file__data=(b"HEADER20244C06   TAN1ED\n" b"TRAILER0000000         "),
     )
     return parsing_file
@@ -1223,7 +1223,7 @@ def tanf_section1_no_records():
         section="Active Case Data",
         file__name="tanf_section1_no_records.txt",
         file__section="Active Case Data",
-        program_type=DataFile.ProgramType.TANF,
+        program_type=Program.Code.TANF,
         file__data=(b"HEADER20244A06   TAN1ED\n" b"TRAILER0000000         "),
     )
 
@@ -1237,7 +1237,7 @@ def tanf_section3_no_records():
         section="Aggregate Data",
         file__name="tanf_section3_no_records.txt",
         file__section="Aggregate Data",
-        program_type=DataFile.ProgramType.TANF,
+        program_type=Program.Code.TANF,
         file__data=(b"HEADER20244G06   TAN1ED\n" b"TRAILER0000000         "),
     )
 
@@ -1251,7 +1251,7 @@ def tanf_section4_no_records():
         section="Stratum Data",
         file__name="tanf_section4_no_records.txt",
         file__section="Stratum Data",
-        program_type=DataFile.ProgramType.TANF,
+        program_type=Program.Code.TANF,
         file__data=(b"HEADER20244S06   TAN1ED\n" b"TRAILER0000000         "),
     )
 
@@ -1265,7 +1265,7 @@ def tanf_section1_no_records_bad_trailer_count():
         section="Active Case Data",
         file__name="tanf_section1_no_records_bad_trailer_count.txt",
         file__section="Active Case Data",
-        program_type=DataFile.ProgramType.TANF,
+        program_type=Program.Code.TANF,
         file__data=(b"HEADER20244A06   TAN1ED\n" b"TRAILER0000001         "),
     )
 
@@ -1279,7 +1279,7 @@ def tanf_section1_unknown_record_bad_trailer_count():
         section="Active Case Data",
         file__name="tanf_section1_unknown_record_bad_trailer_count.txt",
         file__section="Active Case Data",
-        program_type=DataFile.ProgramType.TANF,
+        program_type=Program.Code.TANF,
         file__data=(
             b"HEADER20244A06   TAN1ED\n"
             b"ThisLineShouldError\n"
@@ -1295,8 +1295,8 @@ def program_audit_ftanf(stt, stt_user):
         "PI_Audit_FTANF.txt",
         stt_user,
         stt,
-        DataFile.Section.ACTIVE_CASE_DATA,
-        DataFile.ProgramType.TANF,
+        Section.Name.ACTIVE_CASE_DATA,
+        Program.Code.TANF,
         is_program_audit=True,
     )
 
@@ -1308,8 +1308,8 @@ def program_audit_duplicates(stt, stt_user):
         "PI_Audit_duplicates.txt",
         stt_user,
         stt,
-        DataFile.Section.ACTIVE_CASE_DATA,
-        DataFile.ProgramType.TANF,
+        Section.Name.ACTIVE_CASE_DATA,
+        Program.Code.TANF,
         is_program_audit=True,
     )
 
@@ -1321,8 +1321,8 @@ def program_audit_space_fill(stt, stt_user):
         "PI_Audit_space-fill.txt",
         stt_user,
         stt,
-        DataFile.Section.ACTIVE_CASE_DATA,
-        DataFile.ProgramType.TANF,
+        Section.Name.ACTIVE_CASE_DATA,
+        Program.Code.TANF,
         is_program_audit=True,
     )
 
@@ -1334,8 +1334,8 @@ def program_audit_zero_fill(stt, stt_user):
         "PI_Audit_zero-fill.txt",
         stt_user,
         stt,
-        DataFile.Section.ACTIVE_CASE_DATA,
-        DataFile.ProgramType.TANF,
+        Section.Name.ACTIVE_CASE_DATA,
+        Program.Code.TANF,
         is_program_audit=True,
     )
 
@@ -1346,7 +1346,7 @@ def tanf_s1_federally_funded_recipients():
     parsing_file = ParsingFileFactory(
         year=2021,
         quarter="Q1",
-        program_type=DataFile.ProgramType.TANF,
+        program_type=Program.Code.TANF,
         file__name="s1_federally_funded_recipients.txt",
         file__section="Active Case Data",
         file__data=(
