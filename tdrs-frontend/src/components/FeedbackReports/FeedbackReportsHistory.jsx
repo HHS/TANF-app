@@ -171,9 +171,9 @@ function FeedbackReportsHistory({
                       >
                         <span
                           style={{
-                            whiteSpace: 'normal',
+                            whiteSpace: 'pre-wrap',
                             wordBreak: 'break-word',
-                            overflowWrap: 'break-word',
+                            overflowWrap: 'anywhere',
                           }}
                         >
                           {report.notes.length > 290 ? (

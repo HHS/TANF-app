@@ -48,6 +48,18 @@ describe('NotesModal', () => {
     ).toBeInTheDocument()
   })
 
+  it('makes the scrollable notes region focusable in the tab order', () => {
+    render(<NotesModal {...defaultProps} />)
+
+    const region = screen.getByRole('region', { name: 'Report notes' })
+    expect(region).toHaveAttribute('tabindex', '0')
+
+    screen.getByRole('heading', { name: 'Notes' }).focus()
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Tab' })
+
+    expect(region).toHaveFocus()
+  })
+
   it('calls onClose when the Close button is clicked', () => {
     const onClose = jest.fn()
     render(<NotesModal {...defaultProps} onClose={onClose} />)

@@ -537,6 +537,30 @@ describe('STTFeedbackReportsTable', () => {
       expect(screen.queryByText('Read more')).not.toBeInTheDocument()
     })
 
+    it('preserves note whitespace while wrapping text within the notes column', () => {
+      const note = 'First line\nSecond line'
+      const mockData = [
+        {
+          id: 1,
+          date_extracted_on: '2025-02-28',
+          created_at: '2025-03-05T10:41:00Z',
+          original_filename: 'report.zip',
+          notes: note,
+        },
+      ]
+
+      renderComponent(mockData)
+
+      const noteText = screen.getByText(
+        (_, element) =>
+          element.tagName === 'SPAN' && element.textContent === note
+      )
+      expect(noteText).toHaveStyle({
+        whiteSpace: 'pre-wrap',
+        overflowWrap: 'anywhere',
+      })
+    })
+
     it('displays truncated note with Read more button when notes exceed 120 chars, and opens modal on click', () => {
       const longNote =
         'This is a very long note for STTs that exceeds one hundred and twenty characters in length so that it will be truncated and show a Read more link in the table.'

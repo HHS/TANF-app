@@ -63,7 +63,12 @@ function NotesModal({ filename, notes, onClose }) {
           </h1>
         </header>
 
-        <div className="notes-modal-body">
+        <div
+          className="notes-modal-body"
+          role="region"
+          aria-label="Report notes"
+          tabIndex="0"
+        >
           {filename && (
             <p className="margin-0">
               <strong>File:</strong> {filename}

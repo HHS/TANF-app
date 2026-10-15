@@ -148,6 +148,10 @@
     outline: none !important;
     box-shadow: none !important;
   }
-}
 
+  &:focus-visible {
+    outline: 0.25rem solid #2491ff !important;
+    outline-offset: 0.125rem;
+  }
+}
 

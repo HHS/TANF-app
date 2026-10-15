@@ -102,7 +102,13 @@ function STTFeedbackReportsTable({ data, setAlert, showDownloadedAt = false }) {
                   <td>
                     {report.notes ? (
                       <div>
-                        <span>
+                        <span
+                          style={{
+                            whiteSpace: 'pre-wrap',
+                            wordBreak: 'break-word',
+                            overflowWrap: 'anywhere',
+                          }}
+                        >
                           {report.notes.length > 120
                             ? `${report.notes.slice(0, 120)}... `
                             : report.notes}

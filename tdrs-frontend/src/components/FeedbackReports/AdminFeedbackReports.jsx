@@ -5,7 +5,6 @@ import createFileInputErrorState from '../../utils/createFileInputErrorState'
 import FeedbackReportsUpload from './FeedbackReportsUpload'
 import FeedbackReportsHistory from './FeedbackReportsHistory'
 import DownloadStatisticsModal from './DownloadStatisticsModal'
-import escapeHtml from '../../utils/escapeHtml'
 import { PaginatedComponent } from '../Paginator/Paginator'
 import { Spinner } from '../Spinner'
 import { constructYears } from '../Reports/utils'
@@ -264,11 +263,7 @@ function AdminFeedbackReports() {
     if (value.length > 2000) {
       return 'Notes cannot exceed 2000 characters.'
     }
-    if (
-      escapeHtml(value) !== value ||
-      /<[^>]+>/i.test(value) ||
-      /javascript\s*:/i.test(value)
-    ) {
+    if (/<[^>]+>/i.test(value) || /javascript\s*:/i.test(value)) {
       return 'HTML and JavaScript are not allowed in the notes field.'
     }
     return null

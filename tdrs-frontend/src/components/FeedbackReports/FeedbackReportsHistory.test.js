@@ -669,6 +669,34 @@ describe('FeedbackReportsHistory', () => {
       ).not.toBeInTheDocument()
     })
 
+    it('preserves note whitespace while wrapping text within the notes column', () => {
+      const note = 'First line\nSecond line'
+      const mockData = [
+        {
+          id: 1,
+          year: 2025,
+          date_extracted_on: '2025-02-28',
+          created_at: '2025-03-05T10:31:00Z',
+          processed_at: '2025-03-05T10:41:00Z',
+          status: 'SUCCEEDED',
+          original_filename: 'test.zip',
+          notes: note,
+        },
+      ]
+
+      renderComponent({ data: mockData })
+
+      const noteText = screen.getByText(
+        (_, element) =>
+          element.tagName === 'SPAN' && element.textContent === note
+      )
+      expect(noteText).toHaveStyle({
+        whiteSpace: 'pre-wrap',
+        overflowWrap: 'anywhere',
+      })
+      expect(noteText.closest('td')).toHaveStyle({ maxWidth: '100ch' })
+    })
+
     it('displays truncated note with inline ... button when notes exceed 290 characters, and opens modal on click', () => {
       const longNote = 'A'.repeat(320)
       const mockData = [
