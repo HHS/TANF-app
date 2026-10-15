@@ -234,6 +234,36 @@ def test_report_source_serializer_rejects_notes_exceeding_max_length(
 
 
 @pytest.mark.django_db
+def test_report_source_serializer_normalizes_crlf_notes_up_to_2000_chars(
+    report_source_data, data_analyst
+):
+    """Test ReportSourceSerializer normalizes CRLF and accepts multiline notes up to 2000 characters."""
+    # 1999 characters in JS (1989 chars + 10 newlines); wire has 2009 chars due to CRLF
+    note_1999_js = ("a" * 1989) + ("\n" * 10)
+    note_1999_wire = note_1999_js.replace("\n", "\r\n")
+    report_source_data["notes"] = note_1999_wire
+    ser = ReportSourceSerializer(
+        context={"user": data_analyst}, data=report_source_data
+    )
+    assert ser.is_valid(), ser.errors
+    obj = ser.save()
+    assert "\r" not in obj.notes
+    assert len(obj.notes) <= 2000
+
+    # Exactly 2000 characters with newlines (wire has 2005 chars due to CRLF)
+    note_2000_js = ("b" * 1995) + "\n" + ("c" * 4)
+    note_2000_wire = note_2000_js.replace("\n", "\r\n")
+    report_source_data["notes"] = note_2000_wire
+    ser2 = ReportSourceSerializer(
+        context={"user": data_analyst}, data=report_source_data
+    )
+    assert ser2.is_valid(), ser2.errors
+    obj2 = ser2.save()
+    assert "\r" not in obj2.notes
+    assert len(obj2.notes) == 2000
+
+
+@pytest.mark.django_db
 @pytest.mark.parametrize(
     "prohibited_note",
     [

@@ -97,9 +97,25 @@ class ReportFileSerializer(serializers.ModelSerializer):
         return file
 
 
+class NormalizedCharField(serializers.CharField):
+    """CharField that normalizes CRLF and CR line endings to LF before validation."""
+
+    def to_internal_value(self, data):
+        """Normalize line breaks before validation."""
+        if isinstance(data, str):
+            data = data.replace("\r\n", "\n").replace("\r", "\n")
+        return super().to_internal_value(data)
+
+
 class ReportSourceSerializer(serializers.ModelSerializer):
     """Serializer for Report Source."""
 
+    notes = NormalizedCharField(
+        max_length=2000,
+        required=False,
+        allow_blank=True,
+        error_messages={"max_length": "Notes cannot exceed 2000 characters."},
+    )
     downloaded_count = serializers.SerializerMethodField()
     total_count = serializers.SerializerMethodField()
 
@@ -147,6 +163,7 @@ class ReportSourceSerializer(serializers.ModelSerializer):
         """Ensure notes do not exceed max length and contain no HTML or JavaScript."""
         if not value:
             return ""
+        value = value.replace("\r\n", "\n").replace("\r", "\n")
         if len(value) > 2000:
             raise serializers.ValidationError("Notes cannot exceed 2000 characters.")
         if strip_tags(value) != value or "<" in value or ">" in value:
