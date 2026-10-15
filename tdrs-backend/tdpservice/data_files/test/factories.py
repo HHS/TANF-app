@@ -8,22 +8,13 @@ from tdpservice.stts.test.factories import STTFactory
 from tdpservice.users.test.factories import UserFactory
 
 
-CANONICAL_PROGRAMS = {
-    "TAN": {"slug": "tanf", "name": "TANF"},
-    "SSP": {"slug": "ssp", "name": "SSP"},
-    "TRIBAL": {"slug": "tribal", "name": "Tribal TANF"},
-    "FRA": {"slug": "fra", "name": "FRA"},
-}
-
-
 def canonical_section_for(program_code, section_name):
     """Create canonical program/section rows if a transactional test flushed them."""
-    program_data = CANONICAL_PROGRAMS[program_code]
-    program, _ = Program.objects.update_or_create(
+    program, _ = Program.objects.get_or_create(
         code=program_code,
         defaults={
-            "slug": program_data["slug"],
-            "name": program_data["name"],
+            "slug": program_code.lower(),
+            "name": program_code,
         },
     )
     section, _ = Section.objects.get_or_create(
@@ -56,11 +47,24 @@ class DataFileFactory(factory.django.DjangoModelFactory):
     s3_versioning_id = 0
 
     @classmethod
+    def _build(cls, model_class, *args, **kwargs):
+        """Resolve scalar inputs to unsaved relation objects for build()."""
+        program_code = kwargs.pop("program_type", "TAN")
+        section = kwargs.get("section")
+        if not isinstance(section, Section):
+            program = Program(
+                code=program_code,
+                slug=program_code.lower(),
+                name=program_code,
+            )
+            kwargs["section"] = Section(program=program, name=section)
+        return super()._build(model_class, *args, **kwargs)
+
+    @classmethod
     def _create(cls, model_class, *args, **kwargs):
         """Populate canonical section rows only for database-backed instances."""
-        if kwargs.get("section_ref") is None:
-            kwargs["section_ref"] = canonical_section_for(
-                kwargs["program_type"],
-                kwargs["section"],
-            )
+        program_code = kwargs.pop("program_type", "TAN")
+        section = kwargs.get("section")
+        if not isinstance(section, Section):
+            kwargs["section"] = canonical_section_for(program_code, section)
         return super()._create(model_class, *args, **kwargs)
