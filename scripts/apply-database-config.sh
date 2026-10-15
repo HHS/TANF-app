@@ -25,7 +25,7 @@ pipenv install --dev --system --deploy
 echo "Done."
 
 echo "Getting credentials..."
-app_vars=$(cf curl /v2/apps/$guid/env)
+app_vars=$(cf curl /v3/apps/$guid/env)
 
 db_creds=$(echo $app_vars | jq -r '.system_env_json.VCAP_SERVICES."aws-rds"[0].credentials')
 connection_str=$(echo $db_creds | jq -r '[.host, .port]' | jq -r 'join(":")')
