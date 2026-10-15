@@ -1,9 +1,9 @@
 """Canary auth views that route between legacy and Keycloak flows.
 
 These views sit at versionless paths (/login/dotgov, /login/ams, /logout/oidc)
-and use the KEYCLOAK_AUTH_PERCENTAGE setting to decide which auth flow handles
-each new login request. The frontend is unaware of the routing — it always hits
-the same endpoints.
+and use the keycloak_auth feature flag to decide which auth flow handles each
+new login request. The frontend is unaware of the routing — it always hits the
+same endpoints.
 
 During the transition period, legacy callbacks still arrive at /v1/login and
 /v1/oidc/ams (because those redirect URIs are registered with Login.gov/AMS),

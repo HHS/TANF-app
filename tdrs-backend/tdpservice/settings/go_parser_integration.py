@@ -10,5 +10,3 @@ class GoParserIntegration(Local):
 
     DATABASES = deepcopy(Local.DATABASES)
     DATABASES["default"]["TEST"] = {"MIRROR": "default"}
-
-    GO_PARSER_SHADOW_MODE = False

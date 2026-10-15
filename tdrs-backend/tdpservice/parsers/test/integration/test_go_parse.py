@@ -1,7 +1,6 @@
 """Integration tests for the live Go parser worker."""
 
 import logging
-import os
 import time
 import uuid
 
@@ -16,8 +15,8 @@ from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.models import DataFile, DataFileStateTransition
 from tdpservice.data_files.submission_lifecycle import (
     begin_parse,
-    complete_datafile_av_scan,
     claim_parse,
+    complete_datafile_av_scan,
     prepare_datafile_for_reparse,
     start_datafile_av_scan,
 )
@@ -64,15 +63,6 @@ GO_PARSE_TIMEOUT_SECONDS = 300
 GO_PARSE_LARGE_FILE_TIMEOUT_SECONDS = 300
 GO_POST_PARSE_TIMEOUT_SECONDS = 60
 _GO_PARSER_DATAFILE_IDS = None
-
-os.environ["GO_PARSER_SHADOW_MODE"] = "False"
-
-
-@pytest.fixture(autouse=True)
-def disable_go_parser_shadow_mode(settings, monkeypatch):
-    """Keep Go parser integration tests pointed at production tables."""
-    monkeypatch.setenv("GO_PARSER_SHADOW_MODE", "False")
-    settings.GO_PARSER_SHADOW_MODE = False
 
 
 def register_go_parser_datafile_for_cleanup(datafile):
@@ -138,13 +128,15 @@ def parse_datafile(dfs, datafile, timeout_seconds=GO_PARSE_TIMEOUT_SECONDS):
         SubmissionState.PARSE_FAILED,
         SubmissionState.STUCK,
     }:
-        prepare_datafile_for_reparse(datafile, note="Go parser integration reparse", event_id=event_id)
+        prepare_datafile_for_reparse(
+            datafile, note="Go parser integration reparse", event_id=event_id
+        )
     parse_token = claim_parse(datafile)
     begin_parse(datafile, parse_token, actor="go_parser", event_id=event_id)
 
     async_result = celery_app.send_task(
         GO_PARSE_TASK_NAME,
-        args=[datafile.pk, 0, str(parse_token), str(event_id)],
+        args=[datafile.pk, 0, "go-only", str(parse_token), str(event_id)],
         queue=settings.CELERY_GO_PARSER_QUEUE,
     )
 
@@ -177,9 +169,14 @@ def parse_datafile(dfs, datafile, timeout_seconds=GO_PARSE_TIMEOUT_SECONDS):
     )
     assert go_transitions.exists()
     completed_transition = go_transitions.filter(
-        next_state__in=[SubmissionState.PARSE_COMPLETED, SubmissionState.PARSED_WITH_ERRORS]
+        next_state__in=[
+            SubmissionState.PARSE_COMPLETED,
+            SubmissionState.PARSED_WITH_ERRORS,
+        ]
     ).get()
-    assert completed_transition.task_name == "tdpservice.scheduling.parser_task.post_parse"
+    assert (
+        completed_transition.task_name == "tdpservice.scheduling.parser_task.post_parse"
+    )
     assert completed_transition.celery_task_id
     return dfs
 

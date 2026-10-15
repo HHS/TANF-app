@@ -9,12 +9,15 @@ from base64 import b64decode
 from urllib.parse import quote_plus, urlencode
 
 from django.conf import settings
+from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import SuspiciousOperation
 from django.http import HttpResponseRedirect
 
 import jwt
 import requests
 from jwcrypto import jwk
+
+from tdpservice.users.login_destination import frontend_login_url
 
 logger = logging.getLogger(__name__)
 
@@ -143,14 +146,17 @@ def get_nonce_and_state(session):
     return validation_keys
 
 
-def response_redirect(self, id_token):
+def response_redirect(
+    user: AbstractUser, id_token: str, destination: str | None = None
+) -> HttpResponseRedirect:
     """
     Redirects to web app with an httpOnly cookie.
 
-    :param self: parameter to permit django python to call a method within its own class
+    :param user: authenticated user
+    :param destination: validated local destination
     :param id_token: encoded token returned by login.gov/token
     """
-    response = HttpResponseRedirect(settings.FRONTEND_BASE_URL + "/login")
+    response = HttpResponseRedirect(frontend_login_url(user, destination))
     response.set_cookie(
         "id_token",
         value=id_token,

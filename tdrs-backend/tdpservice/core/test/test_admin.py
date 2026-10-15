@@ -7,7 +7,7 @@ from django.urls import reverse
 
 import pytest
 
-from tdpservice.core.admin import FeatureFlagAdmin
+from tdpservice.core.admin import FeatureFlagAdmin, FeatureFlagAdminForm
 from tdpservice.core.models import FeatureFlag
 from tdpservice.users.models import User, UserChangeRequest, UserChangeRequestStatus
 
@@ -142,6 +142,7 @@ class TestFeatureFlagAdmin(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Feature Identity")
         self.assertContains(response, "Configuration")
+        self.assertContains(response, "Random rollout")
 
     def test_feature_flag_change_view(self):
         """Test that feature flags can be edited via admin."""
@@ -175,11 +176,14 @@ class TestFeatureFlagAdmin(TestCase):
     def test_list_display_fields(self):
         """Test that list_display contains expected fields."""
         self.assertIn("feature_name", self.admin.list_display)
+        self.assertIn("type", self.admin.list_display)
         self.assertIn("enabled", self.admin.list_display)
+        self.assertIn("rollout_percentage", self.admin.list_display)
         self.assertIn("updated_at", self.admin.list_display)
 
     def test_list_filter_fields(self):
         """Test that list_filter contains expected fields."""
+        self.assertIn("type", self.admin.list_filter)
         self.assertIn("enabled", self.admin.list_filter)
         self.assertIn("created_at", self.admin.list_filter)
         self.assertIn("updated_at", self.admin.list_filter)
@@ -203,6 +207,7 @@ class TestFeatureFlagAdmin(TestCase):
             reverse("admin:core_featureflag_add"),
             {
                 "feature_name": "datafiles_pia_submission",
+                "type": FeatureFlag.Type.ON_OFF,
                 "enabled": True,
                 "config": '{"max_file_size": 1000}',
                 "description": "Enable PIA datafile submission",
@@ -214,6 +219,42 @@ class TestFeatureFlagAdmin(TestCase):
         self.assertTrue(
             FeatureFlag.objects.filter(feature_name="datafiles_pia_submission").exists()
         )
+
+    def test_rollout_percentage_is_required_in_admin(self):
+        """Test the admin form requires a percentage for rollout flags."""
+        form = FeatureFlagAdminForm(
+            data={
+                "feature_name": "missing_rollout_percentage",
+                "type": FeatureFlag.Type.RANDOM_ROLLOUT,
+                "enabled": True,
+                "config": "{}",
+                "description": "",
+            }
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("rollout_percentage", form.errors)
+
+    def test_rollout_percentage_flag_is_valid_in_admin(self):
+        """Test the admin form accepts valid rollout configuration."""
+        form = FeatureFlagAdminForm(
+            data={
+                "feature_name": "valid_rollout_percentage",
+                "type": FeatureFlag.Type.RANDOM_ROLLOUT,
+                "enabled": True,
+                "rollout_percentage": 25,
+                "config": "{}",
+                "description": "",
+            }
+        )
+
+        self.assertTrue(form.is_valid(), form.errors)
+
+    def test_admin_form_includes_flag_type_toggle_script(self):
+        """Test the admin form includes conditional rollout field behavior."""
+        form = FeatureFlagAdminForm()
+
+        self.assertIn("admin/js/feature_flag_type_toggle.js", str(form.media))
 
     def test_feature_flag_search(self):
         """Test searching for feature flags."""

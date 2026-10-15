@@ -2,7 +2,7 @@ import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 
 import { Provider } from 'react-redux'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, useLocation } from 'react-router-dom'
 import { thunk } from 'redux-thunk'
 import { get, post } from '../../fetch-instance'
 import configureStore from 'redux-mock-store'
@@ -2379,6 +2379,45 @@ describe('Reports', () => {
   })
 
   describe('URL parameter validation', () => {
+    it('preserves the URL fragment while initializing and changing report filters', async () => {
+      const CurrentLocation = () => {
+        const { search, hash } = useLocation()
+        return (
+          <output data-testid="report-location">{`${search}${hash}`}</output>
+        )
+      }
+
+      render(
+        <Provider store={mockStore(initialState)}>
+          <MemoryRouter
+            initialEntries={['/data-files?fy=2023&q=Q1&type=tanf#history']}
+          >
+            <Reports />
+            <CurrentLocation />
+          </MemoryRouter>
+        </Provider>
+      )
+
+      await waitFor(() => {
+        expect(screen.getByTestId('report-location').textContent).toBe(
+          '?fy=2023&q=Q1&type=tanf#history'
+        )
+      })
+
+      fireEvent.change(
+        screen.getByLabelText('Fiscal Year (October - September)*'),
+        {
+          target: { value: '2024' },
+        }
+      )
+
+      await waitFor(() => {
+        expect(screen.getByTestId('report-location').textContent).toBe(
+          '?fy=2024&q=Q1&type=tanf#history'
+        )
+      })
+    })
+
     it('should accept valid URL parameters', async () => {
       const store = mockStore(initialState)
       const { getByLabelText } = render(

@@ -86,8 +86,7 @@ The config file supports `${VAR}` interpolation. Common variables:
 | `GO_PARSER_METRICS_LISTEN_ADDRESS` | `metrics.listen_address` / `--metrics.listen-address` | Metrics exporter listen address (default `:9809`) |
 | `GO_PARSER_METRICS_PATH` | `metrics.path` / `--metrics.path` | Metrics endpoint path (default `/metrics`) |
 | `DATABASE_URL`       | `database.url`            | PostgreSQL connection string    |
-| `GO_PARSER_SHADOW_MODE` | `database.shadow_mode` | `true` writes to shadow tables; `false` writes to production tables |
-| `DATABASE_TABLE_PREFIX` | `database.table_prefix` | Prefix for Go parser-owned output tables (default `shadow_`) |
+| `DATABASE_TABLE_PREFIX` | `database.table_prefix` | Prefix for Go parser shadow output tables (default `shadow_`) |
 | `REDIS_URL`          | `server.celery.redis_url` | Redis broker for Celery mode    |
 | `GO_PARSER_POST_PARSE_TASK_NAME` | `server.celery.post_parse_task_name` | Python Celery task to enqueue after each parse attempt |
 | `GO_PARSER_POST_PARSE_QUEUE` | `server.celery.post_parse_queue` | Python Celery queue for post-parse finalization |
@@ -244,7 +243,7 @@ For one-shot local performance runs, the endpoint only exists while the parser p
 
 ### Celery Mode
 
-Celery mode connects to Redis and consumes parse tasks dispatched by Django. Tasks carry `[data_file_id, reparse_id, parse_token, event_id]`; the ownership token and audit event ID are separate values. After each parse attempt, the worker enqueues Django's `post_parse(data_file_id, reparse_id, parse_error, parse_token, event_id)` task on the Python Celery queue.
+Celery mode connects to Redis and consumes parse tasks dispatched by Django. Tasks carry `[data_file_id, reparse_id, table_mode, parse_token, event_id]`; the persisted parser mode selects the `go-shadow` or `go-only` table family, while the ownership token and audit event ID remain separate values. After each parse attempt, the worker enqueues Django's `post_parse(data_file_id, reparse_id, parse_error, table_mode, parse_token, event_id)` task on the Python Celery queue.
 
 Django's submission lifecycle controller owns production state changes. Production record and summary writes require the current parser token. The Go worker records shadow parse-start history directly; Django records the final outcome. Both histories retain the shared event ID and the task ID of the worker that recorded each transition.
 
@@ -453,7 +452,11 @@ Live Go parser integration coverage runs through the backend pytest suite:
 task backend-pytest-go-integration
 ```
 
-For integration tests in CI, CircleCI reuses the existing backend docker-compose stack, including PostgreSQL and the Django migration flow, before running the Go parser integration suite with `DATABASE_URL` pointed at that migrated test database. By default, Go parser records, parser errors, datafile metadata, and summaries are written to `shadow_*` tables in that same database. Set `GO_PARSER_SHADOW_MODE=false` to target production tables instead.
+For integration tests in CI, CircleCI reuses the existing backend docker-compose stack, including PostgreSQL and the Django migration flow, before running the Go parser integration suite with `DATABASE_URL` pointed at that migrated test database. Integration tasks carry `go-only` mode and therefore write records, parser errors, datafile metadata, and summaries to production tables.
+
+Celery routing is initially controlled by the Django `go_parser_mode` feature flag. On a data file's first dispatch, Django evaluates the master enabled state and `rollout_percentage`, reads `config.mode` (`go-shadow` or `go-only`), and persists the resolved `python-only`, `go-shadow`, or `go-only` route on the production `DataFile`. Existing rows with a null route are assigned lazily. Later reparses reuse the persisted route, so flag or rollout changes affect only unassigned files. A missing, disabled, excluded, or invalid flag persists `python-only` and routes the file to Python.
+
+The persisted route is included in every Go task payload. The Go worker does not re-read the mutable flag, and shadow data-file rows do not duplicate the routing field.
 
 ---
 

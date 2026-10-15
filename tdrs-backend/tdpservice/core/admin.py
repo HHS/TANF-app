@@ -96,6 +96,11 @@ class HistoricalGroupAdmin(SimpleHistoryAdmin, GroupAdmin):
 class FeatureFlagAdminForm(ModelForm):
     """Custom form for FeatureFlag admin with JSON editor widget."""
 
+    class Media:
+        """Include the flag type field toggle script."""
+
+        js = ("admin/js/feature_flag_type_toggle.js",)
+
     class Meta:
         """Metadata."""
 
@@ -114,8 +119,14 @@ class FeatureFlagAdmin(SimpleHistoryAdmin):
 
     form = FeatureFlagAdminForm
 
-    list_display = ["feature_name", "enabled", "updated_at"]
-    list_filter = ["enabled", "created_at", "updated_at"]
+    list_display = [
+        "feature_name",
+        "type",
+        "enabled",
+        "rollout_percentage",
+        "updated_at",
+    ]
+    list_filter = ["type", "enabled", "created_at", "updated_at"]
     search_fields = ["feature_name", "description"]
     readonly_fields = ["created_at", "updated_at"]
 
@@ -124,8 +135,11 @@ class FeatureFlagAdmin(SimpleHistoryAdmin):
         (
             "Configuration",
             {
-                "fields": ("enabled", "config"),
-                "description": "Toggle the feature on/off and configure feature-specific settings",
+                "fields": ("type", "enabled", "rollout_percentage", "config"),
+                "description": (
+                    "Choose how the flag is evaluated, then enable it and configure "
+                    "any feature-specific settings. Rollout decisions are random per request."
+                ),
             },
         ),
         (

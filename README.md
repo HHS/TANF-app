@@ -42,6 +42,27 @@ Our vision is to build a new, secure, web-based data reporting system to improve
     + **[Zenhub](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/board?repos=281707402)**: Tracking issues
     + **[Product Updates](./product-updates)**: communication on project updates and research findings to the broader TDP stakeholders and target users
 
+## Working With VSCode ##
+
+### Quick Start ###
+To open any workspace:
+```bash
+code tanf-app.code-workspace  # Entire repo
+code frontend.code-workspace  # Frontend only
+code backend.code-workspace   # Backend only
+code docs.code-workspace      # Documentation only
+```
+In any workspace, press Cmd+Shift+P (or Ctrl+Shift+P), select Tasks: Run Task, and pick any task (e.g., Dev: Start All (Backend + Frontend) to spin up the local environment).
+
+For details on all task mappings and settings, refer to
+[WORKSPACES.md](./WORKSPACES.md)
+
+Note: if the tasks don't run, make sure you have go-task installed
+```bash
+brew install go-task
+```
+
+
 ## Working With Agents
 
 This repo includes agent-facing context files to help coding agents understand the monorepo layout, subsystem boundaries, issue tracker workflow, and domain vocabulary. Start with [AGENTS.md](./AGENTS.md), [CONTEXT.md](./CONTEXT.md), [CONTEXT-MAP.md](./CONTEXT-MAP.md), and the supporting files under [docs/agents](./docs/agents).

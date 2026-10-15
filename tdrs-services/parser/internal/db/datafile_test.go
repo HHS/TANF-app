@@ -64,7 +64,7 @@ func TestDataFileHelpersRejectUnsupportedTables(t *testing.T) {
 		},
 		{
 			name: "ensure datafile",
-			err:  EnsureShadowDataFile(ctx, nil, "unknown_table", df),
+			err:  EnsureDataFile(ctx, nil, "unknown_table", df),
 			want: `unsupported datafile table "unknown_table"`,
 		},
 		{

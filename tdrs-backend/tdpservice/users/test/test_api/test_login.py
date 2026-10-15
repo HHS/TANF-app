@@ -20,6 +20,7 @@ class DummyRequest:
 
     def __init__(self):
         self.session = SessionStub()
+        self.GET = {}
 
 
 @mock.patch("requests.get")

@@ -174,7 +174,7 @@ In spaces with multiple backend pairs (dev has 3), all backends fire sync signal
 
 ### Auth Endpoints
 
-The existing auth endpoints are extended to support both the legacy and Keycloak flows. The canary feature flag (`KEYCLOAK_AUTH_PERCENTAGE`) determines which flow handles each request — no separate URL paths are needed:
+The existing auth endpoints are extended to support both the legacy and Keycloak flows. The `keycloak_auth` random rollout feature flag determines which flow handles each request — no separate URL paths are needed:
 
 | Endpoint | Purpose |
 |----------|---------|
@@ -197,7 +197,7 @@ The React frontend continues to use `REACT_APP_BACKEND_URL` for all API calls, i
 | `IdleTimer.jsx` | `{REACT_APP_BACKEND_URL}/logout/oidc` |
 | `auth.js` | `{REACT_APP_BACKEND_URL}/auth_check` |
 
-The frontend is unaware of which auth flow (legacy or Keycloak) is handling a given request. This eliminates the need for frontend redeployment during the migration — the rollout is controlled entirely via the backend `KEYCLOAK_AUTH_PERCENTAGE` environment variable.
+The frontend is unaware of which auth flow (legacy or Keycloak) is handling a given request. This eliminates the need for frontend redeployment during the migration — the rollout is controlled through the `keycloak_auth` feature flag in Django admin.
 
 ---
 
@@ -275,7 +275,9 @@ The `tdp-user-attributes` client scope includes protocol mappers for: `login_gov
 
 ### Approach
 
-Both the legacy auth flow (direct Login.gov/AMS) and the Keycloak-brokered flow are deployed simultaneously behind the same endpoints. A server-side feature flag (`KEYCLOAK_AUTH_PERCENTAGE`) controls what percentage of new login requests are routed through Keycloak. This avoids versioned URL paths entirely — the frontend always hits the same auth endpoints, and the backend decides which flow to use.
+Both the legacy auth flow (direct Login.gov/AMS) and the Keycloak-brokered flow are deployed simultaneously behind the same endpoints. The server-side `keycloak_auth` feature flag, configured as a `random_rollout`, controls what percentage of new login requests are routed through Keycloak. This avoids versioned URL paths entirely — the frontend always hits the same auth endpoints, and the backend decides which flow to use.
+
+The flag is not provisioned by a migration. Until an admin creates `keycloak_auth`, the application treats it as disabled and routes all login requests through the legacy flow.
 
 ### How It Works
 
@@ -289,37 +291,37 @@ The Django auth views (`/login/dotgov`, `/login/ams`) inspect the canary flag on
 Both flows return to the same callback URL. The callback inspects the session marker to delegate to the correct token exchange logic.
 
 ```
-KEYCLOAK_AUTH_PERCENTAGE=0    → 100% legacy (default, no behavior change)
-KEYCLOAK_AUTH_PERCENTAGE=10   → 10% Keycloak, 90% legacy
-KEYCLOAK_AUTH_PERCENTAGE=50   → 50/50 split
-KEYCLOAK_AUTH_PERCENTAGE=100  → 100% Keycloak (full cutover)
+keycloak_auth missing/disabled → 100% legacy (default, no behavior change)
+keycloak_auth enabled at 10%  → 10% Keycloak, 90% legacy
+keycloak_auth enabled at 50%  → 50/50 split
+keycloak_auth enabled at 100% → 100% Keycloak (full cutover)
 ```
 
 ### Canary Rollout (Per Environment)
 
-| Phase | `KEYCLOAK_AUTH_PERCENTAGE` | Action |
-|-------|---------------------------|--------|
-| 1. Deploy | `0` | Deploy backend with both flows wired up. No user impact — all traffic uses legacy. |
-| 2. Smoke test | `0` (manual override) | Team members test Keycloak flow explicitly via an internal query parameter or admin toggle. |
+| Phase | `keycloak_auth` rollout | Action |
+|-------|-------------------------|--------|
+| 1. Deploy | Missing or disabled | Deploy backend with both flows wired up. No user impact — all traffic uses legacy. |
+| 2. Smoke test | `100` temporarily | Team members test the Keycloak flow in the selected environment, then return the flag to `0`. |
 | 3. Canary | `10` | 10% of new logins route through Keycloak. Monitor error rates, login latency, user reports. |
 | 4. Expand | `50` | Increase to 50% after canary period shows no issues (minimum 48 hours per phase). |
 | 5. Full cutover | `100` | All logins through Keycloak. Legacy flow still deployed but unused. |
 | 6. Bake period | `100` | Run at 100% for at least 2 weeks before removing legacy code. |
 
-**Rollback at any phase:** Set `KEYCLOAK_AUTH_PERCENTAGE=0` via `cf set-env` + `cf restage`. Takes effect on next login attempt. No frontend redeployment required. Existing sessions (both legacy and Keycloak-originated) are unaffected.
+**Rollback at any phase:** Disable `keycloak_auth` in Django admin. The change takes effect on the next login attempt without a restage or frontend deployment. Existing sessions (both legacy and Keycloak-originated) are unaffected.
 
 ### Implementation Notes
 
 - The percentage check happens only at login initiation — once a user is in a flow, they complete it regardless of flag changes
-- The canary flag is a Django setting backed by an environment variable, changeable via `cf set-env` without a code deploy (Could also be managed by our FeatureFlag model)
+- The canary is the database-backed `keycloak_auth` feature flag and is managed through Django admin
 - Logging should tag each login event with `auth_flow=legacy` or `auth_flow=keycloak` for monitoring the split. These are structured log fields (via Python's `logger.info("Login initiated", extra={"auth_flow": "keycloak"})`) that flow into Loki via Cloud Foundry's log stream. Grafana dashboards can then query by `auth_flow` label to compare error rates, latency, and success rates between the two flows during the canary period.
 - The canary is per-request, not per-user — the same user may hit different flows on different logins (this is acceptable since both flows produce identical Django sessions)
 
 ### Legacy Code Removal
 
-After running at `KEYCLOAK_AUTH_PERCENTAGE=100` in production for at least 2 weeks with no issues:
+After running `keycloak_auth` at 100% in production for at least 2 weeks with no issues:
 
-- Remove the canary routing logic and the `KEYCLOAK_AUTH_PERCENTAGE` flag
+- Remove the canary routing logic and the `keycloak_auth` flag
 - Delete `users/api/login.py`, `login_redirect_oidc.py`, custom OIDC utility functions
 - Remove `LOGIN_GOV_*` and `AMS_*` direct-integration settings from Django
 - Remove `PlgAuthorizationCheck` and the nginx `auth_request` pattern for Grafana (replaced by Keycloak SSO)
@@ -460,7 +462,7 @@ Keycloak exposes a `/metrics` endpoint when `KC_METRICS_ENABLED=true` is set. Pr
 | `jvm_memory_used_bytes` | JVM heap usage — early warning for memory pressure |
 | `jvm_gc_pause_seconds` | GC pauses — correlates with latency spikes |
 
-**Canary monitoring:** During the canary rollout, the Keycloak metrics cover the Keycloak-brokered flow natively. For comparing against the legacy flow, the Django-side structured logging (`auth_flow=legacy` or `auth_flow=keycloak` tags in Loki) provides the other half of the picture. Once at `KEYCLOAK_AUTH_PERCENTAGE=100`, the Prometheus metrics become the single source of truth for auth observability.
+**Canary monitoring:** During the canary rollout, the Keycloak metrics cover the Keycloak-brokered flow natively. For comparing against the legacy flow, the Django-side structured logging (`auth_flow=legacy` or `auth_flow=keycloak` tags in Loki) provides the other half of the picture. Once `keycloak_auth` reaches 100%, the Prometheus metrics become the single source of truth for auth observability.
 
 ### Additional Observability
 

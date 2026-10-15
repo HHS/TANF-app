@@ -74,8 +74,7 @@ validation:
 # Database: connection pool
 database:
   url: "${DATABASE_URL}"
-  # true writes to Django-managed shadow tables; false writes to production tables
-  shadow_mode: true
+  # Celery tasks select shadow or production; this configures the shadow prefix.
   table_prefix: "shadow_"
   max_conns: 10
   min_conns: 4

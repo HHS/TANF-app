@@ -32,6 +32,10 @@ type Registry struct {
 
 	// tablePrefix is applied only to Go parser-owned output tables.
 	tablePrefix string
+
+	// contentTypes is retained so task-scoped registries can select the
+	// production or shadow content types without another database query.
+	contentTypes map[string]int32
 }
 
 // NewRegistry resolves schema and filespec glob patterns from the Config,
@@ -51,11 +55,12 @@ func NewRegistry(cfg *Config) (*Registry, error) {
 	}
 
 	r := &Registry{
-		fileSpecs:   make(map[string]*filespec.FileSpec),
-		schemas:     make(map[string]*schema.CompiledSchema),
-		metadata:    make(map[string]*DbSchemaMetadata),
-		configDir:   configDir,
-		tablePrefix: cfg.Database.EffectiveTablePrefix(),
+		fileSpecs:    make(map[string]*filespec.FileSpec),
+		schemas:      make(map[string]*schema.CompiledSchema),
+		metadata:     make(map[string]*DbSchemaMetadata),
+		configDir:    configDir,
+		tablePrefix:  cfg.Database.TablePrefix,
+		contentTypes: make(map[string]int32),
 	}
 
 	for _, path := range schemaFiles {
@@ -213,6 +218,22 @@ func (r *Registry) TablePrefix() string {
 	return r.tablePrefix
 }
 
+// WithTablePrefix returns a task-scoped registry targeting one table family.
+// Schemas and file specs are immutable after startup, so they can be shared.
+func (r *Registry) WithTablePrefix(tablePrefix string) *Registry {
+	registry := &Registry{
+		fileSpecs:    r.fileSpecs,
+		schemas:      r.schemas,
+		metadata:     make(map[string]*DbSchemaMetadata),
+		configDir:    r.configDir,
+		tablePrefix:  tablePrefix,
+		contentTypes: r.contentTypes,
+	}
+	registry.buildAllMetadata()
+	registry.applyContentTypeIDs()
+	return registry
+}
+
 // Stats returns statistics about loaded configuration.
 func (r *Registry) Stats() (numFileSpecs, numSchemas int) {
 	return len(r.fileSpecs), len(r.schemas)
@@ -222,10 +243,11 @@ func (r *Registry) Stats() (numFileSpecs, numSchemas int) {
 // Only schemas are populated; fileSpecs are empty.
 func NewTestRegistry(schemas map[string]*schema.CompiledSchema) *Registry {
 	return &Registry{
-		fileSpecs:   make(map[string]*filespec.FileSpec),
-		schemas:     schemas,
-		metadata:    make(map[string]*DbSchemaMetadata),
-		tablePrefix: DefaultTablePrefix,
+		fileSpecs:    make(map[string]*filespec.FileSpec),
+		schemas:      schemas,
+		metadata:     make(map[string]*DbSchemaMetadata),
+		tablePrefix:  DefaultTablePrefix,
+		contentTypes: make(map[string]int32),
 	}
 }
 

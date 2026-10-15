@@ -71,8 +71,7 @@ type CLI struct {
 
 	// Database
 	DatabaseURL               string        `kong:"name='database.url',env='DATABASE_URL',help='Database connection URL'"`
-	DatabaseShadowMode        bool          `kong:"name='database.shadow-mode',env='GO_PARSER_SHADOW_MODE',help='Write to shadow tables instead of production tables'"`
-	DatabaseTablePrefix       string        `kong:"name='database.table-prefix',env='DATABASE_TABLE_PREFIX',help='Prefix for Go parser-owned output tables'"`
+	DatabaseTablePrefix       string        `kong:"name='database.table-prefix',env='DATABASE_TABLE_PREFIX',help='Prefix for Go parser shadow output tables'"`
 	DatabaseMaxConns          int           `kong:"name='database.max-conns',help='Max database connections'"`
 	DatabaseMinConns          int           `kong:"name='database.min-conns',help='Min database connections'"`
 	DatabaseMaxConnLifetime   time.Duration `kong:"name='database.max-conn-lifetime',help='Max connection lifetime'"`
@@ -227,9 +226,6 @@ func (c *CLI) ApplyTo(cfg *Config, ctx *kong.Context) {
 
 	if set["database.url"] {
 		cfg.Database.URL = c.DatabaseURL
-	}
-	if set["database.shadow-mode"] {
-		cfg.Database.ShadowMode = c.DatabaseShadowMode
 	}
 	if set["database.table-prefix"] {
 		cfg.Database.TablePrefix = c.DatabaseTablePrefix

@@ -1,6 +1,7 @@
 """Test user utils."""
 
 import time
+from unittest.mock import Mock
 
 from django.core.exceptions import SuspiciousOperation
 from django.test import TestCase
@@ -68,5 +69,7 @@ class TestUtilities(TestCase):
     def test_response_redirect_redirects(self):
         """Response redirect redirects."""
         id_token = "dummy"
-        response = utils.response_redirect(self, id_token)
+        user = Mock()
+        user.groups.filter.return_value.exists.return_value = False
+        response = utils.response_redirect(user, id_token)
         assert response.status_code == status.HTTP_302_FOUND

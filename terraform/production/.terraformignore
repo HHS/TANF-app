@@ -1,0 +1,8 @@
+# Exclude VS Code settings
+.vscode/
+
+# Exclude agent directory
+.agent/
+
+# Exclude backend DBML schema docs (not part of Terraform-managed infrastructure)
+**/dbml/

@@ -4,7 +4,7 @@
 
 - Write clear, self-documenting code with meaningful names
 - Keep functions small and focused on a single responsibility
-- Add comments only when explaining *why*, not *what*
+- Add comments only when explaining _why_, not _what_
 - Follow existing patterns and conventions in the codebase
 - Remove dead code rather than commenting it out
 
@@ -16,6 +16,11 @@
 - Update tests when changing functionality
 - Run linters and tests before considering work complete
 - Always use type hinting when applicable
+- Use migrations only for database schema changes.
+- Do not use Django migrations (`RunPython` or `RunSQL`) to seed feature flags, configuration, reference data, or other application data.
+- Seed or update application data through an explicit management command, deployment step, fixture, or documented administrative procedure.
+- Ask before adding a migration that modifies existing data.
+- Never modify migrations that have already been committed to the `develop` branch
 
 ## Testing
 

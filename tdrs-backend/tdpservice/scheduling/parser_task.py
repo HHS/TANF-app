@@ -10,18 +10,20 @@ from typing import Callable
 from django.apps import apps
 from django.conf import settings
 from django.core.files import File
+from django.db import transaction
 from django.db.models import Case, Count, IntegerField, When
 from django.db.utils import DatabaseError
 
 from celery import current_app, shared_task
 
-from tdpservice.core.utils import log
-from tdpservice.data_files.enums import SubmissionState
+from tdpservice.core.utils import get_feature_flag, log
+from tdpservice.data_files.enums import GoParserMode, SubmissionState
 from tdpservice.data_files.error_reports import ErrorReportFactory
 from tdpservice.data_files.models import (
     DataFile,
     ReparseFileMeta,
     ShadowDataFile,
+    create_or_update_shadow_data_file,
 )
 from tdpservice.data_files.submission_lifecycle import (
     StaleParseOwnership,
@@ -63,6 +65,7 @@ logger = settings.PARSER_LOGGER
 GO_PARSER_TASK_NAME = "tdpservice.scheduling.parser_task.go_parse"
 GO_PARSER_POST_PARSE_TASK_NAME = "tdpservice.scheduling.parser_task.post_parse"
 GO_PARSER_QUEUE = getattr(settings, "GO_PARSER_QUEUE", "go-parser")
+GO_PARSER_FEATURE_FLAG = "go_parser_mode"
 
 
 @dataclass(frozen=True)
@@ -76,20 +79,66 @@ class ParserModelSet:
     label: str
 
 
-def queue_go_parse(data_file_id, reparse_id=None, parse_token=None, event_id=None):
-    """Queue a shadow parse task for the Go parser."""
+def _evaluate_go_parser_mode() -> GoParserMode:
+    """Evaluate the current feature flag for an unassigned data file."""
+    enabled, config = get_feature_flag(GO_PARSER_FEATURE_FLAG)
+    if not enabled:
+        return GoParserMode.PYTHON_ONLY
+
+    try:
+        return GoParserMode(config.get("mode"))
+    except (AttributeError, TypeError, ValueError):
+        logger.error(
+            "Invalid %s feature flag configuration; disabling Go parser dispatch.",
+            GO_PARSER_FEATURE_FLAG,
+        )
+        return GoParserMode.PYTHON_ONLY
+
+
+@transaction.atomic
+def resolve_or_reuse_parser_mode(data_file_id: int) -> GoParserMode:
+    """Return one durable parser route for every dispatch of a data file."""
+    data_file = DataFile.objects.select_for_update().get(id=data_file_id)
+    if data_file.parser_mode is not None:
+        return GoParserMode(data_file.parser_mode)
+
+    parser_mode = _evaluate_go_parser_mode()
+    data_file.parser_mode = parser_mode
+    data_file.save(update_fields=["parser_mode"])
+    return parser_mode
+
+
+def queue_go_parse(
+    data_file_id: int,
+    table_mode: GoParserMode,
+    reparse_id: int | None = None,
+    parse_token=None,
+    event_id=None,
+) -> None:
+    """Queue a Go parser task with routing, ownership, and audit context."""
+    if table_mode not in (GoParserMode.GO_SHADOW, GoParserMode.GO_ONLY):
+        raise ValueError(f"Cannot queue Go parser in {table_mode.value!r} mode")
     event_id = str(event_id or uuid.uuid4())
     try:
         current_app.send_task(
             GO_PARSER_TASK_NAME,
-            args=[data_file_id, reparse_id or 0, str(parse_token or ""), event_id],
+            args=[
+                data_file_id,
+                reparse_id or 0,
+                table_mode.value,
+                str(parse_token or ""),
+                event_id,
+            ],
             queue=GO_PARSER_QUEUE,
             ignore_result=True,
         )
     except Exception:
         data_file = DataFile.objects.get(id=data_file_id)
         log(
-            f"Failed to submit Go parser shadow task for datafile {data_file_id}.",
+            (
+                f"Failed to submit Go parser {table_mode.value} task "
+                f"for datafile {data_file_id}."
+            ),
             logger_context={
                 "user_id": data_file.user_id,
                 "content_type": DataFile,
@@ -98,11 +147,18 @@ def queue_go_parse(data_file_id, reparse_id=None, parse_token=None, event_id=Non
             },
             level="exception",
         )
+        if table_mode == GoParserMode.GO_ONLY:
+            raise
 
 
-def queue_parse(data_file_id, reparse_id=None, event_id=None):
-    """Queue production Python parse and companion Go shadow parse tasks."""
+def queue_parse(
+    data_file_id: int,
+    reparse_id: int | None = None,
+    event_id=None,
+) -> uuid.UUID:
+    """Route every parse of a data file using its persisted parser mode."""
     event_id = str(event_id or uuid.uuid4())
+    table_mode = resolve_or_reuse_parser_mode(data_file_id)
     data_file = DataFile.objects.get(pk=data_file_id)
     file_meta = None
     if reparse_id:
@@ -110,21 +166,41 @@ def queue_parse(data_file_id, reparse_id=None, event_id=None):
             data_file_id=data_file_id,
             reparse_meta_id=reparse_id,
         )
+
+    if table_mode == GoParserMode.GO_SHADOW:
+        create_or_update_shadow_data_file(data_file)
+
     parse_token = claim_parse(data_file, reparse_file_meta=file_meta)
     try:
-        parse.delay(
-            data_file_id,
-            reparse_id=reparse_id,
-            parse_token=str(parse_token),
-            event_id=event_id,
-        )
+        if table_mode != GoParserMode.GO_ONLY:
+            parse.delay(
+                data_file_id,
+                reparse_id=reparse_id,
+                parse_token=str(parse_token),
+                event_id=event_id,
+            )
+        else:
+            begin_parse(
+                data_file,
+                parse_token,
+                file_meta,
+                actor="go_parser",
+                event_id=event_id,
+            )
+
+        if table_mode != GoParserMode.PYTHON_ONLY:
+            queue_go_parse(
+                data_file_id,
+                table_mode,
+                reparse_id=reparse_id,
+                parse_token=parse_token,
+                event_id=event_id,
+            )
     except Exception:
         record_parse_dispatch_failure(
             data_file, parse_token, file_meta, event_id=event_id
         )
         raise
-    if settings.GO_PARSER_SHADOW_MODE:
-        queue_go_parse(data_file_id, reparse_id=reparse_id, event_id=event_id)
     return parse_token
 
 
@@ -193,23 +269,13 @@ def _parser_models_for_instance(model_or_instance):
     return _production_parser_models()
 
 
-def _post_parse_model_sets():
-    """Return model sets in the order Go parser output is expected."""
-    if settings.GO_PARSER_SHADOW_MODE:
-        return (_shadow_parser_models(), _production_parser_models())
-    return (_production_parser_models(), _shadow_parser_models())
-
-
-def _get_post_parse_data_file(data_file_id):
-    """Return the DataFile row and table family used by Go parser output."""
-    for parser_models in _post_parse_model_sets():
-        data_file = parser_models.data_file_model.objects.filter(
-            id=data_file_id
-        ).first()
-        if data_file is not None:
-            return data_file, parser_models
-
-    raise DataFile.DoesNotExist(f"No parser data file found for id={data_file_id}")
+def _parser_models_for_mode(table_mode: str | None) -> ParserModelSet:
+    """Return the exact table family selected when the task was dispatched."""
+    if table_mode == GoParserMode.GO_SHADOW.value:
+        return _shadow_parser_models()
+    if table_mode == GoParserMode.GO_ONLY.value:
+        return _production_parser_models()
+    raise ValueError(f"Unsupported Go parser table mode: {table_mode!r}")
 
 
 def _get_summary_status(dfs, data_file, parser_error_model=ParserError):
@@ -299,7 +365,9 @@ def set_error_report(dfs, error_report, parse_token=None):
         dfs.save()
 
 
-def _transition_parse_outcome(data_file, dfs, parse_token, reparse_id=None, event_id=None):
+def _transition_parse_outcome(
+    data_file, dfs, parse_token, reparse_id=None, event_id=None
+):
     """Report a parse outcome to the lifecycle controller."""
     parse_context = {
         "section": data_file.section,
@@ -500,8 +568,14 @@ def should_send_reparse_notification(dfs, file_meta, reparse_id):
     )
 
 
-@shared_task(name="tdpservice.scheduling.parser_task.go_parse")
-def go_parse(data_file_id, reparse_id=0, parse_token="", event_id=None):
+@shared_task(name=GO_PARSER_TASK_NAME)
+def go_parse(
+    data_file_id: int,
+    reparse_id: int = 0,
+    table_mode: str | None = None,
+    parse_token="",
+    event_id=None,
+) -> None:
     """Register the Go parser task name without executing it in Python."""
     raise RuntimeError(
         f"go_parse for data_file_id={data_file_id} is routed to the Go parser worker "
@@ -510,9 +584,17 @@ def go_parse(data_file_id, reparse_id=0, parse_token="", event_id=None):
 
 
 @shared_task(name=GO_PARSER_POST_PARSE_TASK_NAME)
-def post_parse(data_file_id, reparse_id=0, parse_error=None, parse_token="", event_id=None):
-    """Finalize Go parser output after every parse."""
-    data_file, parser_models = _get_post_parse_data_file(data_file_id)
+def post_parse(
+    data_file_id: int,
+    reparse_id: int = 0,
+    parse_error: str | None = None,
+    table_mode: str | None = None,
+    parse_token="",
+    event_id=None,
+) -> None:
+    """Finalize Go parser output in its selected table family."""
+    parser_models = _parser_models_for_mode(table_mode)
+    data_file = parser_models.data_file_model.objects.get(id=data_file_id)
     is_shadow = _uses_shadow_table(data_file)
 
     audit_context = {
@@ -572,7 +654,9 @@ def post_parse(data_file_id, reparse_id=0, parse_error=None, parse_token="", eve
         parse_token or None,
     )
     if data_file.state != SubmissionState.PARSE_STARTED:
-        begin_parse(data_file, parse_token, file_meta, actor="go_parser", event_id=event_id)
+        begin_parse(
+            data_file, parse_token, file_meta, actor="go_parser", event_id=event_id
+        )
 
     with _parse_write_scope(data_file, parse_token):
         dfs, _ = parser_models.summary_model.objects.get_or_create(

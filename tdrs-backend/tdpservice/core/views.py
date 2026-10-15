@@ -5,8 +5,7 @@ import logging
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, LogEntry
 from django.contrib.contenttypes.models import ContentType
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
+from django.core.cache import caches
 
 from rest_framework import viewsets
 from rest_framework.decorators import api_view, permission_classes
@@ -74,28 +73,25 @@ class FeatureFlagViewset(viewsets.ReadOnlyModelViewSet):
     serializer_class = FeatureFlagSerializer
     lookup_field = "feature_name"
 
-    @method_decorator(
-        [
-            cache_page(
-                settings.DEFAULT_CACHE_TIMEOUT,
-                cache="feature-flags",
-                key_prefix="list",
-            ),
-        ]
-    )
     def list(self, request):
-        """Get the feature flag list from the cache if available, else fetch the queryset."""
-        return super().list(request)
+        """Cache flag configuration while evaluating each flag per request."""
+        cache = caches["feature-flags"]
+        flags = cache.get("list")
+        if flags is None:
+            flags = list(self.get_queryset())
+            cache.set("list", flags, settings.DEFAULT_CACHE_TIMEOUT)
 
-    @method_decorator(
-        [
-            cache_page(
-                settings.DEFAULT_CACHE_TIMEOUT,
-                cache="feature-flags",
-                key_prefix="value",
-            ),
-        ]
-    )  # should these be individually cached? would be cached anyway with above impl
+        serializer = self.get_serializer(flags, many=True)
+        return Response(serializer.data)
+
     def retrieve(self, request, *args, **kwargs):
-        """Get the feature flag from cache if available, fallback to db."""
-        return super().retrieve(request, *args, **kwargs)
+        """Cache one flag's configuration while evaluating it per request."""
+        cache = caches["feature-flags"]
+        cache_key = f"value:{kwargs[self.lookup_field]}"
+        flag = cache.get(cache_key)
+        if flag is None:
+            flag = self.get_object()
+            cache.set(cache_key, flag, settings.DEFAULT_CACHE_TIMEOUT)
+
+        serializer = self.get_serializer(flag)
+        return Response(serializer.data)

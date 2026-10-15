@@ -37,7 +37,7 @@ This context covers the Keycloak initiative under `tdrs-backend/keycloak/`.
 - `tdpservice.users.keycloak_sync` registers Django signal handlers for user saves and group membership changes.
 - `tdpservice.users.tasks.reconcile_keycloak_users` periodically reconciles active Django users into Keycloak via Celery Beat.
 - `tdpservice.users.management.commands.sync_users_to_keycloak` performs a manual bulk sync.
-- `settings/common.py` defines the Keycloak and mozilla-django-oidc settings, including the canary `KEYCLOAK_AUTH_PERCENTAGE`.
+- `settings/common.py` defines the Keycloak and mozilla-django-oidc settings. The optional `keycloak_auth` database feature flag controls the authentication canary rollout; a missing flag uses legacy authentication.
 
 ## User Sync Rules
 

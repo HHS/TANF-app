@@ -3,13 +3,14 @@
 import logging
 import uuid
 from datetime import datetime, timezone
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
 
 from tdpservice.security.event_handler import SecurityEventHandler
 from tdpservice.security.models import SecurityEventToken, SecurityEventType
-from tdpservice.users.models import AccountApprovalStatusChoices
+from tdpservice.users.models import AccountApprovalStatusChoices, User
 
 
 @pytest.fixture
@@ -363,34 +364,84 @@ class TestSecurityEventHandler:
         assert token.event_data == email_changed_event_data_without_new_value
 
     @pytest.mark.django_db
-    def test_email_changed_for_unknown_email_records_processed_event(
-        self, caplog, decoded_jwt
-    ):
-        """Test Login.gov identifier-changed can arrive with a new unknown email."""
-        event_type = SecurityEventType.EMAIL_CHANGED
+    @pytest.mark.parametrize(
+        "event_type", [SecurityEventType.EMAIL_CHANGED, SecurityEventType.EMAIL_RECYCLED]
+    )
+    def test_unknown_email_records_only_receipt_metadata(
+        self,
+        caplog: pytest.LogCaptureFixture,
+        decoded_jwt: dict[str, Any],
+        event_type: str,
+        stt_data_analyst: User,
+    ) -> None:
+        """Unmatched email events finish without retaining payloads or changing users."""
+        previous_user = User.objects.filter(pk=stt_data_analyst.pk).values().get()
         event_data = {
             "subject": {
                 "email": "new_login_email@example.com",
                 "subject_type": "email",
-            }
+            },
+            "new-value": "another_email@example.com",
         }
 
-        with caplog.at_level(logging.WARNING):
+        with caplog.at_level(logging.INFO):
             SecurityEventHandler.handle_event(event_type, event_data, decoded_jwt)
 
-        assert "No user found with the provided 'email'" not in caplog.text
         assert "unmatched subject" in caplog.text
+        assert "new_login_email@example.com" not in caplog.text
+        assert "another_email@example.com" not in caplog.text
+        assert all(record.levelno < logging.WARNING for record in caplog.records)
+        assert User.objects.filter(pk=stt_data_analyst.pk).values().get() == previous_user
 
         assert SecurityEventToken.objects.count() == 1
         token = SecurityEventToken.objects.first()
         assert token.user is None
-        assert token.email == "new_login_email@example.com"
+        assert token.email is None
         assert token.processed is True
         assert token.processed_at is not None
+        assert token.received_at is not None
         assert token.event_type == event_type
-        assert token.event_data == event_data
+        assert token.event_data == {"outcome": "unmatched_subject"}
         assert token.jwt_id == decoded_jwt["jti"]
         assert token.issuer == decoded_jwt["iss"]
+        assert token.issued_at == datetime.fromtimestamp(
+            decoded_jwt["iat"], tz=timezone.utc
+        )
+
+    @pytest.mark.django_db
+    @pytest.mark.parametrize(
+        "event_type", [SecurityEventType.EMAIL_CHANGED, SecurityEventType.EMAIL_RECYCLED]
+    )
+    @pytest.mark.parametrize("email_matches_on_retry", [False, True])
+    def test_unmatched_email_receipt_is_unchanged_on_redelivery(
+        self,
+        caplog: pytest.LogCaptureFixture,
+        decoded_jwt: dict[str, Any],
+        event_type: str,
+        email_matches_on_retry: bool,
+        stt_data_analyst: User,
+    ) -> None:
+        """Redelivery preserves the completed receipt even if the email later matches."""
+        email = "new_login_email@example.com"
+        event_data = {"subject": {"email": email, "subject_type": "email"}}
+        SecurityEventHandler.handle_event(event_type, event_data, decoded_jwt)
+        original_receipt = SecurityEventToken.objects.values().get()
+
+        if email_matches_on_retry:
+            stt_data_analyst.username = email
+            stt_data_analyst.email = email
+            stt_data_analyst.save()
+        previous_user = User.objects.filter(pk=stt_data_analyst.pk).values().get()
+        caplog.clear()
+
+        with caplog.at_level(logging.INFO):
+            SecurityEventHandler.handle_event(event_type, event_data, decoded_jwt)
+
+        assert SecurityEventToken.objects.count() == 1
+        assert SecurityEventToken.objects.values().get() == original_receipt
+        assert User.objects.filter(pk=stt_data_analyst.pk).values().get() == previous_user
+        assert email not in caplog.text
+        assert all(record.levelno < logging.WARNING for record in caplog.records)
 
     @pytest.mark.django_db
     def test_non_mutating_event_for_unknown_sub_records_processed_event(

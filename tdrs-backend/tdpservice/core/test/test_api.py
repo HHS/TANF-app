@@ -203,3 +203,31 @@ class TestFeatureFlagViewset(TestCase):
             )
             assert response.status_code == status.HTTP_200_OK
             assert mock_method.called
+
+    def test_rollout_flag_is_evaluated_for_each_cached_request(self):
+        """Test cached flag configuration does not cache a rollout decision."""
+        FeatureFlag.objects.create(
+            feature_name="rollout-test",
+            type=FeatureFlag.Type.RANDOM_ROLLOUT,
+            enabled=True,
+            rollout_percentage=50,
+        )
+
+        with patch("tdpservice.core.models.random.random", side_effect=[0.1, 0.9]):
+            first_response = self.api_client.get(reverse("feature-flag-list"))
+            second_response = self.api_client.get(reverse("feature-flag-list"))
+
+        first_flag = next(
+            flag
+            for flag in first_response.data
+            if flag["feature_name"] == "rollout-test"
+        )
+        second_flag = next(
+            flag
+            for flag in second_response.data
+            if flag["feature_name"] == "rollout-test"
+        )
+        assert first_flag["type"] == FeatureFlag.Type.RANDOM_ROLLOUT
+        assert first_flag["rollout_percentage"] == 50
+        assert first_flag["enabled"] is True
+        assert second_flag["enabled"] is False

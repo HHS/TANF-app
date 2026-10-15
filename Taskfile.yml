@@ -165,7 +165,6 @@ tasks:
         docker compose -f docker-compose.yml run --rm --detach \
           --name "${container}" \
           -e DATABASE_URL="postgres://tdpuser:something_secure@postgres:5432/${db_name}?sslmode=disable" \
-          -e GO_PARSER_SHADOW_MODE=false \
           -e GO_PARSER_QUEUE="${queue}" \
           -e GO_PARSER_POST_PARSE_QUEUE="${post_parse_queue}" \
           go-parser
@@ -175,7 +174,6 @@ tasks:
           -e DB_NAME="${db_name}" \
           -e DJANGO_SETTINGS_MODULE=tdpservice.settings.go_parser_integration \
           -e DJANGO_CONFIGURATION=GoParserIntegration \
-          -e GO_PARSER_SHADOW_MODE=false \
           celery \
           bash -c "./wait_for_services.sh && exec celery -A tdpservice.settings worker --loglevel=INFO --pool=solo --without-gossip --without-mingle --without-heartbeat -Q '${post_parse_queue}' -n 'post-parse@%h'"
 
@@ -193,7 +191,7 @@ tasks:
         set -e
         queue="{{.GO_PARSER_QUEUE}}"
 
-        GO_PARSER_QUEUE="${queue}" GO_PARSER_SHADOW_MODE=false \
+        GO_PARSER_QUEUE="${queue}" \
           docker compose -f docker-compose.yml up -d postgres redis-server localstack celery web go-parser
         docker compose -f docker-compose.yml exec -T postgres sh -c 'until pg_isready -U tdpuser -d tdrs_test; do sleep 1; done'
         docker compose -f docker-compose.yml exec -T redis-server \
@@ -453,7 +451,7 @@ tasks:
     desc: Run Cypress E2E tests locally (Cypress on host, app in docker)
     dir: tdrs-frontend
     cmds:
-      - STALE_PARSE_TIMEOUT_SECONDS=60 STALE_PARSE_CHECK_INTERVAL_SECONDS=5 GO_PARSER_SHADOW_MODE=false CLAMAV_NEEDED=True docker compose -f ../tdrs-backend/docker-compose.yml up -d --force-recreate web celery
+      - STALE_PARSE_TIMEOUT_SECONDS=60 STALE_PARSE_CHECK_INTERVAL_SECONDS=5 CLAMAV_NEEDED=True docker compose -f ../tdrs-backend/docker-compose.yml up -d --force-recreate web celery
       - docker compose -f docker-compose.local.yml up -d --build tdp-frontend
       - |
         if command -v corepack >/dev/null 2>&1; then
@@ -469,7 +467,7 @@ tasks:
       CYPRESS_TOKEN: '{{.CYPRESS_TOKEN | default "local-cypress-token"}}'
     cmds:
       - task: backend-up
-      - STALE_PARSE_TIMEOUT_SECONDS=60 STALE_PARSE_CHECK_INTERVAL_SECONDS=5 GO_PARSER_SHADOW_MODE=false CLAMAV_NEEDED=True docker compose -f ../tdrs-backend/docker-compose.yml up -d --force-recreate web celery
+      - STALE_PARSE_TIMEOUT_SECONDS=60 STALE_PARSE_CHECK_INTERVAL_SECONDS=5 CLAMAV_NEEDED=True docker compose -f ../tdrs-backend/docker-compose.yml up -d --force-recreate web celery
       - task: e2e-env-var-setup
       - docker compose -f docker-compose.local.yml up -d --build tdp-frontend
       - env -u ELECTRON_RUN_AS_NODE npx cypress verify || env -u ELECTRON_RUN_AS_NODE npx cypress install --force
@@ -549,7 +547,7 @@ tasks:
         HEADER20204A06   TAN1ED
         X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*
         TDP-INFECTED-TEST-MARKER
-        TRAILER0000001         
+        TRAILER0000001
         EOF
       - >-
         docker compose exec -T clamav-rest sh -c

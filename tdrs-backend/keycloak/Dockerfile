@@ -19,7 +19,7 @@ RUN microdnf install -y libxcrypt-compat && \
 
 FROM adorsys/keycloak-config-cli:6.5.1-26.5.5 AS keycloak-config-cli
 
-FROM quay.io/keycloak/keycloak:26.5.5
+FROM quay.io/keycloak/keycloak:26.7.3
 
 USER root
 # Copy nginx binary, Debian-compatible libs, and UBI-compatible libcrypt.

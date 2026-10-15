@@ -52,7 +52,9 @@ describe('SplashPage', () => {
     const store = mockStore(initialState)
     const { container } = render(
       <Provider store={store}>
-        <SplashPage />
+        <MemoryRouter>
+          <SplashPage />
+        </MemoryRouter>
       </Provider>
     )
     const hero = container.querySelector('.usa-hero__callout')
@@ -65,7 +67,9 @@ describe('SplashPage', () => {
     const store = mockStore({ auth: { loading: true } })
     render(
       <Provider store={store}>
-        <SplashPage />
+        <MemoryRouter>
+          <SplashPage />
+        </MemoryRouter>
       </Provider>
     )
     expect(screen.queryByText('SplashPage to TDRS!')).not.toBeInTheDocument()
@@ -77,7 +81,9 @@ describe('SplashPage', () => {
     })
     const { container } = render(
       <Provider store={store}>
-        <SplashPage />
+        <MemoryRouter>
+          <SplashPage />
+        </MemoryRouter>
       </Provider>
     )
     const alert = container.querySelector('.usa-alert--error')
@@ -87,7 +93,7 @@ describe('SplashPage', () => {
   it('redirects to API login endpoint when login.gov sign-in button is clicked', () => {
     const store = mockStore(initialState)
 
-    const url = `${authBaseUrl}/login/dotgov`
+    const url = `${authBaseUrl}/login/dotgov?next=%2Fhome`
     global.window = Object.create(window)
     Object.defineProperty(window, 'location', {
       value: {
@@ -97,7 +103,9 @@ describe('SplashPage', () => {
 
     render(
       <Provider store={store}>
-        <SplashPage />
+        <MemoryRouter>
+          <SplashPage />
+        </MemoryRouter>
       </Provider>
     )
     const button = screen.getByRole('button', {
@@ -110,7 +118,7 @@ describe('SplashPage', () => {
   it('redirects to API login endpoint when ACF AMS sign-in button is clicked', () => {
     const store = mockStore(initialState)
 
-    const url = `${authBaseUrl}/login/ams`
+    const url = `${authBaseUrl}/login/ams?next=%2Fhome`
     global.window = Object.create(window)
     Object.defineProperty(window, 'location', {
       value: {
@@ -120,7 +128,9 @@ describe('SplashPage', () => {
 
     render(
       <Provider store={store}>
-        <SplashPage />
+        <MemoryRouter>
+          <SplashPage />
+        </MemoryRouter>
       </Provider>
     )
     const button = screen.getByRole('button', {
@@ -142,7 +152,9 @@ describe('SplashPage', () => {
     try {
       render(
         <Provider store={store}>
-          <SplashPage />
+          <MemoryRouter>
+            <SplashPage />
+          </MemoryRouter>
         </Provider>
       )
 
@@ -150,13 +162,17 @@ describe('SplashPage', () => {
         name: /Sign in with.*Login\.gov.*for grantees/i,
       })
       fireEvent.click(loginGovButton)
-      expect(window.location.href).toEqual(`${backendUrl}/login/dotgov`)
+      expect(window.location.href).toEqual(
+        `${backendUrl}/login/dotgov?next=%2Fhome`
+      )
 
       const acfAmsButton = screen.getByRole('button', {
         name: /Sign in with ACF AMS for ACF staff/i,
       })
       fireEvent.click(acfAmsButton)
-      expect(window.location.href).toEqual(`${backendUrl}/login/ams`)
+      expect(window.location.href).toEqual(
+        `${backendUrl}/login/ams?next=%2Fhome`
+      )
     } finally {
       process.env.REACT_APP_AUTH_URL = originalAuthUrl
       process.env.REACT_APP_BACKEND_URL = originalBackendUrl
@@ -197,7 +213,9 @@ describe('SplashPage', () => {
     const store = mockStore(initialState)
     const { container } = render(
       <Provider store={store}>
-        <SplashPage />
+        <MemoryRouter>
+          <SplashPage />
+        </MemoryRouter>
       </Provider>
     )
 

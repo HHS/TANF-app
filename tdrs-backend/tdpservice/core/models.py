@@ -1,5 +1,6 @@
 """Core models."""
 
+import random
 import uuid
 
 from django.conf import settings
@@ -7,6 +8,8 @@ from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import caches
+from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models.signals import post_delete, post_migrate, post_save
 from django.dispatch import receiver
@@ -96,7 +99,13 @@ class BaseLog(models.Model):
 
 
 class FeatureFlag(models.Model):
-    """Model for storing feature flags that can be toggled on/off via Django admin."""
+    """Model for storing feature flags managed through Django admin."""
+
+    class Type(models.TextChoices):
+        """Supported feature flag evaluation strategies."""
+
+        ON_OFF = "on_off", "On/off"
+        RANDOM_ROLLOUT = "random_rollout", "Random rollout"
 
     class Meta:
         """Metadata."""
@@ -104,9 +113,39 @@ class FeatureFlag(models.Model):
         ordering = ["feature_name"]
         verbose_name = "Feature Flag"
         verbose_name_plural = "Feature Flags"
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(rollout_percentage__isnull=True)
+                    | models.Q(
+                        rollout_percentage__gte=0,
+                        rollout_percentage__lte=100,
+                    )
+                ),
+                name="feature_flag_rollout_percentage_range",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    ~models.Q(type__in=["on_off", "random_rollout"])
+                    | models.Q(type="on_off", rollout_percentage__isnull=True)
+                    | models.Q(
+                        type="random_rollout",
+                        rollout_percentage__isnull=False,
+                    )
+                ),
+                name="feature_flag_type_configuration",
+            ),
+        ]
 
     feature_name = models.CharField(max_length=100, unique=True, db_index=True)
+    type = models.CharField(max_length=50, choices=Type.choices, default=Type.ON_OFF)
     enabled = models.BooleanField(default=False)
+    rollout_percentage = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text="Required for rollout percentage flags; leave blank for on/off flags.",
+    )
     config = models.JSONField(null=False, blank=True, default=dict)
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -119,6 +158,44 @@ class FeatureFlag(models.Model):
         """Return string representation of the feature flag."""
         status = "enabled" if self.enabled else "disabled"
         return f"{self.feature_name} ({status})"
+
+    def clean(self) -> None:
+        """Validate fields that depend on the selected flag type."""
+        super().clean()
+
+        if self.type == self.Type.RANDOM_ROLLOUT and self.rollout_percentage is None:
+            raise ValidationError(
+                {
+                    "rollout_percentage": (
+                        "A rollout percentage is required for rollout percentage flags."
+                    )
+                }
+            )
+
+        if self.type == self.Type.ON_OFF and self.rollout_percentage is not None:
+            raise ValidationError(
+                {
+                    "rollout_percentage": (
+                        "Rollout percentage must be blank for on/off flags."
+                    )
+                }
+            )
+
+    def is_enabled(self, random_value: float | None = None) -> bool:
+        """Return whether this request should use the feature."""
+        if not self.enabled:
+            return False
+
+        if self.type == self.Type.ON_OFF:
+            return True
+
+        if self.type == self.Type.RANDOM_ROLLOUT:
+            if self.rollout_percentage is None:
+                return False
+            sample = random.random() * 100 if random_value is None else random_value
+            return sample < self.rollout_percentage
+
+        return False
 
 
 @receiver([post_delete, post_migrate, post_save], sender=FeatureFlag)

@@ -14,7 +14,7 @@ This technical memorandum outlines the implementation plan for integrating [Secu
 
 ## Background
 
-Login.gov provides a Security Event Token (SET) notification system that follows the OpenID RISC Event Types specification. These notifications are sent as JWT tokens via HTTP POST requests when specific security events occur for users, such as:
+Login.gov provides a Security Event Token (SET) notification system that [implements parts of the OpenID RISC profile](https://developers.login.gov/security-events/). These notifications are sent as JWT tokens via HTTP POST requests when specific security events occur for users, such as:
 
 - Account disabling
 - Account purging (when users delete their accounts)
@@ -24,6 +24,72 @@ Login.gov provides a Security Event Token (SET) notification system that follows
 A common issue in production is that users sometimes delete their Login.gov accounts and recreate them, which results in a new `sub` claim for the same email address. This causes authentication issues in TDP. TDP manages users by the `sub`/`login_gov_uuid`. That is, TDP looks up users via the `login_gov_uuid`. When a user's ID changes, TDP tries to create a new account. However, the account creation will fail because TDP places a unique constraint on the user's `email`. Since the user's email hasn't changed TDP's ORM throws a unique key violation error, which is presented as a plain old json object to the user (seen below). By implementing SET handling, particularly for the "Account Purged" event, we can automatically manage these account recreation scenarios without requiring additional user verification steps.
 
 ![Unique Key Violation](./unique_key_violation.png)
+
+### Email identifier event association limitation
+
+The events listed in Login.gov's
+[supported outgoing events documentation](https://developers.login.gov/security-events/#supported-outgoing-events)
+use the `iss-sub` subject type and include the service-provider-specific
+Login.gov UUID that TDP stores as `User.login_gov_uuid`. That list does not
+include `identifier-changed` or `identifier-recycled`. Their definitions in
+the RISC specification alone do not establish Login.gov support.
+
+The behavior described below is implemented in Login.gov's source at revision
+`fc607497bfbad57befec7e966b14694a24895b23`; it is not a documented guarantee of
+delivery or full RISC compliance. At that revision, the
+[`identifier-changed` payload](https://github.com/18F/identity-idp/blob/fc607497bfbad57befec7e966b14694a24895b23/app/services/push_notification/email_changed_event.rb#L17-L25)
+and [`identifier-recycled` payload](https://github.com/18F/identity-idp/blob/fc607497bfbad57befec7e966b14694a24895b23/app/services/push_notification/identifier_recycled_event.rb#L17-L25)
+identify the affected email address using `subject_type: email` and do not
+include the Login.gov UUID.
+
+The implementation calls `HttpPush.deliver` for `identifier-changed` when a
+[confirmed email is added](https://github.com/18F/identity-idp/blob/fc607497bfbad57befec7e966b14694a24895b23/app/controllers/users/email_confirmations_controller.rb#L64-L71)
+to an account and for both `identifier-changed` and `identifier-recycled`
+when an [email is removed](https://github.com/18F/identity-idp/blob/fc607497bfbad57befec7e966b14694a24895b23/app/forms/delete_user_email_form.rb#L28-L39).
+The email can be any confirmed address on the Login.gov account; it is not
+necessarily the address that the user most recently presented to TDP through
+OIDC. Consequently, TDP can associate one of these events only when its email
+subject exactly matches a current TDP username. Confirm behavior in the
+deployed environment through observed events or with Login.gov before making
+functionality depend on delivery of these undocumented events.
+
+There is no deterministic receiver-side way to recover the user association
+from such a SET. In particular:
+
+- The [`identifier-changed` SET payload](https://github.com/18F/identity-idp/blob/fc607497bfbad57befec7e966b14694a24895b23/app/services/push_notification/email_changed_event.rb#L17-L25)
+  does not contain a `sub` value that can be matched to
+  `User.login_gov_uuid`.
+- TDP does not have a complete mapping of every confirmed email on a
+  Login.gov account. A newly added secondary address might never have appeared
+  in TDP, while an old address might only appear in logs or incomplete user
+  history.
+- At the cited revision, the same call sites also deliver a separate UUID-bearing
+  `recovery-information-changed` event, but the two SETs have
+  [independently generated JWT IDs](https://github.com/18F/identity-idp/blob/fc607497bfbad57befec7e966b14694a24895b23/app/services/push_notification/http_push.rb#L61-L74)
+  and no correlation identifier. Associating them by arrival time could link
+  events from different users.
+
+TDP treats unmatched `identifier-changed` and `identifier-recycled` events as
+completed no-ops. The `SecurityEventToken` receipt retains only its identifiers
+(`id`, `jwt_id`, and `issuer`), event type, timestamps, processed status, and
+`event_data: {"outcome": "unmatched_subject"}`. Both `user` and `email` are
+`NULL`; the original payload and email addresses are not stored or logged.
+This receipt supports troubleshooting and deduplication, not later user
+association. A duplicate delivery leaves the completed receipt unchanged,
+even if the email subsequently matches a TDP user.
+
+Valid deliveries receive a successful 2xx acknowledgment. Login.gov
+[treats non-2xx responses as failures and may retry them](https://developers.login.gov/security-events/#response-1),
+but retrying cannot supply the missing user association. These events require
+no further processing or user action. User email continues to be synchronized
+from OIDC claims on login. This receipt policy is limited to the two email
+identifier event types and applies to newly received events; it does not
+rewrite previously stored records.
+
+Historical email records must not be used as an automatic security-event
+identity join when the match is missing or ambiguous. Any future association
+mechanism would require a stable subject identifier from Login.gov or an
+authoritative mapping from Login.gov account emails to Login.gov UUIDs.
 
 ## Out of Scope
 
@@ -152,6 +218,10 @@ class SecurityEventTokenView(APIView):
 ### Event Processing System
 
 To handle the myriad of events that Login.gov publishes it is suggested to implement a class based handler. The handler will maintain a map of event types to event handlers. The handlers are responsible for the unique logic to handle their event.
+
+The examples below outline the original UUID-based design. The current
+[`SecurityEventHandler`](../../../../tdrs-backend/tdpservice/security/event_handler.py)
+also applies the email identifier receipt policy described above.
 
 ```python
 # tdpservice/security/handlers.py
@@ -369,3 +439,5 @@ class SecurityEventTokenAdmin(admin.ModelAdmin):
 
 1. **Valid SET Processing**: Verify that valid SETs are properly received, validated, and processed (Requires mocking/code injection to fake the Login.gov private key)
 2. **Invalid SET Handling**: Test handling of invalid SETs (wrong signature, expired, etc.)
+3. **Unmatched Email Identifiers**: Verify both email identifier event types produce completed receipts without retaining email addresses or original payloads in storage or logs, without changing users, and with successful acknowledgment of valid deliveries.
+4. **Duplicate Email Identifier Delivery**: Verify retries preserve the original receipt and are acknowledged successfully, including when an email starts matching a TDP user after the first delivery.

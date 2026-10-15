@@ -26,7 +26,7 @@ func loadRegistry(t *testing.T) *Registry {
 		Global:        GlobalConfig{ConfigDir: dir},
 		SchemaFiles:   []string{"schemas/**/*.yaml"},
 		FilespecFiles: []string{"filespecs/**/*.yaml"},
-		Database:      DatabaseConfig{ShadowMode: true, TablePrefix: DefaultTablePrefix},
+		Database:      DatabaseConfig{TablePrefix: DefaultTablePrefix},
 	}
 	reg, err := NewRegistry(cfg)
 	if err != nil {

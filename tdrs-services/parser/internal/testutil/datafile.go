@@ -4,29 +4,11 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
-	"os"
-	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-
-	"go-parser/internal/config"
 )
-
-func dataFileTableNameFromEnv() string {
-	if strings.EqualFold(os.Getenv("GO_PARSER_SHADOW_MODE"), "true") {
-		return config.DataFileTableName(config.DefaultTablePrefix)
-	}
-	return config.DataFileTableName("")
-}
-
-// CreateTestDatafile creates a datafile record for testing purposes.
-// It queries for an existing STT and user to satisfy foreign key constraints.
-// Returns the created datafile ID.
-func CreateTestDatafile(ctx context.Context, pool *pgxpool.Pool, quarter string, year int, sectionName string, programType string) (int32, error) {
-	return CreateTestDatafileInTable(ctx, pool, dataFileTableNameFromEnv(), quarter, year, sectionName, programType)
-}
 
 // CreateTestDatafileInTable creates a datafile record in the specified table.
 func CreateTestDatafileInTable(ctx context.Context, pool *pgxpool.Pool, tableName string, quarter string, year int, sectionName string, programType string) (int32, error) {
@@ -87,11 +69,6 @@ func CreateTestDatafileInTable(ctx context.Context, pool *pgxpool.Pool, tableNam
 	}
 
 	return datafileID, nil
-}
-
-// DeleteTestDatafile removes a test datafile and its associated records.
-func DeleteTestDatafile(ctx context.Context, pool *pgxpool.Pool, datafileID int32) error {
-	return DeleteTestDatafileFromTable(ctx, pool, dataFileTableNameFromEnv(), datafileID)
 }
 
 // DeleteTestDatafileFromTable removes a test datafile from the specified table.

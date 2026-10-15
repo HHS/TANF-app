@@ -65,7 +65,6 @@ update_frontend()
         echo "REACT_APP_BACKEND_HOST=https://$CGHOSTNAME_FRONTEND.tanfdata.acf.hhs.gov" >> .env.development
         echo "REACT_APP_CF_SPACE=$CF_SPACE" >> .env.development
 
-        cf set-env "$CGAPPNAME_FRONTEND" ALLOWED_ORIGIN "https://$CGHOSTNAME_FRONTEND.tanfdata.acf.hhs.gov"
         cf set-env "$CGAPPNAME_FRONTEND" CONNECT_SRC '*.tanfdata.acf.hhs.gov'
     else
         echo "REACT_APP_BACKEND_URL=https://$CGHOSTNAME_FRONTEND.tanfdata.acf.hhs.gov/v1" >> .env.development
@@ -74,7 +73,6 @@ update_frontend()
         echo "REACT_APP_BACKEND_HOST=https://$CGHOSTNAME_FRONTEND.tanfdata.acf.hhs.gov" >> .env.development
         echo "REACT_APP_CF_SPACE=$CF_SPACE" >> .env.development
 
-        cf set-env "$CGAPPNAME_FRONTEND" ALLOWED_ORIGIN "https://$CGHOSTNAME_FRONTEND.tanfdata.acf.hhs.gov"
         cf set-env "$CGAPPNAME_FRONTEND" CONNECT_SRC '*.tanfdata.acf.hhs.gov'
     fi
 
@@ -130,7 +128,6 @@ update_frontend()
         cf push "$CGAPPNAME_FRONTEND" --no-route -f manifest.buildpack.yml --strategy rolling || exit 1
     else
         cf push "$CGAPPNAME_FRONTEND" --no-route -f manifest.buildpack.yml
-        cf set-env "$CGAPPNAME_FRONTEND" ALLOWED_ORIGIN "https://$CGHOSTNAME_FRONTEND.tanfdata.acf.hhs.gov"
         cf set-env "$CGAPPNAME_FRONTEND" CONNECT_SRC '*.tanfdata.acf.hhs.gov'
         cf set-env "$CGAPPNAME_FRONTEND" BACKEND_HOST "$CGHOSTNAME_BACKEND"
         cf restage "$CGAPPNAME_FRONTEND"

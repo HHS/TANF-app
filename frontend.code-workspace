@@ -1,0 +1,291 @@
+{
+  "folders": [
+    {
+      "name": "Frontend (React)",
+      "path": "tdrs-frontend"
+    },
+    {
+      "name": "Admin Portal (Next.js)",
+      "path": "tdp-admin"
+    }
+  ],
+  "settings": {
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 1000,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2,
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "eslint.workingDirectories": [
+      "./tdrs-frontend",
+      "./tdp-admin"
+    ],
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    },
+    "files.exclude": {
+      "**/node_modules": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "alexkrechik.cucumberautocomplete",
+      "circleci.circleci",
+      "DavidAnson.vscode-markdownlint",
+      "eamodio.gitlens",
+      "editorconfig.editorconfig",
+      "esbenp.prettier-vscode",
+      "google.google-antigravity",
+      "ms-azuretools.vscode-containers",
+      "ms-azuretools.vscode-docker",
+      "ms-vscode-remote.remote-containers",
+      "ms-vscode.remote-repositories",
+      "ms-vsliveshare.vsliveshare",
+      "numso.prettier-standard-vscode",
+      "orta.vscode-jest",
+      "redhat.vscode-yaml",
+      "streetsidesoftware.code-spell-checker",
+      "task.vscode-task"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Frontend: Start Web Server",
+        "type": "shell",
+        "command": "task frontend-up",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" },
+        "group": { "kind": "build", "isDefault": true }
+      },
+      {
+        "label": "Frontend: Stop Web Server",
+        "type": "shell",
+        "command": "task frontend-down",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Frontend: Restart Web Server",
+        "type": "shell",
+        "command": "task frontend-restart",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Frontend: Follow Web Server Logs",
+        "type": "shell",
+        "command": "task frontend-logs",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Frontend: Open Shell in Container",
+        "type": "shell",
+        "command": "task frontend-bash",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Frontend: Initialize Project (Docker + Yarn)",
+        "type": "shell",
+        "command": "task frontend-init",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Frontend: Install Dependencies on Host",
+        "type": "shell",
+        "command": "task frontend-install",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Frontend: Rebuild Localdev Image & Install Deps",
+        "type": "shell",
+        "command": "task frontend-update",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Frontend: Start with ClamAV",
+        "type": "shell",
+        "command": "task frontend-av",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Frontend: Run ESLint in Docker",
+        "type": "shell",
+        "command": "task frontend-lint",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Frontend: Run Unit Tests in Docker",
+        "type": "shell",
+        "command": "task frontend-test",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" },
+        "group": { "kind": "test", "isDefault": true }
+      },
+      {
+        "label": "Frontend: Run Unit Tests with Coverage in Docker",
+        "type": "shell",
+        "command": "task frontend-test-cov",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Frontend: Run Unit Tests on Host",
+        "type": "shell",
+        "command": "task frontend-test-local",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Frontend: Run Unit Tests on Host (Watch)",
+        "type": "shell",
+        "command": "task frontend-test-watch",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Frontend: Run Unit Tests with Coverage on Host",
+        "type": "shell",
+        "command": "task frontend-test-cov-local",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Frontend: Run Cypress E2E Tests Locally",
+        "type": "shell",
+        "command": "task frontend-e2e-local",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Frontend: Run Cypress E2E Tests Headless (CI Mode)",
+        "type": "shell",
+        "command": "task frontend-e2e-ci-local",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Frontend: Run Cypress E2E Tests Headless (Command Mode)",
+        "type": "shell",
+        "command": "task frontend-e2e-cmd",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Frontend: Setup E2E Test Users & Env Vars",
+        "type": "shell",
+        "command": "task e2e-env-var-setup",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Admin: Start Web Server",
+        "type": "shell",
+        "command": "task admin-up",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Admin: Stop Web Server",
+        "type": "shell",
+        "command": "task admin-down",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Admin: Restart Web Server",
+        "type": "shell",
+        "command": "task admin-restart",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Admin: Follow Web Server Logs",
+        "type": "shell",
+        "command": "task admin-logs",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Admin: Open Shell in Container",
+        "type": "shell",
+        "command": "task admin-bash",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Admin: Initialize Project (Docker + Yarn)",
+        "type": "shell",
+        "command": "task admin-init",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Admin: Run Unit Tests (Vitest) in Docker",
+        "type": "shell",
+        "command": "task admin-test",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Admin: Run Unit Tests in Watch Mode in Docker",
+        "type": "shell",
+        "command": "task admin-test-watch",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Dev: Start Full Environment (Backend + Frontend)",
+        "type": "shell",
+        "command": "task up",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Dev: Start Full Environment with Admin",
+        "type": "shell",
+        "command": "task up-with-admin",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Dev: Start Backend Dependency",
+        "type": "shell",
+        "command": "task backend-up",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Dev: Follow Backend Logs",
+        "type": "shell",
+        "command": "task backend-logs",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Dev: Stop Full Environment",
+        "type": "shell",
+        "command": "task down",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Dev: Show Taskfile Help",
+        "type": "shell",
+        "command": "task help",
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "shared" }
+      }
+    ]
+  }
+}
+
