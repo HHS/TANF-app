@@ -12,7 +12,7 @@ from django.utils import timezone
 
 import pytest
 
-from tdpservice.data_files.models import DataFile, Program
+from tdpservice.data_files.models import Program
 from tdpservice.etl.admin import ETLPipelineRunAdmin
 from tdpservice.etl.models import ETLArtifact, ETLPipelineRun, StatisticalWeight
 from tdpservice.etl.registry import get_pipeline_definition
@@ -46,7 +46,7 @@ def test_pipeline_run_admin_add_creates_and_enqueues_pipeline_run(
                 "parameters": json.dumps(
                     {
                         "fiscal_year": "2026",
-                        "program": DataFile.ProgramType.TANF,
+                        "program": Program.Code.TANF,
                     }
                 ),
             },
@@ -58,12 +58,12 @@ def test_pipeline_run_admin_add_creates_and_enqueues_pipeline_run(
     assert pipeline_run.status == ETLPipelineRun.Status.PENDING
     assert pipeline_run.parameters == {
         "fiscal_year": 2026,
-        "program": DataFile.ProgramType.TANF,
+        "program": Program.Code.TANF,
     }
     assert pipeline_run.output_scope == {
         "pipeline": "statistical_weights",
         "fiscal_year": 2026,
-        "program": DataFile.ProgramType.TANF,
+        "program": Program.Code.TANF,
         "section": "1",
     }
     assert pipeline_run.trigger_source == ETLPipelineRun.TriggerSource.ADMIN
