@@ -54,8 +54,9 @@ class VersionFilter(MostRecentVersionFilter):
     def queryset(self, request, queryset):
         """Sort queryset to show latest records."""
         if self.value() is None and queryset.exists():
-            # Subquery to find the latest version for each group
-            versions = queryset.filter(
+            # Other admin filters may have already narrowed queryset. Use the full
+            # version history so an older matching file is not treated as latest.
+            versions = queryset.model._default_manager.filter(
                 stt__stt_code=OuterRef("stt__stt_code"),
                 year=OuterRef("year"),
                 quarter=OuterRef("quarter"),
