@@ -12,7 +12,7 @@ from django.utils import timezone
 
 import pytest
 
-from tdpservice.data_files.models import Program
+from tdpservice.data_files.models import DataFile, Program
 from tdpservice.etl.admin import ETLPipelineRunAdmin
 from tdpservice.etl.models import ETLArtifact, ETLPipelineRun, StatisticalWeight
 from tdpservice.etl.registry import get_pipeline_definition
