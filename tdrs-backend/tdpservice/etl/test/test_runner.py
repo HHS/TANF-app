@@ -202,6 +202,27 @@ def test_pipeline_definition_requires_canvas_builder_implementation():
         MissingCanvasPipeline()
 
 
+@pytest.mark.parametrize(
+    "parameters,is_valid",
+    [
+        [[1, 2, 3], False],
+        ["string", False],
+        [1234, False],
+        [("a", "b"), False],
+        [{"fiscal_year": 2026, "program": Program.Code.TANF}, True],
+    ],
+)
+def test_statistical_weights_parameters_validates_is_dict(parameters, is_valid):
+    """Fiscal year input is normalized for output-scope idempotency."""
+    definition = get_pipeline_definition("statistical_weights")
+
+    if is_valid:
+        assert definition.validate_parameters(parameters) == parameters
+    else:
+        with pytest.raises(PipelineValidationError):
+            definition.validate_parameters(parameters)
+
+
 def test_statistical_weights_parameters_normalize_fiscal_year():
     """Fiscal year input is normalized for output-scope idempotency."""
     definition = get_pipeline_definition("statistical_weights")
