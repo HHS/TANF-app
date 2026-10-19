@@ -1,0 +1,70 @@
+# Creates a "Release Tracker vX.Y.Z" issue when a release is published and
+# copies the release's pull requests into section 1 of the tracker.
+#
+# Triggers:
+#   - release published (runs as soon as the release is cut)
+#   - manual run (Actions tab > Release Tracker > Run workflow) with a tag and
+#     an optional dry run. Use this to test or to re-run for an existing tag.
+#
+# Optional webhook (see docs/Technical-Documentation/github-actions.md):
+#   secret   RELEASE_TRACKER_AGENT_WEBHOOK_URL         where to POST the event
+#   secret   RELEASE_TRACKER_AGENT_WEBHOOK_KEY         sender key
+#   variable RELEASE_TRACKER_AGENT_WEBHOOK_KEY_HEADER  header name (default Authorization)
+#
+# Release notes and PR titles are untrusted. They are only read by the script
+# as data and are never placed into a shell command.
+name: Release Tracker
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag, e.g. v4.27.0
+        required: true
+        type: string
+      dry_run:
+        description: Print the issue body only. Create nothing.
+        required: true
+        default: true
+        type: boolean
+      notify_existing:
+        description: Send the webhook even if the tracker already exists
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: release-tracker-${{ github.event.release.tag_name || inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  create-tracker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Create release tracker
+        id: tracker
+        run: python3 .github/scripts/release_tracker.py
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          NOTIFY_EXISTING: ${{ inputs.notify_existing }}
+          AGENT_WEBHOOK_URL: ${{ secrets.RELEASE_TRACKER_AGENT_WEBHOOK_URL }}
+          AGENT_WEBHOOK_KEY: ${{ secrets.RELEASE_TRACKER_AGENT_WEBHOOK_KEY }}
+          AGENT_WEBHOOK_KEY_HEADER: ${{ vars.RELEASE_TRACKER_AGENT_WEBHOOK_KEY_HEADER }}
+
+      - name: Summary
+        if: steps.tracker.outputs.tracker_issue != ''
+        env:
+          TRACKER_ISSUE: ${{ steps.tracker.outputs.tracker_issue }}
+        run: echo "Release tracker issue #${TRACKER_ISSUE}" >> "$GITHUB_STEP_SUMMARY"
