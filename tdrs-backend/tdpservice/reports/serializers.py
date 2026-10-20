@@ -164,8 +164,8 @@ class ReportSourceSerializer(serializers.ModelSerializer):
         if not value:
             return ""
         value = value.replace("\r\n", "\n").replace("\r", "\n")
-        if len(value) > 2000:
-            raise serializers.ValidationError("Notes cannot exceed 2000 characters.")
+        # if len(value) > 2000:
+        #     raise serializers.ValidationError("Notes cannot exceed 2000 characters.")
         if strip_tags(value) != value or "<" in value or ">" in value:
             raise serializers.ValidationError(
                 "HTML and JavaScript are not allowed in the notes field."
