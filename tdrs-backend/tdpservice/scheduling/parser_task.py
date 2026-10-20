@@ -21,6 +21,7 @@ from tdpservice.data_files.enums import GoParserMode, SubmissionState
 from tdpservice.data_files.error_reports import ErrorReportFactory
 from tdpservice.data_files.models import (
     DataFile,
+    Program,
     ReparseFileMeta,
     ShadowDataFile,
     create_or_update_shadow_data_file,
@@ -77,6 +78,16 @@ class ParserModelSet:
     parser_error_model: type
     record_model_resolver: Callable[[type], type]
     label: str
+
+
+def _program_code(data_file):
+    """Project a parser protocol program code from production or shadow data."""
+    return data_file.program.code
+
+
+def _section_name(data_file):
+    """Project a parser protocol section name from production or shadow data."""
+    return data_file.section.name
 
 
 def _evaluate_go_parser_mode() -> GoParserMode:
@@ -330,12 +341,12 @@ def update_dfs(
 
     dfs.status = _get_summary_status(dfs, data_file, parser_error_model)
 
-    if data_file.program_type == DataFile.ProgramType.FRA:
+    if _program_code(data_file) == Program.Code.FRA:
         dfs.case_aggregates = fra_total_errors(
             data_file, parser_error_model=parser_error_model
         )
     else:
-        if "Case Data" in data_file.section:
+        if "Case Data" in _section_name(data_file):
             dfs.case_aggregates = case_aggregates_by_month(
                 data_file,
                 dfs.status,
@@ -370,8 +381,8 @@ def _transition_parse_outcome(
 ):
     """Report a parse outcome to the lifecycle controller."""
     parse_context = {
-        "section": data_file.section,
-        "program_type": data_file.program_type,
+        "section": _section_name(data_file),
+        "program_type": _program_code(data_file),
         "parse_summary_status": dfs.status,
         "reparse_id": reparse_id,
     }
@@ -394,7 +405,7 @@ def _notify_data_analysts(data_file, dfs, file_meta=None, reparse_id=None):
         groups__name="Data Analyst",
     )
 
-    if data_file.program_type == DataFile.ProgramType.FRA:
+    if _program_code(data_file) == Program.Code.FRA:
         qs = qs.filter(user_permissions__codename="has_fra_access")
 
     recipients = qs.values_list("username", flat=True).distinct()
@@ -416,8 +427,8 @@ def _handle_parse_failure(
         reparse_meta_id=reparse_id,
         actor=actor,
         log_fields={
-            "section": data_file.section,
-            "program_type": data_file.program_type,
+            "section": _section_name(data_file),
+            "program_type": _program_code(data_file),
             "reparse_id": reparse_id,
             **({"parse_error": note} if actor == "go_parser" else {}),
         },
@@ -743,8 +754,8 @@ def parse(data_file_id, reparse_id=None, parse_token=None, event_id=None):
         parser = ParserFactory.get_instance(
             datafile=data_file,
             dfs=dfs,
-            section=data_file.section,
-            program_type=data_file.program_type,
+            section=_section_name(data_file),
+            program_type=_program_code(data_file),
             is_program_audit=data_file.is_program_audit,
             parse_token=parse_token,
         )
@@ -785,8 +796,8 @@ def parse(data_file_id, reparse_id=None, parse_token=None, event_id=None):
             "DecoderUnknownException during parse",
             extra={
                 "data_file_id": data_file_id,
-                "section": getattr(data_file, "section", None),
-                "program_type": getattr(data_file, "program_type", None),
+                "section": _section_name(data_file) if data_file else None,
+                "program_type": _program_code(data_file) if data_file else None,
                 "reparse_id": reparse_id,
             },
         )
@@ -809,8 +820,8 @@ def parse(data_file_id, reparse_id=None, parse_token=None, event_id=None):
             "DatabaseError during parse",
             extra={
                 "data_file_id": data_file_id,
-                "section": getattr(data_file, "section", None),
-                "program_type": getattr(data_file, "program_type", None),
+                "section": _section_name(data_file) if data_file else None,
+                "program_type": _program_code(data_file) if data_file else None,
                 "reparse_id": reparse_id,
             },
         )
@@ -839,8 +850,8 @@ def parse(data_file_id, reparse_id=None, parse_token=None, event_id=None):
             "Unexpected exception during parse",
             extra={
                 "data_file_id": data_file_id,
-                "section": getattr(data_file, "section", None),
-                "program_type": getattr(data_file, "program_type", None),
+                "section": _section_name(data_file) if data_file else None,
+                "program_type": _program_code(data_file) if data_file else None,
                 "reparse_id": reparse_id,
             },
         )
