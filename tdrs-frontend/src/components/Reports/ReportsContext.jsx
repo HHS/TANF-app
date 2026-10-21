@@ -20,7 +20,9 @@ import { accountCanSelectStt } from '../../selectors/auth'
 import { usePollingTimer } from '../../hooks/usePollingTimer'
 import { getCurrentFiscalYear, quarters } from './utils'
 import {
+  FRA_SUBMISSION_YEARS_FEATURE_FLAG,
   getFlagOrDefault,
+  isFeatureActiveForYear,
   selectFeatureFlags,
 } from '../../selectors/featureFlags'
 
@@ -173,6 +175,11 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     validatedParams.type
   )
   const [sttInputValue, setSttInputValue] = useState(validatedParams.stt)
+  const isFraSubmissionYearActive = isFeatureActiveForYear(
+    FRA_SUBMISSION_YEARS_FEATURE_FLAG,
+    yearInputValue,
+    featureFlags
+  )
 
   // Re-validate when STT list becomes available (only validates STT param) since it might not be available yet
   useEffect(() => {
@@ -578,6 +585,7 @@ export const ReportsProvider = ({ isFra = false, children }) => {
     setFraSelectedFile,
     fraUploadError,
     setFraUploadError,
+    isFraSubmissionYearActive,
 
     // Derived state
     uploadedFiles,

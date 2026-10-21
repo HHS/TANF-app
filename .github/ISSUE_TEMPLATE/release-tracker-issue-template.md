@@ -2,7 +2,7 @@
 name: Release Tracker
 about: Track the release handoff to OFA, staging validation, and production deployment.
 title: Release Tracker vX.X.X
-labels: 'QASP Review'
+labels: ''
 assignees: 'kennymcnett,reitermb,victoriaatraft,jtimpe'
 ---
 
