@@ -7,7 +7,7 @@ from pathlib import Path
 from django.contrib.admin.models import ADDITION
 
 from tdpservice.core.utils import log
-from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.models import DataFile, Program, Section
 
 logger = logging.getLogger(__name__)
 
@@ -16,20 +16,20 @@ def create_test_datafile(
     filename,
     stt_user,
     stt,
-    section=DataFile.Section.ACTIVE_CASE_DATA,
-    program_type=DataFile.ProgramType.TANF,
+    section=Section.Name.ACTIVE_CASE_DATA,
+    program_type=Program.Code.TANF,
     year=2021,
     quarter="Q1",
     is_program_audit=False,
 ):
     """Create a test DataFile instance with the given file attached."""
     path = str(Path(__file__).parent.joinpath("test/data")) + f"/{filename}"
+    section_record = Section.objects.get(program__code=program_type, name=section)
     datafile = DataFile.create_new_version(
         {
             "quarter": quarter,
             "year": year,
-            "section": section,
-            "program_type": program_type,
+            "section": section_record,
             "is_program_audit": is_program_audit,
             "user": stt_user,
             "stt": stt,

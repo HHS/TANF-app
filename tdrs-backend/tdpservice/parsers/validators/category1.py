@@ -246,12 +246,12 @@ def validate_tribe_fips_program_agree(program_type, tribe_code, state_fips_code)
 
 def validate_header_program_type_matches_submission(datafile, program_type):
     """Validate inferred header program type matches submission program type."""
-    is_valid = datafile.program_type == program_type
+    is_valid = datafile.program.code == program_type
 
     error_message = None
     if not is_valid:
         error_message = (
-            f"Submitted program type ({datafile.program_type}) does not match "
+            f"Submitted program type ({datafile.program.code}) does not match "
             f"file program type ({program_type})."
         )
 
@@ -260,12 +260,12 @@ def validate_header_program_type_matches_submission(datafile, program_type):
 
 def validate_header_section_matches_submission(datafile, section):
     """Validate header section matches submission section."""
-    is_valid = datafile.section == section
+    is_valid = datafile.section.name == section
 
     error_message = None
     if not is_valid:
         error_message = (
-            f"Data does not match the expected layout for {datafile.section}."
+            f"Data does not match the expected layout for {datafile.section.name}."
         )
 
     return Result(valid=is_valid, error_message=error_message)

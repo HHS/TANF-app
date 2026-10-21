@@ -15,7 +15,7 @@ from django.db import models
 from django.utils.text import slugify
 
 from tdpservice.data_files.enums import SubmissionState
-from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.models import DataFile, Program, Section
 from tdpservice.data_files.submission_lifecycle import (
     record_synthetic_import_completed,
 )
@@ -46,21 +46,21 @@ CSV_SPECS = (
         patterns=("TANF_T1_*.csv.xz", "TANF_T1_*.csv.gz", "TANF_T1_*.csv"),
         record_type="T1",
         model=TANF_T1,
-        section=DataFile.Section.ACTIVE_CASE_DATA,
+        section=Section.Name.ACTIVE_CASE_DATA,
     ),
     CsvSpec(
         key="t6",
         patterns=("TANF_T6_*.csv.xz", "TANF_T6_*.csv.gz", "TANF_T6_*.csv"),
         record_type="T6",
         model=TANF_T6,
-        section=DataFile.Section.AGGREGATE_DATA,
+        section=Section.Name.AGGREGATE_DATA,
     ),
     CsvSpec(
         key="t7",
         patterns=("TANF_T7_*.csv.xz", "TANF_T7_*.csv.gz", "TANF_T7_*.csv"),
         record_type="T7",
         model=TANF_T7,
-        section=DataFile.Section.STRATUM_DATA,
+        section=Section.Name.STRATUM_DATA,
     ),
 )
 
@@ -168,7 +168,7 @@ class Command(BaseCommand):
         """Return synthetic DataFiles created by this importer."""
         return DataFile.objects.filter(
             original_filename__startswith=IMPORT_PREFIX,
-            program_type=DataFile.ProgramType.TANF,
+            section__program__code=Program.Code.TANF,
             year=self.fiscal_year,
             version=self.version,
         )
@@ -343,9 +343,11 @@ class Command(BaseCommand):
                 f"No STT with stt_code={stt_code} exists for {spec.record_type}."
             )
 
+        section = Section.objects.get(
+            program__code=Program.Code.TANF, name=spec.section
+        )
         datafile, _created = DataFile.objects.get_or_create(
-            program_type=DataFile.ProgramType.TANF,
-            section=spec.section,
+            section=section,
             version=self.version,
             quarter=quarter,
             year=self.fiscal_year,

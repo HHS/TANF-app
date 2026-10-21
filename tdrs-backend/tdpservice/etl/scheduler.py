@@ -4,7 +4,7 @@ from datetime import date
 
 from django.utils import timezone
 
-from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.models import Program
 from tdpservice.etl.exceptions import ActivePipelineRunError
 from tdpservice.etl.models import ETLPipelineRun
 from tdpservice.etl.pipelines.statistical_weights import StatisticalWeightsPipeline
@@ -32,7 +32,7 @@ def is_first_workday(value: date) -> bool:
 
 def schedule_statistical_weights_run(
     today: date | None = None,
-    program: str = DataFile.ProgramType.TANF,
+    program: str = Program.Code.TANF,
 ) -> ETLPipelineRun | None:
     """Create a scheduled statistical weights run when due."""
     today = today or timezone.localdate()

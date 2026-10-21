@@ -2,7 +2,7 @@
 
 from django.conf import settings
 
-from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.models import Program
 from tdpservice.email.email import automated_email, log
 from tdpservice.email.email_enums import ETLEmail
 from tdpservice.etl.models import ETLArtifact, ETLPipelineRun, ETLQAResult
@@ -116,10 +116,10 @@ def _program_label(pipeline_run: ETLPipelineRun) -> str:
         or pipeline_run.parameters.get("program")
         or "unknown"
     )
-    if program == DataFile.ProgramType.TRIBAL:
+    if program == Program.Code.TRIBAL:
         return "Tribal TANF"
-    if program in DataFile.ProgramType.values:
-        return DataFile.ProgramType(program).name
+    if program == Program.Code.TANF:
+        return "TANF"
     return program
 
 

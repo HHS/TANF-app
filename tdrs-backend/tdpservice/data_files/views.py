@@ -3,6 +3,7 @@
 import logging
 import uuid
 from distutils.util import strtobool
+from typing import Any
 from wsgiref.util import FileWrapper
 
 from django.conf import settings
@@ -23,7 +24,12 @@ from rest_framework.viewsets import ModelViewSet
 from tdpservice.core.utils import get_feature_flag
 from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.error_reports import ErrorReportFactory
-from tdpservice.data_files.models import DataFile, ReparseFileMeta
+from tdpservice.data_files.models import (
+    DataFile,
+    Program,
+    ReparseFileMeta,
+    Section,
+)
 from tdpservice.data_files.s3_client import S3Client
 from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.submission_lifecycle import (
@@ -39,6 +45,9 @@ from tdpservice.security.models import ClamAVFileScan
 from tdpservice.users.permissions import DataFilePermissions, IsApprovedPermission
 
 logger = logging.getLogger(__name__)
+
+FRA_SUBMISSION_YEARS_FEATURE_FLAG = "fra_submission_years"
+FRA_READ_ONLY_ERROR = "FRA submissions for this fiscal year are read-only."
 
 
 def get_log_file(request, remaining_path):
@@ -82,7 +91,7 @@ class DataFileViewSet(ModelViewSet):
     # Ref: https://github.com/raft-tech/TANF-app/issues/1007
     queryset = (
         DataFile.objects.all()
-        .select_related("stt", "user", "summary")
+        .select_related("section__program", "stt", "user", "summary")
         .prefetch_related(
             Prefetch(
                 "reparse_file_metas",
@@ -132,6 +141,35 @@ class DataFileViewSet(ModelViewSet):
                 {
                     "detail": "This file was submitted for a reporting year not supported by this file type."
                 },
+                status=HTTP_400_BAD_REQUEST,
+            )
+
+        return None
+
+    def _validate_fra_submission_year(
+        self, validated_data: dict[str, Any]
+    ) -> Response | None:
+        """Reject FRA submissions unless the reporting year is active."""
+        if not Section.is_fra(validated_data["section"]):
+            return None
+
+        feature_enabled, feature_config = get_feature_flag(
+            FRA_SUBMISSION_YEARS_FEATURE_FLAG
+        )
+        active_years = (
+            feature_config.get("activeYears", [])
+            if isinstance(feature_config, dict)
+            else []
+        )
+        year = validated_data["year"]
+
+        if (
+            not feature_enabled
+            or not isinstance(active_years, list)
+            or year not in active_years
+        ):
+            return Response(
+                {"detail": FRA_READ_ONLY_ERROR},
                 status=HTTP_400_BAD_REQUEST,
             )
 
@@ -202,6 +240,10 @@ class DataFileViewSet(ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        fra_error = self._validate_fra_submission_year(serializer.validated_data)
+        if fra_error is not None:
+            return fra_error
+
         uploaded_file = serializer.validated_data.get("file")
         data_file = serializer.save(file=None)
         event_id = uuid.uuid4()
@@ -239,8 +281,8 @@ class DataFileViewSet(ModelViewSet):
         data_file.save()
         logger.info(
             f"Preparing parse task: User META -> user: {request.user}, stt: {data_file.stt}. "
-            + f"Datafile META -> datafile: {data_file.id}, program type: {data_file.program_type}, "
-            + f"section: {data_file.section}, "
+            + f"Datafile META -> datafile: {data_file.id}, program type: {data_file.program.code}, "
+            + f"section: {data_file.section.name}, "
             + f"quarter {data_file.quarter}, year {data_file.year}."
         )
 
@@ -264,10 +306,10 @@ class DataFileViewSet(ModelViewSet):
         file_type = self.request.query_params.get("file_type", None)
 
         if file_type == DataFileViewSet.SSP_FILE_TYPE:
-            queryset = queryset.filter(program_type=DataFile.ProgramType.SSP)
-        elif DataFile.Section.is_fra(file_type):
+            queryset = queryset.filter(section__program__code=Program.Code.SSP)
+        elif Section.is_fra(file_type):
             queryset = queryset.filter(
-                program_type=DataFile.ProgramType.FRA, section=file_type
+                section__program__code=Program.Code.FRA, section__name=file_type
             )
         else:
             pia_feature_flag_enabled, pia_feature_flag_config = get_feature_flag(
@@ -294,10 +336,7 @@ class DataFileViewSet(ModelViewSet):
                     )
 
             queryset = queryset.filter(
-                program_type__in=[
-                    DataFile.ProgramType.TANF,
-                    DataFile.ProgramType.TRIBAL,
-                ],
+                section__program__code__in=[Program.Code.TANF, Program.Code.TRIBAL],
                 is_program_audit=is_program_audit,
             )
 

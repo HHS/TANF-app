@@ -20,10 +20,7 @@ logger = logging.getLogger(__name__)
 def get_s3_upload_path(instance, filename):
     """Produce a unique upload path for S3 files for a given STT and Quarter."""
     df = instance.datafile
-
-    file_path = (
-        f"data_files/{df.year}/{df.quarter}/{df.stt.id}/{df.program_type}/{df.section}/"
-    )
+    file_path = f"data_files/{df.year}/{df.quarter}/{df.stt.id}/{df.program.code}/{df.section.name}/"
 
     file_name_info = filename
 

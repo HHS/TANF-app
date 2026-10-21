@@ -2,6 +2,16 @@
 
 Welcome to the project for the New TANF Data Portal, which will replace the legacy TANF Data Reporting System!
 
+## Contributing and Reporting Issues
+
+Active development takes place in [raft-tech/TANF-app](https://github.com/raft-tech/TANF-app). If you arrived at [HHS/TANF-app](https://github.com/HHS/TANF-app), please use the following contribution channels:
+
+- **Pull requests:** Submit to [raft-tech/TANF-app](https://github.com/raft-tech/TANF-app/compare) with `develop` as the base branch. Check that GitHub's base repository is `raft-tech/TANF-app` before submitting.
+- **Bug reports and feature requests:** Search and open issues in [raft-tech/TANF-app](https://github.com/raft-tech/TANF-app/issues).
+- **Security vulnerabilities:** Report privately through the [HHS responsible disclosure portal](https://hhs.responsibledisclosure.com), then email a copy to both [tanfdata@acf.hhs.gov](mailto:tanfdata@acf.hhs.gov) and [tdp-devs@teamraft.com](mailto:tdp-devs@teamraft.com). Include both addresses whenever contacting the repository owners about a security vulnerability. Do not disclose vulnerabilities in public issues or pull requests in either repository. See [SECURITY.md](./SECURITY.md).
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
+
 Our vision is to build a new, secure, web-based data reporting system to improve the federal reporting experience for TANF grantees and federal staff. The new system will allow grantees to easily submit accurate data and be confident that they have fulfilled their reporting requirements. This will reduce the burden on all users, improve data quality, lead to better policy and program decision-making, and ultimately help low-income families.
 
 ---
