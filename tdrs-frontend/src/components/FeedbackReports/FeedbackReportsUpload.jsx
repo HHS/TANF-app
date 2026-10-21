@@ -179,29 +179,15 @@ const FeedbackReportsUpload = forwardRef(function FeedbackReportsUpload(
         >
           Notes (optional)
         </label>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-end',
-            maxWidth: '470px',
-            gap: '1rem',
-          }}
-        >
-          <div className="usa-hint" id="notes-hint" style={{ marginTop: 0 }}>
+        <div className="feedback-reports-notes__header">
+          <div className="usa-hint margin-top-0" id="notes-hint">
             Notes will be displayed to STTs when additional detail is needed to
             contextualize a report
           </div>
           <div
-            className="usa-character-count__message"
+            className="usa-character-count__message feedback-reports-notes__count"
             aria-live="polite"
             id="notes-count-message"
-            style={{
-              whiteSpace: 'nowrap',
-              textAlign: 'right',
-              marginTop: 0,
-              flexShrink: 0,
-            }}
           >
             {`${notes.length}/2000`}
           </div>
@@ -212,7 +198,7 @@ const FeedbackReportsUpload = forwardRef(function FeedbackReportsUpload(
           </div>
         )}
         <textarea
-          className="usa-textarea"
+          className="usa-textarea feedback-reports-notes__textarea"
           id="feedback-reports-notes"
           name="notes"
           aria-labelledby="notes-label"
@@ -221,7 +207,6 @@ const FeedbackReportsUpload = forwardRef(function FeedbackReportsUpload(
           onChange={onNotesChange}
           maxLength={2000}
           rows={4}
-          style={{ maxWidth: '470px' }}
         />
       </div>
 

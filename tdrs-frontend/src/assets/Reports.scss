@@ -1,3 +1,5 @@
+@use "uswds-core" as *;
+
 .usa-combo-box__input::placeholder {
   // Override the default placeholder color to match the mockups
   color: #1b1b1b;
@@ -97,4 +99,25 @@
     outline-offset: 0.125rem;
   }
 }
+
+// Feedback Reports Upload - Notes Input
+.feedback-reports-notes__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  max-width: units('mobile-lg');
+  gap: units(2);
+}
+
+.feedback-reports-notes__count {
+  white-space: nowrap;
+  text-align: right;
+  margin-top: 0;
+  flex-shrink: 0;
+}
+
+.feedback-reports-notes__textarea {
+  max-width: units('mobile-lg');
+}
+
 
