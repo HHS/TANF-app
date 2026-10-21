@@ -130,5 +130,62 @@ describe('Modal tests', () => {
 
       expect(queryByText('Read-only modal')).toBeInTheDocument()
     })
+
+    it('calls onClose when Escape key is pressed', () => {
+      const onClose = jest.fn()
+      const { container } = render(
+        <Modal
+          title="Info"
+          message="Escape modal"
+          isVisible={true}
+          onClose={onClose}
+          buttons={[]}
+        />
+      )
+
+      const modal = container.querySelector('#modal')
+      fireEvent.keyDown(modal, { key: 'Escape' })
+      expect(onClose).toHaveBeenCalledTimes(1)
+    })
+
+    it('calls onClose when clicking the backdrop overlay if closeOnOutsideClick is true', () => {
+      const onClose = jest.fn()
+      const { container, getByRole } = render(
+        <Modal
+          title="Info"
+          message="Informational modal"
+          isVisible={true}
+          onClose={onClose}
+          closeOnOutsideClick={true}
+          buttons={[]}
+        />
+      )
+
+      // Clicking inside dialog should not trigger onClose
+      fireEvent.click(getByRole('dialog', { name: 'Info' }))
+      expect(onClose).not.toHaveBeenCalled()
+
+      // Clicking backdrop overlay should trigger onClose
+      const overlay = container.querySelector('#modal')
+      fireEvent.click(overlay)
+      expect(onClose).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not call onClose when clicking the backdrop overlay if closeOnOutsideClick is false', () => {
+      const onClose = jest.fn()
+      const { container } = render(
+        <Modal
+          title="Confirm"
+          message="Confirmation modal"
+          isVisible={true}
+          onClose={onClose}
+          buttons={[]}
+        />
+      )
+
+      const overlay = container.querySelector('#modal')
+      fireEvent.click(overlay)
+      expect(onClose).not.toHaveBeenCalled()
+    })
   })
 })

@@ -75,4 +75,18 @@ describe('NotesModal', () => {
     fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' })
     expect(onClose).toHaveBeenCalledTimes(1)
   })
+
+  it('calls onClose when clicking outside the modal, but not when clicking inside', () => {
+    const onClose = jest.fn()
+    const { container } = render(
+      <NotesModal {...defaultProps} onClose={onClose} />
+    )
+
+    fireEvent.click(screen.getByRole('dialog', { name: 'Notes' }))
+    expect(onClose).not.toHaveBeenCalled()
+
+    const overlay = container.querySelector('#modal')
+    fireEvent.click(overlay)
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
 })
