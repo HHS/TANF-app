@@ -953,8 +953,8 @@ def _build_transition_payload(
     """Build the structured lifecycle payload shared by logs and persistence."""
     log_payload = {
         "data_file_id": data_file.id,
-        "section": data_file.section,
-        "program_type": data_file.program_type,
+        "section": data_file.section.name,
+        "program_type": data_file.program.code,
         "previous_state": previous_state.value,
         "next_state": next_state.value,
         "note": note,

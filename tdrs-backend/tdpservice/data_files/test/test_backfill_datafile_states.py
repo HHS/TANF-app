@@ -43,8 +43,8 @@ def test_backfill_records_one_inferred_repair(status, expected, caplog):
     assert transition.source == "legacy_state_backfill"
     assert transition.metadata["inferred"] is True
     assert transition.metadata["recovery"] == "legacy_state_backfill"
-    assert transition.metadata["section"] == data_file.section
-    assert transition.metadata["program_type"] == data_file.program_type
+    assert transition.metadata["section"] == data_file.section.name
+    assert transition.metadata["program_type"] == data_file.program.code
     assert transition.metadata["event_id"] == str(transition.event_id)
     log = next(r for r in caplog.records if r.message == "DataFile submission state transition")
     assert log.event_id == str(transition.event_id)

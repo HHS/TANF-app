@@ -239,8 +239,8 @@ def test_transition_datafile_calls_logger_hook():
             "previous_state": SubmissionState.UPLOADED.value,
             "next_state": SubmissionState.VIRUS_SCAN_STARTED.value,
             "note": "AV scan started",
-            "section": data_file.section,
-            "program_type": data_file.program_type,
+            "section": data_file.section.name,
+            "program_type": data_file.program.code,
             "event_id": str(_state_transitions_for(data_file).get().event_id),
         }
     ]
@@ -276,8 +276,8 @@ def test_transition_datafile_integration_persists_sequential_state_changes():
             "previous_state": SubmissionState.UPLOADED.value,
             "next_state": SubmissionState.VIRUS_SCAN_STARTED.value,
             "note": "Virus scan worker picked up the file",
-            "section": data_file.section,
-            "program_type": data_file.program_type,
+            "section": data_file.section.name,
+            "program_type": data_file.program.code,
             "event_id": str(_state_transitions_for(data_file).get(
                 next_state=SubmissionState.VIRUS_SCAN_STARTED
             ).event_id),
@@ -288,8 +288,8 @@ def test_transition_datafile_integration_persists_sequential_state_changes():
             "next_state": SubmissionState.VIRUS_SCAN_COMPLETED.value,
             "scan_result": "CLEAN",
             "note": "Virus scan passed",
-            "section": data_file.section,
-            "program_type": data_file.program_type,
+            "section": data_file.section.name,
+            "program_type": data_file.program.code,
             "event_id": str(_state_transitions_for(data_file).get(
                 next_state=SubmissionState.VIRUS_SCAN_COMPLETED
             ).event_id),
@@ -340,8 +340,8 @@ def test_mark_stuck_transitions_parse_started_atomically():
             "previous_state": SubmissionState.PARSE_STARTED.value,
             "next_state": SubmissionState.STUCK.value,
             "note": "parse remained pending for more than one day",
-            "section": data_file.section,
-            "program_type": data_file.program_type,
+            "section": data_file.section.name,
+            "program_type": data_file.program.code,
             "event_id": str(_state_transitions_for(data_file).get().event_id),
         }
     ]
@@ -484,8 +484,8 @@ def test_prepare_datafile_for_reparse_requests_reparse_for_safe_states(state):
             "previous_state": state.value,
             "next_state": SubmissionState.REPARSE_REQUESTED.value,
             "note": "admin reparse requested",
-            "section": data_file.section,
-            "program_type": data_file.program_type,
+            "section": data_file.section.name,
+            "program_type": data_file.program.code,
             "event_id": str(transition.event_id),
         }
     ]
@@ -540,8 +540,8 @@ def test_revert_reparse_request_creates_state_transition_record(reparse_meta_id,
     assert transition.reparse_meta_id == reparse_meta_id
     assert transition.task_name == "reparse_recovery_task"
     assert transition.celery_task_id == "recovery-task-id"
-    assert transition.metadata["section"] == data_file.section
-    assert transition.metadata["program_type"] == data_file.program_type
+    assert transition.metadata["section"] == data_file.section.name
+    assert transition.metadata["program_type"] == data_file.program.code
     assert transition.metadata["recovery"] == "pre_destructive_reparse_revert"
     assert transition.metadata.get("reparse_meta_id") == reparse_meta_id
     log = next(r for r in caplog.records if r.message == "DataFile submission state transition")
@@ -708,8 +708,8 @@ def test_complete_datafile_av_scan_clean_transitions_to_virus_scan_completed():
             "next_state": SubmissionState.VIRUS_SCAN_COMPLETED.value,
             "scan_result": "CLEAN",
             "note": "AV callback reported clean file",
-            "section": data_file.section,
-            "program_type": data_file.program_type,
+            "section": data_file.section.name,
+            "program_type": data_file.program.code,
             "event_id": str(_state_transitions_for(data_file).get().event_id),
         }
     ]
@@ -739,8 +739,8 @@ def test_complete_datafile_av_scan_fail_transitions_to_virus_scan_failed():
             "next_state": SubmissionState.VIRUS_SCAN_FAILED.value,
             "scan_result": "INFECTED",
             "note": "AV callback reported infection",
-            "section": data_file.section,
-            "program_type": data_file.program_type,
+            "section": data_file.section.name,
+            "program_type": data_file.program.code,
             "event_id": str(_state_transitions_for(data_file).get().event_id),
         }
     ]
