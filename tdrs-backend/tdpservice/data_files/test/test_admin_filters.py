@@ -179,8 +179,8 @@ def test_version_filter_uses_unfiltered_version_history():
         "stt": stt,
         "year": 2022,
         "quarter": "Q1",
-        "program_type": DataFile.ProgramType.FRA,
-        "section": DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
+        "program_type": Program.Code.FRA,
+        "section": Section.Name.FRA_WORK_OUTCOMES,
         "is_program_audit": False,
     }
     older_rejected = DataFileFactory(version=1, **base_kwargs)
@@ -190,8 +190,8 @@ def test_version_filter_uses_unfiltered_version_history():
         stt=stt,
         year=2022,
         quarter="Q2",
-        program_type=DataFile.ProgramType.FRA,
-        section=DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS,
+        program_type=Program.Code.FRA,
+        section=Section.Name.FRA_WORK_OUTCOMES,
         is_program_audit=False,
     )
     DataFileSummaryFactory(
