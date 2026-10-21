@@ -260,9 +260,6 @@ function AdminFeedbackReports() {
    */
   const validateNotes = (value) => {
     if (!value) return null
-    if (value.length > 2000) {
-      return 'Notes cannot exceed 2000 characters.'
-    }
     if (/<[^>]+>/i.test(value) || /javascript\s*:/i.test(value)) {
       return 'HTML and JavaScript are not allowed in the notes field.'
     }
