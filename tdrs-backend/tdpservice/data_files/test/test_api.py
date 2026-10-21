@@ -23,6 +23,10 @@ from tdpservice.data_files.models import (
 )
 from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.submission_lifecycle import InvalidTransition
+from tdpservice.data_files.views import (
+    FRA_READ_ONLY_ERROR,
+    FRA_SUBMISSION_YEARS_FEATURE_FLAG,
+)
 from tdpservice.parsers import util
 from tdpservice.parsers.factory import ParserFactory
 from tdpservice.parsers.models import ParserError
@@ -719,6 +723,11 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
     def test_data_files_data_upload_fra(self, api_client, csv_data_file, user):
         """FRA uploads reference their canonical FRA section."""
         user.user_permissions.add(Permission.objects.get(codename="has_fra_access"))
+        FeatureFlag.objects.create(
+            feature_name=FRA_SUBMISSION_YEARS_FEATURE_FLAG,
+            enabled=True,
+            config={"activeYears": [2020]},
+        )
 
         response = self.post_data_file(api_client, csv_data_file)
 
@@ -727,11 +736,60 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         assert data_file.program.code == Program.Code.FRA
         assert data_file.section.name == csv_data_file["section"]
 
+    @pytest.mark.parametrize(
+        "flag_enabled,feature_config",
+        [
+            (False, {"activeYears": [2020]}),
+            (True, {"activeYears": [2021]}),
+            (True, {"activeYears": ["2020"]}),
+            (True, {"activeYears": "2020"}),
+            (True, []),
+        ],
+    )
+    def test_data_files_data_upload_fra_rejects_read_only_years(
+        self,
+        api_client,
+        csv_data_file,
+        user,
+        flag_enabled,
+        feature_config,
+    ):
+        """FRA uploads are rejected when their year is not explicitly active."""
+        user.user_permissions.add(Permission.objects.get(codename="has_fra_access"))
+        FeatureFlag.objects.create(
+            feature_name=FRA_SUBMISSION_YEARS_FEATURE_FLAG,
+            enabled=flag_enabled,
+            config=feature_config,
+        )
+
+        response = self.post_data_file(api_client, csv_data_file)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data == {"detail": FRA_READ_ONLY_ERROR}
+        assert not DataFile.objects.filter(slug=csv_data_file["slug"]).exists()
+
+    def test_data_files_data_upload_fra_rejects_when_flag_is_missing(
+        self, api_client, csv_data_file, user
+    ):
+        """FRA submission years are read-only when the flag is missing."""
+        user.user_permissions.add(Permission.objects.get(codename="has_fra_access"))
+
+        response = self.post_data_file(api_client, csv_data_file)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data == {"detail": FRA_READ_ONLY_ERROR}
+        assert not DataFile.objects.filter(slug=csv_data_file["slug"]).exists()
+
     def test_data_files_data_upload_rejects_cross_program_section(
         self, api_client, csv_data_file, user
     ):
         """Uploads reject sections that do not belong to the derived program."""
         user.user_permissions.add(Permission.objects.get(codename="has_fra_access"))
+        FeatureFlag.objects.create(
+            feature_name=FRA_SUBMISSION_YEARS_FEATURE_FLAG,
+            enabled=True,
+            config={"activeYears": [csv_data_file["year"]]},
+        )
         csv_data_file["ssp"] = True
 
         response = self.post_data_file(api_client, csv_data_file)
