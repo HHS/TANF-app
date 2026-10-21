@@ -108,9 +108,7 @@ class ReportFile(FileRecord):
         choices=ReportType.choices,
         default=ReportType.TANF_SSP,
     )
-    @property
-    def notes(self):
-        return self.source.notes if self.source else ""
+    notes = models.TextField(blank=True, default="", max_length=2000)
 
     version = models.IntegerField()
 
