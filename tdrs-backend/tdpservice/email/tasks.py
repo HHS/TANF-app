@@ -11,7 +11,7 @@ from django.urls import reverse
 
 from celery import shared_task
 
-from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.models import DataFile, Program
 from tdpservice.email.email import automated_email, log
 from tdpservice.email.email_enums import DataFileEmail
 from tdpservice.email.helpers.account_access_requests import (
@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 def _normalize_required_section(section: str) -> str:
     """Return the section name without any legacy program prefix."""
-    for program_type in DataFile.ProgramType.values:
+    for program_type in Program.objects.values_list("code", flat=True):
         prefix = f"{program_type} "
         if section.upper().startswith(prefix):
             return section[len(prefix) :]
@@ -45,11 +45,11 @@ def _normalize_required_section(section: str) -> str:
 def _get_required_program_types(stt: STT) -> set[str]:
     """Return the TANF-family program types an STT must submit."""
     if stt.type == STT.EntityType.TRIBE:
-        return {DataFile.ProgramType.TRIBAL}
+        return {Program.objects.get(code=Program.Code.TRIBAL).code}
 
-    program_types = {DataFile.ProgramType.TANF}
+    program_types = {Program.objects.get(code=Program.Code.TANF).code}
     if stt.ssp:
-        program_types.add(DataFile.ProgramType.SSP)
+        program_types.add(Program.objects.get(code=Program.Code.SSP).code)
 
     return program_types
 
@@ -218,7 +218,7 @@ def send_data_submission_reminder(due_date, reporting_period, fiscal_quarter):
     for loc in all_locations:
         submitted_programs_sections = set(
             year_quarter_files.filter(stt=loc)
-            .values_list("program_type", "section")
+            .values_list("section__program__code", "section__name")
             .distinct()
         )
 

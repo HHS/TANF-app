@@ -1,17 +1,66 @@
 """Test data file serializers."""
 
+from types import SimpleNamespace
+
 from django.core.exceptions import ValidationError
 
 import pytest
+from rest_framework.exceptions import ValidationError as SerializerValidationError
 
 from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.errors import ImmutabilityError
+from tdpservice.data_files.models import Section
 from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.validators import (
     validate_file_extension,
     validate_file_infection,
 )
 from tdpservice.security.clients import ClamAVClient
+
+
+@pytest.mark.parametrize(
+    "section_name",
+    [
+        Section.Name.FRA_WORK_OUTCOMES,
+        Section.Name.FRA_SECONDARY_SCHOOL_ATTAINMENT,
+        Section.Name.FRA_SUPPLEMENTAL_WORK_OUTCOMES,
+    ],
+)
+@pytest.mark.parametrize("extension", ["csv", "xlsx"])
+def test_fra_section_validation_needs_no_database(
+    section_name: str, extension: str
+) -> None:
+    """FRA permissions and extension rules apply without catalog queries."""
+    user = SimpleNamespace(has_fra_access=True, is_ofa_sys_admin=False)
+    serializer = DataFileSerializer(context={"user": user})
+    data = {
+        "section": section_name,
+        "file": SimpleNamespace(name=f"submission.{extension}"),
+    }
+
+    assert serializer.validate_section(section_name) == section_name
+    assert serializer.validate(data) == data
+    with pytest.raises(ValidationError):
+        serializer.validate(
+            {"section": section_name, "file": SimpleNamespace(name="submission.txt")}
+        )
+
+
+@pytest.mark.parametrize(
+    "section_name",
+    [
+        Section.Name.FRA_WORK_OUTCOMES,
+        Section.Name.FRA_SECONDARY_SCHOOL_ATTAINMENT,
+        Section.Name.FRA_SUPPLEMENTAL_WORK_OUTCOMES,
+    ],
+)
+def test_fra_section_permissions_need_no_database(section_name: str) -> None:
+    """FRA access remains required even without a database lookup."""
+    user = SimpleNamespace(has_fra_access=False, is_ofa_sys_admin=False)
+    serializer = DataFileSerializer(context={"user": user})
+
+    with pytest.raises(SerializerValidationError, match="Section cannot be FRA"):
+        serializer.validate_section(section_name)
 
 
 @pytest.mark.django_db
@@ -36,9 +85,13 @@ def test_serializer_increment_create(data_file_data, other_data_file_data, user)
     data_file_2 = serializer_2.save()
 
     assert data_file_2.version == data_file_1.version + 1
-    assert data_file_1.section_ref.program.code == data_file_1.program_type
-    assert data_file_1.section_ref.name == data_file_1.section
-    assert data_file_2.section_ref == data_file_1.section_ref
+    assert data_file_1.program.code == "TAN"
+    assert data_file_1.section.name == data_file_data["section"]
+    assert data_file_2.section == data_file_1.section
+    assert serializer_1.data["program_type"] == "TAN"
+    assert serializer_1.data["section"] == data_file_data["section"]
+    assert isinstance(serializer_1.data["program_type"], str)
+    assert isinstance(serializer_1.data["section"], str)
 
 
 @pytest.mark.django_db

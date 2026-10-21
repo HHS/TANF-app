@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from django.db import transaction
 from django.db.models import Count, Sum
 
-from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.models import Section
 from tdpservice.etl.artifacts import upsert_table_dataset_artifact
 from tdpservice.etl.models import StatisticalWeightsCaseCount
 from tdpservice.etl.notifications import send_statistical_weights_notification
@@ -61,17 +61,17 @@ class StatisticalWeightsNode(PipelineNode):
             DataFileSource(
                 key=self.resources.source_keys["active"],
                 program_type=adapter.program_type,
-                section=DataFile.Section.ACTIVE_CASE_DATA,
+                section=Section.Name.ACTIVE_CASE_DATA,
             ),
             DataFileSource(
                 key=self.resources.source_keys["aggregate"],
                 program_type=adapter.program_type,
-                section=DataFile.Section.AGGREGATE_DATA,
+                section=Section.Name.AGGREGATE_DATA,
             ),
             DataFileSource(
                 key=self.resources.source_keys["stratum"],
                 program_type=adapter.program_type,
-                section=DataFile.Section.STRATUM_DATA,
+                section=Section.Name.STRATUM_DATA,
             ),
         )
 
