@@ -199,6 +199,8 @@ function AdminFeedbackReports() {
   const handleFileChange = async (e) => {
     setSelectedFile(null)
     setFileError(null)
+    setNotes('')
+    setNotesError(null)
     setAlert({ active: false, type: null, message: null })
 
     const fileInputValue = e.target.files[0]
@@ -401,6 +403,22 @@ function AdminFeedbackReports() {
       if (params[key] == null) delete params[key]
     })
     setSearchParams(params, { replace: true })
+  }
+
+  /**
+   * Resets form state (shared between year and report type changes)
+   */
+  const resetFormState = () => {
+    closeDownloadStatistics()
+    setSelectedFile(null)
+    setFileError(null)
+    setNotes('')
+    setNotesError(null)
+    clearDatePicker()
+    setDateError(null)
+    setFormSubmitAttempted(false)
+    setDateTouched(false)
+    setAlert({ active: false, type: null, message: null })
   }
 
   /**
