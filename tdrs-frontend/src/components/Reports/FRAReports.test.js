@@ -31,6 +31,19 @@ const initialState = {
     ],
     loading: false,
   },
+  featureFlags: {
+    flags: [
+      {
+        feature_name: 'fra_submission_years',
+        enabled: true,
+        config: {
+          activeYears: [
+            2021, 2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030,
+          ],
+        },
+      },
+    ],
+  },
 }
 
 const mockStore = (initial = {}) => configureStore(initial)
@@ -281,6 +294,60 @@ describe('FRA Reports Page', () => {
       expect(
         queryByText('There are 3 error(s) in this form')
       ).not.toBeInTheDocument()
+    })
+
+    it('shows submission history without upload controls for a read-only year', async () => {
+      const state = {
+        ...initialState,
+        auth: {
+          authenticated: true,
+          user: {
+            email: 'hi@bye.com',
+            stt: {
+              id: 2,
+              type: 'state',
+              code: 'AK',
+              name: 'Alaska',
+            },
+            roles: [{ id: 1, name: 'Data Analyst', permission: [] }],
+            account_approval_status: 'Approved',
+          },
+        },
+        featureFlags: {
+          flags: [
+            {
+              feature_name: 'fra_submission_years',
+              enabled: true,
+              config: { activeYears: [2022] },
+            },
+          ],
+        },
+      }
+      const store = mockStore(state)
+      const { getByLabelText, getByText, queryByText } = render(
+        <Provider store={store}>
+          <MemoryRouter>
+            <FRAReports />
+          </MemoryRouter>
+        </Provider>
+      )
+
+      fireEvent.change(getByLabelText('Fiscal Year (October - September)*'), {
+        target: { value: '2021' },
+      })
+      fireEvent.change(getByLabelText('Fiscal Quarter*'), {
+        target: { value: 'Q1' },
+      })
+
+      await waitFor(() => {
+        expect(getByText('Submission & Error Reports')).toBeInTheDocument()
+        expect(
+          getByText(
+            'Fiscal year 2021 is read-only. New FRA submissions are not accepted for this year.'
+          )
+        ).toBeInTheDocument()
+      })
+      expect(queryByText('Submit Report')).not.toBeInTheDocument()
     })
   })
 
