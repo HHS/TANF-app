@@ -3,6 +3,7 @@
 import logging
 import uuid
 from distutils.util import strtobool
+from typing import Any
 from wsgiref.util import FileWrapper
 
 from django.conf import settings
@@ -44,6 +45,9 @@ from tdpservice.security.models import ClamAVFileScan
 from tdpservice.users.permissions import DataFilePermissions, IsApprovedPermission
 
 logger = logging.getLogger(__name__)
+
+FRA_SUBMISSION_YEARS_FEATURE_FLAG = "fra_submission_years"
+FRA_READ_ONLY_ERROR = "FRA submissions for this fiscal year are read-only."
 
 
 def get_log_file(request, remaining_path):
@@ -142,6 +146,35 @@ class DataFileViewSet(ModelViewSet):
 
         return None
 
+    def _validate_fra_submission_year(
+        self, validated_data: dict[str, Any]
+    ) -> Response | None:
+        """Reject FRA submissions unless the reporting year is active."""
+        if not Section.is_fra(validated_data["section"]):
+            return None
+
+        feature_enabled, feature_config = get_feature_flag(
+            FRA_SUBMISSION_YEARS_FEATURE_FLAG
+        )
+        active_years = (
+            feature_config.get("activeYears", [])
+            if isinstance(feature_config, dict)
+            else []
+        )
+        year = validated_data["year"]
+
+        if (
+            not feature_enabled
+            or not isinstance(active_years, list)
+            or year not in active_years
+        ):
+            return Response(
+                {"detail": FRA_READ_ONLY_ERROR},
+                status=HTTP_400_BAD_REQUEST,
+            )
+
+        return None
+
     def _scan_uploaded_file(self, uploaded_file, user, data_file):
         """Run ClamAV before saving the uploaded file to persistent storage.
 
@@ -206,6 +239,10 @@ class DataFileViewSet(ModelViewSet):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        fra_error = self._validate_fra_submission_year(serializer.validated_data)
+        if fra_error is not None:
+            return fra_error
 
         uploaded_file = serializer.validated_data.get("file")
         data_file = serializer.save(file=None)
