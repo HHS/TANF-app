@@ -78,11 +78,11 @@ def test_serializer_increment_create(data_file_data, other_data_file_data, user)
     """Test serializer produces data_files with correct version."""
     serializer_1 = DataFileSerializer(context={"user": user}, data=data_file_data)
     assert serializer_1.is_valid() is True
-    data_file_1 = serializer_1.save()
+    data_file_1 = serializer_1.save(user=user)
 
     serializer_2 = DataFileSerializer(context={"user": user}, data=other_data_file_data)
     assert serializer_2.is_valid() is True
-    data_file_2 = serializer_2.save()
+    data_file_2 = serializer_2.save(user=user)
 
     assert data_file_2.version == data_file_1.version + 1
     assert data_file_1.program.code == "TAN"
@@ -117,9 +117,23 @@ def test_created_at(data_file_data, data_analyst):
         context={"user": data_analyst}, data=data_file_data
     )
     assert create_serializer.is_valid() is True
-    data_file = create_serializer.save()
+    data_file = create_serializer.save(user=data_analyst)
 
     assert data_file.created_at
+
+
+@pytest.mark.django_db
+def test_user_is_read_only_on_create(data_file_data, data_analyst, user):
+    """Test serializer input cannot select the user who owns a data file."""
+    data_file_data["user"] = str(user.id)
+    serializer = DataFileSerializer(context={"user": data_analyst}, data=data_file_data)
+
+    serializer.is_valid(raise_exception=True)
+    data_file = serializer.save(user=data_analyst)
+
+    assert "user" not in serializer.validated_data
+    assert data_file.user == data_analyst
+    assert serializer.fields["user"].read_only is True
 
 
 @pytest.mark.django_db
@@ -173,7 +187,7 @@ def test_lifecycle_state_is_read_only_on_create(data_file_data, data_analyst):
     serializer = DataFileSerializer(context={"user": data_analyst}, data=data_file_data)
 
     serializer.is_valid(raise_exception=True)
-    data_file = serializer.save()
+    data_file = serializer.save(user=data_analyst)
 
     assert "state" not in serializer.validated_data
     assert data_file.state == SubmissionState.UPLOADED

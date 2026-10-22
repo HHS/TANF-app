@@ -36,8 +36,8 @@ from tdpservice.security.models import ClamAVFileScan
 
 
 @pytest.mark.django_db
-def test_lifecycle_fields_are_read_only_in_openapi_schema(api_client):
-    """Assert generated API documentation describes the lifecycle contract."""
+def test_read_only_fields_are_identified_in_openapi_schema(api_client):
+    """Assert generated API documentation identifies server-managed fields."""
     response = api_client.get("/swagger.json")
 
     assert response.status_code == status.HTTP_200_OK
@@ -57,6 +57,8 @@ def test_lifecycle_fields_are_read_only_in_openapi_schema(api_client):
     assert allowed_states_schema["items"]["enum"] == list(SubmissionState.values)
     assert allowed_states_schema["readOnly"] is True
     assert "state" not in data_file_schema.get("required", [])
+    assert properties["user"]["readOnly"] is True
+    assert "user" not in data_file_schema.get("required", [])
 
 
 @pytest.mark.usefixtures("db")
@@ -327,7 +329,8 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
 
         assert response.data["id"] == data_file_id
 
-        assert str(response.data["user"]) == data_file_data["user"]
+        assert str(response.data["user"]) == str(user.id)
+        assert str(response.data["user"]) != data_file_data["user"]
 
         assert response.data["quarter"] == data_file_data["quarter"]
         assert response.data["stt"] == data_file_data["stt"]
