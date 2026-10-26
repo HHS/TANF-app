@@ -24,12 +24,7 @@ from rest_framework.viewsets import ModelViewSet
 from tdpservice.core.utils import get_feature_flag
 from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.error_reports import ErrorReportFactory
-from tdpservice.data_files.models import (
-    DataFile,
-    Program,
-    ReparseFileMeta,
-    Section,
-)
+from tdpservice.data_files.models import DataFile, Program, ReparseFileMeta, Section
 from tdpservice.data_files.s3_client import S3Client
 from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.submission_lifecycle import (
@@ -245,7 +240,7 @@ class DataFileViewSet(ModelViewSet):
             return fra_error
 
         uploaded_file = serializer.validated_data.get("file")
-        data_file = serializer.save(file=None)
+        data_file = serializer.save(file=None, user=request.user)
         event_id = uuid.uuid4()
 
         start_datafile_av_scan(
