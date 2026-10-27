@@ -1,6 +1,5 @@
 """Integration coverage for exclusive submission-state ownership."""
 
-import re
 from datetime import timedelta
 from pathlib import Path
 
@@ -13,8 +12,8 @@ from tdpservice.data_files.models import DataFileStateTransition, ReparseFileMet
 from tdpservice.data_files.submission_lifecycle import (
     StaleParseOwnership,
     begin_parse,
-    complete_datafile_av_scan,
     claim_parse,
+    complete_datafile_av_scan,
     finish_reparse,
     mark_stuck,
     parse_write_scope,
@@ -27,6 +26,7 @@ from tdpservice.data_files.tasks import (
     mark_stale_files_stuck,
 )
 from tdpservice.data_files.test.factories import DataFileFactory
+from tdpservice.data_files.test.state_write_guard import state_write_lines
 from tdpservice.etl.pipelines.sources import active_reparse_datafile_ids
 from tdpservice.parsers.models import DataFileSummary
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
@@ -131,24 +131,82 @@ def test_parse_completion_wins_timeout_selection_race():
 
 def test_production_python_state_writes_are_owned_by_controller():
     """Prevent production code from adding a second DataFile state writer."""
-    service_root = Path(__file__).resolve().parents[2]
-    controller = service_root / "data_files" / "submission_lifecycle.py"
-    assignment = re.compile(
-        r"\.state\s*=\s*(?:SubmissionState\.|transition\.|target_state|locked\.state)"
-    )
-    queryset_update = re.compile(r"\.update\([^)]*\bstate\s*=", re.DOTALL)
+    backend_root = Path(__file__).resolve().parents[3]
+    controller = backend_root / "tdpservice" / "data_files" / "submission_lifecycle.py"
+    # STT.state is a relationship to the parent state, not submission state.
+    allowed_attributes = {
+        "tdpservice/stts/management/commands/populate_stts.py": frozenset({"stt.state"}),
+    }
     violations = []
 
-    for source_file in service_root.rglob("*.py"):
-        if source_file == controller or any(
-            part in {"migrations", "test", "tests"} for part in source_file.parts
-        ):
-            continue
-        source = source_file.read_text(encoding="utf-8")
-        if assignment.search(source) or queryset_update.search(source):
-            violations.append(str(source_file.relative_to(service_root)))
+    for source_root in (backend_root / "tdpservice", backend_root / "scripts"):
+        for source_file in source_root.rglob("*.py"):
+            if source_file == controller or any(
+                part in {"migrations", "test", "tests"} for part in source_file.parts
+            ):
+                continue
+            relative_path = source_file.relative_to(backend_root).as_posix()
+            lines = state_write_lines(
+                source_file.read_text(encoding="utf-8"),
+                allowed_attributes.get(relative_path, frozenset()),
+            )
+            violations.extend(f"{relative_path}:{line}" for line in lines)
 
     assert violations == [], (
         "Production DataFile state changes must be expressed as an intent in "
         f"data_files/submission_lifecycle.py; found writers in {violations}."
     )
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "data_file.state = next_state",
+        "data_file.state = str(SubmissionState.PARSE_FAILED)",
+        "data_file.state: str = next_state",
+        "data_file.state, other = values",
+        "setattr(data_file, 'state', next_state)",
+        "files.update(state=next_state)",
+        "files.update(**{'state': next_state})",
+        "changes = {'state': next_state}\nfiles.update(**changes)",
+        "changes: dict = {'state': next_state}\nfiles.update(**changes)",
+        "changes = dict(state=next_state)\nfiles.update(**changes)",
+        "changes = {'state': next_state}\nfiles.update_or_create(defaults=changes)",
+        "files.update_or_create(create_defaults={'state': next_state})",
+        "files.get_or_create(defaults={'state': next_state})",
+        "files.bulk_update(objects, ['state'])",
+        "fields = ['state']\nfiles.bulk_update(objects, fields=fields)",
+        "files.bulk_create(objects, update_conflicts=True, update_fields=['state'])",
+        "data_file.save(update_fields=['state'])",
+        "files.create(state=next_state)",
+    ],
+)
+def test_state_write_guard_catches_bypasses(source: str):
+    """Guard against assignment and ORM forms used in application code and scripts."""
+    assert state_write_lines(source)
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "files.filter(state=SubmissionState.UPLOADED)",
+        "if data_file.state == next_state: pass",
+        "files.update(status='Rejected')",
+        "files.update_or_create(defaults={'status': 'Rejected'})",
+        "files.bulk_update(objects, ['state_changed_at'])",
+        "message = 'data_file.state = next_state'",
+        "# data_file.state = next_state",
+        "changes = dict(changes)\nfiles.update(**changes)",
+    ],
+)
+def test_state_write_guard_allows_reads_and_unrelated_fields(source: str):
+    """State filters, comments and unrelated updates must not trigger the guard."""
+    assert state_write_lines(source) == []
+
+
+def test_state_write_guard_exception_is_limited_to_parent_state_relationship():
+    """The documented STT exception does not exempt DataFile writes in that file."""
+    assert state_write_lines(
+        "stt.state = parent\ndata_file.state = next_state",
+        allowed_attributes=frozenset({"stt.state"}),
+    ) == [2]
