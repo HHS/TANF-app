@@ -2,7 +2,7 @@
 
 import io
 import os
-from unittest.mock import ANY
+from unittest.mock import ANY, call
 
 from django.contrib.auth.models import Permission
 from django.db import IntegrityError, transaction
@@ -23,6 +23,11 @@ from tdpservice.data_files.models import (
 )
 from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.submission_lifecycle import InvalidTransition
+from tdpservice.data_files.test.factories import DataFileFactory
+from tdpservice.data_files.util import (
+    create_legacy_s3_log_file_path,
+    create_s3_log_file_path,
+)
 from tdpservice.data_files.views import (
     FRA_READ_ONLY_ERROR,
     FRA_SUBMISSION_YEARS_FEATURE_FLAG,
@@ -59,6 +64,73 @@ def test_read_only_fields_are_identified_in_openapi_schema(api_client):
     assert "state" not in data_file_schema.get("required", [])
     assert properties["user"]["readOnly"] is True
     assert "user" not in data_file_schema.get("required", [])
+
+
+@pytest.mark.django_db
+def test_log_download_rejects_unauthenticated_requests(api_client, mocker):
+    """Parser logs require an authenticated user."""
+    datafile = DataFileFactory.create()
+    download_file = mocker.patch(
+        "tdpservice.data_files.views.S3FileHandler.download_file"
+    )
+
+    response = api_client.get(f"/v1/data_files/{datafile.pk}/logs/")
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    download_file.assert_not_called()
+
+
+@pytest.mark.django_db
+def test_log_download_checks_data_file_object_permissions(
+    api_client, data_analyst, other_stt, mocker
+):
+    """A data analyst cannot retrieve logs belonging to another STT."""
+    datafile = DataFileFactory.create(stt=other_stt)
+    api_client.force_authenticate(user=data_analyst)
+    download_file = mocker.patch(
+        "tdpservice.data_files.views.S3FileHandler.download_file"
+    )
+
+    response = api_client.get(f"/v1/data_files/{datafile.pk}/logs/")
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    download_file.assert_not_called()
+
+
+@pytest.mark.django_db
+def test_log_download_derives_s3_keys_from_authorized_data_file(
+    api_client, data_analyst, stt, mocker
+):
+    """The server derives current and legacy keys after authorizing the record."""
+    datafile = DataFileFactory.create(user=data_analyst, stt=stt)
+    api_client.force_authenticate(user=data_analyst)
+    log_contents = b"parser log contents"
+    download_file = mocker.patch(
+        "tdpservice.data_files.views.S3FileHandler.download_file",
+        side_effect=[None, io.BytesIO(log_contents)],
+    )
+
+    response = api_client.get(f"/v1/data_files/{datafile.pk}/logs/")
+
+    assert response.status_code == status.HTTP_200_OK
+    assert b"".join(response.streaming_content) == log_contents
+    assert download_file.call_args_list == [
+        call(key=create_s3_log_file_path(datafile)),
+        call(key=create_legacy_s3_log_file_path(datafile)),
+    ]
+
+
+@pytest.mark.django_db
+def test_arbitrary_log_path_endpoint_is_removed(api_client, mocker):
+    """Caller-controlled S3 keys are no longer accepted by the API."""
+    download_file = mocker.patch(
+        "tdpservice.data_files.views.S3FileHandler.download_file"
+    )
+
+    response = api_client.get("/v1/data_files/logs/arbitrary/s3/object")
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    download_file.assert_not_called()
 
 
 @pytest.mark.usefixtures("db")
