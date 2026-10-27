@@ -1780,12 +1780,7 @@ describe('AdminFeedbackReports', () => {
     it('shows confirmation modal when fiscal year is changed after file is selected', async () => {
       renderComponent()
       await selectFiscalYear('2025')
-
-      const fileInput = document.querySelector('input[type="file"]')
-      const file = new File(['content'], 'FY2025.zip', {
-        type: 'application/zip',
-      })
-      fireEvent.change(fileInput, { target: { files: [file] } })
+      await selectFile('FY2025.zip')
 
       const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
       fireEvent.change(fiscalYearSelect, { target: { value: '2024' } })
@@ -1804,6 +1799,52 @@ describe('AdminFeedbackReports', () => {
           )
         ).toBeInTheDocument()
       })
+      const fileInput = document.querySelector('input[type="file"]')
+      expect(fileInput.value).toBe('')
+    })
+
+    it('removes USWDS file preview markup and resets input on form reset', async () => {
+      renderComponent()
+      await selectFiscalYear('2025')
+      await selectFile('FY2025.zip')
+
+      const fileInput = document.querySelector('input[type="file"]')
+      const dropTarget = fileInput.parentNode
+      dropTarget.classList.add(
+        'usa-file-input__target',
+        'usa-file-input--has-file'
+      )
+
+      const previewHeading = document.createElement('div')
+      previewHeading.className = 'usa-file-input__preview-heading'
+      previewHeading.textContent = 'Selected file'
+      dropTarget.appendChild(previewHeading)
+
+      const preview = document.createElement('div')
+      preview.className = 'usa-file-input__preview'
+      preview.textContent = 'FY2025.zip'
+      dropTarget.appendChild(preview)
+
+      const instructions = document.createElement('div')
+      instructions.className = 'usa-file-input__instructions display-none'
+      dropTarget.appendChild(instructions)
+
+      // Trigger change
+      const fraRadio = screen.getByLabelText('FRA')
+      fireEvent.click(fraRadio)
+
+      const okButton = screen.getByRole('button', { name: 'OK' })
+      fireEvent.click(okButton)
+
+      expect(fileInput.value).toBe('')
+      expect(dropTarget.querySelector('.usa-file-input__preview')).toBeNull()
+      expect(
+        dropTarget.querySelector('.usa-file-input__preview-heading')
+      ).toBeNull()
+      expect(dropTarget.classList.contains('usa-file-input--has-file')).toBe(
+        false
+      )
+      expect(instructions.classList.contains('display-none')).toBe(false)
     })
 
     it('does not show confirmation modal when changing report type or fiscal year without entered values', async () => {

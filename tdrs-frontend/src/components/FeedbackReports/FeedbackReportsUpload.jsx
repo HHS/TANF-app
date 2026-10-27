@@ -1,6 +1,7 @@
 import React, { useEffect, useImperativeHandle, forwardRef } from 'react'
 import PropTypes from 'prop-types'
 import { fileInput, datePicker } from '@uswds/uswds/src/js/components'
+import { removeOldPreviews } from '../FileUpload/utils'
 import Button from '../Button'
 
 const INVALID_EXT_ERROR = 'Invalid file. Make sure to select a zip file.'
@@ -90,10 +91,31 @@ const FeedbackReportsUpload = forwardRef(function FeedbackReportsUpload(
     }
   }
 
+  /**
+   * Clears the USWDS file input and removes file previews
+   */
+  const clearFileInput = () => {
+    if (inputRef?.current) {
+      inputRef.current.value = ''
+      const dropTarget = inputRef.current.closest('.usa-file-input__target')
+      if (dropTarget) {
+        const instructions = dropTarget.querySelector(
+          '.usa-file-input__instructions'
+        )
+        if (instructions) {
+          instructions.classList.remove('display-block')
+        }
+        dropTarget.classList.remove('has-invalid-file')
+        removeOldPreviews(dropTarget, instructions)
+      }
+    }
+  }
+
   // Expose methods to parent component via ref
   useImperativeHandle(ref, () => ({
     getDateValue,
     clearDate,
+    clearFileInput,
   }))
 
   return (

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { get, post } from '../../fetch-instance'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
+import { removeOldPreviews } from '../FileUpload/utils'
 import FeedbackReportsUpload from './FeedbackReportsUpload'
 import FeedbackReportsHistory from './FeedbackReportsHistory'
 import DownloadStatisticsModal from './DownloadStatisticsModal'
@@ -243,7 +244,9 @@ function AdminFeedbackReports() {
     }
     dropTarget.classList.remove('has-invalid-file')
 
-    inputRef.current.value = null
+    if (inputRef.current) {
+      inputRef.current.value = null
+    }
   }
 
   /**
@@ -251,6 +254,33 @@ function AdminFeedbackReports() {
    */
   const getDatePickerValue = () => {
     return uploadFormRef.current?.getDateValue() || ''
+  }
+
+  /**
+   * Clears the file input value and resets USWDS file input DOM preview
+   */
+  const clearFileInput = () => {
+    setSelectedFile(null)
+    setFileError(null)
+
+    if (uploadFormRef.current?.clearFileInput) {
+      uploadFormRef.current.clearFileInput()
+    }
+
+    if (inputRef.current) {
+      inputRef.current.value = ''
+      const dropTarget = inputRef.current.closest('.usa-file-input__target')
+      if (dropTarget) {
+        const instructions = dropTarget.querySelector(
+          '.usa-file-input__instructions'
+        )
+        if (instructions) {
+          instructions.classList.remove('display-block')
+        }
+        dropTarget.classList.remove('has-invalid-file')
+        removeOldPreviews(dropTarget, instructions)
+      }
+    }
   }
 
   /**
@@ -346,8 +376,7 @@ function AdminFeedbackReports() {
       })
 
       // Clear the form
-      setSelectedFile(null)
-      setFileError(null)
+      clearFileInput()
       setNotes('')
       setNotesError(null)
       clearDatePicker()
@@ -413,14 +442,10 @@ function AdminFeedbackReports() {
    */
   const resetFormState = () => {
     closeDownloadStatistics()
-    setSelectedFile(null)
-    setFileError(null)
+    clearFileInput()
     setNotes('')
     setNotesError(null)
     clearDatePicker()
-    if (inputRef.current) {
-      inputRef.current.value = null
-    }
     setDateError(null)
     setFormSubmitAttempted(false)
     setDateTouched(false)
