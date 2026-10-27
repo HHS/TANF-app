@@ -307,7 +307,7 @@ describe('AdminFeedbackReports', () => {
       ['FRA', 'Tribal TANF', 'TRIBAL_TANF'],
       ['Tribal TANF', 'TANF/SSP', 'TANF_SSP'],
     ])(
-      'submits the selected file after switching from %s to %s',
+      'prompts confirmation and submits after switching from %s to %s',
       async (initialType, nextType, reportType) => {
         post.mockResolvedValue({ data: { id: 1 }, ok: true })
         renderComponent()
@@ -318,11 +318,11 @@ describe('AdminFeedbackReports', () => {
         setDateInputValue('2025-02-28')
 
         fireEvent.click(screen.getByLabelText(nextType))
+        fireEvent.click(screen.getByRole('button', { name: 'OK' }))
 
-        expect(screen.getByText(/Selected File FY2025.zip/)).toBeInTheDocument()
-        expect(document.getElementById('date-extracted-on')).toHaveValue(
-          '2025-02-28'
-        )
+        expect(document.getElementById('date-extracted-on')).toHaveValue('')
+        await selectFile('FY2025.zip')
+        setDateInputValue('2025-02-28')
         fireEvent.click(
           screen.getByRole('button', { name: /Upload & Notify STTs/i })
         )
@@ -341,7 +341,7 @@ describe('AdminFeedbackReports', () => {
       }
     )
 
-    it('preserves file validation errors when the report type changes', async () => {
+    it('resets form state when report type changes after confirmation', async () => {
       renderComponent()
       await selectFiscalYear('2025')
       const fileInput = document.querySelector('input[type="file"]')
@@ -353,11 +353,14 @@ describe('AdminFeedbackReports', () => {
 
       fireEvent.click(screen.getByLabelText('FRA'))
 
-      expect(screen.getByText(invalidFileMessage)).toBeInTheDocument()
-      fireEvent.click(
-        screen.getByRole('button', { name: /Upload & Notify STTs/i })
-      )
-      expect(post).not.toHaveBeenCalled()
+      // Confirm modal should appear; clicking OK discards changes and resets form
+      const okButton = screen.getByRole('button', { name: 'OK' })
+      fireEvent.click(okButton)
+
+      // Date should be cleared
+      const dateInput = document.getElementById('date-extracted-on')
+      expect(dateInput.value).toBe('')
+      expect(screen.queryByText(invalidFileMessage)).not.toBeInTheDocument()
     })
 
     it('fetches history with report_type when type changes', async () => {
@@ -700,7 +703,7 @@ describe('AdminFeedbackReports', () => {
         const formData = post.mock.calls[0][1]
         expect(formData.get('notes')).toBe(note)
 
-        expect(notesTextarea.value).toBe('')
+        expect(screen.getByLabelText('Notes (optional)').value).toBe('')
       }
     )
 
@@ -1429,28 +1432,26 @@ describe('AdminFeedbackReports', () => {
       ).not.toBeInTheDocument()
     })
 
-    it('preserves the file and date across selector changes and clears the upload after success', async () => {
+    it('resets the file and date on confirmed selector changes and clears the upload after success', async () => {
       post.mockResolvedValue({ data: { id: 1 }, ok: true })
       renderComponent()
       await selectFiscalYear('2025')
       await selectFile('feedback.zip')
       setDateInputValue('2025-02-28')
-      const originalFileInput = document.getElementById('feedback_reports')
-      // USWDS owns the preview DOM independently of React's selected-file text.
-      const preview = document.createElement('div')
-      preview.className = 'usa-file-input__preview'
-      preview.textContent = 'feedback.zip'
-      originalFileInput.parentNode.appendChild(preview)
 
       const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
       fireEvent.change(fiscalYearSelect, { target: { value: '2024' } })
-      fireEvent.click(screen.getByLabelText('FRA'))
+      fireEvent.click(screen.getByRole('button', { name: 'OK' }))
 
-      expect(screen.getByText(/Selected File feedback.zip/)).toBeInTheDocument()
-      expect(screen.getByText('feedback.zip')).toBeVisible()
-      expect(document.getElementById('date-extracted-on')).toHaveValue(
-        '2025-02-28'
-      )
+      expect(
+        screen.queryByText(/Selected File feedback.zip/)
+      ).not.toBeInTheDocument()
+      expect(document.getElementById('date-extracted-on')).toHaveValue('')
+
+      fireEvent.click(screen.getByLabelText('FRA'))
+      fireEvent.click(screen.getByRole('button', { name: 'OK' }))
+      await selectFile('feedback.zip')
+      setDateInputValue('2025-02-28')
       fireEvent.click(
         screen.getByRole('button', { name: /Upload & Notify STTs/i })
       )
@@ -1468,36 +1469,33 @@ describe('AdminFeedbackReports', () => {
       ).not.toBeInTheDocument()
     })
 
-    it('retains a mismatched file and blocks submission until the fiscal year matches again', async () => {
-      post.mockResolvedValue({ data: { id: 1 }, ok: true })
+    it('resets form when fiscal year changes after confirmation', async () => {
       renderComponent()
       await selectFiscalYear('2025')
       await selectFile('FY2025.zip')
       setDateInputValue('2025-02-28')
-      const mismatchMessage =
-        "Your file's Fiscal Year does not match the selected Fiscal Year for this upload."
+
       const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
       fireEvent.change(fiscalYearSelect, { target: { value: '2024' } })
 
-      expect(screen.getByText(/Selected File FY2025.zip/)).toBeInTheDocument()
-      expect(screen.getByText(mismatchMessage)).toBeInTheDocument()
-      fireEvent.click(
-        screen.getByRole('button', { name: /Upload & Notify STTs/i })
-      )
-      expect(post).not.toHaveBeenCalled()
-      expect(screen.queryByText('No file selected.')).not.toBeInTheDocument()
+      // Confirm modal should appear; clicking OK discards changes and resets form
+      const okButton = screen.getByRole('button', { name: 'OK' })
+      fireEvent.click(okButton)
 
-      fireEvent.change(fiscalYearSelect, { target: { value: '2025' } })
-      expect(screen.queryByText(mismatchMessage)).not.toBeInTheDocument()
-      fireEvent.click(
-        screen.getByRole('button', { name: /Upload & Notify STTs/i })
-      )
-      await screen.findByText(/Feedback report uploaded successfully/)
-      expect(post.mock.calls[0][1].get('file').name).toBe('FY2025.zip')
-      expect(post.mock.calls[0][1].get('year')).toBe('2025')
+      await waitFor(() => {
+        expect(
+          screen.getByText(
+            'Fiscal Year 2024 — Upload TANF/SSP Feedback Reports'
+          )
+        ).toBeInTheDocument()
+      })
+      expect(document.getElementById('date-extracted-on')).toHaveValue('')
+      expect(
+        screen.queryByText(/Selected File FY2025.zip/)
+      ).not.toBeInTheDocument()
     })
 
-    it('preserves the upload when the fiscal-year selector is cleared and selected again', async () => {
+    it('preserves the upload when cancelling fiscal-year change in confirmation modal', async () => {
       renderComponent()
       await selectFiscalYear('2025')
       await selectFile('FY2025.zip')
@@ -1506,10 +1504,12 @@ describe('AdminFeedbackReports', () => {
       const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
 
       fireEvent.change(fiscalYearSelect, { target: { value: '' } })
-      expect(originalFileInput).not.toBeVisible()
-      expect(post).not.toHaveBeenCalled()
-      fireEvent.change(fiscalYearSelect, { target: { value: '2025' } })
+      expect(
+        screen.getByText('Report Type or Fiscal Year changed')
+      ).toBeInTheDocument()
+      fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
 
+      expect(fiscalYearSelect.value).toBe('2025')
       expect(document.getElementById('feedback_reports')).toBe(
         originalFileInput
       )
@@ -1520,7 +1520,7 @@ describe('AdminFeedbackReports', () => {
       )
     })
 
-    it('allows correcting the fiscal year after selecting a mismatched file without reselecting it', async () => {
+    it('clears mismatched file error when confirming fiscal year change', async () => {
       post.mockResolvedValue({ data: { id: 1 }, ok: true })
       renderComponent()
       await selectFiscalYear('2025')
@@ -1532,7 +1532,10 @@ describe('AdminFeedbackReports', () => {
       fireEvent.change(screen.getByLabelText('Fiscal Year'), {
         target: { value: '2024' },
       })
+      fireEvent.click(screen.getByRole('button', { name: 'OK' }))
+
       expect(screen.queryByText(mismatchMessage)).not.toBeInTheDocument()
+      await selectFile('FY2024.zip')
       setDateInputValue('2024-02-28')
       fireEvent.click(
         screen.getByRole('button', { name: /Upload & Notify STTs/i })
@@ -1691,6 +1694,164 @@ describe('AdminFeedbackReports', () => {
         expect(instructions.classList.contains('display-block')).toBe(false)
         expect(dropTarget.classList.contains('has-invalid-file')).toBe(false)
       })
+    })
+  })
+
+  describe('Unsubmitted Changes Confirmation Modal', () => {
+    it('shows confirmation modal when report type is changed after notes are entered', async () => {
+      renderComponent()
+      await selectFiscalYear('2025')
+
+      const notesTextarea = screen.getByLabelText('Notes (optional)')
+      fireEvent.change(notesTextarea, {
+        target: { value: 'FRA calculations exclude Tribal cases' },
+      })
+
+      // Change report type
+      const fraRadio = screen.getByLabelText('FRA')
+      fireEvent.click(fraRadio)
+
+      // Modal should be visible
+      expect(
+        screen.getByText('Report Type or Fiscal Year changed')
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText(
+          "Your uploaded files have not been submitted. Clicking 'OK' will discard all changes, reset the form and remove any uploaded files."
+        )
+      ).toBeInTheDocument()
+
+      // Cancel button should keep original report type and notes
+      const cancelButton = screen.getByRole('button', { name: 'Cancel' })
+      fireEvent.click(cancelButton)
+
+      expect(
+        screen.queryByText('Report Type or Fiscal Year changed')
+      ).not.toBeInTheDocument()
+      expect(screen.getByLabelText('TANF/SSP')).toBeChecked()
+      expect(notesTextarea.value).toBe('FRA calculations exclude Tribal cases')
+    })
+
+    it('clears notes and applies new report type when OK is clicked', async () => {
+      renderComponent()
+      await selectFiscalYear('2025')
+
+      const notesTextarea = screen.getByLabelText('Notes (optional)')
+      fireEvent.change(notesTextarea, {
+        target: { value: 'FRA calculations exclude Tribal cases' },
+      })
+
+      const fraRadio = screen.getByLabelText('FRA')
+      fireEvent.click(fraRadio)
+
+      const okButton = screen.getByRole('button', { name: 'OK' })
+      fireEvent.click(okButton)
+
+      expect(
+        screen.queryByText('Report Type or Fiscal Year changed')
+      ).not.toBeInTheDocument()
+      expect(screen.getByLabelText('FRA')).toBeChecked()
+      const updatedNotes = screen.getByLabelText('Notes (optional)')
+      expect(updatedNotes.value).toBe('')
+    })
+
+    it('shows confirmation modal when fiscal year is changed after notes are entered', async () => {
+      renderComponent()
+      await selectFiscalYear('2025')
+
+      const notesTextarea = screen.getByLabelText('Notes (optional)')
+      fireEvent.change(notesTextarea, { target: { value: 'My notes' } })
+
+      const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
+      fireEvent.change(fiscalYearSelect, { target: { value: '2024' } })
+
+      expect(
+        screen.getByText('Report Type or Fiscal Year changed')
+      ).toBeInTheDocument()
+
+      // Click cancel
+      const cancelButton = screen.getByRole('button', { name: 'Cancel' })
+      fireEvent.click(cancelButton)
+
+      expect(fiscalYearSelect.value).toBe('2025')
+      expect(notesTextarea.value).toBe('My notes')
+    })
+
+    it('shows confirmation modal when fiscal year is changed after file is selected', async () => {
+      renderComponent()
+      await selectFiscalYear('2025')
+
+      const fileInput = document.querySelector('input[type="file"]')
+      const file = new File(['content'], 'FY2025.zip', {
+        type: 'application/zip',
+      })
+      fireEvent.change(fileInput, { target: { files: [file] } })
+
+      const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
+      fireEvent.change(fiscalYearSelect, { target: { value: '2024' } })
+
+      expect(
+        screen.getByText('Report Type or Fiscal Year changed')
+      ).toBeInTheDocument()
+
+      const okButton = screen.getByRole('button', { name: 'OK' })
+      fireEvent.click(okButton)
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(
+            'Fiscal Year 2024 — Upload TANF/SSP Feedback Reports'
+          )
+        ).toBeInTheDocument()
+      })
+    })
+
+    it('does not show confirmation modal when changing report type or fiscal year without entered values', async () => {
+      renderComponent()
+      await selectFiscalYear('2025')
+
+      // Change report type without entering values
+      const fraRadio = screen.getByLabelText('FRA')
+      fireEvent.click(fraRadio)
+
+      expect(
+        screen.queryByText('Report Type or Fiscal Year changed')
+      ).not.toBeInTheDocument()
+      expect(fraRadio).toBeChecked()
+
+      // Change fiscal year without entering values
+      const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
+      fireEvent.change(fiscalYearSelect, { target: { value: '2024' } })
+
+      expect(
+        screen.queryByText('Report Type or Fiscal Year changed')
+      ).not.toBeInTheDocument()
+      expect(fiscalYearSelect.value).toBe('2024')
+    })
+
+    it('cancels pending change when Escape key is pressed', async () => {
+      renderComponent()
+      await selectFiscalYear('2025')
+
+      const notesTextarea = screen.getByLabelText('Notes (optional)')
+      fireEvent.change(notesTextarea, { target: { value: 'Escape note' } })
+
+      const fraRadio = screen.getByLabelText('FRA')
+      fireEvent.click(fraRadio)
+
+      expect(
+        screen.getByText('Report Type or Fiscal Year changed')
+      ).toBeInTheDocument()
+
+      // Press Escape
+      const modal = document.getElementById('modal')
+      fireEvent.keyDown(modal, { key: 'Escape' })
+
+      expect(
+        screen.queryByText('Report Type or Fiscal Year changed')
+      ).not.toBeInTheDocument()
+      expect(screen.getByLabelText('TANF/SSP')).toBeChecked()
+      expect(notesTextarea.value).toBe('Escape note')
     })
   })
 })
