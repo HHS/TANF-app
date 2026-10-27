@@ -58,6 +58,10 @@ https://github.com/raft-tech/TANF-app/releases/tag/vX.X.X
 - [ ] Does NOT require PLG deployment.
 - [ ] Requires PLG deployment.
 
+### Keycloak Deployment
+- [ ] Does NOT require Keycloak deployment.
+- [ ] Requires Keycloak deployment.
+
 ---
 
 ## 🧪 5. Staging & QASP (ACF)
