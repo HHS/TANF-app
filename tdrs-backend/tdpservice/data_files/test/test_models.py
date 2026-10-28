@@ -110,6 +110,17 @@ def test_data_file_has_no_legacy_classification_fields():
 
 
 @pytest.mark.django_db
+def test_log_file_links_to_authorized_data_file_route(data_file_instance, settings):
+    """Admin log links identify a data file instead of exposing its S3 key."""
+    settings.FRONTEND_BASE_URL = "https://example.test"
+
+    assert (
+        str(data_file_instance.log_file)
+        == f"<a href='https://example.test/v1/data_files/{data_file_instance.pk}/logs/'>Parser logs</a>"
+    )
+
+
+@pytest.mark.django_db
 @pytest.mark.parametrize(
     "program_type,section_name,is_program_audit",
     [

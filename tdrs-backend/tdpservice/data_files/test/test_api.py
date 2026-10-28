@@ -2,7 +2,7 @@
 
 import io
 import os
-from unittest.mock import ANY
+from unittest.mock import ANY, call
 
 from django.contrib.auth.models import Permission
 from django.db import IntegrityError, transaction
@@ -23,6 +23,15 @@ from tdpservice.data_files.models import (
 )
 from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.submission_lifecycle import InvalidTransition
+from tdpservice.data_files.test.factories import DataFileFactory
+from tdpservice.data_files.util import (
+    create_legacy_s3_log_file_path,
+    create_s3_log_file_path,
+)
+from tdpservice.data_files.views import (
+    FRA_READ_ONLY_ERROR,
+    FRA_SUBMISSION_YEARS_FEATURE_FLAG,
+)
 from tdpservice.parsers import util
 from tdpservice.parsers.factory import ParserFactory
 from tdpservice.parsers.models import ParserError
@@ -32,8 +41,8 @@ from tdpservice.security.models import ClamAVFileScan
 
 
 @pytest.mark.django_db
-def test_lifecycle_fields_are_read_only_in_openapi_schema(api_client):
-    """Assert generated API documentation describes the lifecycle contract."""
+def test_read_only_fields_are_identified_in_openapi_schema(api_client):
+    """Assert generated API documentation identifies server-managed fields."""
     response = api_client.get("/swagger.json")
 
     assert response.status_code == status.HTTP_200_OK
@@ -53,6 +62,75 @@ def test_lifecycle_fields_are_read_only_in_openapi_schema(api_client):
     assert allowed_states_schema["items"]["enum"] == list(SubmissionState.values)
     assert allowed_states_schema["readOnly"] is True
     assert "state" not in data_file_schema.get("required", [])
+    assert properties["user"]["readOnly"] is True
+    assert "user" not in data_file_schema.get("required", [])
+
+
+@pytest.mark.django_db
+def test_log_download_rejects_unauthenticated_requests(api_client, mocker):
+    """Parser logs require an authenticated user."""
+    datafile = DataFileFactory.create()
+    download_file = mocker.patch(
+        "tdpservice.data_files.views.S3FileHandler.download_file"
+    )
+
+    response = api_client.get(f"/v1/data_files/{datafile.pk}/logs/")
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    download_file.assert_not_called()
+
+
+@pytest.mark.django_db
+def test_log_download_checks_data_file_object_permissions(
+    api_client, data_analyst, other_stt, mocker
+):
+    """A data analyst cannot retrieve logs belonging to another STT."""
+    datafile = DataFileFactory.create(stt=other_stt)
+    api_client.force_authenticate(user=data_analyst)
+    download_file = mocker.patch(
+        "tdpservice.data_files.views.S3FileHandler.download_file"
+    )
+
+    response = api_client.get(f"/v1/data_files/{datafile.pk}/logs/")
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    download_file.assert_not_called()
+
+
+@pytest.mark.django_db
+def test_log_download_derives_s3_keys_from_authorized_data_file(
+    api_client, data_analyst, stt, mocker
+):
+    """The server derives current and legacy keys after authorizing the record."""
+    datafile = DataFileFactory.create(user=data_analyst, stt=stt)
+    api_client.force_authenticate(user=data_analyst)
+    log_contents = b"parser log contents"
+    download_file = mocker.patch(
+        "tdpservice.data_files.views.S3FileHandler.download_file",
+        side_effect=[None, io.BytesIO(log_contents)],
+    )
+
+    response = api_client.get(f"/v1/data_files/{datafile.pk}/logs/")
+
+    assert response.status_code == status.HTTP_200_OK
+    assert b"".join(response.streaming_content) == log_contents
+    assert download_file.call_args_list == [
+        call(key=create_s3_log_file_path(datafile)),
+        call(key=create_legacy_s3_log_file_path(datafile)),
+    ]
+
+
+@pytest.mark.django_db
+def test_arbitrary_log_path_endpoint_is_removed(api_client, mocker):
+    """Caller-controlled S3 keys are no longer accepted by the API."""
+    download_file = mocker.patch(
+        "tdpservice.data_files.views.S3FileHandler.download_file"
+    )
+
+    response = api_client.get("/v1/data_files/logs/arbitrary/s3/object")
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    download_file.assert_not_called()
 
 
 @pytest.mark.usefixtures("db")
@@ -323,7 +401,8 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
 
         assert response.data["id"] == data_file_id
 
-        assert str(response.data["user"]) == data_file_data["user"]
+        assert str(response.data["user"]) == str(user.id)
+        assert str(response.data["user"]) != data_file_data["user"]
 
         assert response.data["quarter"] == data_file_data["quarter"]
         assert response.data["stt"] == data_file_data["stt"]
@@ -719,6 +798,11 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
     def test_data_files_data_upload_fra(self, api_client, csv_data_file, user):
         """FRA uploads reference their canonical FRA section."""
         user.user_permissions.add(Permission.objects.get(codename="has_fra_access"))
+        FeatureFlag.objects.create(
+            feature_name=FRA_SUBMISSION_YEARS_FEATURE_FLAG,
+            enabled=True,
+            config={"activeYears": [2020]},
+        )
 
         response = self.post_data_file(api_client, csv_data_file)
 
@@ -727,11 +811,60 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         assert data_file.program.code == Program.Code.FRA
         assert data_file.section.name == csv_data_file["section"]
 
+    @pytest.mark.parametrize(
+        "flag_enabled,feature_config",
+        [
+            (False, {"activeYears": [2020]}),
+            (True, {"activeYears": [2021]}),
+            (True, {"activeYears": ["2020"]}),
+            (True, {"activeYears": "2020"}),
+            (True, []),
+        ],
+    )
+    def test_data_files_data_upload_fra_rejects_read_only_years(
+        self,
+        api_client,
+        csv_data_file,
+        user,
+        flag_enabled,
+        feature_config,
+    ):
+        """FRA uploads are rejected when their year is not explicitly active."""
+        user.user_permissions.add(Permission.objects.get(codename="has_fra_access"))
+        FeatureFlag.objects.create(
+            feature_name=FRA_SUBMISSION_YEARS_FEATURE_FLAG,
+            enabled=flag_enabled,
+            config=feature_config,
+        )
+
+        response = self.post_data_file(api_client, csv_data_file)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data == {"detail": FRA_READ_ONLY_ERROR}
+        assert not DataFile.objects.filter(slug=csv_data_file["slug"]).exists()
+
+    def test_data_files_data_upload_fra_rejects_when_flag_is_missing(
+        self, api_client, csv_data_file, user
+    ):
+        """FRA submission years are read-only when the flag is missing."""
+        user.user_permissions.add(Permission.objects.get(codename="has_fra_access"))
+
+        response = self.post_data_file(api_client, csv_data_file)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data == {"detail": FRA_READ_ONLY_ERROR}
+        assert not DataFile.objects.filter(slug=csv_data_file["slug"]).exists()
+
     def test_data_files_data_upload_rejects_cross_program_section(
         self, api_client, csv_data_file, user
     ):
         """Uploads reject sections that do not belong to the derived program."""
         user.user_permissions.add(Permission.objects.get(codename="has_fra_access"))
+        FeatureFlag.objects.create(
+            feature_name=FRA_SUBMISSION_YEARS_FEATURE_FLAG,
+            enabled=True,
+            config={"activeYears": [csv_data_file["year"]]},
+        )
         csv_data_file["ssp"] = True
 
         response = self.post_data_file(api_client, csv_data_file)

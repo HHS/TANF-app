@@ -7,6 +7,8 @@ from django.test import RequestFactory
 from tdpservice.data_files.admin.filters import LatestReparseEvent, VersionFilter
 from tdpservice.data_files.models import DataFile, Program, Section
 from tdpservice.data_files.test.factories import DataFileFactory
+from tdpservice.parsers.models import DataFileSummary
+from tdpservice.parsers.test.factories import DataFileSummaryFactory
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 from tdpservice.stts.test.factories import STTFactory
 
@@ -164,6 +166,54 @@ def test_version_filter_returns_latest_versions():
         other_group.id,
     }
     assert old_version.id not in filtered.values_list("id", flat=True)
+
+
+@pytest.mark.django_db
+def test_version_filter_uses_unfiltered_version_history():
+    """Exclude older matching files when the latest version has another status."""
+    request = RequestFactory().get("/")
+    model_admin = admin.ModelAdmin(DataFile, admin.site)
+
+    stt = STTFactory()
+    base_kwargs = {
+        "stt": stt,
+        "year": 2022,
+        "quarter": "Q1",
+        "program_type": Program.Code.FRA,
+        "section": Section.Name.FRA_WORK_OUTCOMES,
+        "is_program_audit": False,
+    }
+    older_rejected = DataFileFactory(version=1, **base_kwargs)
+    newer_accepted = DataFileFactory(version=2, **base_kwargs)
+    latest_rejected = DataFileFactory(
+        version=1,
+        stt=stt,
+        year=2022,
+        quarter="Q2",
+        program_type=Program.Code.FRA,
+        section=Section.Name.FRA_WORK_OUTCOMES,
+        is_program_audit=False,
+    )
+    DataFileSummaryFactory(
+        datafile=older_rejected,
+        status=DataFileSummary.Status.REJECTED,
+    )
+    DataFileSummaryFactory(
+        datafile=newer_accepted,
+        status=DataFileSummary.Status.ACCEPTED,
+    )
+    DataFileSummaryFactory(
+        datafile=latest_rejected,
+        status=DataFileSummary.Status.REJECTED,
+    )
+
+    rejected_files = DataFile.objects.filter(
+        summary__status=DataFileSummary.Status.REJECTED
+    )
+    filter_instance = VersionFilter(request, {}, DataFile, model_admin)
+    filtered = filter_instance.queryset(request, rejected_files)
+
+    assert set(filtered.values_list("id", flat=True)) == {latest_rejected.id}
 
 
 @pytest.mark.django_db
