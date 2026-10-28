@@ -761,7 +761,51 @@ describe('AdminFeedbackReports', () => {
         )
       ).toBeInTheDocument()
       expect(post).not.toHaveBeenCalled()
+
+      // Updating notes to valid text clears the validation error
+      fireEvent.change(notesTextarea, {
+        target: { value: 'Cleaned valid note' },
+      })
+      expect(
+        screen.queryByText(
+          'HTML and JavaScript are not allowed in the notes field.'
+        )
+      ).not.toBeInTheDocument()
     })
+
+    it.each([
+      [
+        { notes: ['Notes cannot exceed 2000 characters.'] },
+        'Notes cannot exceed 2000 characters.',
+      ],
+      [{ detail: 'Permission denied' }, 'Permission denied'],
+      [{ message: 'Server error' }, 'Server error'],
+      [{}, 'Upload failed. Please try again.'],
+    ])(
+      'shows appropriate error message when upload fails with %o',
+      async (errorData, expectedMessage) => {
+        post.mockResolvedValue({
+          data: errorData,
+          ok: false,
+          status: 400,
+          error: new Error('HTTP 400'),
+        })
+
+        renderComponent()
+        await selectFiscalYear('2025')
+        await selectFile('FY2025.zip')
+        setDateInputValue('2025-02-28')
+
+        const uploadButton = screen.getByRole('button', {
+          name: /Upload & Notify STTs/i,
+        })
+        fireEvent.click(uploadButton)
+
+        await waitFor(() => {
+          expect(screen.getByText(expectedMessage)).toBeInTheDocument()
+        })
+      }
+    )
 
     it('shows error message when upload fails', async () => {
       post.mockResolvedValue({
@@ -1924,6 +1968,44 @@ describe('AdminFeedbackReports', () => {
       ).not.toBeInTheDocument()
       expect(screen.getByLabelText('TANF/SSP')).toBeChecked()
       expect(notesTextarea.value).toBe('Escape note')
+    })
+
+    it('clears fiscal year when confirming change to empty fiscal year option', async () => {
+      renderComponent()
+      await selectFiscalYear('2025')
+
+      const notesTextarea = screen.getByLabelText('Notes (optional)')
+      fireEvent.change(notesTextarea, { target: { value: 'Note to discard' } })
+
+      const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
+      fireEvent.change(fiscalYearSelect, { target: { value: '' } })
+
+      expect(
+        screen.getByText('Report Type or Fiscal Year changed')
+      ).toBeInTheDocument()
+
+      fireEvent.click(screen.getByRole('button', { name: 'OK' }))
+
+      expect(fiscalYearSelect.value).toBe('')
+      expect(screen.queryByText('Feedback Reports ZIP')).not.toBeInTheDocument()
+    })
+
+    it('does nothing when selecting the already-selected report type or fiscal year', async () => {
+      renderComponent()
+      await selectFiscalYear('2025')
+
+      const notesTextarea = screen.getByLabelText('Notes (optional)')
+      fireEvent.change(notesTextarea, { target: { value: 'Existing note' } })
+
+      // Re-selecting TANF/SSP or 2025 should not open confirm modal
+      fireEvent.click(screen.getByLabelText('TANF/SSP'))
+      fireEvent.change(screen.getByLabelText('Fiscal Year'), {
+        target: { value: '2025' },
+      })
+
+      expect(
+        screen.queryByText('Report Type or Fiscal Year changed')
+      ).not.toBeInTheDocument()
     })
   })
 })

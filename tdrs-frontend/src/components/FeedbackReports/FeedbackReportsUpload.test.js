@@ -408,6 +408,62 @@ describe('FeedbackReportsUpload', () => {
       // Cleanup
       document.body.removeChild(externalInput)
     })
+
+    it('clearFileInput clears the file input and removes USWDS preview classes and elements', () => {
+      const ref = React.createRef()
+      const fileInputRef = React.createRef()
+      render(
+        <FeedbackReportsUpload
+          {...defaultProps}
+          inputRef={fileInputRef}
+          ref={ref}
+        />
+      )
+
+      const dropTarget = fileInputRef.current.parentNode
+      dropTarget.classList.add('usa-file-input__target', 'has-invalid-file')
+
+      const instructions = document.createElement('div')
+      instructions.className = 'usa-file-input__instructions display-block'
+      dropTarget.appendChild(instructions)
+
+      ref.current.clearFileInput()
+
+      expect(fileInputRef.current.value).toBe('')
+      expect(instructions.classList.contains('display-block')).toBe(false)
+      expect(dropTarget.classList.contains('has-invalid-file')).toBe(false)
+    })
+
+    it('clearFileInput handles missing instructions element and null inputRef safely', () => {
+      const ref = React.createRef()
+      const fileInputRef = React.createRef()
+      render(
+        <FeedbackReportsUpload
+          {...defaultProps}
+          inputRef={fileInputRef}
+          ref={ref}
+        />
+      )
+
+      const dropTarget = fileInputRef.current.parentNode
+      dropTarget.classList.add('usa-file-input__target', 'has-invalid-file')
+
+      ref.current.clearFileInput()
+      expect(dropTarget.classList.contains('has-invalid-file')).toBe(false)
+
+      // Also safe when inputRef.current is null
+      const nullInputRef = { current: null }
+      const ref2 = React.createRef()
+      render(
+        <FeedbackReportsUpload
+          {...defaultProps}
+          inputRef={nullInputRef}
+          ref={ref2}
+        />
+      )
+      nullInputRef.current = null
+      expect(() => ref2.current.clearFileInput()).not.toThrow()
+    })
   })
 
   describe('Notes field', () => {

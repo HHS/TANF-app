@@ -589,5 +589,24 @@ describe('STTFeedbackReportsTable', () => {
         screen.queryByRole('dialog', { name: 'Notes' })
       ).not.toBeInTheDocument()
     })
+
+    it('uses report id in aria-label when original_filename is missing on long note', () => {
+      const longNote = 'A'.repeat(150)
+      renderComponent([
+        {
+          id: 77,
+          date_extracted_on: '2025-02-28',
+          created_at: '2025-03-05T10:41:00Z',
+          original_filename: null,
+          notes: longNote,
+        },
+      ])
+
+      expect(
+        screen.getByRole('button', {
+          name: 'Read more notes for report 77',
+        })
+      ).toBeInTheDocument()
+    })
   })
 })

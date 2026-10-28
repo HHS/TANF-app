@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { get, post } from '../../fetch-instance'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
-import { removeOldPreviews } from '../FileUpload/utils'
 import FeedbackReportsUpload from './FeedbackReportsUpload'
 import FeedbackReportsHistory from './FeedbackReportsHistory'
 import DownloadStatisticsModal from './DownloadStatisticsModal'
@@ -249,6 +248,7 @@ function AdminFeedbackReports() {
     if (inputRef.current) {
       inputRef.current.value = null
     }
+    setSelectedFile(fileInputValue)
   }
 
   /**
@@ -264,25 +264,7 @@ function AdminFeedbackReports() {
   const clearFileInput = () => {
     setSelectedFile(null)
     setFileError(null)
-
-    if (uploadFormRef.current?.clearFileInput) {
-      uploadFormRef.current.clearFileInput()
-    }
-
-    if (inputRef.current) {
-      inputRef.current.value = ''
-      const dropTarget = inputRef.current.closest('.usa-file-input__target')
-      if (dropTarget) {
-        const instructions = dropTarget.querySelector(
-          '.usa-file-input__instructions'
-        )
-        if (instructions) {
-          instructions.classList.remove('display-block')
-        }
-        dropTarget.classList.remove('has-invalid-file')
-        removeOldPreviews(dropTarget, instructions)
-      }
-    }
+    uploadFormRef.current?.clearFileInput()
   }
 
   /**
@@ -470,8 +452,6 @@ function AdminFeedbackReports() {
    * Handles report type selection change
    */
   const handleReportTypeChange = (value) => {
-    if (value === selectedReportType) return
-
     if (hasEnteredFormValues()) {
       setPendingChange({ type: 'reportType', value })
       setConfirmModalVisible(true)
@@ -500,17 +480,12 @@ function AdminFeedbackReports() {
   }
 
   const handleConfirmChange = () => {
-    if (!pendingChange) {
-      setConfirmModalVisible(false)
-      return
-    }
-
     resetFormState()
 
     if (pendingChange.type === 'reportType') {
       setSelectedReportType(pendingChange.value)
       updateSearchParams({ type: pendingChange.value })
-    } else if (pendingChange.type === 'year') {
+    } else {
       setSelectedYear(pendingChange.value)
       updateSearchParams(
         pendingChange.value ? { year: pendingChange.value } : { year: undefined }

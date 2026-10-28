@@ -736,6 +736,30 @@ describe('FeedbackReportsHistory', () => {
       ).not.toBeInTheDocument()
     })
 
+    it('uses report source id in aria-label when original_filename is missing on long note', () => {
+      const longNote = 'A'.repeat(320)
+      renderComponent({
+        data: [
+          {
+            id: 99,
+            year: 2025,
+            date_extracted_on: '2025-02-28',
+            created_at: '2025-03-05T10:31:00Z',
+            processed_at: '2025-03-05T10:41:00Z',
+            status: 'SUCCEEDED',
+            original_filename: null,
+            notes: longNote,
+          },
+        ],
+      })
+
+      expect(
+        screen.getByRole('button', {
+          name: 'Read more notes for report source 99',
+        })
+      ).toBeInTheDocument()
+    })
+
     it('does not show ... button for notes with 290 or fewer characters', () => {
       const note290 = 'B'.repeat(290)
       const mockData = [

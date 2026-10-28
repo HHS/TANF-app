@@ -216,6 +216,7 @@ def test_report_source_serializer_with_valid_notes(report_source_data, data_anal
     # Test serialized output includes notes
     serialized = ReportSourceSerializer(obj).data
     assert serialized["notes"] == "Valid notes for report upload."
+    assert ser.validate_notes("") == ""
 
 
 @pytest.mark.django_db

@@ -20,18 +20,14 @@ const Modal = ({
     if (!isVisible) return undefined
 
     const returnFocusElement = document.activeElement
-    if (modalRef.current) {
-      modalRef.current.querySelector('h1')?.focus()
-    }
+    modalRef.current.querySelector('h1').focus()
 
     return () => {
       returnFocusElement?.focus?.()
     }
   }, [isVisible])
 
-  const onTabPressed = (shiftKey = false) => {
-    if (!modalRef.current) return
-
+  const onTabPressed = (shiftKey) => {
     const focusableElements = Array.from(
       modalRef.current.querySelectorAll(FOCUSABLE_SELECTOR)
     )
@@ -105,18 +101,14 @@ const Modal = ({
         >
           {title}
         </h1>
-        {message !== undefined && message !== null && (
+        {Boolean(message) && (
           <p id="modalDescription" className="margin-4 margin-top-1">
             {message}
           </p>
         )}
         {children && (
           <div
-            id={
-              message === undefined || message === null
-                ? 'modalDescription'
-                : undefined
-            }
+            id={!message ? 'modalDescription' : undefined}
             className="margin-4 margin-top-1"
           >
             {children}

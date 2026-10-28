@@ -104,10 +104,17 @@ describe('Modal tests', () => {
       const cancelButton = getByText('Cancel')
       const uncancelButton = getByText('Uncancel')
 
-      // Focus Uncancel manually
-      uncancelButton.focus()
+      // Focus is initially on the modal header; Shift+Tab should wrap to the last button
+      expect(document.activeElement).toHaveTextContent('Test')
+      fireEvent.keyDown(modal, {
+        key: 'Tab',
+        code: 'Tab',
+        shiftKey: true,
+        bubbles: true,
+      })
       expect(document.activeElement).toBe(uncancelButton)
 
+      // Shift+Tab again moves to the previous button
       fireEvent.keyDown(modal, {
         key: 'Tab',
         code: 'Tab',
@@ -118,17 +125,25 @@ describe('Modal tests', () => {
       expect(document.activeElement).toBe(cancelButton)
     })
 
-    it('renders correctly with no buttons', async () => {
-      const { queryByText } = render(
-        <Modal
-          title="Info"
-          message="Read-only modal"
-          isVisible={true}
-          buttons={[]}
-        />
+    it('renders nothing by default when isVisible is omitted', () => {
+      const { container } = render(<Modal title="Hidden" message="Hidden" />)
+      expect(container.querySelector('#modal')).toBeNull()
+    })
+
+    it('renders correctly with no buttons and handles Tab/Escape/other keys gracefully', async () => {
+      const { container, queryByText } = render(
+        <Modal title="Info" message="Read-only modal" isVisible={true}>
+          <span>Additional child content</span>
+        </Modal>
       )
 
       expect(queryByText('Read-only modal')).toBeInTheDocument()
+      expect(queryByText('Additional child content')).toBeInTheDocument()
+
+      const modal = container.querySelector('#modal')
+      fireEvent.keyDown(modal, { key: 'Tab' })
+      fireEvent.keyDown(modal, { key: 'Escape' })
+      fireEvent.keyDown(modal, { key: 'Enter' })
     })
 
     it('calls onClose when Escape key is pressed', () => {
