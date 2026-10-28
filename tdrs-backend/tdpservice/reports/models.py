@@ -31,6 +31,7 @@ def get_report_source_upload_path(instance, filename):
 
 class ReportSource(FileRecord):
     """ReportSource is an intermediary model for submitting a zip file containing multiple zips to be parsed into ReportFile records."""
+
     class Status(models.TextChoices):
         """Whether or not a ReportSource record has been parsed into ReportFile records."""
 
