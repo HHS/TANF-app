@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.test import RequestFactory
 
 from tdpservice.data_files.admin.filters import LatestReparseEvent, VersionFilter
-from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.models import DataFile, Program, Section
 from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 from tdpservice.stts.test.factories import STTFactory
@@ -140,8 +140,8 @@ def test_version_filter_returns_latest_versions():
         "stt": stt,
         "year": 2022,
         "quarter": "Q1",
-        "program_type": DataFile.ProgramType.TANF,
-        "section": DataFile.Section.ACTIVE_CASE_DATA,
+        "program_type": Program.Code.TANF,
+        "section": Section.Name.ACTIVE_CASE_DATA,
         "is_program_audit": False,
     }
     old_version = DataFileFactory(version=1, **base_kwargs)
@@ -151,8 +151,8 @@ def test_version_filter_returns_latest_versions():
         stt=stt,
         year=2022,
         quarter="Q2",
-        program_type=DataFile.ProgramType.TANF,
-        section=DataFile.Section.ACTIVE_CASE_DATA,
+        program_type=Program.Code.TANF,
+        section=Section.Name.ACTIVE_CASE_DATA,
         is_program_audit=False,
     )
 

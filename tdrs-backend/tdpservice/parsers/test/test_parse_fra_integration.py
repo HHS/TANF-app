@@ -45,6 +45,7 @@ class TestParseFraIntegration:
         assert dfs.total_number_of_records_in_file == 11
         assert dfs.total_number_of_records_created == 5
         assert dfs.get_status() == DataFileSummary.Status.PARTIALLY_ACCEPTED
+        assert datafile.file.closed is True
 
     @pytest.mark.parametrize(
         "file",
@@ -78,6 +79,7 @@ class TestParseFraIntegration:
         assert dfs.total_number_of_records_in_file == 28
         assert dfs.total_number_of_records_created == 10
         assert dfs.get_status() == DataFileSummary.Status.PARTIALLY_ACCEPTED
+        assert datafile.file.closed is True
 
     @pytest.mark.django_db
     def test_parse_fra_formula_fields(self, fra_formula_fields_test_xlsx, dfs):
@@ -97,3 +99,4 @@ class TestParseFraIntegration:
         assert dfs.total_number_of_records_in_file == 8
         assert dfs.total_number_of_records_created == 8
         assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
+        assert datafile.file.closed is True

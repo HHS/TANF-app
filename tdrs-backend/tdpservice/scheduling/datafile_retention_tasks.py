@@ -46,19 +46,19 @@ def remove_all_old_versions():
     # instead of iterating over the full Cartesian product of all possible combinations.
     existing_groupings = (
         DataFile.objects.filter(year__range=(min_year, max_year))
-        .values_list("year", "quarter", "program_type", "section", "stt")
+        .values_list("year", "quarter", "section", "stt", "is_program_audit")
         .distinct()
     )
 
     # Collect all old-version file IDs across all groupings, then delete in one batch.
     all_old_file_ids = []
-    for year, quarter, program_type, section, stt_id in existing_groupings:
+    for year, quarter, section_id, stt_id, is_program_audit in existing_groupings:
         files = DataFile.objects.filter(
             year=year,
             quarter=quarter,
-            program_type=program_type,
-            section=section,
+            section_id=section_id,
             stt_id=stt_id,
+            is_program_audit=is_program_audit,
         )
         if files.count() <= 1:
             continue

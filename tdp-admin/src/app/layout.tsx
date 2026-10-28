@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "@uswds/uswds/css/uswds.min.css";
 import "./globals.css";
-import { AdminRoot } from "@/components/admin-root";
 
 export const metadata: Metadata = {
   title: "TDP Admin",
@@ -15,9 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
-        <AdminRoot>{children}</AdminRoot>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

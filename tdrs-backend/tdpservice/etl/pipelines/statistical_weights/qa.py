@@ -1,6 +1,6 @@
 """QA checks for statistical weights."""
 
-from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.models import Program
 from tdpservice.etl.models import ETLQAResult
 from tdpservice.etl.pipelines.base import NodeResult
 from tdpservice.etl.pipelines.statistical_weights.adapters import adapter_for_program
@@ -143,7 +143,7 @@ class StatisticalWeightsQA:
 
     def required_stt_codes(self, program_type: str) -> set[int]:
         """Return STT codes expected for active and aggregate rows."""
-        if program_type == DataFile.ProgramType.TRIBAL:
+        if program_type == Program.Code.TRIBAL:
             return self.numeric_stt_codes(STT.objects.filter(type=STT.EntityType.TRIBE))
         queryset = STT.objects.filter(
             type__in=[
@@ -151,16 +151,16 @@ class StatisticalWeightsQA:
                 STT.EntityType.TERRITORY,
             ]
         )
-        if program_type == DataFile.ProgramType.SSP:
+        if program_type == Program.Code.SSP:
             queryset = queryset.filter(ssp=True)
         return self.numeric_stt_codes(queryset)
 
     def stratum_stt_codes(self, program_type: str) -> set[int]:
         """Return STT codes expected for stratum rows."""
-        if program_type == DataFile.ProgramType.TRIBAL:
+        if program_type == Program.Code.TRIBAL:
             return self.numeric_stt_codes(STT.objects.filter(type=STT.EntityType.TRIBE))
         queryset = STT.objects.filter(sample=True)
-        if program_type == DataFile.ProgramType.SSP:
+        if program_type == Program.Code.SSP:
             queryset = queryset.filter(ssp=True)
         return self.numeric_stt_codes(queryset)
 
