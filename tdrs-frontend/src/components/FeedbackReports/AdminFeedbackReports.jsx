@@ -201,10 +201,12 @@ function AdminFeedbackReports() {
    * Handles file selection from the file input
    */
   const handleFileChange = async (e) => {
+    if (selectedFile) {
+      setNotes('')
+      setNotesError(null)
+    }
     setSelectedFile(null)
     setFileError(null)
-    setNotes('')
-    setNotesError(null)
     setAlert({ active: false, type: null, message: null })
 
     const fileInputValue = e.target.files[0]

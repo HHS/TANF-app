@@ -707,6 +707,37 @@ describe('AdminFeedbackReports', () => {
       }
     )
 
+    it('preserves entered notes when attaching a file for the first time', async () => {
+      renderComponent()
+      await selectFiscalYear('2025')
+
+      const notesTextarea = screen.getByLabelText('Notes (optional)')
+      fireEvent.change(notesTextarea, {
+        target: { value: 'Important notes typed before file selection' },
+      })
+
+      await selectFile('FY2025.zip')
+
+      expect(notesTextarea.value).toBe(
+        'Important notes typed before file selection'
+      )
+    })
+
+    it('clears notes when changing an already selected file', async () => {
+      renderComponent()
+      await selectFiscalYear('2025')
+      await selectFile('FY2025.zip')
+
+      const notesTextarea = screen.getByLabelText('Notes (optional)')
+      fireEvent.change(notesTextarea, {
+        target: { value: 'Notes for first file' },
+      })
+
+      await selectFile('FY2025_02282025.zip')
+
+      expect(notesTextarea.value).toBe('')
+    })
+
     it('blocks upload and displays error when notes contain HTML tags or JavaScript', async () => {
       renderComponent()
 
