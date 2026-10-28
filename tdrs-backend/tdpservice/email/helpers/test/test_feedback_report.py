@@ -20,6 +20,7 @@ def mock_report_file(stt, user):
     report_file.date_extracted_on = date(2025, 1, 31)
     report_file.created_at = timezone.now()
     report_file.user = user
+    report_file.notes = ""
     return report_file
 
 
@@ -227,3 +228,20 @@ class TestSendFeedbackReportAvailableEmail:
             call_kwargs = mock_email.call_args[1]
             assert call_kwargs["email_context"]["notes"] == ""
             assert "Notes:\n" not in call_kwargs["text_message"]
+
+    def test_email_reads_notes_from_source(self, mock_report_file):
+        """Test that notes derived from source are included in email context and body."""
+        mock_source = MagicMock()
+        mock_source.notes = "Source-level notes for report."
+        mock_report_file.source = mock_source
+        mock_report_file.notes = mock_source.notes
+        recipients = ["user@example.com"]
+
+        with patch(
+            "tdpservice.email.helpers.feedback_report.automated_email"
+        ) as mock_email:
+            send_feedback_report_available_email(mock_report_file, recipients)
+
+            call_kwargs = mock_email.call_args[1]
+            assert call_kwargs["email_context"]["notes"] == "Source-level notes for report."
+            assert "Notes:\nSource-level notes for report." in call_kwargs["text_message"]

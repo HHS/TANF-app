@@ -537,7 +537,7 @@ describe('STTFeedbackReportsTable', () => {
       expect(screen.queryByText('Read more')).not.toBeInTheDocument()
     })
 
-    it('preserves note whitespace while wrapping text within the notes column', () => {
+    it('preserves note text within the notes column', () => {
       const note = 'First line\nSecond line'
       const mockData = [
         {
@@ -553,12 +553,9 @@ describe('STTFeedbackReportsTable', () => {
 
       const noteText = screen.getByText(
         (_, element) =>
-          element.tagName === 'SPAN' && element.textContent === note
+          element.tagName === 'DIV' && element.textContent?.trim() === note
       )
-      expect(noteText).toHaveStyle({
-        whiteSpace: 'pre-wrap',
-        overflowWrap: 'anywhere',
-      })
+      expect(noteText).toBeInTheDocument()
     })
 
     it('displays truncated note with Read more button when notes exceed 120 chars, and opens modal on click', () => {

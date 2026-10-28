@@ -268,25 +268,12 @@ def test_tribal_tanf_report_source_factory():
 
 @pytest.mark.django_db
 def test_reportsource_and_reportfile_notes_default_and_custom(report_file_instance):
-    """Test notes field defaults to empty string and supports custom text up to 2000 chars."""
+    """Test ReportSource notes field and ReportFile notes property."""
+    # When report_file has no source, notes defaults to empty string
     assert report_file_instance.notes == ""
 
     base = report_file_instance
     custom_notes = "Important note regarding Q2 data correction."
-    new_report = ReportFile.create_new_version(
-        {
-            "year": base.year,
-            "date_extracted_on": base.date_extracted_on,
-            "stt": base.stt,
-            "original_filename": base.original_filename,
-            "slug": base.slug,
-            "extension": base.extension,
-            "user": base.user,
-            "file": base.file,
-            "notes": custom_notes,
-        }
-    )
-    assert new_report.notes == custom_notes
 
     # Verify ReportSource default and custom notes
     source = ReportSource.objects.create(
@@ -298,3 +285,19 @@ def test_reportsource_and_reportfile_notes_default_and_custom(report_file_instan
         notes=custom_notes,
     )
     assert source.notes == custom_notes
+
+    new_report = ReportFile.create_new_version(
+        {
+            "year": base.year,
+            "date_extracted_on": base.date_extracted_on,
+            "stt": base.stt,
+            "original_filename": base.original_filename,
+            "slug": base.slug,
+            "extension": base.extension,
+            "user": base.user,
+            "file": base.file,
+            "source": source,
+        }
+    )
+    # ReportFile reads notes from parent source
+    assert new_report.notes == custom_notes

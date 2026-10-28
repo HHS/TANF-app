@@ -108,7 +108,6 @@ class ReportFile(FileRecord):
         choices=ReportType.choices,
         default=ReportType.TANF_SSP,
     )
-    notes = models.TextField(blank=True, default="", max_length=2000)
 
     version = models.IntegerField()
 
@@ -137,6 +136,11 @@ class ReportFile(FileRecord):
     file = models.FileField(
         storage=DataFilesS3Storage, upload_to=get_s3_upload_path, null=True, blank=True
     )
+
+    @property
+    def notes(self):
+        """Return the notes from the parent source if present, else empty string."""
+        return self.source.notes if self.source else ""
 
     @classmethod
     def create_new_version(self, data):

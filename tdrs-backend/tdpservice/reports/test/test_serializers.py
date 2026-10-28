@@ -8,7 +8,7 @@ from django.utils.dateparse import parse_datetime
 import pytest
 from rest_framework.exceptions import ValidationError
 
-from tdpservice.reports.models import ReportType
+from tdpservice.reports.models import ReportSource, ReportType
 from tdpservice.reports.serializers import (
     ReportFileSerializer,
     ReportSourceDownloadStatisticsSerializer,
@@ -291,9 +291,21 @@ def test_report_source_serializer_rejects_html_and_javascript(
 
 @pytest.mark.django_db
 def test_report_file_serializer_includes_notes(report_file_instance):
-    """Test ReportFileSerializer includes notes in output."""
-    report_file_instance.notes = "STT specific notes."
-    report_file_instance.save(update_fields=["notes"])
+    """Test ReportFileSerializer includes notes from parent source in output."""
+    # Without source, notes defaults to empty string
+    output_without_source = ReportFileSerializer(report_file_instance).data
+    assert "notes" in output_without_source
+    assert output_without_source["notes"] == ""
+
+    # With source, notes property reads from source.notes
+    source = ReportSource.objects.create(
+        original_filename="test.zip",
+        slug="test.zip",
+        extension="zip",
+        notes="STT specific notes.",
+    )
+    report_file_instance.source = source
+    report_file_instance.save(update_fields=["source"])
 
     output = ReportFileSerializer(report_file_instance).data
     assert "notes" in output

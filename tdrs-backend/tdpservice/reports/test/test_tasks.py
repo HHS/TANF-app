@@ -507,8 +507,8 @@ class TestProcessReportSource:
         assert report_file.year == 2024
         assert report_file.date_extracted_on == date(2024, 9, 30)
 
-    def test_process_copies_source_notes_to_report_files(self, ofa_admin):
-        """Should copy source notes to all created ReportFile records."""
+    def test_process_reads_source_notes_on_report_files(self, ofa_admin):
+        """Should allow created ReportFile records to read notes from their parent source."""
         from tdpservice.stts.models import STT, Region
 
         region = Region.objects.create(id=9030, name="Test Region Notes")
