@@ -5,7 +5,7 @@
 # =============================================================================
 # Stage 1: Tooling - Allow dependency locking before the base image is built
 # =============================================================================
-FROM python:3.14.7-slim-trixie AS tooling
+FROM python:3.14.10-slim-trixie AS tooling
 
 WORKDIR /tdpapp/
 
@@ -38,7 +38,7 @@ RUN install -d /pgdg && \
 # =============================================================================
 # Stage 3: Runtime - Minimal image with only runtime dependencies
 # =============================================================================
-FROM python:3.14.7-slim-trixie
+FROM python:3.14.10-slim-trixie
 
 ARG user=tdpuser
 ARG group=tdpuser
