@@ -3,36 +3,42 @@
 # docker buildx build -t ghcr.io/raft-tech/tdp-backend-base:dev-02 -f Dockerfile.base . --platform linux/amd64,linux/arm64 --push
 
 # =============================================================================
-# Stage 1: Builder - Install build dependencies and compile Python packages
+# Stage 1: Tooling - Allow dependency locking before the base image is built
 # =============================================================================
-FROM python:3.10.8-slim-bullseye AS builder
+FROM python:3.14.7-slim-trixie AS tooling
 
-COPY Pipfile Pipfile.lock /tdpapp/
 WORKDIR /tdpapp/
 
-# Install build dependencies, Python packages, then clean up in a single layer
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        gcc \
-        graphviz \
-        graphviz-dev \
-        libpq-dev \
-        python3-dev \
-        curl \
-        ca-certificates && \
+    gcc \
+    graphviz \
+    graphviz-dev \
+    libpq-dev \
+    python3-dev \
+    curl \
+    ca-certificates && \
     pip install --no-cache-dir --upgrade pip pipenv==2026.0.3 && \
-    # If we can remove the '--dev' we will save 200MB. However, so much depends on it that it is easier to keep it for now.
-    pipenv install --dev --system --deploy && \
     rm -rf /var/lib/apt/lists/*
+
+# =============================================================================
+# Stage 2: Builder - Install locked Python dependencies
+# =============================================================================
+FROM tooling AS builder
+
+COPY Pipfile Pipfile.lock /tdpapp/
+
+# If we can remove the '--dev' we will save 200MB. However, so much depends on it that it is easier to keep it for now.
+RUN pipenv install --dev --system --deploy
 
 # Download PostgreSQL GPG key in builder stage (so curl isn't needed in runtime)
 RUN install -d /pgdg && \
     curl -o /pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
 
 # =============================================================================
-# Stage 2: Runtime - Minimal image with only runtime dependencies
+# Stage 3: Runtime - Minimal image with only runtime dependencies
 # =============================================================================
-FROM python:3.10.8-slim-bullseye
+FROM python:3.14.7-slim-trixie
 
 ARG user=tdpuser
 ARG group=tdpuser
@@ -51,10 +57,10 @@ COPY --from=builder /pgdg/apt.postgresql.org.asc /usr/share/postgresql-common/pg
 # Install only runtime dependencies and PostgreSQL client in a single layer
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        libpq5 \
-        graphviz \
-        ca-certificates && \
-    echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt bullseye-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
+    libpq5 \
+    graphviz \
+    ca-certificates && \
+    echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt trixie-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
     apt-get update && \
     apt-get install -y --no-install-recommends postgresql-client-15 && \
     apt-get clean && \
@@ -63,5 +69,5 @@ RUN apt-get update && \
     useradd -u ${uid} -g ${group} -s /bin/sh ${user}
 
 # Copy Python packages from builder stage
-COPY --from=builder /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
+COPY --from=builder /usr/local/lib/python3.14/site-packages /usr/local/lib/python3.14/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin

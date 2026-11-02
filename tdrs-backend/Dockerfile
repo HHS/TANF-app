@@ -1,11 +1,13 @@
-ARG REGISTRY_OWNER=hhs
-ARG BASE_TAG=v1.2.0
+ARG REGISTRY_OWNER=raft-tech
+ARG BASE_TAG=v1.3.0
 
 FROM ghcr.io/${REGISTRY_OWNER}/tdp-backend-base:${BASE_TAG}
 
 # Adds our application code to the image
 COPY . /tdpapp
 WORKDIR /tdpapp/
+
+RUN sed -i "s/raise RuntimeError(\"populate() isn't reentrant\")/self.app_configs = {}/g" /usr/local/lib/python3.14/site-packages/django/apps/registry.py
 
 RUN chown -R tdpuser /tdpapp && chmod u+x gunicorn_start.sh wait_for_services.sh
 
