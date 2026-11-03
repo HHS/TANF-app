@@ -655,7 +655,11 @@ describe('AdminFeedbackReports', () => {
       expect(formData.get('report_type')).toBe('TANF_SSP')
     })
 
-    it.each(["OFA's revisions", 'TANF & SSP'])(
+    it.each([
+      "OFA's revisions",
+      'TANF & SSP',
+      'Exclude counts < 5 and flag counts > 100',
+    ])(
       'successfully uploads notes with ordinary punctuation (%s)',
       async (note) => {
         post.mockResolvedValue({

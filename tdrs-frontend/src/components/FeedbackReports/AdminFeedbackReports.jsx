@@ -279,7 +279,9 @@ function AdminFeedbackReports() {
    */
   const validateNotes = (value) => {
     if (!value) return null
-    if (/<[^>]+>/i.test(value) || /javascript\s*:/i.test(value)) {
+    const cleanedText = new DOMParser().parseFromString(value, 'text/html').body
+      .textContent
+    if (cleanedText !== value || /javascript\s*:/i.test(value)) {
       return 'HTML and JavaScript are not allowed in the notes field.'
     }
     return null

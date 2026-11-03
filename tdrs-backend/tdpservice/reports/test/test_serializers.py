@@ -203,19 +203,30 @@ def test_report_source_download_statistics_serializer_contract():
 
 
 @pytest.mark.django_db
-def test_report_source_serializer_with_valid_notes(report_source_data, data_analyst):
+@pytest.mark.parametrize(
+    "valid_note",
+    [
+        "Valid notes for report upload.",
+        "Exclude counts < 5 and flag counts > 100",
+        "Count < 10 and Increase > 5%",
+        "OFA's revisions for TANF & SSP",
+    ],
+)
+def test_report_source_serializer_with_valid_notes(
+    report_source_data, data_analyst, valid_note
+):
     """Test ReportSourceSerializer accepts and persists valid plain text notes."""
-    report_source_data["notes"] = "Valid notes for report upload."
+    report_source_data["notes"] = valid_note
     ser = ReportSourceSerializer(
         context={"user": data_analyst}, data=report_source_data
     )
     assert ser.is_valid(), ser.errors
     obj = ser.save()
-    assert obj.notes == "Valid notes for report upload."
+    assert obj.notes == valid_note
 
     # Test serialized output includes notes
     serialized = ReportSourceSerializer(obj).data
-    assert serialized["notes"] == "Valid notes for report upload."
+    assert serialized["notes"] == valid_note
     assert ser.validate_notes("") == ""
 
 
@@ -272,6 +283,7 @@ def test_report_source_serializer_normalizes_crlf_notes_up_to_2000_chars(
         "<p>Some html paragraph</p>",
         "<b>Bold text</b>",
         "<img src=x onerror=alert(1)>",
+        "counts < 5 and flag counts > 100. <div>Hello</div>",
         "javascript:alert(1)",
         "Please visit: javascript:void(0)",
     ],

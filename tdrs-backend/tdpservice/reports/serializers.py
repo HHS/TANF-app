@@ -1,12 +1,36 @@
 """Serialize report data."""
 
 import re
+from html.parser import HTMLParser
 
-from django.utils.html import strip_tags
 from rest_framework import serializers
 
 from tdpservice.reports.models import ReportFile, ReportSource, ReportType
 from tdpservice.stts.models import STT
+
+
+class _HTMLTextExtractor(HTMLParser):
+    """Extract plain text from a string using Python's built-in HTML parser."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=False)
+        self.text_parts = []
+
+    def handle_data(self, data):
+        """Collect non-markup text data."""
+        self.text_parts.append(data)
+
+    def get_text(self):
+        """Return the concatenated plain text with any HTML/XML markup removed."""
+        return "".join(self.text_parts)
+
+
+def _extract_plain_text(value: str) -> str:
+    """Parse text with html.parser and return only pure string data."""
+    parser = _HTMLTextExtractor()
+    parser.feed(value)
+    parser.close()
+    return parser.get_text()
 
 
 class ReportDownloadStatisticsSTTSerializer(serializers.Serializer):
@@ -164,7 +188,7 @@ class ReportSourceSerializer(serializers.ModelSerializer):
         if not value:
             return ""
         value = value.replace("\r\n", "\n").replace("\r", "\n")
-        if strip_tags(value) != value:
+        if _extract_plain_text(value) != value:
             raise serializers.ValidationError(
                 "HTML and JavaScript are not allowed in the notes field."
             )
