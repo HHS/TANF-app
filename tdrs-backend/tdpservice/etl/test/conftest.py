@@ -48,6 +48,8 @@ def ofa_system_admin():
     group, _ = Group.objects.get_or_create(name="OFA System Admin")
     user = UserFactory.create(groups=(group,))
     user.account_approval_status = AccountApprovalStatusChoices.APPROVED
+    user.is_staff = True
+    user.is_superuser = True
     user.save()
     return user
 

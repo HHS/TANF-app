@@ -4,7 +4,7 @@ import logging
 import uuid
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Iterable, Iterator
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, Iterator
 from uuid import UUID
 
 from django.db import transaction
@@ -13,6 +13,9 @@ from django.utils import timezone
 from celery import current_task
 
 from tdpservice.data_files.enums import SubmissionState
+
+if TYPE_CHECKING:
+    from tdpservice.data_files.models import DataFile
 
 logger = logging.getLogger(__name__)
 
@@ -407,6 +410,9 @@ def revert_reparse_request(
     actor=None,
     source: str | None = None,
     event_id: UUID | str | None = None,
+    reparse_meta_id: int | None = None,
+    task_name: str | None = None,
+    celery_task_id: str | None = None,
 ) -> bool:
     """Conditionally revert a failed pre-destructive reparse request."""
     target_state = coerce_submission_state(original_state)
@@ -431,10 +437,14 @@ def revert_reparse_request(
         transition = _force_reparse_revert_locked(
             locked,
             target_state,
-            note,
+            note or "pre-destructive reparse request reverted",
             actor=actor,
-            source=source,
+            source=source or "reparse_recovery",
             event_id=event_id or get_reparse_event_id(locked),
+            reparse_meta_id=reparse_meta_id,
+            task_name=task_name,
+            celery_task_id=celery_task_id,
+            log_fields={"recovery": "pre_destructive_reparse_revert"},
         )
 
     data_file.state = transition.next_state
@@ -829,6 +839,59 @@ def record_shadow_parse_state(
     return data_file
 
 
+def _legacy_submission_outcome(
+    data_file: "DataFile",
+) -> tuple[SubmissionState | None, str]:
+    """Infer a legacy outcome from existing evidence, without running a parser."""
+    from tdpservice.parsers.models import DataFileSummary
+
+    summary = getattr(data_file, "summary", None)
+    if summary is not None:
+        outcomes = {
+            DataFileSummary.Status.ACCEPTED: SubmissionState.PARSE_COMPLETED,
+            DataFileSummary.Status.ACCEPTED_WITH_ERRORS: SubmissionState.PARSED_WITH_ERRORS,
+            DataFileSummary.Status.PARTIALLY_ACCEPTED: SubmissionState.PARSED_WITH_ERRORS,
+            DataFileSummary.Status.REJECTED: SubmissionState.PARSE_FAILED,
+        }
+        return outcomes.get(summary.status), f"summary status is {summary.status}"
+    if not data_file.file:
+        return None, "no summary and no stored file attached"
+    if not data_file.file.storage.exists(data_file.file.name):
+        return None, "no summary and stored file not found"
+    return SubmissionState.VIRUS_SCAN_COMPLETED, "no summary, stored file exists"
+
+
+def backfill_legacy_datafile_state(
+    data_file: "DataFile", *, apply: bool = False
+) -> tuple[SubmissionState | None, str]:
+    """Preview or audit an inferred repair of an unclaimed legacy UPLOADED row."""
+    with transaction.atomic():
+        locked = _locked_data_file(data_file)
+        if locked.state != SubmissionState.UPLOADED:
+            return None, f"state is {locked.state}; only uploaded rows may be repaired"
+        if locked.current_parse_token is not None:
+            return None, "file has an active parser owner"
+        target_state, reason = _legacy_submission_outcome(locked)
+        if target_state is None or not apply:
+            return target_state, reason
+
+        # These events describe inferred history, not scans or parses run now.
+        transition = _transition_from_values(
+            data_file=locked,
+            previous_state=locked.state,
+            next_state=target_state,
+            note=f"Legacy state backfill: {reason}",
+            source="legacy_state_backfill",
+            log_fields={"recovery": "legacy_state_backfill", "inferred": True},
+        )
+        _save_transition_locked(locked, transition)
+
+    data_file.state = locked.state
+    data_file.state_changed_at = locked.state_changed_at
+    _emit_transition_log(transition, data_file.id, None, None, level="warning")
+    return target_state, reason
+
+
 def record_synthetic_import_completed(data_file) -> bool:
     """Record the explicit lifecycle bypass used by statistical test-data imports."""
     with transaction.atomic():
@@ -890,6 +953,8 @@ def _build_transition_payload(
     """Build the structured lifecycle payload shared by logs and persistence."""
     log_payload = {
         "data_file_id": data_file.id,
+        "section": data_file.section.name,
+        "program_type": data_file.program.code,
         "previous_state": previous_state.value,
         "next_state": next_state.value,
         "note": note,
@@ -927,6 +992,7 @@ def _transition_from_values(
     """Create an in-memory transition from explicit state values."""
     previous_state = coerce_submission_state(previous_state)
     next_state = coerce_submission_state(next_state)
+    event_id = event_id or uuid.uuid4()
     task_name, celery_task_id = _resolve_task_context(task_name, celery_task_id)
     metadata = _build_transition_payload(
         data_file=data_file,

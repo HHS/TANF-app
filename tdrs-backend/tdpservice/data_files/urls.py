@@ -1,6 +1,6 @@
 """Routing for DataFiles."""
 
-from django.urls import path, re_path
+from django.urls import path
 
 from rest_framework.routers import DefaultRouter
 
@@ -20,11 +20,6 @@ urlpatterns = [
         "years/<int:stt>",
         views.GetYearList.as_view(),
         name="get-year-list-admin",
-    ),
-    re_path(
-        r"^logs/(?P<remaining_path>.+)$",
-        views.get_log_file,
-        name="get-log-file",
     ),
 ]
 

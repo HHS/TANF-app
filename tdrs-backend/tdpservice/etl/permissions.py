@@ -10,6 +10,10 @@ class ETLPermissions(permissions.BasePermission):
 
     def has_permission(self, request, view):
         """Return whether the user can access the ETL API action."""
+        return self.has_action_permission(request, getattr(view, "action", None))
+
+    def has_action_permission(self, request, action: str | None) -> bool:
+        """Return whether a user has permission to create or access an ETL pipeline run."""
         user = request.user
         if not user or not user.is_authenticated:
             return False
@@ -17,7 +21,6 @@ class ETLPermissions(permissions.BasePermission):
         if user.account_approval_status != AccountApprovalStatusChoices.APPROVED:
             return False
 
-        action = getattr(view, "action", None)
         if action in ("create", "retry"):
             return user.is_ofa_sys_admin
 

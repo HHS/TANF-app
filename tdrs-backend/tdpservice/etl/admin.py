@@ -1,14 +1,18 @@
 """Admin registrations for ETL models."""
 
+from functools import partial
 from urllib.parse import urlencode
 
+from django import forms
 from django.apps import apps
-from django.contrib import admin
-from django.db import models
+from django.contrib import admin, messages
+from django.db import models, transaction
+from django.shortcuts import redirect
 from django.urls import NoReverseMatch, reverse
 from django.utils.html import format_html
 
 from tdpservice.core.utils import ReadOnlyAdminMixin
+from tdpservice.etl.exceptions import ActivePipelineRunError, PipelineValidationError
 from tdpservice.etl.models import (
     ETLArtifact,
     ETLNodeRun,
@@ -17,6 +21,46 @@ from tdpservice.etl.models import (
     StatisticalWeight,
     StatisticalWeightsCaseCount,
 )
+from tdpservice.etl.permissions import ETLPermissions
+from tdpservice.etl.registry import get_pipeline_definition, list_pipeline_definitions
+from tdpservice.etl.runner import PipelineRunFactory
+from tdpservice.etl.tasks import enqueue_pipeline_run
+
+
+class ETLPipelineRunAdminForm(forms.ModelForm):
+    """Collect and validate inputs for an admin-triggered pipeline run."""
+
+    pipeline_key = forms.ChoiceField(choices=())
+
+    class Meta:
+        """Limit creation to inputs owned by the pipeline definition."""
+
+        model = ETLPipelineRun
+        fields = ("pipeline_key", "parameters")
+
+    def __init__(self, *args, **kwargs):
+        """Populate choices from the approved pipeline registry."""
+        super().__init__(*args, **kwargs)
+        self.fields["pipeline_key"].choices = [
+            (definition.key, definition.display_name)
+            for definition in list_pipeline_definitions()
+        ]
+
+    def clean(self):
+        """Validate and normalize parameters with the selected pipeline."""
+        cleaned_data = super().clean()
+        pipeline_key = cleaned_data.get("pipeline_key")
+        parameters = cleaned_data.get("parameters")
+        if not pipeline_key or parameters is None:
+            return cleaned_data
+
+        try:
+            definition = get_pipeline_definition(pipeline_key)
+            cleaned_data["parameters"] = definition.validate_parameters(parameters)
+        except (KeyError, PipelineValidationError) as exc:
+            raise forms.ValidationError(str(exc)) from exc
+
+        return cleaned_data
 
 
 @admin.register(ETLPipelineRun)
@@ -37,7 +81,64 @@ class ETLPipelineRunAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     )
     list_filter = ("pipeline_key", "status", "trigger_source")
     search_fields = ("pipeline_key", "error_message")
-    readonly_fields = ("final_output_link", "created_at", "updated_at")
+    readonly_fields = (
+        "pipeline_version",
+        "status",
+        "output_scope",
+        "output_scope_key",
+        "metadata",
+        "trigger_source",
+        "triggered_by",
+        "retry_of",
+        "final_output",
+        "started_at",
+        "finished_at",
+        "error_message",
+        "created_at",
+        "updated_at",
+    )
+
+    def has_add_permission(self, request):
+        """Enable add permissions."""
+        return ETLPermissions().has_action_permission(request, "create")
+
+    def get_form(self, request, obj=None, change=False, **kwargs):
+        """Use the pipeline input form when adding a run."""
+        if obj is None:
+            kwargs["form"] = ETLPipelineRunAdminForm
+        return super().get_form(request, obj, change=change, **kwargs)
+
+    def save_form(self, request, form, change):
+        """Create new runs through the same factory used by the API."""
+        if change:
+            return super().save_form(request, form, change)
+
+        super().save_form(request, form, change)
+        pipeline_run = PipelineRunFactory.for_pipeline_key(
+            form.cleaned_data["pipeline_key"]
+        ).create(
+            parameters=form.cleaned_data["parameters"],
+            trigger_source=ETLPipelineRun.TriggerSource.ADMIN,
+            triggered_by=request.user,
+        )
+        form.instance = pipeline_run
+        return pipeline_run
+
+    def save_model(self, request, obj, form, change):
+        """Enqueue a newly created run after the admin transaction commits."""
+        if change:
+            super().save_model(request, obj, form, change)
+            return
+
+        transaction.on_commit(partial(enqueue_pipeline_run, obj))
+
+    def add_view(self, request, form_url="", extra_context=None):
+        """Report factory-level conflicts in the admin interface."""
+        try:
+            return super().add_view(request, form_url, extra_context)
+        except (ActivePipelineRunError, PipelineValidationError) as exc:
+            self.message_user(request, str(exc), level=messages.ERROR)
+            return redirect(request.path)
 
     @admin.display(description="Final output")
     def final_output_link(self, obj: ETLPipelineRun) -> str:

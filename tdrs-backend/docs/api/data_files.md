@@ -43,3 +43,11 @@ future implementation without changing these fields.
 The generated Swagger and ReDoc documentation at `/swagger/` and `/redocs/`
 mark all three lifecycle fields as read-only and describe
 `allowed_next_states` as an array of valid state tokens.
+
+## Parser log downloads
+
+Parser logs are downloaded through `/v1/data_files/{id}/logs/`. The endpoint
+uses the same authentication, model permissions, approval check, and
+STT/region object authorization as the rest of the data-file API. S3 object
+keys are derived from the authorized `DataFile`; clients cannot supply an S3
+path directly.

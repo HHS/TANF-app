@@ -93,6 +93,12 @@ class StatisticalWeightsPipeline(PipelineDefinition):
 
     def validate_parameters(self, parameters: dict) -> dict:
         """Validate statistical weights run parameters."""
+
+        if not isinstance(parameters, dict):
+            raise PipelineValidationError(
+                f"Parameters should be a dict, got: {type(parameters).__name__}."
+            )
+
         validated = dict(parameters or {})
         unexpected = set(validated) - set(self.allowed_parameters)
         if unexpected:
