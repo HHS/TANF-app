@@ -1,27 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-# remove
-python -u - <<'PY'
-import os
-import sys
-
-print("Python:", sys.version)
-print("Executable:", sys.executable)
-for name in ("DJANGO_SETTINGS_MODULE", "DJANGO_CONFIGURATION"):
-    print(f"{name}={os.environ.get(name)!r}")
-
-import configurations
-configurations.setup()
-
-from django.apps import apps
-if not apps.is_installed("django.contrib.staticfiles"):
-    raise RuntimeError("Django loaded without django.contrib.staticfiles")
-
-print("Django initialization succeeded")
-PY
-#
-
 # Collect static files. This is needed for swagger to work in local environment
 if [[ $DISABLE_COLLECTSTATIC ]]; then
     echo "DISABLE_COLLECTSTATIC is set to true, skipping collectstatic"

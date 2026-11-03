@@ -7,9 +7,6 @@ FROM ghcr.io/${REGISTRY_OWNER}/tdp-backend-base:${BASE_TAG}
 COPY . /tdpapp
 WORKDIR /tdpapp/
 
-# needs to be removed
-RUN sed -i "s/raise RuntimeError(\"populate() isn't reentrant\")/self.app_configs = {}/g" /usr/local/lib/python3.14/site-packages/django/apps/registry.py
-
 RUN chown -R tdpuser /tdpapp && chmod u+x gunicorn_start.sh wait_for_services.sh
 
 #CMD ["./gunicorn_start.sh"]
