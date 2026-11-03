@@ -556,6 +556,7 @@ describe('STTFeedbackReportsTable', () => {
           element.tagName === 'DIV' && element.textContent?.trim() === note
       )
       expect(noteText).toBeInTheDocument()
+      expect(noteText).toHaveClass('feedback-reports-notes__preview')
     })
 
     it('displays truncated note with Read more button when notes exceed 120 chars, and opens modal on click', () => {

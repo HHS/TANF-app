@@ -120,4 +120,10 @@
   max-width: units('mobile-lg');
 }
 
+.feedback-reports-notes__preview {
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
 

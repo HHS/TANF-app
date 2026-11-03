@@ -101,10 +101,10 @@ function STTFeedbackReportsTable({ data, setAlert, showDownloadedAt = false }) {
                   </td>
                   <td>
                     {report.notes ? (
-                      <div>
-                          {report.notes.length > 120
-                            ? `${report.notes.slice(0, 120)}... `
-                            : report.notes}
+                      <div className="feedback-reports-notes__preview">
+                        {report.notes.length > 120
+                          ? `${report.notes.slice(0, 120)}... `
+                          : report.notes}
                         {report.notes.length > 120 && (
                           <button
                             type="button"
