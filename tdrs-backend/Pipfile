@@ -77,6 +77,8 @@ httpx = ">=0.24,<0.28"
 mozilla-django-oidc = "==4.0.1"
 django-simple-history = "==3.11.0"
 typing-extensions = "==4.16.0"
+# Settings still import distutils, which setuptools supplies on Python 3.12+.
+setuptools = "==84.2.1"
 
 [requires]
 python_full_version = "3.14.10"
