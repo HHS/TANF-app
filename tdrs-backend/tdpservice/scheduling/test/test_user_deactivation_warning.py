@@ -1,4 +1,5 @@
 """Test functions for deactivated account warnings."""
+
 import logging
 from datetime import datetime, timedelta, timezone
 
@@ -24,7 +25,7 @@ def test_deactivation_email_10_days(user, mocker):
     user.first_name = "UniqueName"
     user.save()
     check_for_accounts_needing_deactivation_warning()
-    assert tdpservice.email.helpers.account_deactivation_warning.send_deactivation_warning_email.called_once_with(
+    assert tdpservice.email.helpers.account_deactivation_warning.send_deactivation_warning_email.assert_called_once_with(
         users=[user], days=10
     )
 
@@ -42,7 +43,7 @@ def test_deactivate_users(user, mocker):
     user.save()
     tdpservice.email.tasks.deactivate_users()
     assert user.groups.count() == 0
-    assert tdpservice.email.helpers.admin_notifications.email_admin_deactivated_user.called_once_with(
+    assert tdpservice.email.helpers.admin_notifications.email_admin_deactivated_user.assert_called_once_with(
         user
     )
 
@@ -60,7 +61,7 @@ def test_deactivation_email_3_days(user, mocker):
     user.first_name = "UniqueName"
     user.save()
     check_for_accounts_needing_deactivation_warning()
-    assert tdpservice.email.helpers.account_deactivation_warning.send_deactivation_warning_email.called_once_with(
+    assert tdpservice.email.helpers.account_deactivation_warning.send_deactivation_warning_email.assert_called_once_with(
         users=[user], days=3
     )
 
@@ -78,7 +79,7 @@ def test_deactivation_email_1_days(user, mocker):
     user.first_name = "UniqueName"
     user.save()
     check_for_accounts_needing_deactivation_warning()
-    assert tdpservice.email.helpers.account_deactivation_warning.send_deactivation_warning_email.called_once_with(
+    assert tdpservice.email.helpers.account_deactivation_warning.send_deactivation_warning_email.assert_called_once_with(
         users=[user], days=1
     )
 
