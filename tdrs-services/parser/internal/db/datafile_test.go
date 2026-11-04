@@ -3,10 +3,14 @@ package db
 import (
 	"context"
 	"encoding/json"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"os"
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -17,7 +21,6 @@ func TestGoParserDoesNotWriteProductionSubmissionState(t *testing.T) {
 		t.Fatal("could not locate Go parser source tree")
 	}
 	moduleRoot := filepath.Clean(filepath.Join(filepath.Dir(sourceFile), "..", ".."))
-	stateWrite := regexp.MustCompile(`(?is)UPDATE\s+data_files_datafile\s+SET\s+state\b|func\s+UpdateDataFileState\b`)
 
 	var violations []string
 	err := filepath.WalkDir(moduleRoot, func(path string, entry os.DirEntry, err error) error {
@@ -31,7 +34,11 @@ func TestGoParserDoesNotWriteProductionSubmissionState(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		if stateWrite.Match(source) {
+		writesState, err := hasProductionStateWrite(source)
+		if err != nil {
+			return err
+		}
+		if writesState {
 			relativePath, relErr := filepath.Rel(moduleRoot, path)
 			if relErr != nil {
 				return relErr
@@ -45,6 +52,60 @@ func TestGoParserDoesNotWriteProductionSubmissionState(t *testing.T) {
 	}
 	if len(violations) != 0 {
 		t.Fatalf("Go parser must send production state outcomes to Python; found state writers in %v", violations)
+	}
+}
+
+func hasProductionStateWrite(source []byte) (bool, error) {
+	file, err := parser.ParseFile(token.NewFileSet(), "", source, 0)
+	if err != nil {
+		return false, err
+	}
+	productionUpdate := regexp.MustCompile(`(?is)\bUPDATE\s+(?:"?\w+"?\s*\.\s*)?"?data_files_datafile"?\s+(?:AS\s+\w+\s+)?SET\s+([^;]*)`)
+	clauseBoundary := regexp.MustCompile(`(?i)\b(?:WHERE|RETURNING|FROM)\b`)
+	stateAssignment := regexp.MustCompile(`(?i)\b"?state"?\s*=`)
+	found := false
+	ast.Inspect(file, func(node ast.Node) bool {
+		if function, ok := node.(*ast.FuncDecl); ok && function.Name.Name == "UpdateDataFileState" {
+			found = true
+		}
+		if literal, ok := node.(*ast.BasicLit); ok && literal.Kind == token.STRING {
+			query, err := strconv.Unquote(literal.Value)
+			if err == nil {
+				for _, update := range productionUpdate.FindAllStringSubmatch(query, -1) {
+					assignments := clauseBoundary.Split(update[1], 2)[0]
+					if stateAssignment.MatchString(assignments) {
+						found = true
+					}
+				}
+			}
+		}
+		return true
+	})
+	return found, nil
+}
+
+func TestProductionStateWriteGuard(t *testing.T) {
+	for _, test := range []struct {
+		query string
+		want  bool
+	}{
+		{`UPDATE data_files_datafile SET state = $1 WHERE id = $2`, true},
+		{`UPDATE data_files_datafile SET state_changed_at = NOW(), state = $1`, true},
+		{`UPDATE "data_files_datafile" SET "state" = $1`, true},
+		{`UPDATE public.data_files_datafile AS df SET state = $1`, true},
+		{`UPDATE "public"."data_files_datafile" SET state = $1`, true},
+		{`UPDATE shadow_data_files_datafile SET state = $1`, false},
+		{`UPDATE data_files_datafile SET state_changed_at = NOW()`, false},
+		{`UPDATE data_files_datafile SET state_changed_at = NOW() WHERE state = $1`, false},
+		{`SELECT state FROM data_files_datafile WHERE id = $1`, false},
+	} {
+		t.Run(test.query, func(t *testing.T) {
+			source := "package db\nconst query = " + strconv.Quote(test.query)
+			got, err := hasProductionStateWrite([]byte(source))
+			if err != nil || got != test.want {
+				t.Fatalf("guard = %v, %v; want %v", got, err, test.want)
+			}
+		})
 	}
 }
 

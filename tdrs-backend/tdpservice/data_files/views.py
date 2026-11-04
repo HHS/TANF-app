@@ -8,7 +8,7 @@ from wsgiref.util import FileWrapper
 
 from django.conf import settings
 from django.db.models import Exists, OuterRef, Prefetch
-from django.http import FileResponse, Http404, HttpResponse
+from django.http import FileResponse, Http404
 
 from django_filters import rest_framework as filters
 from drf_yasg.openapi import Parameter
@@ -31,6 +31,10 @@ from tdpservice.data_files.submission_lifecycle import (
     complete_datafile_av_scan,
     start_datafile_av_scan,
 )
+from tdpservice.data_files.util import (
+    create_legacy_s3_log_file_path,
+    create_s3_log_file_path,
+)
 from tdpservice.log_handler import S3FileHandler
 from tdpservice.parsers.models import ParserError
 from tdpservice.scheduling import parser_task
@@ -43,18 +47,6 @@ logger = logging.getLogger(__name__)
 
 FRA_SUBMISSION_YEARS_FEATURE_FLAG = "fra_submission_years"
 FRA_READ_ONLY_ERROR = "FRA submissions for this fiscal year are read-only."
-
-
-def get_log_file(request, remaining_path):
-    """Get log file."""
-    try:
-        response = FileResponse(
-            FileWrapper(S3FileHandler.download_file(key=remaining_path))
-        )
-        return HttpResponse(response, content_type="text/plain")
-    except Exception as e:
-        logger.error(f"Error retrieving log file: {e}")
-        raise Http404("Log file not found.")
 
 
 class DataFileFilter(filters.FilterSet):
@@ -381,6 +373,20 @@ class DataFileViewSet(ModelViewSet):
                 filename=record.original_filename,
             )
         return response
+
+    @action(methods=["get"], detail=True, url_path="logs")
+    def download_log(self, request, pk=None):
+        """Retrieve this data file's parser log from S3."""
+        datafile = self.get_object()
+        log_file = S3FileHandler.download_file(key=create_s3_log_file_path(datafile))
+        if log_file is None:
+            log_file = S3FileHandler.download_file(
+                key=create_legacy_s3_log_file_path(datafile)
+            )
+        if log_file is None:
+            raise Http404("Log file not found.")
+
+        return FileResponse(FileWrapper(log_file), content_type="text/plain")
 
     @action(methods=["get"], detail=True)
     def download_error_report(self, request, pk=None):
