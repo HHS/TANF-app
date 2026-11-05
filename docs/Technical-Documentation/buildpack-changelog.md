@@ -2,7 +2,7 @@
 
 - 10/28/2026 [nginx-buildpack v1.2.39](https://github.com/cloudfoundry/nginx-buildpack/releases/tag/v1.2.39)
 
-- 10/28/2026 [python-buildpack v1.9.4](https://github.com/cloudfoundry/python-buildpack/releases/tag/v1.9.4)
+- 10/28/2026 [python-buildpack v1.9.9](https://github.com/cloudfoundry/python-buildpack/releases/tag/v1.9.9)
 
 - 08/09/2023 [nginx-buildpack v1.2.6](https://github.com/cloudfoundry/nginx-buildpack.git#v1.2.6)
 
