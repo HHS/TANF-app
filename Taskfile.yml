@@ -260,8 +260,13 @@ tasks:
     desc: Lock the pip dependencies (pipenv)
     dir: tdrs-backend
     cmds:
-      - task: backend-up
-      - docker compose -f docker-compose.yml exec web sh -c "pipenv lock"
+      - docker build --target tooling -f Dockerfile.base -t tdp-backend-tooling:local .
+      - |
+        docker run --rm \
+          --mount "type=bind,source=$(pwd),target=/tdpapp" \
+          --workdir /tdpapp \
+          tdp-backend-tooling:local \
+          pipenv lock --clear
 
   psql:
     desc: Open a psql shell in the backend postgres container
