@@ -13,15 +13,18 @@ It is a static website using the static file buildpack provided by cloud foundry
 Whenever a PR is approved and merged into `develop`, changes to this
 static site are deployed to its Cloud Foundry application. The public, canonical
 URL is [https://tanfdata.acf.hhs.gov/help/](https://tanfdata.acf.hhs.gov/help/).
-The `tdp-project-updates.app.cloud.gov` route remains the separate application
-origin used by the frontend nginx proxy.
+The frontend nginx proxy reaches the separate application through the private
+`tdp-project-updates.apps.internal` route. A cross-space network policy limits
+access to the frontend applications on port 8080.
 
 ### Legacy URL handoff
 
 `https://tdp-project-updates.app.cloud.gov` is a legacy public URL. Before the
-first production deployment of the `/help` proxy, transfer that route to the
-production frontend app. Target the space that owns the legacy route, unmap it
-from its current app, and delete the now-unmapped route:
+first production deployment of the `/help` proxy, verify that every frontend
+environment can load `/help/` through the internal route. Then transfer the
+legacy route to the production frontend app. Target the space that owns the
+legacy route, unmap it from the static application, and delete the now-unmapped
+route:
 
 ```bash
 cf unmap-route <legacy-app-name> app.cloud.gov --hostname tdp-project-updates
@@ -32,7 +35,8 @@ The production deployment then maps that hostname to `tdp-frontend-prod`.
 Frontend nginx redirects requests to `https://tanfdata.acf.hhs.gov/help` while
 preserving the original path and query string. Do not map the legacy route to
 both applications; Cloud Foundry would load balance requests instead of
-consistently redirecting them.
+consistently redirecting them. Future static-site deployments map only the
+internal route, so they do not reclaim the legacy public hostname.
 
 Lower environments use an environment-specific legacy-style route so the
 redirect can be tested without taking ownership of the production hostname:
