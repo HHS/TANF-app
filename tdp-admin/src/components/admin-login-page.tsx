@@ -4,6 +4,8 @@ import {
   getAdminProviderLoginPath,
   checkBackendHealth,
 } from "@/lib/admin-auth";
+import { getBackendHealthSummary } from "@/lib/backend-health-display";
+import { getKnowledgeCenterUrl } from "@/lib/help-url";
 
 type AdminLoginPageProps = {
   loginErrorMessage?: string;
@@ -19,6 +21,7 @@ export default async function AdminLoginPage({
   const acfAmsPath = getAdminProviderLoginPath("ams");
   const loginGovLogoSrc = "/login-gov-logo.svg";
   const acfLogoSrc = "/ACFLogo.svg";
+  const knowledgeCenterUrl = getKnowledgeCenterUrl();
 
   return (
     <>
@@ -151,7 +154,7 @@ export default async function AdminLoginPage({
                     <div className="usa-card__footer">
                       <a
                         className="usa-button"
-                        href="https://tdp-project-updates.app.cloud.gov/knowledge-center/"
+                        href={knowledgeCenterUrl}
                         target="_blank"
                         rel="noreferrer"
                       >
@@ -243,7 +246,7 @@ export default async function AdminLoginPage({
                     <li className="mobile-lg:grid-col-6 desktop:grid-col-auto usa-footer__primary-content">
                       <a
                         className="usa-footer__primary-link"
-                        href="https://tdp-project-updates.app.cloud.gov/knowledge-center/"
+                        href={knowledgeCenterUrl}
                         target="_blank"
                         rel="noreferrer"
                       >

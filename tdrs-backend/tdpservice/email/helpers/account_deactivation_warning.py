@@ -7,6 +7,7 @@ from django.conf import settings
 from tdpservice.email.email import automated_email
 from tdpservice.email.email_enums import UserAccountEmail
 from tdpservice.users.models import User
+from tdpservice.web_urls import help_url
 
 
 def send_deactivation_warning_email(users, days):
@@ -23,6 +24,7 @@ def send_deactivation_warning_email(users, days):
             "days": days,
             "deactivation_date": deactivation_date,
             "url": f"{settings.FRONTEND_BASE_URL}/login/",
+            "help_url": help_url(),
         }
 
         logger_context = {

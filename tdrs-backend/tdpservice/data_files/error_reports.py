@@ -13,6 +13,7 @@ import xlsxwriter
 from tdpservice.data_files.models import DataFile, Section, ShadowDataFile
 from tdpservice.data_files.parser_error_choices import ParserErrorCategoryChoices
 from tdpservice.parsers.models import ParserError
+from tdpservice.web_urls import help_url
 
 
 class ErrorReportFactory:
@@ -320,10 +321,7 @@ class TanfDataErrorReportBase(ErrorReportBase):
         }.items():
             worksheet.set_row(row, height)
 
-        knowledge_center_url = (
-            "https://tdp-project-updates.app.cloud.gov/knowledge-center/"
-            "viewing-error-reports.html"
-        )
+        knowledge_center_url = help_url("knowledge-center/viewing-error-reports.html")
 
         worksheet.write(0, 0, "Error Report Readme", title)
         worksheet.merge_range(

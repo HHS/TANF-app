@@ -2,6 +2,7 @@ import Image from "next/image";
 import NextLink from "next/link";
 import type { ReactNode } from "react";
 import type { AdminSession } from "@/lib/admin-auth";
+import { getKnowledgeCenterUrl } from "@/lib/help-url";
 import AdminNavigation from "./admin-navigation";
 
 function AdminGovBanner() {
@@ -44,6 +45,7 @@ function AdminHeader({ session }: { session: AdminSession }) {
 
 function AdminFooter() {
   const acfLogoSrc = "/ACFLogo.svg";
+  const knowledgeCenterUrl = getKnowledgeCenterUrl();
 
   return (
     <footer className="usa-footer usa-footer--slim admin-footer">
@@ -55,7 +57,7 @@ function AdminFooter() {
                 <li className="mobile-lg:grid-col-6 desktop:grid-col-auto usa-footer__primary-content">
                   <a
                     className="usa-footer__primary-link"
-                    href="https://tdp-project-updates.app.cloud.gov/knowledge-center/"
+                    href={knowledgeCenterUrl}
                     target="_blank"
                     rel="noreferrer"
                   >

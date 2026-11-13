@@ -33,7 +33,7 @@ describe('ResourceCards', () => {
   it('redirects to TDP Knowledge Center when View Knowledge Center clicked', async () => {
     const store = mockStore(initialState)
 
-    const url = 'http://tdp-project-updates.app.cloud.gov/knowledge-center/'
+    const url = '/help/knowledge-center/'
 
     render(
       <Provider store={store}>

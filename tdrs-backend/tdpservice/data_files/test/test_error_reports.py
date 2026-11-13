@@ -19,11 +19,7 @@ from tdpservice.data_files.parser_error_choices import ParserErrorCategoryChoice
 from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.parsers.models import ParserError, ShadowParserError
 from tdpservice.parsers.test.factories import ParserErrorFactory
-
-KNOWLEDGE_CENTER_URL = (
-    "https://tdp-project-updates.app.cloud.gov/knowledge-center/"
-    "viewing-error-reports.html"
-)
+from tdpservice.web_urls import help_url
 
 
 @pytest.mark.django_db
@@ -183,7 +179,9 @@ def test_tanf_error_report_readme_content_and_links(active_case_error_report_wor
     }
     for cell, (label, location) in expected_help_links.items():
         assert readme[cell].value == label
-        assert readme[cell].hyperlink.target == KNOWLEDGE_CENTER_URL
+        assert readme[cell].hyperlink.target == help_url(
+            "knowledge-center/viewing-error-reports.html"
+        )
         assert readme[cell].hyperlink.location == location
 
 
