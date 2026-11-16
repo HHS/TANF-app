@@ -201,8 +201,9 @@ function AdminFeedbackReports() {
    */
   const handleFileChange = async (e) => {
     if (selectedFile) {
-      setNotes('')
-      setNotesError(null)
+      clearDatePicker()
+      setDateError(null)
+      setDateTouched(false)
     }
     setSelectedFile(null)
     setFileError(null)
@@ -645,19 +646,19 @@ function AdminFeedbackReports() {
         )}
 
         <Modal
-          title="Report Type or Fiscal Year changed"
-          message="Your uploaded files have not been submitted. Clicking 'OK' will discard all changes, reset the form and remove any uploaded files."
+          title="Discard unsaved changes?"
+          message="Changing the report type or fiscal year will discard your unsaved notes and remove any files you've added. Do you want to continue?"
           isVisible={confirmModalVisible}
           onClose={handleCancelChange}
           buttons={[
             {
               key: '1',
-              text: 'Cancel',
+              text: 'Keep editing',
               onClick: handleCancelChange,
             },
             {
               key: '2',
-              text: 'OK',
+              text: 'Discard and continue',
               onClick: handleConfirmChange,
             },
           ]}
