@@ -162,13 +162,13 @@ class CloudGov(Common):
 
         for c, n in brokers["caches"].items():
             CACHES[c] = {
-                "BACKEND": "django.core.cache.backends.redis.RedisCache",
+                **Common.CACHES[c],
                 "LOCATION": f"{REDIS_URI}/{n}",
                 "KEY_PREFIX": f"{cloudgov_name}-{c}",  # does include "prod" for prod, can specify per env in classes below
             }
 
         CACHES["throttle"] = {
-            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            **Common.CACHES["throttle"],
             "LOCATION": f"{REDIS_URI}/{brokers['caches']['feature-flags']}",
             "KEY_PREFIX": f"{cloudgov_name}-throttle",
         }

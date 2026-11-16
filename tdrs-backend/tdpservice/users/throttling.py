@@ -8,10 +8,33 @@ returns ``None`` (skip) when no bearer-token throttle identity is present on the
 request.
 """
 
+from __future__ import annotations
+
+import logging
+from typing import TYPE_CHECKING
+
 from django.core.cache import caches
 from django.core.cache.backends.base import InvalidCacheBackendError
 
+from redis.exceptions import ConnectionError, TimeoutError
+from rest_framework.exceptions import APIException
 from rest_framework.throttling import SimpleRateThrottle
+
+if TYPE_CHECKING:
+    from rest_framework.request import Request
+    from rest_framework.views import APIView
+
+logger = logging.getLogger(__name__)
+
+
+class ThrottleCacheUnavailable(APIException):
+    """Reject requests when their rate limit cannot be checked or recorded."""
+
+    status_code = 503
+    default_detail = (
+        "Request rate limiting is temporarily unavailable. Please try again later."
+    )
+    default_code = "throttle_cache_unavailable"
 
 
 def get_keycloak_throttle_cache():
@@ -32,6 +55,14 @@ class KeycloakClientRateThrottle(SimpleRateThrottle):
 
     cache = get_keycloak_throttle_cache()
     scope = "keycloak_client"
+
+    def allow_request(self, request: Request, view: APIView) -> bool:
+        """Fail closed on Redis outages without affecting session requests."""
+        try:
+            return super().allow_request(request, view)
+        except (ConnectionError, TimeoutError) as exc:
+            logger.warning("Throttle cache unavailable; rejecting bearer-token request")
+            raise ThrottleCacheUnavailable() from exc
 
     def get_cache_key(self, request, view):
         """Return a bearer-token cache key, or None for non-bearer requests."""

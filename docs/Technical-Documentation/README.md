@@ -23,5 +23,6 @@ This directory contains system and architecture documentation including diagrams
 - [jwt-key-rotation.md](./jwt-key-rotation.md) : Describes the process for rotating JWT keys in Login.gov.
 - [openid-connect.md](./openid-connect.md) : Provides an architecture-level view of the OpenID Connect prototocol.
 - [remote-development.md](./remote-development.md) : A guide on doing live remote development in Cloud.gov.
+- [redis-cache-resilience.md](./redis-cache-resilience.md) : Redis timeout, fallback, throttling, and release validation policies.
 - [unit-tests.md](./unit-tests.md) : Outlines our unit testing frameworks and how to run these manually.
 - [user_role_management.md](./user_role_management.md) : Provides an overview of our user management in Django Administrator Console.

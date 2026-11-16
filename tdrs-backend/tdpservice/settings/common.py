@@ -17,6 +17,8 @@ import sentry_sdk
 from celery.schedules import crontab
 from configurations import Configuration
 from corsheaders.defaults import default_headers
+from redis.backoff import NoBackoff
+from redis.retry import Retry
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 from sentry_sdk.types import SamplingContext
@@ -79,6 +81,7 @@ def init_sentry(sentry_dsn, environment: str = "ERROR") -> None:
     sentry_sdk.init(
         dsn=sentry_dsn,
         environment=environment,
+        release=os.getenv("SENTRY_RELEASE") or None,
         # Set traces_sample_rate to 1.0 to capture 100%
         # of transactions for performance monitoring.
         integrations=[
@@ -852,21 +855,30 @@ class Common(Configuration):
     }
 
     DEFAULT_CACHE_TIMEOUT = 300
+    # Bound each cache operation without multiplying waits through retries.
+    REDIS_CACHE_OPTIONS = {
+        "socket_connect_timeout": 1,
+        "socket_timeout": 1,
+        "retry": Retry(NoBackoff(), 0),
+    }
     CACHES = {
         "default": {
             "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         },
         "stts": {
-            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "BACKEND": "tdpservice.cache.OptionalRedisCache",
             "LOCATION": f"{REDIS_URI}/1",
+            "OPTIONS": REDIS_CACHE_OPTIONS.copy(),
         },
         "feature-flags": {
-            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "BACKEND": "tdpservice.cache.OptionalRedisCache",
             "LOCATION": f"{REDIS_URI}/2",
+            "OPTIONS": REDIS_CACHE_OPTIONS.copy(),
         },
         "throttle": {
             "BACKEND": "django.core.cache.backends.redis.RedisCache",
             "LOCATION": f"{REDIS_URI}/3",
+            "OPTIONS": REDIS_CACHE_OPTIONS.copy(),
         },
     }
 

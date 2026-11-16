@@ -2,6 +2,9 @@
 
 Backend API Service for TDP. Deployed to Cloud.gov at https://tdp-backend.app.cloud.gov/ .
 
+See [Redis cache resilience](../docs/Technical-Documentation/redis-cache-resilience.md)
+for network timeouts, cache failure policies, and outage validation steps.
+
 # Prerequisites
 
 - [Docker](https://docs.docker.com/docker-for-mac/install/)

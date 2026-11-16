@@ -23,6 +23,9 @@ fi
 env=${CF_SPACE#tanf-}
 backend_app_name=${CGAPPNAME_BACKEND#tdp-backend-}
 
+# Cloud.gov does not retain the Git checkout used to build the application.
+SENTRY_RELEASE=${SENTRY_RELEASE:-${CIRCLE_SHA1:-$(git rev-parse HEAD)}}
+
 CGAPPNAME_CELERY="tdp-celery-${backend_app_name}"
 
 echo DEPLOY_STRATEGY: "$DEPLOY_STRATEGY"
@@ -56,6 +59,7 @@ set_cf_envs()
   "LOGGING_LEVEL"
   "JWT_KEY"
   "SENDGRID_API_KEY"
+  "SENTRY_RELEASE"
   "OFA_READ_ONLY_PASSWORD"
   "OFA_ADMIN_READ_ONLY_PASSWORD"
   "KEYCLOAK_ADMIN_CLIENT_SECRET"
