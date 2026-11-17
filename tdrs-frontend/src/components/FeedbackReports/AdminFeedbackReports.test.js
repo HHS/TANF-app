@@ -1811,7 +1811,7 @@ describe('AdminFeedbackReports', () => {
       fireEvent.click(cancelButton)
 
       expect(
-        screen.queryByText('Discard unsaved note changes?')
+        screen.queryByText('Discard unsaved changes?')
       ).not.toBeInTheDocument()
       expect(screen.getByLabelText('TANF/SSP')).toBeChecked()
       expect(notesTextarea.value).toBe('FRA calculations exclude Tribal cases')
@@ -1853,7 +1853,7 @@ describe('AdminFeedbackReports', () => {
       fireEvent.change(fiscalYearSelect, { target: { value: '2024' } })
 
       expect(
-        screen.getByText('Discard unsaved note changes?')
+        screen.getByText('Discard unsaved changes?')
       ).toBeInTheDocument()
 
       // Click cancel
