@@ -25,6 +25,50 @@ const convertToISODate = (value) => {
 }
 
 /**
+ * Formats typed date input as MM/DD/YYYY by auto-inserting slashes.
+ */
+export const formatTypedDate = (value, prevValue = '') => {
+  if (!value) return ''
+
+  const isDeleting = prevValue.length > value.length
+  const sanitized = value.replace(/[^\d/]/g, '')
+  if (!sanitized) return ''
+
+  if (!sanitized.includes('/')) {
+    const digits = sanitized.slice(0, 8)
+    if (digits.length === 2) {
+      return isDeleting ? digits : `${digits}/`
+    }
+    if (digits.length > 2 && digits.length <= 4) {
+      const formatted = `${digits.slice(0, 2)}/${digits.slice(2)}`
+      return digits.length === 4 && !isDeleting ? `${formatted}/` : formatted
+    }
+    if (digits.length > 4) {
+      return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`
+    }
+    return digits
+  }
+
+  const parts = sanitized.split('/').slice(0, 3)
+  const month = parts[0].slice(0, 2)
+
+  if (parts.length === 2) {
+    const day = parts[1]
+    if (day.length === 2 && !isDeleting) {
+      return `${month}/${day}/`
+    }
+    if (day.length > 2) {
+      return `${month}/${day.slice(0, 2)}/${day.slice(2, 6)}`
+    }
+    return `${month}/${day}`
+  }
+
+  const day = parts[1].slice(0, 2)
+  const year = parts[2].slice(0, 4)
+  return `${month}/${day}/${year}`
+}
+
+/**
  * FeedbackReportsUpload component handles the file upload section
  * for feedback reports
  */
@@ -52,6 +96,25 @@ const FeedbackReportsUpload = forwardRef(function FeedbackReportsUpload(
   useEffect(() => {
     fileInput.init()
     datePicker.init()
+
+    const externalInput = document.querySelector(
+      '.usa-date-picker__external-input'
+    )
+    if (!externalInput) return undefined
+
+    let prevValue = externalInput.value || ''
+    const handleExternalDateInput = (e) => {
+      const formatted = formatTypedDate(e.target.value, prevValue)
+      if (e.target.value !== formatted) {
+        e.target.value = formatted
+      }
+      prevValue = formatted
+    }
+
+    externalInput.addEventListener('input', handleExternalDateInput)
+    return () => {
+      externalInput.removeEventListener('input', handleExternalDateInput)
+    }
   }, [])
 
   /**

@@ -1,6 +1,6 @@
 import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
-import FeedbackReportsUpload from './FeedbackReportsUpload'
+import FeedbackReportsUpload, { formatTypedDate } from './FeedbackReportsUpload'
 
 // Mock USWDS file input
 jest.mock('@uswds/uswds/src/js/components', () => ({
@@ -463,6 +463,52 @@ describe('FeedbackReportsUpload', () => {
       )
       nullInputRef.current = null
       expect(() => ref2.current.clearFileInput()).not.toThrow()
+    })
+  })
+
+  describe('Date auto-formatting', () => {
+    it('auto-inserts slashes when typing digits for MM/DD/YYYY', () => {
+      expect(formatTypedDate('', '')).toBe('')
+      expect(formatTypedDate('abc', '')).toBe('')
+      expect(formatTypedDate('1', '')).toBe('1')
+      expect(formatTypedDate('12', '1')).toBe('12/')
+      expect(formatTypedDate('12/0', '12/')).toBe('12/0')
+      expect(formatTypedDate('12/05', '12/0')).toBe('12/05/')
+      expect(formatTypedDate('12/05/2025', '12/05/202')).toBe('12/05/2025')
+      expect(formatTypedDate('12/05/20259', '12/05/2025')).toBe('12/05/2025')
+    })
+
+    it('formats pasted 8-digit dates and unslashed multi-digit input', () => {
+      expect(formatTypedDate('120', '12')).toBe('12/0')
+      expect(formatTypedDate('1205', '120')).toBe('12/05/')
+      expect(formatTypedDate('12052025', '')).toBe('12/05/2025')
+      expect(formatTypedDate('12/052025', '12/')).toBe('12/05/2025')
+    })
+
+    it('allows backspacing past auto-inserted slashes and preserves manual slashes', () => {
+      expect(formatTypedDate('12', '12/')).toBe('12')
+      expect(formatTypedDate('12/05', '12/05/')).toBe('12/05')
+      expect(formatTypedDate('1/5/2025', '1/5/202')).toBe('1/5/2025')
+    })
+
+    it('formats input on the USWDS external date picker input as the user types', () => {
+      const externalInput = document.createElement('input')
+      externalInput.className = 'usa-date-picker__external-input'
+      document.body.appendChild(externalInput)
+
+      const { unmount } = renderComponent()
+
+      fireEvent.input(externalInput, { target: { value: '12' } })
+      expect(externalInput.value).toBe('12/')
+
+      fireEvent.input(externalInput, { target: { value: '12/05' } })
+      expect(externalInput.value).toBe('12/05/')
+
+      fireEvent.input(externalInput, { target: { value: '12/05/2025' } })
+      expect(externalInput.value).toBe('12/05/2025')
+
+      unmount()
+      document.body.removeChild(externalInput)
     })
   })
 
