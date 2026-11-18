@@ -36,6 +36,12 @@ $ cp .env.example .env
 2.) Replace secrets in `.env` with actual values. To obtain the correct values,
 please pull from [cloud.gov](https://cloud.gov) or contact the Product Manager.
 
+Keycloak uses `KC_TDP_DJANGO_*` for the Django client and `KC_TDP_ADMIN_*` for
+the React admin app. Backend, Celery, and Keycloak must share the same values
+for `KC_TDP_DJANGO_CLIENT_SECRET` and `KC_TDP_ADMIN_CLIENT_SECRET`. See the
+[Keycloak environment variables and upgrade instructions](keycloak/README.md#environment-variables)
+when updating an existing `.env` or deployment.
+
 3.) For Django Admin access, replace the value for `DJANGO_SU_NAME` in `.env`
 with the email you use to login to [login.gov](https://login.gov)
 
