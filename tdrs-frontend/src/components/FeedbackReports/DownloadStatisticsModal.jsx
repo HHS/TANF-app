@@ -6,7 +6,6 @@ import '../../assets/DownloadStatisticsModal.scss'
 
 function getSttReportUrl(stt, reportContext) {
   const params = new URLSearchParams({
-    view: 'stt',
     stt: stt.id,
     year: reportContext.year,
     type: reportContext.reportType,
@@ -14,37 +13,13 @@ function getSttReportUrl(stt, reportContext) {
   return `/feedback-reports?${params}`
 }
 
-function SttReportLink({ stt, reportContext, onSelectStt }) {
-  const handleClick = (event) => {
-    if (
-      !onSelectStt ||
-      event.button !== 0 ||
-      event.metaKey ||
-      event.ctrlKey ||
-      event.shiftKey ||
-      event.altKey
-    ) {
-      return
-    }
-    event.preventDefault()
-    onSelectStt(stt, reportContext)
-  }
-
+function SttReportLink({ stt, reportContext }) {
   if (!reportContext) return stt.name
 
-  return (
-    <Link to={getSttReportUrl(stt, reportContext)} onClick={handleClick}>
-      {stt.name}
-    </Link>
-  )
+  return <Link to={getSttReportUrl(stt, reportContext)}>{stt.name}</Link>
 }
 
-function DownloadStatisticsTable({
-  regions,
-  formatDateTime,
-  reportContext,
-  onSelectStt,
-}) {
+function DownloadStatisticsTable({ regions, formatDateTime, reportContext }) {
   if (regions.length === 0) {
     return <p>No jurisdictions are available for this report source.</p>
   }
@@ -75,11 +50,7 @@ function DownloadStatisticsTable({
               {region.stts.map((stt) => (
                 <tr key={stt.id}>
                   <th scope="row">
-                    <SttReportLink
-                      stt={stt}
-                      reportContext={reportContext}
-                      onSelectStt={onSelectStt}
-                    />
+                    <SttReportLink stt={stt} reportContext={reportContext} />
                   </th>
                   <td>
                     {stt.downloaded_at
@@ -103,7 +74,6 @@ function DownloadStatisticsModal({
   formatDateTime,
   onClose,
   reportContext,
-  onSelectStt,
 }) {
   const dialogRef = useRef(null)
   const returnFocusRef = useRef(document.activeElement)
@@ -196,7 +166,6 @@ function DownloadStatisticsModal({
                 regions={statistics.regions}
                 formatDateTime={formatDateTime}
                 reportContext={reportContext}
-                onSelectStt={onSelectStt}
               />
             </>
           )}
@@ -231,14 +200,12 @@ const reportContextPropType = PropTypes.shape({
 SttReportLink.propTypes = {
   stt: sttPropType.isRequired,
   reportContext: reportContextPropType,
-  onSelectStt: PropTypes.func,
 }
 
 DownloadStatisticsTable.propTypes = {
   regions: PropTypes.arrayOf(regionPropType).isRequired,
   formatDateTime: PropTypes.func.isRequired,
   reportContext: reportContextPropType,
-  onSelectStt: PropTypes.func,
 }
 
 DownloadStatisticsModal.propTypes = {
@@ -252,7 +219,6 @@ DownloadStatisticsModal.propTypes = {
   error: PropTypes.string,
   formatDateTime: PropTypes.func.isRequired,
   onClose: PropTypes.func.isRequired,
-  onSelectStt: PropTypes.func,
   reportContext: reportContextPropType,
 }
 

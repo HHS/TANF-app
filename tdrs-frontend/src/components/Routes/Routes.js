@@ -1,12 +1,13 @@
 import React, { useState } from 'react'
-import { Routes, Route, useSearchParams } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import NoMatch from '../NoMatch'
 import SplashPage from '../SplashPage'
 import Profile from '../Profile'
 import PrivateRoute from '../PrivateRoute'
 import LoginCallback from '../LoginCallback'
 import Reports, { FRAReports } from '../Reports'
-import FeedbackReports from '../FeedbackReports/FeedbackReports'
+import STTFeedbackReports from '../FeedbackReports/STTFeedbackReports'
+import AdminFeedbackReports from '../FeedbackReports/AdminFeedbackReports'
 import { useSelector } from 'react-redux'
 import {
   accountIsInReview,
@@ -32,7 +33,6 @@ const RouteProvider = ({ children }) => {
  * does not matter.
  */
 const AppRoutes = () => {
-  const [searchParams] = useSearchParams()
   const user = useSelector((state) => state.auth.user)
   const sttList = useSelector((state) => state?.stts?.sttList)
   const userAccountInReview = useSelector(accountIsInReview)
@@ -54,16 +54,6 @@ const AppRoutes = () => {
       : 'Edit Profile'
     : 'My Profile'
   const profileType = userAccountInReview ? 'access request' : 'profile'
-
-  const isManagingFeedbackReports =
-    userCanUploadFeedbackReports && searchParams.get('view') !== 'stt'
-  const feedbackReportsTitle = isManagingFeedbackReports
-    ? 'Upload Feedback Reports'
-    : 'Feedback Reports'
-  // TODO: Change the subtitle to include wording for FRA as well as TANF/SSP
-  const feedbackReportsSubtitle = isManagingFeedbackReports
-    ? 'TANF WPR, SSP WPR, TANF & SSP Combined, and Time Limit Reports'
-    : null
 
   const setEditState = (isEditing) => {
     setIsInEditMode(isEditing)
@@ -120,12 +110,30 @@ const AppRoutes = () => {
         path="/feedback-reports"
         element={
           <PrivateRoute
-            title={feedbackReportsTitle}
-            subtitle={feedbackReportsSubtitle}
+            title="Feedback Reports"
+            subtitle="View and download jurisdiction feedback reports"
             requiredPermissions={['view_reportfile']}
             requiresApproval
           >
-            <FeedbackReports />
+            <STTFeedbackReports adminView={userCanUploadFeedbackReports} />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        exact
+        path="/manage-feedback-reports"
+        element={
+          <PrivateRoute
+            title="Manage Feedback Reports"
+            subtitle="TANF WPR, SSP WPR, TANF & SSP Combined, Time Limit, and FRA Reports"
+            requiredPermissions={[
+              'view_reportfile',
+              'view_reportsource',
+              'add_reportsource',
+            ]}
+            requiresApproval
+          >
+            <AdminFeedbackReports />
           </PrivateRoute>
         }
       />

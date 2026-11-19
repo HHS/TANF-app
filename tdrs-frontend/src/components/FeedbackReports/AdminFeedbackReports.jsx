@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import PropTypes from 'prop-types'
 import { useSearchParams } from 'react-router-dom'
 import { get, post } from '../../fetch-instance'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
@@ -27,7 +26,7 @@ const NO_DATE_ERROR =
  * AdminFeedbackReports component allows DIGIT Team and OFA System Admin users to upload
  * feedback reports as ZIP files that will be distributed to State/Tribal TANF Programs (STTs).
  */
-function AdminFeedbackReports({ onSelectStt }) {
+function AdminFeedbackReports() {
   const [searchParams, setSearchParams] = useSearchParams()
   const yearOptions = constructYears()
 
@@ -533,16 +532,11 @@ function AdminFeedbackReports({ onSelectStt }) {
             formatDateTime={formatDateTime}
             onClose={closeDownloadStatistics}
             reportContext={downloadStatistics.reportContext}
-            onSelectStt={onSelectStt}
           />
         )}
       </div>
     </div>
   )
-}
-
-AdminFeedbackReports.propTypes = {
-  onSelectStt: PropTypes.func,
 }
 
 export default AdminFeedbackReports

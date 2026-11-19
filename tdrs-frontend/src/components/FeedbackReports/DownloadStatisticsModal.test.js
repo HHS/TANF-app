@@ -1,7 +1,17 @@
 import React, { useState } from 'react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import DownloadStatisticsModal from './DownloadStatisticsModal'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, useLocation } from 'react-router-dom'
+
+function CurrentLocation() {
+  const { pathname, search } = useLocation()
+  return (
+    <output data-testid="location">
+      {pathname}
+      {search}
+    </output>
+  )
+}
 
 const statistics = {
   report_source_id: 42,
@@ -37,8 +47,9 @@ const renderModal = (overrides = {}) => {
   }
   return {
     ...render(
-      <MemoryRouter>
+      <MemoryRouter initialEntries={['/manage-feedback-reports']}>
         <DownloadStatisticsModal {...props} />
+        <CurrentLocation />
       </MemoryRouter>
     ),
     props,
@@ -138,25 +149,22 @@ describe('DownloadStatisticsModal', () => {
     )
     expect(screen.getByRole('link', { name: 'Alabama' })).toHaveAttribute(
       'href',
-      '/feedback-reports?view=stt&stt=1&year=2025&type=FRA'
+      '/feedback-reports?stt=1&year=2025&type=FRA'
     )
     expect(screen.getByRole('link', { name: 'Example Tribe' })).toHaveAttribute(
       'href',
-      '/feedback-reports?view=stt&stt=3&year=2025&type=FRA'
+      '/feedback-reports?stt=3&year=2025&type=FRA'
     )
   })
 
-  it('selects the jurisdiction and source context on an ordinary link click', () => {
-    const onSelectStt = jest.fn()
+  it('navigates normally to the jurisdiction reports on an ordinary link click', () => {
     const reportContext = { year: 2025, reportType: 'TANF_SSP' }
-    renderModal({ onSelectStt, reportContext })
+    renderModal({ reportContext })
 
     fireEvent.click(screen.getByRole('link', { name: 'Alabama' }))
 
-    expect(onSelectStt).toHaveBeenCalledTimes(1)
-    expect(onSelectStt).toHaveBeenCalledWith(
-      statistics.regions[0].stts[0],
-      reportContext
+    expect(screen.getByTestId('location')).toHaveTextContent(
+      '/feedback-reports?stt=1&year=2025&type=TANF_SSP'
     )
   })
 
@@ -167,15 +175,15 @@ describe('DownloadStatisticsModal', () => {
     { altKey: true },
     { button: 1 },
   ])('preserves browser link behavior for %o', (clickOptions) => {
-    const onSelectStt = jest.fn()
     renderModal({
-      onSelectStt,
       reportContext: { year: 2025, reportType: 'TANF_SSP' },
     })
     const link = screen.getByRole('link', { name: 'Alabama' })
 
     expect(fireEvent.click(link, clickOptions)).toBe(true)
-    expect(onSelectStt).not.toHaveBeenCalled()
+    expect(screen.getByTestId('location').textContent).toBe(
+      '/manage-feedback-reports'
+    )
   })
 
   it('keeps jurisdiction links within the modal keyboard focus cycle', async () => {

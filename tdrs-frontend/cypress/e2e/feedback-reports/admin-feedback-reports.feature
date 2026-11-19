@@ -10,7 +10,7 @@ Feature: Admin Feedback Reports
         And no upload form is visible
 
     Scenario: DIGIT Team member sees upload form after selecting fiscal year
-        When 'DIGIT Diana' navigates to Feedback Reports
+        When 'DIGIT Diana' navigates to Manage Feedback Reports
         And 'DIGIT Diana' selects fiscal year '2025'
         Then 'DIGIT Diana' sees the upload form for fiscal year '2025'
         And 'DIGIT Diana' sees the upload history section
@@ -19,7 +19,7 @@ Feature: Admin Feedback Reports
     # Commenting out for now, need to revisit later.
     #
     # Scenario: DIGIT Team member can upload a valid feedback report
-    #     When 'DIGIT Diana' navigates to Feedback Reports
+    #     When 'DIGIT Diana' navigates to Manage Feedback Reports
     #     And 'DIGIT Diana' selects fiscal year '2025'
     #     And 'DIGIT Diana' uploads 'FY2025_valid_single_stt.zip' with date '01/15/2025'
     #     Then 'DIGIT Diana' sees the upload success message
@@ -29,26 +29,26 @@ Feature: Admin Feedback Reports
     # Validation error tests
 
     Scenario: Error when submitting without a file
-        When 'DIGIT Diana' navigates to Feedback Reports
+        When 'DIGIT Diana' navigates to Manage Feedback Reports
         And 'DIGIT Diana' selects fiscal year '2025'
         And 'DIGIT Diana' enters date '01/15/2025' but no file
         And 'DIGIT Diana' clicks upload
         Then 'DIGIT Diana' sees the error 'No file selected.'
 
     Scenario: Error when selecting a non-ZIP file
-        When 'DIGIT Diana' navigates to Feedback Reports
+        When 'DIGIT Diana' navigates to Manage Feedback Reports
         And 'DIGIT Diana' selects fiscal year '2025'
         And 'DIGIT Diana' selects a non-ZIP file
         Then 'DIGIT Diana' sees the error 'Invalid file. Make sure to select a zip file.'
 
     Scenario: Error when ZIP fiscal year does not match
-        When 'DIGIT Diana' navigates to Feedback Reports
+        When 'DIGIT Diana' navigates to Manage Feedback Reports
         And 'DIGIT Diana' selects fiscal year '2024'
         And 'DIGIT Diana' selects 'FY2025_valid_single_stt.zip'
         Then 'DIGIT Diana' sees the error about fiscal year mismatch
 
     Scenario: Error when submitting without a date
-        When 'DIGIT Diana' navigates to Feedback Reports
+        When 'DIGIT Diana' navigates to Manage Feedback Reports
         And 'DIGIT Diana' selects fiscal year '2025'
         And 'DIGIT Diana' selects 'FY2025_valid_single_stt.zip' but no date
         And 'DIGIT Diana' clicks upload
@@ -57,23 +57,23 @@ Feature: Admin Feedback Reports
     # Report Type Selection tests
 
     Scenario: Report type radio selector is visible with TANF/SSP, Tribal TANF, and FRA options
-        When 'DIGIT Diana' navigates to Feedback Reports
+        When 'DIGIT Diana' navigates to Manage Feedback Reports
         Then 'DIGIT Diana' sees the report type selector with 'TANF/SSP', 'Tribal TANF', and 'FRA'
 
     Scenario: Selecting Tribal TANF updates the upload header
-        When 'DIGIT Diana' navigates to Feedback Reports
+        When 'DIGIT Diana' navigates to Manage Feedback Reports
         And 'DIGIT Diana' selects report type 'Tribal TANF'
         And 'DIGIT Diana' selects fiscal year '2025'
         Then 'DIGIT Diana' sees the upload header 'Fiscal Year 2025 — Upload Tribal TANF Feedback Reports'
 
     Scenario: Selecting FRA updates the upload header
-        When 'DIGIT Diana' navigates to Feedback Reports
+        When 'DIGIT Diana' navigates to Manage Feedback Reports
         And 'DIGIT Diana' selects report type 'FRA'
         And 'DIGIT Diana' selects fiscal year '2025'
         Then 'DIGIT Diana' sees the upload header 'Fiscal Year 2025 — Upload FRA Feedback Reports'
 
     Scenario: Default report type is TANF/SSP
-        When 'DIGIT Diana' navigates to Feedback Reports
+        When 'DIGIT Diana' navigates to Manage Feedback Reports
         And 'DIGIT Diana' selects fiscal year '2025'
         Then 'DIGIT Diana' sees the upload header 'Fiscal Year 2025 — Upload TANF/SSP Feedback Reports'
 
@@ -81,7 +81,7 @@ Feature: Admin Feedback Reports
 
     Scenario: OFA System Admin can access admin feedback reports
         Given 'Admin Alex' logs in
-        When 'Admin Alex' navigates to Feedback Reports
+        When 'Admin Alex' navigates to Manage Feedback Reports
         And 'Admin Alex' selects fiscal year '2025'
         Then 'Admin Alex' sees the upload form for fiscal year '2025'
 
@@ -90,7 +90,7 @@ Feature: Admin Feedback Reports
     Scenario: Admin opens a jurisdiction report view and searches another fiscal year
         Given feedback report download statistics exist
         And admin jurisdiction feedback reports exist
-        When 'DIGIT Diana' navigates to Feedback Reports
+        When 'DIGIT Diana' navigates to Manage Feedback Reports
         And 'DIGIT Diana' selects fiscal year '2025'
         Then 'DIGIT Diana' sees the download statistics count
         When 'DIGIT Diana' opens the download statistics
@@ -99,11 +99,13 @@ Feature: Admin Feedback Reports
         When the admin searches Alabama feedback reports for fiscal year '2024'
         Then the admin sees Alabama feedback reports for fiscal year '2024'
         When the admin returns to Manage Feedback Reports
+        Then no upload form is visible
+        When 'DIGIT Diana' selects fiscal year '2024'
         Then 'DIGIT Diana' sees the upload form for fiscal year '2024'
 
     Scenario: DIGIT Team member can review feedback report download statistics
         Given feedback report download statistics exist
-        When 'DIGIT Diana' navigates to Feedback Reports
+        When 'DIGIT Diana' navigates to Manage Feedback Reports
         And 'DIGIT Diana' selects fiscal year '2025'
         Then 'DIGIT Diana' sees the download statistics count
         When 'DIGIT Diana' opens the download statistics
@@ -113,9 +115,9 @@ Feature: Admin Feedback Reports
         Then the download statistics modal is closed and focus returns to its trigger
 
     Scenario: Download statistics remain operable on a narrow viewport
-        Given the viewport is narrow
-        And feedback report download statistics exist
-        When 'DIGIT Diana' navigates to Feedback Reports
+        Given feedback report download statistics exist
+        When 'DIGIT Diana' navigates to Manage Feedback Reports
+        And the viewport is narrow
         And 'DIGIT Diana' selects fiscal year '2025'
         Then 'DIGIT Diana' sees the download statistics count
         When 'DIGIT Diana' opens the download statistics

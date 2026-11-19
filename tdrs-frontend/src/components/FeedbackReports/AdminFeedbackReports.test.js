@@ -1,10 +1,17 @@
 import React from 'react'
 import { Provider } from 'react-redux'
 import { act, render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import {
+  MemoryRouter,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from 'react-router-dom'
 import configureStore from 'redux-mock-store'
 import { thunk } from 'redux-thunk'
 import AdminFeedbackReports from './AdminFeedbackReports'
+import STTFeedbackReports from './STTFeedbackReports'
 import { get, post } from '../../fetch-instance'
 
 jest.mock('../../fetch-instance')
@@ -16,9 +23,61 @@ jest.mock('@uswds/uswds/src/js/components', () => ({
   datePicker: {
     init: jest.fn(),
   },
+  comboBox: {
+    init: jest.fn(),
+  },
 }))
 
 const mockStore = configureStore([thunk])
+
+function NavigationProbe() {
+  const { pathname, search } = useLocation()
+  const navigate = useNavigate()
+  return (
+    <>
+      <output data-testid="location">
+        {pathname}
+        {search}
+      </output>
+      <button type="button" onClick={() => navigate(-1)}>
+        Back
+      </button>
+    </>
+  )
+}
+
+const renderManagementRoutes = () => {
+  const store = mockStore({
+    auth: {
+      authenticated: true,
+      user: {
+        account_approval_status: 'Approved',
+        roles: [{ name: 'DIGIT Team', permissions: [] }],
+      },
+    },
+    stts: {
+      sttList: [{ id: 1, name: 'Alabama', type: 'state' }],
+      loading: false,
+    },
+  })
+  return render(
+    <Provider store={store}>
+      <MemoryRouter initialEntries={['/manage-feedback-reports?year=2025']}>
+        <Routes>
+          <Route
+            path="/manage-feedback-reports"
+            element={<AdminFeedbackReports />}
+          />
+          <Route
+            path="/feedback-reports"
+            element={<STTFeedbackReports adminView />}
+          />
+        </Routes>
+        <NavigationProbe />
+      </MemoryRouter>
+    </Provider>
+  )
+}
 
 describe('AdminFeedbackReports', () => {
   let store
@@ -55,14 +114,11 @@ describe('AdminFeedbackReports', () => {
     }))
   })
 
-  const renderComponent = (
-    initialEntries = ['/feedback-reports'],
-    props = {}
-  ) => {
+  const renderComponent = (initialEntries = ['/manage-feedback-reports']) => {
     return render(
       <MemoryRouter initialEntries={initialEntries}>
         <Provider store={store}>
-          <AdminFeedbackReports {...props} />
+          <AdminFeedbackReports />
         </Provider>
       </MemoryRouter>
     )
@@ -383,14 +439,14 @@ describe('AdminFeedbackReports', () => {
     })
 
     it('initializes report type from URL param', () => {
-      renderComponent(['/feedback-reports?type=FRA'])
+      renderComponent(['/manage-feedback-reports?type=FRA'])
 
       const fraRadio = screen.getByLabelText('FRA')
       expect(fraRadio).toBeChecked()
     })
 
     it('defaults to TANF_SSP for invalid URL type param', () => {
-      renderComponent(['/feedback-reports?type=INVALID'])
+      renderComponent(['/manage-feedback-reports?type=INVALID'])
 
       const tanfRadio = screen.getByLabelText('TANF/SSP')
       expect(tanfRadio).toBeChecked()
@@ -888,7 +944,6 @@ describe('AdminFeedbackReports', () => {
     })
 
     it('uses the clicked source context after an older history request finishes last', async () => {
-      const onSelectStt = jest.fn()
       let resolveEarlierHistory
       get.mockImplementation((url, options) => {
         if (url.includes('/download-statistics/')) {
@@ -907,7 +962,10 @@ describe('AdminFeedbackReports', () => {
             },
           })
         }
-        if (options.params.report_type === 'TANF_SSP') {
+        if (
+          url.includes('/report-sources/') &&
+          options.params.report_type === 'TANF_SSP'
+        ) {
           return new Promise((resolve) => {
             resolveEarlierHistory = resolve
           })
@@ -915,13 +973,22 @@ describe('AdminFeedbackReports', () => {
         return Promise.resolve({ ok: true, data: { results: [] } })
       })
 
-      renderComponent(['/feedback-reports?year=2025'], { onSelectStt })
+      renderManagementRoutes()
       await waitFor(() => expect(resolveEarlierHistory).toBeDefined())
       fireEvent.click(screen.getByLabelText('FRA'))
       await waitFor(() =>
         expect(get).toHaveBeenCalledWith(
           expect.stringContaining('/reports/report-sources/'),
           { params: { year: 2025, report_type: 'FRA' } }
+        )
+      )
+      fireEvent.change(screen.getByLabelText('Fiscal Year'), {
+        target: { value: '2024' },
+      })
+      await waitFor(() =>
+        expect(get).toHaveBeenCalledWith(
+          expect.stringContaining('/reports/report-sources/'),
+          { params: { year: '2024', report_type: 'FRA' } }
         )
       )
       await act(async () => {
@@ -952,13 +1019,35 @@ describe('AdminFeedbackReports', () => {
       })
       expect(jurisdictionLink).toHaveAttribute(
         'href',
-        '/feedback-reports?view=stt&stt=1&year=2025&type=TANF_SSP'
+        '/feedback-reports?stt=1&year=2025&type=TANF_SSP'
       )
       fireEvent.click(jurisdictionLink)
-      expect(onSelectStt).toHaveBeenCalledWith(
-        { id: 1, name: 'Alabama', downloaded_at: null },
-        { year: 2025, reportType: 'TANF_SSP' }
+      await waitFor(() =>
+        expect(get).toHaveBeenCalledWith(expect.stringContaining('/reports/'), {
+          params: { stt: 1, year: 2025, report_type: 'TANF_SSP' },
+        })
       )
+      expect(screen.getByTestId('location')).toHaveTextContent(
+        '/feedback-reports?stt=1&year=2025&type=TANF_SSP'
+      )
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+      expect(document.body.style.overflow).toBe('')
+      expect(
+        screen.getByRole('heading', { name: /Alabama.*2025/ })
+      ).toBeInTheDocument()
+      expect(screen.getByLabelText(/Fiscal Year/)).toHaveValue('2025')
+      expect(screen.getByLabelText('TANF/SSP')).toBeChecked()
+      fireEvent.click(screen.getByRole('button', { name: 'Back' }))
+      await waitFor(() =>
+        expect(screen.getByLabelText('Fiscal Year')).toHaveValue('2024')
+      )
+      const restoredUrl = new URL(
+        screen.getByTestId('location').textContent,
+        'http://localhost'
+      )
+      expect(restoredUrl.pathname).toBe('/manage-feedback-reports')
+      expect(restoredUrl.searchParams.get('year')).toBe('2024')
+      expect(restoredUrl.searchParams.get('type')).toBe('FRA')
     })
 
     it('shows statistics loading and request error states', async () => {

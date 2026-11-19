@@ -362,7 +362,6 @@ function STTFeedbackReports({ adminView = false }) {
                 onClick={() => {
                   setSearchParams(
                     new URLSearchParams({
-                      view: 'stt',
                       stt: selectedStt.id,
                       year: selectedYear,
                       type: selectedReportType,

@@ -48,10 +48,17 @@ jest.mock('../Reports', () => {
   }
 })
 
-jest.mock('../FeedbackReports/FeedbackReports', () => {
+jest.mock('../FeedbackReports/STTFeedbackReports', () => {
   const React = require('react')
-  return function MockFeedbackReports() {
-    return <div>Feedback Reports</div>
+  return function MockSTTFeedbackReports({ adminView }) {
+    return <div>Reading reports: {adminView ? 'admin' : 'non-admin'}</div>
+  }
+})
+
+jest.mock('../FeedbackReports/AdminFeedbackReports', () => {
+  const React = require('react')
+  return function MockAdminFeedbackReports() {
+    return <div>Managing reports</div>
   }
 })
 
@@ -87,8 +94,18 @@ describe('Routes.js', () => {
     mockProfileEditMode = false
   })
 
-  describe('feedback report view query parameters', () => {
-    const renderFeedbackEntry = (role, permissions, approval = 'Approved') => {
+  describe('feedback report routes', () => {
+    const reportPermissions = [
+      'view_reportfile',
+      'view_reportsource',
+      'add_reportsource',
+    ]
+    const renderFeedbackEntry = (
+      role,
+      permissions,
+      approval = 'Approved',
+      entry = '/feedback-reports?stt=1&year=2025'
+    ) => {
       const store = mockStore(
         makeState({
           authUser: {
@@ -104,9 +121,7 @@ describe('Routes.js', () => {
       )
       render(
         <Provider store={store}>
-          <MemoryRouter
-            initialEntries={['/feedback-reports?view=stt&stt=1&year=2025']}
-          >
+          <MemoryRouter initialEntries={[entry]}>
             <Routes />
             <CurrentLocation />
           </MemoryRouter>
@@ -115,13 +130,11 @@ describe('Routes.js', () => {
     }
 
     it.each(['DIGIT Team', 'OFA System Admin'])('allows %s', (role) => {
-      renderFeedbackEntry(role, [
-        'view_reportfile',
-        'view_reportsource',
-        'add_reportsource',
-      ])
+      renderFeedbackEntry(role, reportPermissions)
+      expect(screen.getByText('Reading reports: admin')).toBeInTheDocument()
+      expect(screen.queryByText('Managing reports')).not.toBeInTheDocument()
       expect(screen.getByTestId('location')).toHaveTextContent(
-        '/feedback-reports?view=stt&stt=1&year=2025'
+        '/feedback-reports?stt=1&year=2025'
       )
     })
 
@@ -129,8 +142,11 @@ describe('Routes.js', () => {
       'preserves the existing report route for %s',
       (role) => {
         renderFeedbackEntry(role, ['view_reportfile'])
+        expect(
+          screen.getByText('Reading reports: non-admin')
+        ).toBeInTheDocument()
         expect(screen.getByTestId('location')).toHaveTextContent(
-          '/feedback-reports?view=stt&stt=1&year=2025'
+          '/feedback-reports?stt=1&year=2025'
         )
       }
     )
@@ -152,6 +168,69 @@ describe('Routes.js', () => {
         expect(screen.getByTestId('location')).toHaveTextContent('/home')
       )
     })
+
+    it.each(['DIGIT Team', 'OFA System Admin', 'Custom report manager'])(
+      'renders management directly for approved %s with report permissions',
+      (role) => {
+        renderFeedbackEntry(
+          role,
+          reportPermissions,
+          'Approved',
+          '/manage-feedback-reports'
+        )
+        expect(screen.getByText('Managing reports')).toBeInTheDocument()
+        expect(screen.queryByText(/Reading reports:/)).not.toBeInTheDocument()
+        expect(
+          screen.getByRole('heading', { name: 'Manage Feedback Reports' })
+        ).toBeInTheDocument()
+        expect(
+          screen.getByText(
+            'TANF WPR, SSP WPR, TANF & SSP Combined, Time Limit, and FRA Reports'
+          )
+        ).toBeInTheDocument()
+      }
+    )
+
+    it.each([
+      ['Data Analyst', ['view_reportfile'], 'Approved'],
+      ['OFA Regional Staff', ['view_reportfile'], 'Approved'],
+      ['OFA Admin', [], 'Approved'],
+      ['Developer', ['view_reportfile'], 'Approved'],
+      ...reportPermissions.map((missing) => [
+        'DIGIT Team',
+        reportPermissions.filter((permission) => permission !== missing),
+        'Approved',
+      ]),
+      ['DIGIT Team', reportPermissions, 'Pending'],
+    ])(
+      'denies direct management access for %s with %j (%s)',
+      async (role, permissions, approval) => {
+        renderFeedbackEntry(
+          role,
+          permissions,
+          approval,
+          '/manage-feedback-reports'
+        )
+        await waitFor(() =>
+          expect(screen.getByTestId('location')).toHaveTextContent('/home')
+        )
+        expect(screen.queryByText('Managing reports')).not.toBeInTheDocument()
+      }
+    )
+
+    it.each([
+      ['view_reportfile'],
+      ['view_reportfile', 'view_reportsource'],
+      ['view_reportfile', 'add_reportsource'],
+    ])(
+      'does not enable adminView for incomplete management permissions: %j',
+      (...permissions) => {
+        renderFeedbackEntry('OFA System Admin', permissions)
+        expect(
+          screen.getByText('Reading reports: non-admin')
+        ).toBeInTheDocument()
+      }
+    )
   })
 
   describe('login destinations', () => {
@@ -515,7 +594,7 @@ describe('Routes.js', () => {
     })
   })
 
-  it('uses upload feedback reports title and subtitle when user can upload', () => {
+  it('uses a fixed reading title and subtitle even when an admin supplies an old view parameter', () => {
     const store = mockStore(
       makeState({
         authUser: {
@@ -531,19 +610,17 @@ describe('Routes.js', () => {
     )
     render(
       <Provider store={store}>
-        <MemoryRouter initialEntries={['/feedback-reports']}>
+        <MemoryRouter initialEntries={['/feedback-reports?view=manage']}>
           <Routes />
         </MemoryRouter>
       </Provider>
     )
 
     expect(
-      screen.getByRole('heading', { name: 'Upload Feedback Reports' })
+      screen.getByRole('heading', { name: 'Feedback Reports' })
     ).toBeInTheDocument()
     expect(
-      screen.getByText(
-        'TANF WPR, SSP WPR, TANF & SSP Combined, and Time Limit Reports'
-      )
+      screen.getByText('View and download jurisdiction feedback reports')
     ).toBeInTheDocument()
   })
 
@@ -568,9 +645,8 @@ describe('Routes.js', () => {
     expect(
       screen.getByRole('heading', { name: 'Feedback Reports' })
     ).toBeInTheDocument()
-    // STT view should not have a subtitle
     expect(
-      screen.queryByText('Work Participation Rate and Time Limit Reports')
-    ).not.toBeInTheDocument()
+      screen.getByText('View and download jurisdiction feedback reports')
+    ).toBeInTheDocument()
   })
 })
