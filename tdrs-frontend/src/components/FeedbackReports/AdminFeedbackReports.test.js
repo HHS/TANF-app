@@ -302,20 +302,62 @@ describe('AdminFeedbackReports', () => {
       expect(screen.getByText(/each STT/)).toBeInTheDocument()
     })
 
-    it('resets form state when report type changes', async () => {
+    it.each([
+      ['TANF/SSP', 'FRA', 'FRA'],
+      ['FRA', 'Tribal TANF', 'TRIBAL_TANF'],
+      ['Tribal TANF', 'TANF/SSP', 'TANF_SSP'],
+    ])(
+      'submits the selected file after switching from %s to %s',
+      async (initialType, nextType, reportType) => {
+        post.mockResolvedValue({ data: { id: 1 }, ok: true })
+        renderComponent()
+        fireEvent.click(screen.getByLabelText(initialType))
+        const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
+        fireEvent.change(fiscalYearSelect, { target: { value: '2025' } })
+        await selectFile('FY2025.zip')
+        setDateInputValue('2025-02-28')
+
+        fireEvent.click(screen.getByLabelText(nextType))
+
+        expect(screen.getByText(/Selected File FY2025.zip/)).toBeInTheDocument()
+        expect(document.getElementById('date-extracted-on')).toHaveValue(
+          '2025-02-28'
+        )
+        fireEvent.click(
+          screen.getByRole('button', { name: /Upload & Notify STTs/i })
+        )
+
+        await waitFor(() => expect(post).toHaveBeenCalledTimes(1))
+        const formData = post.mock.calls[0][1]
+        expect(formData.get('file')).toBeInstanceOf(File)
+        expect(formData.get('file').name).toBe('FY2025.zip')
+        expect(formData.get('year')).toBe('2025')
+        expect(formData.get('date_extracted_on')).toBe('2025-02-28')
+        expect(formData.get('report_type')).toBe(reportType)
+        expect(screen.queryByText('No file selected.')).not.toBeInTheDocument()
+        expect(
+          await screen.findByText(/Feedback report uploaded successfully/)
+        ).toBeInTheDocument()
+      }
+    )
+
+    it('preserves file validation errors when the report type changes', async () => {
       renderComponent()
-
       await selectFiscalYear('2025')
-
+      const fileInput = document.querySelector('input[type="file"]')
+      const file = new File(['content'], 'feedback.txt', { type: 'text/plain' })
+      fireEvent.change(fileInput, { target: { files: [file] } })
+      const invalidFileMessage = 'Invalid file. Make sure to select a zip file.'
+      await screen.findByText(invalidFileMessage)
       setDateInputValue('2025-02-28')
 
-      // Change report type
-      const fraRadio = screen.getByLabelText('FRA')
-      fireEvent.click(fraRadio)
+      fireEvent.click(screen.getByLabelText('FRA'))
 
-      // Date should be cleared
-      const dateInput = document.getElementById('date-extracted-on')
-      expect(dateInput.value).toBe('')
+      expect(screen.getByText(invalidFileMessage)).toBeInTheDocument()
+      fireEvent.click(
+        screen.getByRole('button', { name: /Upload & Notify STTs/i })
+      )
+      expect(post).not.toHaveBeenCalled()
     })
 
     it('fetches history with report_type when type changes', async () => {
@@ -1305,34 +1347,143 @@ describe('AdminFeedbackReports', () => {
       // Date should be cleared
       const dateInput = document.getElementById('date-extracted-on')
       expect(dateInput.value).toBe('')
+      expect(
+        screen.queryByText(/Selected File FY2025.zip/)
+      ).not.toBeInTheDocument()
     })
 
-    it('resets form when fiscal year changes', async () => {
+    it('preserves the file and date across selector changes and clears the upload after success', async () => {
+      post.mockResolvedValue({ data: { id: 1 }, ok: true })
       renderComponent()
-
       await selectFiscalYear('2025')
-
+      await selectFile('feedback.zip')
       setDateInputValue('2025-02-28')
+      const originalFileInput = document.getElementById('feedback_reports')
+      // USWDS owns the preview DOM independently of React's selected-file text.
+      const preview = document.createElement('div')
+      preview.className = 'usa-file-input__preview'
+      preview.textContent = 'feedback.zip'
+      originalFileInput.parentNode.appendChild(preview)
 
-      // Verify date was set
-      const dateInput = document.getElementById('date-extracted-on')
-      expect(dateInput.value).toBe('2025-02-28')
+      const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
+      fireEvent.change(fiscalYearSelect, { target: { value: '2024' } })
+      fireEvent.click(screen.getByLabelText('FRA'))
 
-      // Change fiscal year
+      expect(screen.getByText(/Selected File feedback.zip/)).toBeInTheDocument()
+      expect(screen.getByText('feedback.zip')).toBeVisible()
+      expect(document.getElementById('date-extracted-on')).toHaveValue(
+        '2025-02-28'
+      )
+      fireEvent.click(
+        screen.getByRole('button', { name: /Upload & Notify STTs/i })
+      )
+      await screen.findByText(/Feedback report uploaded successfully/)
+      expect(post).toHaveBeenCalledTimes(1)
+      const formData = post.mock.calls[0][1]
+      expect(formData.get('file').name).toBe('feedback.zip')
+      expect(formData.get('year')).toBe('2024')
+      expect(formData.get('report_type')).toBe('FRA')
+      expect(formData.get('date_extracted_on')).toBe('2025-02-28')
+      expect(screen.queryByText('feedback.zip')).not.toBeInTheDocument()
+      expect(document.getElementById('date-extracted-on')).toHaveValue('')
+      expect(
+        screen.queryByText(/Selected File feedback.zip/)
+      ).not.toBeInTheDocument()
+    })
+
+    it('retains a mismatched file and blocks submission until the fiscal year matches again', async () => {
+      post.mockResolvedValue({ data: { id: 1 }, ok: true })
+      renderComponent()
+      await selectFiscalYear('2025')
+      await selectFile('FY2025.zip')
+      setDateInputValue('2025-02-28')
+      const mismatchMessage =
+        "Your file's Fiscal Year does not match the selected Fiscal Year for this upload."
       const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
       fireEvent.change(fiscalYearSelect, { target: { value: '2024' } })
 
-      await waitFor(() => {
-        expect(
-          screen.getByText(
-            'Fiscal Year 2024 — Upload TANF/SSP Feedback Reports'
-          )
-        ).toBeInTheDocument()
-      })
+      expect(screen.getByText(/Selected File FY2025.zip/)).toBeInTheDocument()
+      expect(screen.getByText(mismatchMessage)).toBeInTheDocument()
+      fireEvent.click(
+        screen.getByRole('button', { name: /Upload & Notify STTs/i })
+      )
+      expect(post).not.toHaveBeenCalled()
+      expect(screen.queryByText('No file selected.')).not.toBeInTheDocument()
 
-      // Date should be cleared (component re-rendered, get fresh reference)
-      const newDateInput = document.getElementById('date-extracted-on')
-      expect(newDateInput.value).toBe('')
+      fireEvent.change(fiscalYearSelect, { target: { value: '2025' } })
+      expect(screen.queryByText(mismatchMessage)).not.toBeInTheDocument()
+      fireEvent.click(
+        screen.getByRole('button', { name: /Upload & Notify STTs/i })
+      )
+      await screen.findByText(/Feedback report uploaded successfully/)
+      expect(post.mock.calls[0][1].get('file').name).toBe('FY2025.zip')
+      expect(post.mock.calls[0][1].get('year')).toBe('2025')
+    })
+
+    it('preserves the upload when the fiscal-year selector is cleared and selected again', async () => {
+      renderComponent()
+      await selectFiscalYear('2025')
+      await selectFile('FY2025.zip')
+      setDateInputValue('2025-02-28')
+      const originalFileInput = document.getElementById('feedback_reports')
+      const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
+
+      fireEvent.change(fiscalYearSelect, { target: { value: '' } })
+      expect(originalFileInput).not.toBeVisible()
+      expect(post).not.toHaveBeenCalled()
+      fireEvent.change(fiscalYearSelect, { target: { value: '2025' } })
+
+      expect(document.getElementById('feedback_reports')).toBe(
+        originalFileInput
+      )
+      expect(originalFileInput).toBeVisible()
+      expect(screen.getByText(/Selected File FY2025.zip/)).toBeInTheDocument()
+      expect(document.getElementById('date-extracted-on')).toHaveValue(
+        '2025-02-28'
+      )
+    })
+
+    it('allows correcting the fiscal year after selecting a mismatched file without reselecting it', async () => {
+      post.mockResolvedValue({ data: { id: 1 }, ok: true })
+      renderComponent()
+      await selectFiscalYear('2025')
+      await selectFile('FY2024.zip')
+      const mismatchMessage =
+        "Your file's Fiscal Year does not match the selected Fiscal Year for this upload."
+      expect(await screen.findByText(mismatchMessage)).toBeInTheDocument()
+
+      fireEvent.change(screen.getByLabelText('Fiscal Year'), {
+        target: { value: '2024' },
+      })
+      expect(screen.queryByText(mismatchMessage)).not.toBeInTheDocument()
+      setDateInputValue('2024-02-28')
+      fireEvent.click(
+        screen.getByRole('button', { name: /Upload & Notify STTs/i })
+      )
+      await screen.findByText(/Feedback report uploaded successfully/)
+      expect(post.mock.calls[0][1].get('file').name).toBe('FY2024.zip')
+      expect(post.mock.calls[0][1].get('year')).toBe('2024')
+    })
+
+    it('keeps the selected file available for retry after an unsuccessful upload', async () => {
+      post.mockResolvedValue({ data: { detail: 'Upload failed' }, ok: false })
+      renderComponent()
+      await selectFiscalYear('2025')
+      await selectFile('FY2025.zip')
+      setDateInputValue('2025-02-28')
+      const originalFileInput = document.getElementById('feedback_reports')
+      fireEvent.click(
+        screen.getByRole('button', { name: /Upload & Notify STTs/i })
+      )
+      await screen.findByText('Upload failed')
+
+      expect(document.getElementById('feedback_reports')).toBe(
+        originalFileInput
+      )
+      expect(screen.getByText(/Selected File FY2025.zip/)).toBeInTheDocument()
+      expect(document.getElementById('date-extracted-on')).toHaveValue(
+        '2025-02-28'
+      )
     })
   })
 

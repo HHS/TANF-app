@@ -55,6 +55,7 @@ function AdminFeedbackReports() {
   )
   const [selectedYear, setSelectedYear] = useState(getValidatedYear)
   const [selectedFile, setSelectedFile] = useState(null)
+  const [uploadFormVersion, setUploadFormVersion] = useState(0)
   const [uploadHistory, setUploadHistory] = useState([])
   const [loading, setLoading] = useState(false)
   const [historyLoading, setHistoryLoading] = useState(false)
@@ -182,6 +183,14 @@ function AdminFeedbackReports() {
     return match ? parseInt(match[1], 10) : null
   }
 
+  const getFileError = (file, year) => {
+    if (!/\.zip$/i.test(file.name)) return INVALID_EXT_ERROR
+    const fileYear = extractFYFromFilename(file.name)
+    return fileYear && year && fileYear !== parseInt(year, 10)
+      ? FY_MISMATCH_ERROR
+      : null
+  }
+
   /**
    * Handles file selection from the file input
    */
@@ -210,21 +219,11 @@ function AdminFeedbackReports() {
 
     await loadFile()
 
-    // Validate file extension after USWDS has created preview
-    const zipExtension = /(\.zip)$/i
-    const isZip = zipExtension.exec(fileInputValue.name)
-
-    if (!isZip) {
+    setSelectedFile(fileInputValue)
+    const validationError = getFileError(fileInputValue, selectedYear)
+    if (validationError) {
       createFileInputErrorState(input, dropTarget)
-      setFileError(INVALID_EXT_ERROR)
-      return
-    }
-
-    // Validate fiscal year in filename matches selected fiscal year
-    const fileFY = extractFYFromFilename(fileInputValue.name)
-    if (fileFY && selectedYear && fileFY !== parseInt(selectedYear, 10)) {
-      createFileInputErrorState(input, dropTarget)
-      setFileError(FY_MISMATCH_ERROR)
+      setFileError(validationError)
       return
     }
 
@@ -237,7 +236,6 @@ function AdminFeedbackReports() {
     }
     dropTarget.classList.remove('has-invalid-file')
 
-    setSelectedFile(fileInputValue)
     inputRef.current.value = null
   }
 
@@ -266,6 +264,10 @@ function AdminFeedbackReports() {
     if (!selectedFile) {
       setFileError(NO_FILE_ERROR)
       isValid = false
+    } else {
+      const validationError = getFileError(selectedFile, selectedYear)
+      setFileError(validationError)
+      if (validationError) isValid = false
     }
 
     // Read date directly from DOM since USWDS manages the input
@@ -313,6 +315,7 @@ function AdminFeedbackReports() {
       setDateError(null)
       setFormSubmitAttempted(false)
       setDateTouched(false)
+      setUploadFormVersion((version) => version + 1)
 
       // Refresh upload history
       fetchUploadHistory()
@@ -366,25 +369,12 @@ function AdminFeedbackReports() {
   }
 
   /**
-   * Resets form state (shared between year and report type changes)
-   */
-  const resetFormState = () => {
-    closeDownloadStatistics()
-    setSelectedFile(null)
-    setFileError(null)
-    clearDatePicker()
-    setDateError(null)
-    setFormSubmitAttempted(false)
-    setDateTouched(false)
-    setAlert({ active: false, type: null, message: null })
-  }
-
-  /**
    * Handles report type selection change
    */
   const handleReportTypeChange = (value) => {
     setSelectedReportType(value)
-    resetFormState()
+    closeDownloadStatistics()
+    setAlert({ active: false, type: null, message: null })
     updateSearchParams({ type: value })
   }
 
@@ -394,7 +384,15 @@ function AdminFeedbackReports() {
   const handleYearChange = (e) => {
     const newYear = e.target.value || null
     setSelectedYear(newYear)
-    resetFormState()
+    closeDownloadStatistics()
+    setAlert({ active: false, type: null, message: null })
+    if (selectedFile) {
+      const validationError = getFileError(selectedFile, newYear)
+      setFileError(validationError)
+      if (!validationError) {
+        inputRef.current?.parentNode.classList.remove('has-invalid-file')
+      }
+    }
     updateSearchParams(newYear ? { year: newYear } : { year: undefined })
   }
 
@@ -462,9 +460,9 @@ function AdminFeedbackReports() {
           </select>
         </div>
 
-        {/* Conditional content - only show when fiscal year is selected */}
-        {selectedYear && (
-          <>
+        {/* Keep the upload mounted so clearing a selector preserves the file preview. */}
+        {(selectedYear || selectedFile) && (
+          <div hidden={!selectedYear}>
             <hr className="margin-top-4 margin-bottom-4" />
 
             <h2
@@ -489,6 +487,7 @@ function AdminFeedbackReports() {
 
             {/* File Upload Section */}
             <FeedbackReportsUpload
+              key={uploadFormVersion}
               ref={uploadFormRef}
               selectedFile={selectedFile}
               fileError={fileError}
@@ -522,7 +521,7 @@ function AdminFeedbackReports() {
                 </PaginatedComponent>
               )}
             </div>
-          </>
+          </div>
         )}
         {downloadStatistics.sourceId !== null && (
           <DownloadStatisticsModal
