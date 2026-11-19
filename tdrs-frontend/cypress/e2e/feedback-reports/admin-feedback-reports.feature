@@ -87,7 +87,7 @@ Feature: Admin Feedback Reports
 
     # Download statistics
 
-    Scenario: Admin opens a jurisdiction report view and searches another fiscal year
+    Scenario: Admin opens a jurisdiction report view and automatically loads another fiscal year
         Given feedback report download statistics exist
         And admin jurisdiction feedback reports exist
         When 'DIGIT Diana' navigates to Manage Feedback Reports
@@ -96,7 +96,7 @@ Feature: Admin Feedback Reports
         When 'DIGIT Diana' opens the download statistics
         And the admin follows the Alabama feedback reports link
         Then the admin sees Alabama feedback reports for fiscal year '2025'
-        When the admin searches Alabama feedback reports for fiscal year '2024'
+        When the admin changes the Alabama feedback reports fiscal year to '2024'
         Then the admin sees Alabama feedback reports for fiscal year '2024'
         When the admin returns to Manage Feedback Reports
         Then no upload form is visible

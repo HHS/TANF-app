@@ -202,9 +202,9 @@ Then('the admin sees Alabama feedback reports for fiscal year {string}', (year) 
   cy.get('#feedback_reports').should('not.exist')
 })
 
-When('the admin searches Alabama feedback reports for fiscal year {string}', (year) => {
+When('the admin changes the Alabama feedback reports fiscal year to {string}', (year) => {
   cy.get('#fiscal-year-select').select(year)
-  cy.contains('button', 'Search').click()
+  cy.contains('button', /^Search$/).should('not.exist')
 })
 
 When('the admin returns to Manage Feedback Reports', navigateToManageFeedbackReports)

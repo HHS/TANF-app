@@ -170,7 +170,7 @@ describe('STTFeedbackReports', () => {
         </MemoryRouter>
       )
 
-    it('offers all available STTs and searches only submitted filters without an assigned STT', async () => {
+    it('offers all available STTs and automatically fetches reports when filters change', async () => {
       renderAdmin()
       expect(
         screen.getByRole('option', { name: 'Wisconsin' })
@@ -178,15 +178,17 @@ describe('STTFeedbackReports', () => {
       expect(
         screen.getByRole('option', { name: 'Example Tribe' })
       ).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: 'Search' })).toBeDisabled()
+      expect(
+        screen.queryByRole('button', { name: 'Search' })
+      ).not.toBeInTheDocument()
+      expect(get).not.toHaveBeenCalled()
       fireEvent.change(screen.getByLabelText('State, Tribe, or Territory'), {
         target: { value: 'Wisconsin' },
       })
+      expect(get).not.toHaveBeenCalled()
       fireEvent.change(screen.getByLabelText(/Fiscal Year/), {
         target: { value: '2025' },
       })
-      expect(get).not.toHaveBeenCalled()
-      fireEvent.click(screen.getByRole('button', { name: 'Search' }))
       await waitFor(() =>
         expect(get).toHaveBeenCalledWith(expect.stringContaining('/reports/'), {
           params: { stt: 10, year: 2025, report_type: 'TANF_SSP' },
@@ -198,21 +200,93 @@ describe('STTFeedbackReports', () => {
       fireEvent.change(screen.getByLabelText(/Fiscal Year/), {
         target: { value: '2024' },
       })
+      await waitFor(() =>
+        expect(get).toHaveBeenLastCalledWith(
+          expect.stringContaining('/reports/'),
+          { params: { stt: 10, year: 2024, report_type: 'TANF_SSP' } }
+        )
+      )
       fireEvent.click(screen.getByLabelText('FRA'))
+      await waitFor(() =>
+        expect(get).toHaveBeenLastCalledWith(
+          expect.stringContaining('/reports/'),
+          { params: { stt: 10, year: 2024, report_type: 'FRA' } }
+        )
+      )
       fireEvent.change(screen.getByLabelText('State, Tribe, or Territory'), {
         target: { value: 'Example Tribe' },
       })
-      expect(
-        screen.getByRole('heading', { name: /Wisconsin.*TANF\/SSP.*2025/ })
-      ).toBeInTheDocument()
-      expect(get).toHaveBeenCalledTimes(1)
-      fireEvent.click(screen.getByRole('button', { name: 'Search' }))
       await waitFor(() =>
         expect(get).toHaveBeenLastCalledWith(
           expect.stringContaining('/reports/'),
           { params: { stt: 20, year: 2024, report_type: 'TRIBAL_TANF' } }
         )
       )
+      expect(
+        screen.getByRole('heading', { name: /Example Tribe.*2024/ })
+      ).toBeInTheDocument()
+      expect(get).toHaveBeenCalledTimes(4)
+      fireEvent.change(screen.getByLabelText('State, Tribe, or Territory'), {
+        target: { value: 'Wisconsin' },
+      })
+      await waitFor(() =>
+        expect(get).toHaveBeenLastCalledWith(
+          expect.stringContaining('/reports/'),
+          { params: { stt: 10, year: 2024, report_type: 'TANF_SSP' } }
+        )
+      )
+    })
+
+    it('waits for an STT when the year is selected first and stops fetching when filters are cleared', async () => {
+      renderAdmin('/feedback-reports?year=2025')
+      expect(get).not.toHaveBeenCalled()
+      fireEvent.change(screen.getByLabelText('State, Tribe, or Territory'), {
+        target: { value: 'Wisconsin' },
+      })
+      await waitFor(() =>
+        expect(get).toHaveBeenCalledWith(expect.stringContaining('/reports/'), {
+          params: { stt: 10, year: 2025, report_type: 'TANF_SSP' },
+        })
+      )
+
+      fireEvent.change(screen.getByLabelText('State, Tribe, or Territory'), {
+        target: { value: '' },
+      })
+      expect(get).toHaveBeenCalledTimes(1)
+      expect(
+        screen.queryByRole('heading', { level: 2 })
+      ).not.toBeInTheDocument()
+
+      fireEvent.change(screen.getByLabelText('State, Tribe, or Territory'), {
+        target: { value: 'Wisconsin' },
+      })
+      await waitFor(() => expect(get).toHaveBeenCalledTimes(2))
+      fireEvent.change(screen.getByLabelText(/Fiscal Year/), {
+        target: { value: '' },
+      })
+      expect(get).toHaveBeenCalledTimes(2)
+      expect(
+        screen.queryByRole('heading', { level: 2 })
+      ).not.toBeInTheDocument()
+    })
+
+    it('automatically loads reports after an invalid deep-link selection is corrected', async () => {
+      renderAdmin('/feedback-reports?stt=10&year=2025invalid&type=unknown')
+      expect(get).not.toHaveBeenCalled()
+      const invalidSelectionMessage =
+        'Select a valid State, Tribe, or Territory and fiscal year to view feedback reports.'
+      expect(screen.getByText(invalidSelectionMessage)).toBeInTheDocument()
+      fireEvent.change(screen.getByLabelText(/Fiscal Year/), {
+        target: { value: '2025' },
+      })
+      await waitFor(() =>
+        expect(get).toHaveBeenCalledWith(expect.stringContaining('/reports/'), {
+          params: { stt: 10, year: 2025, report_type: 'TANF_SSP' },
+        })
+      )
+      expect(
+        screen.queryByText(invalidSelectionMessage)
+      ).not.toBeInTheDocument()
     })
 
     it.each([
@@ -280,7 +354,7 @@ describe('STTFeedbackReports', () => {
       )
     })
 
-    it('ignores a late response from an earlier admin search', async () => {
+    it('ignores a late response after admin filters change automatically', async () => {
       let resolveFirstSearch
       get.mockImplementationOnce(
         () =>
@@ -293,7 +367,6 @@ describe('STTFeedbackReports', () => {
       fireEvent.change(screen.getByLabelText(/Fiscal Year/), {
         target: { value: '2024' },
       })
-      fireEvent.click(screen.getByRole('button', { name: 'Search' }))
       await waitFor(() => expect(get).toHaveBeenCalledTimes(2))
       await act(async () =>
         resolveFirstSearch({

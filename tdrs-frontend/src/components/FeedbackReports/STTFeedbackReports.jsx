@@ -64,6 +64,7 @@ const STT_REPORT_TYPE_LABELS = {
  *
  * - Data Analysts see reports for their assigned STT (auto-fetched on year change)
  * - Regional Staff select an STT from their region, auto-fetches when both STT and year are selected
+ * - Admins select any available STT, with the same automatic fetching behavior
  * - Users with FRA access see a report type selector; others default to TANF/SSP
  */
 function STTFeedbackReports({ adminView = false }) {
@@ -105,7 +106,7 @@ function STTFeedbackReports({ adminView = false }) {
     getValidatedReportType
   )
 
-  // Initialize STT from URL query param (regional staff only)
+  // Initialize STT from URL query param
   const getValidatedStt = () => {
     if (!canSelectStt) return null
     const urlStt = searchParams.get('stt')
@@ -127,7 +128,7 @@ function STTFeedbackReports({ adminView = false }) {
     return null
   }
 
-  // State for regional staff STT selection
+  // State for STT selection
   const [selectedStt, setSelectedStt] = useState(getValidatedStt)
   const [selectedSttName, setSelectedSttName] = useState(
     () => getValidatedStt()?.name || ''
@@ -143,7 +144,7 @@ function STTFeedbackReports({ adminView = false }) {
   const [reports, setReports] = useState([])
   const [loading, setLoading] = useState(false)
   const [selectedYear, setSelectedYear] = useState(getValidatedYear)
-  const [adminSearch, setAdminSearch] = useState(null)
+  const [adminSelection, setAdminSelection] = useState(null)
   const requestIdRef = useRef(0)
   const [alert, setAlert] = useState({
     active: false,
@@ -165,7 +166,7 @@ function STTFeedbackReports({ adminView = false }) {
     setSelectedSttName(stt?.name || '')
     setSelectedYear(validYear ? Number(year) : null)
     setSelectedReportType(validType ? reportType : REPORT_TYPES.TANF_SSP)
-    setAdminSearch(
+    setAdminSelection(
       stt &&
         validYear &&
         validType &&
@@ -175,9 +176,11 @@ function STTFeedbackReports({ adminView = false }) {
     )
   }, [adminView, searchParams, filteredStts, yearOptions])
 
-  const requestYear = adminView ? adminSearch?.year : selectedYear
-  const requestType = adminView ? adminSearch?.reportType : selectedReportType
-  const requestStt = adminView ? adminSearch?.stt : selectedStt
+  const requestYear = adminView ? adminSelection?.year : selectedYear
+  const requestType = adminView
+    ? adminSelection?.reportType
+    : selectedReportType
+  const requestStt = adminView ? adminSelection?.stt : selectedStt
 
   // Sync selections to URL query params
   useEffect(() => {
@@ -248,7 +251,6 @@ function STTFeedbackReports({ adminView = false }) {
     setLoading(false)
   }, [requestYear, requestType, canSelectStt, requestStt])
 
-  // Auto-fetch when dependencies change (both user types)
   useEffect(() => {
     fetchReports()
     return () => {
@@ -256,12 +258,23 @@ function STTFeedbackReports({ adminView = false }) {
     }
   }, [fetchReports])
 
-  /**
-   * Handle report type selection change
-   */
+  const updateAdminSelection = ({
+    stt = selectedStt,
+    year = selectedYear,
+    reportType = selectedReportType,
+  }) => {
+    if (!adminView) return
+    const params = new URLSearchParams()
+    if (stt) params.set('stt', stt.id)
+    if (year) params.set('year', year)
+    params.set('type', reportType)
+    setSearchParams(params, { replace: true })
+  }
+
   const handleReportTypeChange = (value) => {
     setSelectedReportType(value)
-    if (!adminView) setReports([])
+    setReports([])
+    updateAdminSelection({ reportType: value })
   }
 
   /**
@@ -269,27 +282,29 @@ function STTFeedbackReports({ adminView = false }) {
    */
   const handleYearChange = (e) => {
     const value = e.target.value
-    setSelectedYear(value ? parseInt(value, 10) : null)
+    const year = value ? parseInt(value, 10) : null
+    setSelectedYear(year)
+    updateAdminSelection({ year })
   }
 
   /**
-   * Handle STT selection from ComboBox (regional staff)
+   * Handle STT selection from ComboBox
    */
   const handleSttSelect = (name) => {
     setSelectedSttName(name)
+    const stt = filteredStts.find((s) => s.name === name) || null
+    let reportType = selectedReportType
     if (name) {
-      const sttObj = filteredStts.find((s) => s.name === name)
-      setSelectedStt(sttObj || null)
-      if (sttObj?.type === 'tribe') {
-        setSelectedReportType(REPORT_TYPES.TRIBAL_TANF)
+      if (stt?.type === 'tribe') {
+        reportType = REPORT_TYPES.TRIBAL_TANF
       } else if (selectedReportType === REPORT_TYPES.TRIBAL_TANF) {
-        setSelectedReportType(REPORT_TYPES.TANF_SSP)
+        reportType = REPORT_TYPES.TANF_SSP
       }
-    } else {
-      setSelectedStt(null)
     }
-    // Clear reports when STT changes
-    if (!adminView) setReports([])
+    setSelectedStt(stt)
+    setSelectedReportType(reportType)
+    setReports([])
+    updateAdminSelection({ stt, reportType })
   }
 
   // Determine if content section should show
@@ -354,24 +369,6 @@ function STTFeedbackReports({ adminView = false }) {
                 ))}
               </select>
             </div>
-            {adminView && (
-              <button
-                type="button"
-                className="usa-button margin-top-3"
-                disabled={!selectedStt || !selectedYear}
-                onClick={() => {
-                  setSearchParams(
-                    new URLSearchParams({
-                      stt: selectedStt.id,
-                      year: selectedYear,
-                      type: selectedReportType,
-                    })
-                  )
-                }}
-              >
-                Search
-              </button>
-            )}
           </div>
 
           <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-fill">
@@ -399,10 +396,10 @@ function STTFeedbackReports({ adminView = false }) {
           </div>
         </div>
 
-        {adminView && searchParams.has('stt') && !adminSearch && (
+        {adminView && searchParams.has('stt') && !adminSelection && (
           <p role="status">
-            Select a valid State, Tribe, or Territory and fiscal year, then
-            search for feedback reports.
+            Select a valid State, Tribe, or Territory and fiscal year to view
+            feedback reports.
           </p>
         )}
 
