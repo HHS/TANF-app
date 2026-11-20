@@ -8,7 +8,7 @@ from django.core import mail
 import pytest
 
 from tdpservice.data_files.enums import SubmissionState
-from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.models import DataFile, Program, Section
 from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.etl.models import (
     ETLArtifact,
@@ -34,7 +34,7 @@ from tdpservice.stts.models import STT
 FISCAL_YEAR = 2026
 REPORTING_MONTH = 202501
 PIPELINE = StatisticalWeightsPipeline()
-TANF_PROGRAM = DataFile.ProgramType.TANF
+TANF_PROGRAM = Program.Code.TANF
 
 
 def _datafile(stt, user, section, version=1, program_type=TANF_PROGRAM):
@@ -89,17 +89,17 @@ def parsed_weights_data(stt, user):
     old_active_file = _datafile(
         stt,
         user,
-        DataFile.Section.ACTIVE_CASE_DATA,
+        Section.Name.ACTIVE_CASE_DATA,
         version=1,
     )
     current_active_file = _datafile(
         stt,
         user,
-        DataFile.Section.ACTIVE_CASE_DATA,
+        Section.Name.ACTIVE_CASE_DATA,
         version=2,
     )
-    aggregate_file = _datafile(stt, user, DataFile.Section.AGGREGATE_DATA)
-    stratum_file = _datafile(stt, user, DataFile.Section.STRATUM_DATA)
+    aggregate_file = _datafile(stt, user, Section.Name.AGGREGATE_DATA)
+    stratum_file = _datafile(stt, user, Section.Name.STRATUM_DATA)
 
     TANF_T1.objects.create(
         datafile=old_active_file,
@@ -218,16 +218,16 @@ def test_build_candidates_uses_latest_files_and_stratum_fallback(parsed_weights_
     ),
     [
         (
-            DataFile.ProgramType.SSP,
-            DataFile.ProgramType.SSP,
+            Program.Code.SSP,
+            Program.Code.SSP,
             SSP_M1,
             SSP_M6,
             SSP_M7,
             "SSPMOE_FAMILIES",
         ),
         (
-            DataFile.ProgramType.TRIBAL,
-            DataFile.ProgramType.TRIBAL,
+            Program.Code.TRIBAL,
+            Program.Code.TRIBAL,
             Tribal_TANF_T1,
             Tribal_TANF_T6,
             Tribal_TANF_T7,
@@ -249,19 +249,19 @@ def test_program_adapters_build_non_tanf_candidates(
     active_file = _datafile(
         stt,
         user,
-        DataFile.Section.ACTIVE_CASE_DATA,
+        Section.Name.ACTIVE_CASE_DATA,
         program_type=program_type,
     )
     aggregate_file = _datafile(
         stt,
         user,
-        DataFile.Section.AGGREGATE_DATA,
+        Section.Name.AGGREGATE_DATA,
         program_type=program_type,
     )
     stratum_file = _datafile(
         stt,
         user,
-        DataFile.Section.STRATUM_DATA,
+        Section.Name.STRATUM_DATA,
         program_type=program_type,
     )
 
@@ -327,7 +327,7 @@ def test_validate_run_sources_snapshots_source_files(parsed_weights_data, user):
     newer_file = _datafile(
         parsed_weights_data,
         user,
-        DataFile.Section.ACTIVE_CASE_DATA,
+        Section.Name.ACTIVE_CASE_DATA,
         version=3,
     )
     TANF_T1.objects.create(

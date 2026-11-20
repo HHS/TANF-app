@@ -14,6 +14,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.routers import DefaultRouter
 
 from .core.views import FeatureFlagViewset, write_logs
+from .users.admin_views import AdminUserViewSet
 from .users.api.authorization_check import (
     AdminAuthorizationCheck,
     AuthorizationCheck,
@@ -138,11 +139,14 @@ admin_auth_urlpatterns = [
 # Add 'prefix' to all urlpatterns to make it easier to version/group endpoints
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 api_urlpatterns = urlpatterns
+admin_router = DefaultRouter()
+admin_router.register("users", AdminUserViewSet, basename="admin-user")
+admin_api_urlpatterns = [path("", include(admin_router.urls)), *api_urlpatterns]
 urlpatterns = [
     path("v1/", include(api_urlpatterns)),
     path(
         "admin-api/v1/",
-        include((api_urlpatterns, "admin_api"), namespace="admin-api"),
+        include((admin_api_urlpatterns, "admin_api"), namespace="admin-api"),
     ),
     path("v2/", include(v2_urlpatterns)),
     path("admin-auth/", include(admin_auth_urlpatterns)),

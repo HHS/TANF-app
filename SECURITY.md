@@ -6,12 +6,24 @@ The TANF Data Portal (TDP) is subject to the
 
 ## Reporting a Vulnerability
 
+Active development takes place in [raft-tech/TANF-app](https://github.com/raft-tech/TANF-app).
+The private reporting process below applies to vulnerabilities found in either
+`HHS/TANF-app` or `raft-tech/TANF-app` and related TDP systems.
+
 Do not report security vulnerabilities through GitHub Issues, pull requests,
-discussions, public comments, or unsecured email.
+discussions, or public comments.
 
 Submit vulnerability reports through the HHS responsible disclosure portal:
 
 [https://hhs.responsibledisclosure.com](https://hhs.responsibledisclosure.com)
+
+Reports submitted to the portal must mention **ACF TANF Data Portal (TDP)**
+so they can be routed to the appropriate team. After submitting through the
+portal, send a copy of the submission by email to both
+[tanfdata@acf.hhs.gov](mailto:tanfdata@acf.hhs.gov) and
+[tdp-devs@teamraft.com](mailto:tdp-devs@teamraft.com). Include both addresses
+whenever contacting the repository owners about a security vulnerability.
+The email copy does not replace the required portal submission.
 
 Reports may be submitted anonymously. The HHS Vulnerability Disclosure Policy
 describes eligible systems, authorized research, reporting requirements,

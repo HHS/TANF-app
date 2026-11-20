@@ -494,7 +494,7 @@ class FeedbackAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
             # Show file section, year, quarter as a link to its admin change page
             url = reverse("admin:data_files_datafile_change", args=[f.id])
             # url = f"/admin/data_files/datafile/{f.id}/change/"
-            label = f"{f.section} ({f.year} {f.quarter})"
+            label = f"{f.section.name} ({f.year} {f.quarter})"
             links.append(f"<a href='{url}' target='_blank'>{label}</a>")
 
         return mark_safe("<br>".join(links))

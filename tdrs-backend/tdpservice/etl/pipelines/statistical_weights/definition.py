@@ -4,10 +4,10 @@ from typing import Any
 
 from celery import chain, chord
 
-from tdpservice.data_files.models import DataFile
 from tdpservice.etl.exceptions import PipelineValidationError
 from tdpservice.etl.pipelines.base import PipelineDefinition, PipelineNodeRegistry
 from tdpservice.etl.pipelines.sources import DataFileSourceSnapshot
+from tdpservice.etl.pipelines.statistical_weights.adapters import PROGRAM_ADAPTERS
 from tdpservice.etl.pipelines.statistical_weights.candidates import (
     WeightCandidateBuilder,
 )
@@ -53,11 +53,7 @@ class StatisticalWeightsPipeline(PipelineDefinition):
         "s4": "weights.s4",
     }
     output_key = "statistical_weights"
-    supported_program_types = (
-        DataFile.ProgramType.TANF,
-        DataFile.ProgramType.SSP,
-        DataFile.ProgramType.TRIBAL,
-    )
+    supported_program_types = tuple(PROGRAM_ADAPTERS)
     allowed_parameters = {
         "fiscal_year": {
             "type": "integer",
@@ -203,7 +199,7 @@ class StatisticalWeightsPipeline(PipelineDefinition):
 
     @classmethod
     def _validate_program_type(cls, value) -> str:
-        """Validate that program is an exact DataFile.ProgramType value."""
+        """Validate that program is a supported exact program code."""
         if value not in cls.supported_program_types:
             choices = ", ".join(cls.supported_program_types)
             raise PipelineValidationError(f"program must be one of: {choices}.")

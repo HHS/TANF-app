@@ -26,6 +26,17 @@ From the output of this command find the `VCAP_SERVICES` variable. Within this v
 ```
 where `<ENVIRONMENT_NAME>` MUST be one of `[dev, staging, production]`, and `<DATABASE_URI>` is the uri you just copied from the app's `VCAP_SERVICES` environment variable. This command also handles all of the necessary networking configuration.
 
+## DataFile reporting in Grafana
+
+Use `data_files_datafile_view` for submission metadata with readable classifications. It exposes the DataFile columns, including `section_id`, plus `section` (the canonical Section name) and `program_type` (its Program code). All submission versions are included.
+
+The view is generated and applied through the existing Grafana SQL pipeline. The database configuration step grants access to the `read_only`, `digit_sensitive`, and `admin_read_only` roles.
+
+```sql
+SELECT id, year, quarter, section, program_type, version
+FROM data_files_datafile_view;
+```
+
 ### Grafana Auth and RBAC Config
 Grafana is accessible by any frontend app on a private route to users who have the correct role. The Grafana UI is not be accessible to any user or application unless they are routed to it via a frontend app. Grafana is configured to require user and password authentication. Having the extra layer of authentication is required because the roles defined in Grafana are not in alignment with the roles TDP defines. Assigning users to appropriate role and teams in Grafana allows for least privilege access to any information that Grafana might be able to display.
 

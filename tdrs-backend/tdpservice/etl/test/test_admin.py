@@ -10,7 +10,7 @@ from django.utils import timezone
 
 import pytest
 
-from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.models import Program
 from tdpservice.etl.admin import ETLPipelineRunAdmin
 from tdpservice.etl.models import ETLArtifact, ETLPipelineRun, StatisticalWeight
 from tdpservice.etl.runner import PipelineRunFactory
@@ -18,7 +18,7 @@ from tdpservice.etl.runner import PipelineRunFactory
 
 def _create_pipeline_run() -> ETLPipelineRun:
     return PipelineRunFactory.for_pipeline_key("statistical_weights").create(
-        parameters={"fiscal_year": 2026, "program": DataFile.ProgramType.TANF},
+        parameters={"fiscal_year": 2026, "program": Program.Code.TANF},
         trigger_source=ETLPipelineRun.TriggerSource.ADMIN,
     )
 
@@ -48,7 +48,7 @@ def test_pipeline_run_admin_final_output_link_filters_statistical_weights_table(
 
     assert reverse("admin:etl_statisticalweight_changelist") in link
     assert "fiscal_year__exact=2026" in link
-    assert f"program__exact={DataFile.ProgramType.TANF}" in link
+    assert f"program__exact={Program.Code.TANF}" in link
     assert "section__exact=1" in link
     assert "version__exact=2" in link
     assert "statistical_weights v2 (12 rows)" in link
@@ -76,7 +76,7 @@ def test_pipeline_run_admin_final_output_link_opens_filtered_admin_table(
     matching_weight = StatisticalWeight.objects.create(
         fiscal_year=2026,
         reporting_month=1,
-        program=DataFile.ProgramType.TANF,
+        program=Program.Code.TANF,
         section="1",
         stt_code="55",
         stratum="01",
@@ -90,7 +90,7 @@ def test_pipeline_run_admin_final_output_link_opens_filtered_admin_table(
     nonmatching_weight = StatisticalWeight.objects.create(
         fiscal_year=2026,
         reporting_month=1,
-        program=DataFile.ProgramType.TANF,
+        program=Program.Code.TANF,
         section="1",
         stt_code="55",
         stratum="02",

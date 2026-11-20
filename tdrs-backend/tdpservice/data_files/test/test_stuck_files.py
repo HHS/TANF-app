@@ -10,7 +10,8 @@ from django.utils import timezone
 import pytest
 
 from tdpservice.data_files.enums import SubmissionState
-from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.models import DataFile, Section
+from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.data_files.tasks import (
     get_current_fiscal_year,
     get_stale_lifecycle_files,
@@ -21,16 +22,15 @@ from tdpservice.email.helpers.data_file import send_stuck_file_email
 from tdpservice.parsers.models import DataFileSummary
 from tdpservice.parsers.test.factories import (
     DataFileSummaryFactory,
-    ParsingFileFactory,
     ReparseMetaFactory,
 )
 
 
 def make_datafile(stt_user, stt, version, state=SubmissionState.UPLOADED, year=None):
     """Create a test data file with default params."""
-    return ParsingFileFactory.create(
+    return DataFileFactory.create(
         quarter=DataFile.Quarter.Q1,
-        section=DataFile.Section.ACTIVE_CASE_DATA,
+        section=Section.Name.ACTIVE_CASE_DATA,
         year=year or get_current_fiscal_year(),
         version=version,
         user=stt_user,

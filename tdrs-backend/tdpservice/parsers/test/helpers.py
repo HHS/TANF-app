@@ -9,8 +9,8 @@ def parse_datafile(dfs, datafile, **factory_kwargs):
     parser = ParserFactory.get_instance(
         datafile=datafile,
         dfs=dfs,
-        section=factory_kwargs.pop("section", datafile.section),
-        program_type=factory_kwargs.pop("program_type", datafile.program_type),
+        section=factory_kwargs.pop("section", datafile.section.name),
+        program_type=factory_kwargs.pop("program_type", datafile.program.code),
         **factory_kwargs,
     )
     parser.parse_and_validate()

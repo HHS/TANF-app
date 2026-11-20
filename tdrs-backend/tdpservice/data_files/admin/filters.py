@@ -59,7 +59,6 @@ class VersionFilter(MostRecentVersionFilter):
                 stt__stt_code=OuterRef("stt__stt_code"),
                 year=OuterRef("year"),
                 quarter=OuterRef("quarter"),
-                program_type=OuterRef("program_type"),
                 section=OuterRef("section"),
                 is_program_audit=OuterRef("is_program_audit"),
             ).order_by("-version")

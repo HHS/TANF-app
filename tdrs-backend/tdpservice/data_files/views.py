@@ -23,7 +23,12 @@ from rest_framework.viewsets import ModelViewSet
 from tdpservice.core.utils import get_feature_flag
 from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.error_reports import ErrorReportFactory
-from tdpservice.data_files.models import DataFile, ReparseFileMeta
+from tdpservice.data_files.models import (
+    DataFile,
+    Program,
+    ReparseFileMeta,
+    Section,
+)
 from tdpservice.data_files.s3_client import S3Client
 from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.submission_lifecycle import (
@@ -82,7 +87,7 @@ class DataFileViewSet(ModelViewSet):
     # Ref: https://github.com/raft-tech/TANF-app/issues/1007
     queryset = (
         DataFile.objects.all()
-        .select_related("stt", "user", "summary")
+        .select_related("section__program", "stt", "user", "summary")
         .prefetch_related(
             Prefetch(
                 "reparse_file_metas",
@@ -239,8 +244,8 @@ class DataFileViewSet(ModelViewSet):
         data_file.save()
         logger.info(
             f"Preparing parse task: User META -> user: {request.user}, stt: {data_file.stt}. "
-            + f"Datafile META -> datafile: {data_file.id}, program type: {data_file.program_type}, "
-            + f"section: {data_file.section}, "
+            + f"Datafile META -> datafile: {data_file.id}, program type: {data_file.program.code}, "
+            + f"section: {data_file.section.name}, "
             + f"quarter {data_file.quarter}, year {data_file.year}."
         )
 
@@ -264,10 +269,10 @@ class DataFileViewSet(ModelViewSet):
         file_type = self.request.query_params.get("file_type", None)
 
         if file_type == DataFileViewSet.SSP_FILE_TYPE:
-            queryset = queryset.filter(program_type=DataFile.ProgramType.SSP)
-        elif DataFile.Section.is_fra(file_type):
+            queryset = queryset.filter(section__program__code=Program.Code.SSP)
+        elif Section.is_fra(file_type):
             queryset = queryset.filter(
-                program_type=DataFile.ProgramType.FRA, section=file_type
+                section__program__code=Program.Code.FRA, section__name=file_type
             )
         else:
             pia_feature_flag_enabled, pia_feature_flag_config = get_feature_flag(
@@ -294,10 +299,7 @@ class DataFileViewSet(ModelViewSet):
                     )
 
             queryset = queryset.filter(
-                program_type__in=[
-                    DataFile.ProgramType.TANF,
-                    DataFile.ProgramType.TRIBAL,
-                ],
+                section__program__code__in=[Program.Code.TANF, Program.Code.TRIBAL],
                 is_program_audit=is_program_audit,
             )
 

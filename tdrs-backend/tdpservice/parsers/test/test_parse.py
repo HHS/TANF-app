@@ -7,6 +7,7 @@ from django.db.models import Q as Query
 
 import pytest
 
+from tdpservice.data_files.models import Section
 from tdpservice.parsers import aggregates, util
 from tdpservice.parsers.models import (
     DataFileSummary,
@@ -193,8 +194,9 @@ class TestParse:
         num_errors,
     ):
         """Test parsing when file metadata does not match the raw data layout."""
-        small_correct_file.program_type = program
-        small_correct_file.section = section
+        small_correct_file.section = Section.objects.get(
+            program__code=program, name=section
+        )
         small_correct_file.save()
 
         dfs.datafile = small_correct_file
@@ -262,7 +264,9 @@ class TestParse:
     ):
         """Test header-derived program type mismatches are rejected as prechecks."""
         datafile = request.getfixturevalue(fixture_name)
-        datafile.program_type = program_type
+        datafile.section = Section.objects.get(
+            program__code=program_type, name=datafile.section.name
+        )
         datafile.save()
 
         dfs.datafile = datafile
@@ -293,7 +297,6 @@ class TestParse:
         """Test TAN tribal headers still parse when submission metadata is TRIBAL."""
         tribal_section_1_file.year = 2022
         tribal_section_1_file.quarter = "Q1"
-        tribal_section_1_file.program_type = "TRIBAL"
         tribal_section_1_file.save()
 
         dfs.datafile = tribal_section_1_file
@@ -382,6 +385,7 @@ class TestParse:
         assert err.error_message == expected["error_message"]
         assert err.content_type is None
         assert err.object_id is None
+        assert datafile.file.closed is True
 
     @pytest.mark.django_db
     def test_bad_trailer_file_trailer_error(self, parsed_bad_trailer_file):
@@ -888,7 +892,9 @@ class TestParse:
         """Test that the case aggregates are set correctly."""
         small_correct_file.year = 2020
         small_correct_file.quarter = "Q3"
-        small_correct_file.section = "Active Case Data"
+        small_correct_file.section = Section.objects.get(
+            program__code="TAN", name="Active Case Data"
+        )
         small_correct_file.save()
         # this still needs to execute to create db objects to be queried
         parse_datafile(dfs, small_correct_file)
@@ -1277,7 +1283,9 @@ class TestParse:
         """Test that the rpt_month_year mismatch error is raised."""
         datafile = header_datafile
 
-        datafile.section = "Active Case Data"
+        datafile.section = Section.objects.get(
+            program=datafile.program, name="Active Case Data"
+        )
         # test_datafile fixture uses create_test_data_file which assigns
         # a default year / quarter of 2021 / Q1
         datafile.year = 2021
@@ -2104,3 +2112,27 @@ class TestParse:
         assert TANF_T1.objects.count() == 3
         assert TANF_T2.objects.count() == 3
         assert TANF_T3.objects.count() == 6
+
+    @pytest.mark.django_db
+    def test_file_closed_after_parsing_valid_file(self, small_correct_file, dfs):
+        """Test that datafile.file is closed after successfully parsing a valid file."""
+        small_correct_file.year = 2021
+        small_correct_file.quarter = "Q1"
+        parse_datafile(dfs, small_correct_file)
+        assert small_correct_file.file.closed is True
+
+    @pytest.mark.django_db
+    def test_file_closed_after_parsing_with_errors(self, t2_invalid_dob_file, dfs):
+        """Test that datafile.file is closed after parsing a file with errors."""
+        t2_invalid_dob_file.year = 2021
+        t2_invalid_dob_file.quarter = "Q1"
+        parse_datafile(dfs, t2_invalid_dob_file)
+        assert t2_invalid_dob_file.file.closed is True
+
+    @pytest.mark.django_db
+    def test_file_closed_after_parsing_tribal_file(self, tribal_section_1_file, dfs):
+        """Test that datafile.file is closed after parsing a Tribal file."""
+        tribal_section_1_file.year = 2022
+        tribal_section_1_file.quarter = "Q1"
+        parse_datafile(dfs, tribal_section_1_file)
+        assert tribal_section_1_file.file.closed is True
