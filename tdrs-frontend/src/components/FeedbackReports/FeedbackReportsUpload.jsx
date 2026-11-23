@@ -266,8 +266,7 @@ const FeedbackReportsUpload = forwardRef(function FeedbackReportsUpload(
         </label>
         <div className="feedback-reports-notes__header">
           <div className="usa-hint margin-top-0" id="notes-hint">
-            Notes will be displayed to STTs when additional detail is needed to
-            contextualize a report
+            STTs will see what you enter here.
           </div>
           <div
             className="usa-character-count__message feedback-reports-notes__count"
