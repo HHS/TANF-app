@@ -1,7 +1,7 @@
 import React from 'react'
 import { Provider } from 'react-redux'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { act, render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { MemoryRouter, useLocation } from 'react-router-dom'
 import configureStore from 'redux-mock-store'
 import { thunk } from 'redux-thunk'
 import STTFeedbackReports from './STTFeedbackReports'
@@ -13,27 +13,44 @@ jest.mock('../../utils/fileDownload')
 
 // Mock STTComboBox to avoid fetchSttList side effects
 jest.mock('../STTComboBox', () => {
-  const MockSTTComboBox = ({ selectStt, selectedStt }) => (
-    <div data-testid="stt-combobox">
-      <label htmlFor="mock-stt-select">State, Tribe, or Territory*</label>
-      <select
-        id="mock-stt-select"
-        value={selectedStt || ''}
-        onChange={(e) => selectStt(e.target.value)}
-        aria-label="State, Tribe, or Territory"
-      >
-        <option value="">- Select or Search -</option>
-        <option value="Wisconsin">Wisconsin</option>
-        <option value="Illinois">Illinois</option>
-        <option value="Ho-Chunk Nation">Ho-Chunk Nation</option>
-      </select>
-    </div>
-  )
+  const { useSelector } = require('react-redux')
+  const { availableStts } = require('../../selectors/stts')
+  const MockSTTComboBox = ({ selectStt, selectedStt }) => {
+    const stts = useSelector(availableStts('/feedback-reports'))
+    return (
+      <div data-testid="stt-combobox">
+        <label htmlFor="mock-stt-select">State, Tribe, or Territory*</label>
+        <select
+          id="mock-stt-select"
+          value={selectedStt || ''}
+          onChange={(e) => selectStt(e.target.value)}
+          aria-label="State, Tribe, or Territory"
+        >
+          <option value="">- Select or Search -</option>
+          {stts.map(({ id, name }) => (
+            <option key={id} value={name}>
+              {name}
+            </option>
+          ))}
+        </select>
+      </div>
+    )
+  }
   MockSTTComboBox.displayName = 'MockSTTComboBox'
   return MockSTTComboBox
 })
 
 const mockStore = configureStore([thunk])
+
+function CurrentLocation() {
+  const { pathname, search } = useLocation()
+  return (
+    <output data-testid="location">
+      {pathname}
+      {search}
+    </output>
+  )
+}
 
 const dataAnalystStore = () =>
   mockStore({
@@ -124,6 +141,295 @@ describe('STTFeedbackReports', () => {
       </MemoryRouter>
     )
   }
+
+  describe('Admin reading view', () => {
+    const adminState = {
+      auth: {
+        authenticated: true,
+        user: {
+          account_approval_status: 'Approved',
+          roles: [{ name: 'DIGIT Team', permissions: [] }],
+        },
+      },
+      stts: {
+        sttList: [
+          { id: 10, name: 'Wisconsin', type: 'state' },
+          { id: 20, name: 'Example Tribe', type: 'tribe' },
+        ],
+        loading: false,
+      },
+    }
+
+    const renderAdmin = (entry = '/feedback-reports') =>
+      render(
+        <MemoryRouter initialEntries={[entry]}>
+          <Provider store={mockStore(adminState)}>
+            <STTFeedbackReports adminView />
+            <CurrentLocation />
+          </Provider>
+        </MemoryRouter>
+      )
+
+    it('offers all available STTs and automatically fetches reports when filters change', async () => {
+      renderAdmin()
+      expect(
+        screen.getByRole('option', { name: 'Wisconsin' })
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('option', { name: 'Example Tribe' })
+      ).toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: 'Search' })
+      ).not.toBeInTheDocument()
+      expect(get).not.toHaveBeenCalled()
+      fireEvent.change(screen.getByLabelText('State, Tribe, or Territory'), {
+        target: { value: 'Wisconsin' },
+      })
+      expect(get).not.toHaveBeenCalled()
+      fireEvent.change(screen.getByLabelText(/Fiscal Year/), {
+        target: { value: '2025' },
+      })
+      await waitFor(() =>
+        expect(get).toHaveBeenCalledWith(expect.stringContaining('/reports/'), {
+          params: { stt: 10, year: 2025, report_type: 'TANF_SSP' },
+        })
+      )
+      expect(screen.getByTestId('location')).toHaveTextContent(
+        '/feedback-reports?stt=10&year=2025&type=TANF_SSP'
+      )
+      fireEvent.change(screen.getByLabelText(/Fiscal Year/), {
+        target: { value: '2024' },
+      })
+      await waitFor(() =>
+        expect(get).toHaveBeenLastCalledWith(
+          expect.stringContaining('/reports/'),
+          { params: { stt: 10, year: 2024, report_type: 'TANF_SSP' } }
+        )
+      )
+      fireEvent.click(screen.getByLabelText('FRA'))
+      await waitFor(() =>
+        expect(get).toHaveBeenLastCalledWith(
+          expect.stringContaining('/reports/'),
+          { params: { stt: 10, year: 2024, report_type: 'FRA' } }
+        )
+      )
+      fireEvent.change(screen.getByLabelText('State, Tribe, or Territory'), {
+        target: { value: 'Example Tribe' },
+      })
+      await waitFor(() =>
+        expect(get).toHaveBeenLastCalledWith(
+          expect.stringContaining('/reports/'),
+          { params: { stt: 20, year: 2024, report_type: 'TRIBAL_TANF' } }
+        )
+      )
+      expect(
+        screen.getByRole('heading', { name: /Example Tribe.*2024/ })
+      ).toBeInTheDocument()
+      expect(get).toHaveBeenCalledTimes(4)
+      fireEvent.change(screen.getByLabelText('State, Tribe, or Territory'), {
+        target: { value: 'Wisconsin' },
+      })
+      await waitFor(() =>
+        expect(get).toHaveBeenLastCalledWith(
+          expect.stringContaining('/reports/'),
+          { params: { stt: 10, year: 2024, report_type: 'TANF_SSP' } }
+        )
+      )
+    })
+
+    it('waits for an STT when the year is selected first and stops fetching when filters are cleared', async () => {
+      renderAdmin('/feedback-reports?year=2025')
+      expect(get).not.toHaveBeenCalled()
+      fireEvent.change(screen.getByLabelText('State, Tribe, or Territory'), {
+        target: { value: 'Wisconsin' },
+      })
+      await waitFor(() =>
+        expect(get).toHaveBeenCalledWith(expect.stringContaining('/reports/'), {
+          params: { stt: 10, year: 2025, report_type: 'TANF_SSP' },
+        })
+      )
+
+      fireEvent.change(screen.getByLabelText('State, Tribe, or Territory'), {
+        target: { value: '' },
+      })
+      expect(get).toHaveBeenCalledTimes(1)
+      expect(
+        screen.queryByRole('heading', { level: 2 })
+      ).not.toBeInTheDocument()
+
+      fireEvent.change(screen.getByLabelText('State, Tribe, or Territory'), {
+        target: { value: 'Wisconsin' },
+      })
+      await waitFor(() => expect(get).toHaveBeenCalledTimes(2))
+      fireEvent.change(screen.getByLabelText(/Fiscal Year/), {
+        target: { value: '' },
+      })
+      expect(get).toHaveBeenCalledTimes(2)
+      expect(
+        screen.queryByRole('heading', { level: 2 })
+      ).not.toBeInTheDocument()
+    })
+
+    it('automatically loads reports after an invalid deep-link selection is corrected', async () => {
+      renderAdmin('/feedback-reports?stt=10&year=2025invalid&type=unknown')
+      expect(get).not.toHaveBeenCalled()
+      const invalidSelectionMessage =
+        'Select a valid State, Tribe, or Territory and fiscal year to view feedback reports.'
+      expect(screen.getByText(invalidSelectionMessage)).toBeInTheDocument()
+      fireEvent.change(screen.getByLabelText(/Fiscal Year/), {
+        target: { value: '2025' },
+      })
+      await waitFor(() =>
+        expect(get).toHaveBeenCalledWith(expect.stringContaining('/reports/'), {
+          params: { stt: 10, year: 2025, report_type: 'TANF_SSP' },
+        })
+      )
+      expect(
+        screen.queryByText(invalidSelectionMessage)
+      ).not.toBeInTheDocument()
+    })
+
+    it.each([
+      [10, 'TANF_SSP', 'Wisconsin'],
+      [10, 'FRA', 'Wisconsin'],
+      [20, 'TRIBAL_TANF', 'Example Tribe'],
+    ])(
+      'loads a preselected STT link for %s and %s',
+      async (stt, type, name) => {
+        renderAdmin(`/feedback-reports?stt=${stt}&year=2025&type=${type}`)
+        await waitFor(() =>
+          expect(get).toHaveBeenCalledWith(
+            expect.stringContaining('/reports/'),
+            { params: { stt, year: 2025, report_type: type } }
+          )
+        )
+        expect(screen.getByLabelText('State, Tribe, or Territory')).toHaveValue(
+          name
+        )
+        expect(screen.getByLabelText(/Fiscal Year/)).toHaveValue('2025')
+        expect(
+          screen.getByRole('heading', { name: new RegExp(`${name}.*2025`) })
+        ).toBeInTheDocument()
+      }
+    )
+
+    it.each([
+      'stt=999&year=2025',
+      'stt=10&year=2025invalid',
+      'year=2025',
+      'stt=10&year=2025&type=unknown',
+      'stt=10&year=2025&type=TRIBAL_TANF',
+    ])(
+      'does not request unfiltered reports for invalid selections: %s',
+      (query) => {
+        renderAdmin(`/feedback-reports?${query}`)
+        expect(get).not.toHaveBeenCalled()
+      }
+    )
+
+    it('waits for the STT list before resolving a deep link', async () => {
+      const view = (state) => (
+        <MemoryRouter
+          initialEntries={[
+            '/feedback-reports?stt=20&year=2025&type=TRIBAL_TANF',
+          ]}
+        >
+          <Provider store={mockStore(state)}>
+            <STTFeedbackReports adminView />
+          </Provider>
+        </MemoryRouter>
+      )
+      const { rerender } = render(
+        view({
+          ...adminState,
+          stts: { sttList: [], loading: true },
+        })
+      )
+      expect(get).not.toHaveBeenCalled()
+      rerender(view(adminState))
+      await waitFor(() =>
+        expect(get).toHaveBeenCalledWith(expect.stringContaining('/reports/'), {
+          params: { stt: 20, year: 2025, report_type: 'TRIBAL_TANF' },
+        })
+      )
+    })
+
+    it('ignores a late response after admin filters change automatically', async () => {
+      let resolveFirstSearch
+      get.mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveFirstSearch = resolve
+          })
+      )
+      renderAdmin('/feedback-reports?stt=10&year=2025&type=TANF_SSP')
+      await waitFor(() => expect(get).toHaveBeenCalledTimes(1))
+      fireEvent.change(screen.getByLabelText(/Fiscal Year/), {
+        target: { value: '2024' },
+      })
+      await waitFor(() => expect(get).toHaveBeenCalledTimes(2))
+      await act(async () =>
+        resolveFirstSearch({
+          ok: false,
+          error: 'Obsolete search failed',
+        })
+      )
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+      expect(
+        screen.getByRole('heading', { name: /Wisconsin.*2024/ })
+      ).toBeInTheDocument()
+    })
+  })
+
+  describe('Non-admin deep links', () => {
+    it('ignores another STT query for analysts and uses their assigned jurisdiction', async () => {
+      render(
+        <MemoryRouter initialEntries={['/feedback-reports?stt=10&year=2025']}>
+          <Provider store={dataAnalystStore()}>
+            <STTFeedbackReports />
+          </Provider>
+        </MemoryRouter>
+      )
+      expect(
+        screen.queryByLabelText('State, Tribe, or Territory')
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: 'Search' })
+      ).not.toBeInTheDocument()
+      await waitFor(() =>
+        expect(get).toHaveBeenCalledWith(expect.stringContaining('/reports/'), {
+          params: { year: 2025, report_type: 'TANF_SSP' },
+        })
+      )
+      expect(
+        screen.getByRole('heading', { name: /Alabama.*2025/ })
+      ).toBeInTheDocument()
+    })
+
+    it('limits regional selection and rejects a jurisdiction outside assigned regions', () => {
+      const state = regionalStaffStore().getState()
+      state.stts.sttList = [{ id: 99, name: 'Outside Region', type: 'state' }]
+      render(
+        <MemoryRouter
+          initialEntries={['/feedback-reports?stt=Outside%20Region&year=2025']}
+        >
+          <Provider store={mockStore(state)}>
+            <STTFeedbackReports />
+          </Provider>
+        </MemoryRouter>
+      )
+      expect(
+        screen.getByRole('option', { name: 'Wisconsin' })
+      ).toBeInTheDocument()
+      expect(
+        screen.queryByRole('option', { name: 'Outside Region' })
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: 'Search' })
+      ).not.toBeInTheDocument()
+      expect(get).not.toHaveBeenCalled()
+    })
+  })
 
   describe('Component Rendering', () => {
     it('renders the fiscal year selector with placeholder', async () => {

@@ -268,6 +268,112 @@ describe('Header', () => {
   })
 
   describe('Feedback Reports Navigation', () => {
+    const reportPermissions = [
+      'view_reportfile',
+      'view_reportsource',
+      'add_reportsource',
+    ]
+    const renderFeedbackNavigation = (
+      role,
+      codenames,
+      approval = 'Approved',
+      pathname = '/feedback-reports'
+    ) => {
+      const state = {
+        ...initialState,
+        router: { location: { pathname } },
+        auth: {
+          authenticated: true,
+          user: {
+            account_approval_status: approval,
+            roles: [
+              {
+                name: role,
+                permissions: codenames.map((codename) => ({ codename })),
+              },
+            ],
+          },
+        },
+      }
+      render(
+        <MemoryRouter initialEntries={[pathname]}>
+          <Provider store={mockStore(state)}>
+            <Header />
+          </Provider>
+        </MemoryRouter>
+      )
+    }
+
+    it.each(['DIGIT Team', 'OFA System Admin', 'Custom report manager'])(
+      'shows both normal main-nav links for %s with management permissions',
+      (role) => {
+        renderFeedbackNavigation(role, reportPermissions)
+        expect(
+          screen.getByRole('link', { name: 'Feedback Reports' })
+        ).toHaveAttribute('href', '/feedback-reports')
+        expect(
+          screen.getByRole('link', { name: 'Manage Feedback Reports' })
+        ).toHaveAttribute('href', '/manage-feedback-reports')
+      }
+    )
+
+    it.each(['/feedback-reports', '/manage-feedback-reports'])(
+      'marks only the matching report main-nav item active on %s',
+      (pathname) => {
+        renderFeedbackNavigation(
+          'DIGIT Team',
+          reportPermissions,
+          'Approved',
+          pathname
+        )
+        const reading = screen.getByRole('link', { name: 'Feedback Reports' })
+        const management = screen.getByRole('link', {
+          name: 'Manage Feedback Reports',
+        })
+        expect(
+          pathname === '/feedback-reports' ? reading : management
+        ).toHaveClass('usa-current')
+        expect(
+          pathname === '/feedback-reports' ? reading : management
+        ).toHaveAttribute('aria-current', 'page')
+        expect(
+          pathname === '/feedback-reports' ? management : reading
+        ).not.toHaveClass('usa-current')
+        expect(
+          pathname === '/feedback-reports' ? management : reading
+        ).not.toHaveAttribute('aria-current')
+      }
+    )
+
+    it.each([
+      ['Data Analyst', ['view_reportfile'], 'Approved'],
+      ['OFA Regional Staff', ['view_reportfile'], 'Approved'],
+      ['OFA Admin', [], 'Approved'],
+      ['Developer', [], 'Approved'],
+      ...reportPermissions.map((missing) => [
+        'DIGIT Team',
+        reportPermissions.filter((permission) => permission !== missing),
+        'Approved',
+      ]),
+      ['DIGIT Team', reportPermissions, 'Pending'],
+    ])(
+      'hides management for %s with %j (%s)',
+      (role, permissions, approval) => {
+        renderFeedbackNavigation(role, permissions, approval)
+        expect(
+          screen.queryByRole('link', { name: 'Manage Feedback Reports' })
+        ).not.toBeInTheDocument()
+        if (
+          approval === 'Approved' &&
+          permissions.includes('view_reportfile')
+        ) {
+          expect(
+            screen.getByRole('link', { name: 'Feedback Reports' })
+          ).toBeInTheDocument()
+        }
+      }
+    )
+
     it('should show Feedback Reports nav item when user has view_reportfile permission and is approved', () => {
       const state = {
         ...initialState,
