@@ -518,9 +518,7 @@ describe('FeedbackReportsUpload', () => {
 
       expect(screen.getByText('Notes (optional)')).toBeInTheDocument()
       expect(
-        screen.getByText(
-          'Notes will be displayed to STTs when additional detail is needed to contextualize a report'
-        )
+        screen.getByText('STTs will see what you enter here.')
       ).toBeInTheDocument()
       const textarea = screen.getByLabelText('Notes (optional)')
       expect(textarea).toBeInTheDocument()
