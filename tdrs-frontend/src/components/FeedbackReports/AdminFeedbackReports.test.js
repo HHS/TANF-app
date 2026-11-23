@@ -108,7 +108,7 @@ describe('AdminFeedbackReports', () => {
     // Mock FileReader for async file handling
     global.FileReader = jest.fn().mockImplementation(() => ({
       readAsArrayBuffer: jest.fn(function () {
-        setTimeout(() => this.onload && this.onload(), 0)
+        Promise.resolve().then(() => this.onload && this.onload())
       }),
       result: new ArrayBuffer(8),
     }))
