@@ -63,14 +63,12 @@ The Keycloak entrypoint automatically imports the local realm export after Keycl
 | `KEYCLOAK_SYNC_ENABLED` | `false` | Enable Django-to-Keycloak user sync on save/group change |
 | `KEYCLOAK_SERVER_URL` | `http://keycloak:8080` | Internal (server-to-server) Keycloak URL |
 | `KEYCLOAK_BROWSER_URL` | `http://localhost:8443` | Browser-facing Keycloak URL (used for auth/logout redirects) |
-| `KEYCLOAK_REALM` | `tdp` | Keycloak realm name |
-| `KEYCLOAK_ADMIN_CLIENT_ID` | `tdp-django` | Client ID for admin API access |
-| `KEYCLOAK_ADMIN_CLIENT_SECRET` | `tdp-django-local-secret` | Client secret for admin API access |
-| `KEYCLOAK_DJANGO_CLIENT_ID` | `tdp-django` | Client ID for OIDC authentication |
-| `KEYCLOAK_DJANGO_CLIENT_SECRET` | `tdp-django-local-secret` | Client secret for OIDC authentication |
-| `KEYCLOAK_TDP_ADMIN_REALM` | `tdp-admin` | Dedicated Keycloak realm name for standalone admin console authentication |
-| `KEYCLOAK_TDP_ADMIN_CLIENT_ID` | `tdp-admin` | Client ID for the standalone admin console OIDC flow |
-| `KEYCLOAK_TDP_ADMIN_CLIENT_SECRET` | `tdp-admin-local-secret` | Client secret for the standalone admin console OIDC flow |
+| `KC_TDP_DJANGO_REALM` | `tdp` | Realm used by the Django app |
+| `KC_TDP_DJANGO_CLIENT_ID` | `tdp-django` | Django client for OIDC login and user sync |
+| `KC_TDP_DJANGO_CLIENT_SECRET` | `tdp-django-local-secret` (local only) | Shared Django login/sync secret; must equal the Keycloak deployment variable of the same name |
+| `KC_TDP_ADMIN_REALM` | `tdp-admin` | Realm used by the React admin app (`tdp-admin/`) |
+| `KC_TDP_ADMIN_CLIENT_ID` | `tdp-admin` | React admin app client for OIDC login and admin user sync |
+| `KC_TDP_ADMIN_CLIENT_SECRET` | `tdp-admin-local-secret` (local only) | React admin login/sync secret; must equal the Keycloak deployment variable of the same name |
 | `ADMIN_FRONTEND_BASE_URL` | `http://localhost:3001` | Browser-facing admin console URL used for admin login/logout redirects |
 | `ADMIN_SESSION_COOKIE_NAME` | `admin_sessionid` | Django session cookie name used only by the admin frontend flow |
 | `ADMIN_API_PROXY_TOKEN` | empty | Shared server-side token required for admin frontend proxy requests to `/admin-api/*` |
@@ -81,8 +79,8 @@ These are derived from the Keycloak variables above in `settings/common.py`:
 
 | Variable | Value |
 |---|---|
-| `OIDC_RP_CLIENT_ID` | Same as `KEYCLOAK_DJANGO_CLIENT_ID` |
-| `OIDC_RP_CLIENT_SECRET` | Same as `KEYCLOAK_DJANGO_CLIENT_SECRET` |
+| `OIDC_RP_CLIENT_ID` | Same as `KC_TDP_DJANGO_CLIENT_ID` |
+| `OIDC_RP_CLIENT_SECRET` | Same as `KC_TDP_DJANGO_CLIENT_SECRET` |
 | `OIDC_RP_SIGN_ALGO` | `RS256` |
 | `OIDC_RP_SCOPES` | `openid email` |
 | `OIDC_OP_AUTHORIZATION_ENDPOINT` | `{KEYCLOAK_BROWSER_URL}/realms/tdp/protocol/openid-connect/auth` |
@@ -90,11 +88,11 @@ These are derived from the Keycloak variables above in `settings/common.py`:
 | `OIDC_OP_USER_ENDPOINT` | `{KEYCLOAK_SERVER_URL}/realms/tdp/protocol/openid-connect/userinfo` |
 | `OIDC_OP_JWKS_ENDPOINT` | `{KEYCLOAK_SERVER_URL}/realms/tdp/protocol/openid-connect/certs` |
 | `OIDC_OP_LOGOUT_ENDPOINT` | `{KEYCLOAK_BROWSER_URL}/realms/tdp/protocol/openid-connect/logout` |
-| `KEYCLOAK_TDP_ADMIN_AUTHORIZATION_ENDPOINT` | `{KEYCLOAK_BROWSER_URL}/realms/tdp-admin/protocol/openid-connect/auth` |
-| `KEYCLOAK_TDP_ADMIN_TOKEN_ENDPOINT` | `{KEYCLOAK_SERVER_URL}/realms/tdp-admin/protocol/openid-connect/token` |
-| `KEYCLOAK_TDP_ADMIN_USER_ENDPOINT` | `{KEYCLOAK_SERVER_URL}/realms/tdp-admin/protocol/openid-connect/userinfo` |
-| `KEYCLOAK_TDP_ADMIN_JWKS_ENDPOINT` | `{KEYCLOAK_SERVER_URL}/realms/tdp-admin/protocol/openid-connect/certs` |
-| `KEYCLOAK_TDP_ADMIN_LOGOUT_ENDPOINT` | `{KEYCLOAK_BROWSER_URL}/realms/tdp-admin/protocol/openid-connect/logout` |
+| `KC_TDP_ADMIN_AUTHORIZATION_ENDPOINT` | `{KEYCLOAK_BROWSER_URL}/realms/tdp-admin/protocol/openid-connect/auth` |
+| `KC_TDP_ADMIN_TOKEN_ENDPOINT` | `{KEYCLOAK_SERVER_URL}/realms/tdp-admin/protocol/openid-connect/token` |
+| `KC_TDP_ADMIN_USER_ENDPOINT` | `{KEYCLOAK_SERVER_URL}/realms/tdp-admin/protocol/openid-connect/userinfo` |
+| `KC_TDP_ADMIN_JWKS_ENDPOINT` | `{KEYCLOAK_SERVER_URL}/realms/tdp-admin/protocol/openid-connect/certs` |
+| `KC_TDP_ADMIN_LOGOUT_ENDPOINT` | `{KEYCLOAK_BROWSER_URL}/realms/tdp-admin/protocol/openid-connect/logout` |
 
 Note: authorization and logout endpoints use `KEYCLOAK_BROWSER_URL` because the browser redirects to these. Token, userinfo, and JWKS endpoints use `KEYCLOAK_SERVER_URL` because they are server-to-server calls.
 
@@ -126,12 +124,69 @@ Note: authorization and logout endpoints use `KEYCLOAK_BROWSER_URL` because the 
 
 | Variable | Default | Description |
 |---|---|---|
-| `KEYCLOAK_ADMIN` | `admin` | Admin console username |
-| `KEYCLOAK_ADMIN_PASSWORD` | `admin` | Admin console password |
+| `KEYCLOAK_ADMIN` | `admin` | Keycloak administration console username |
+| `KEYCLOAK_ADMIN_PASSWORD` | `admin` | Keycloak administration console password |
 | `KC_TDP_DJANGO_CLIENT_SECRET` | — | Realm variable for tdp-django client secret |
 | `KC_TDP_ADMIN_CLIENT_SECRET` | — | Realm variable for tdp-admin client secret |
 | `KC_TDP_GRAFANA_CLIENT_SECRET` | empty | Realm variable for tdp-grafana client secret; optional and may be blank |
 | `LOGIN_GOV_JWT_KEY` | — | Base64-encoded Login.gov private RSA PEM used by `normalize-login-gov-key.sh` |
+
+### Upgrading existing deployments
+
+The backend, Celery, and Keycloak deployments now share the client secret names
+`KC_TDP_DJANGO_CLIENT_SECRET` and `KC_TDP_ADMIN_CLIENT_SECRET`. Each secret must
+have the same value across all three applications in a space. Django login and
+standard-realm user sync use one `tdp-django` credential pair.
+`KEYCLOAK_ADMIN` and `KEYCLOAK_ADMIN_PASSWORD` still configure Keycloak's own
+administration console; they are unrelated to the React admin app.
+
+Rename existing local `.env` entries and deployment variables before deploying:
+
+| Previous backend variable | Replacement |
+|---|---|
+| `KEYCLOAK_REALM` | `KC_TDP_DJANGO_REALM` |
+| `KEYCLOAK_ADMIN_CLIENT_ID`, `KEYCLOAK_DJANGO_CLIENT_ID` | `KC_TDP_DJANGO_CLIENT_ID` |
+| `KEYCLOAK_ADMIN_CLIENT_SECRET`, `KEYCLOAK_DJANGO_CLIENT_SECRET` | `KC_TDP_DJANGO_CLIENT_SECRET` |
+| `KEYCLOAK_TDP_ADMIN_REALM` | `KC_TDP_ADMIN_REALM` |
+| `KEYCLOAK_TDP_ADMIN_CLIENT_ID` | `KC_TDP_ADMIN_CLIENT_ID` |
+| `KEYCLOAK_TDP_ADMIN_CLIENT_SECRET` | `KC_TDP_ADMIN_CLIENT_SECRET` |
+| `KEYCLOAK_TDP_ADMIN_ISSUER`, `KEYCLOAK_TDP_ADMIN_*_ENDPOINT` | `KC_TDP_ADMIN_ISSUER`, `KC_TDP_ADMIN_*_ENDPOINT` |
+
+The previous environment variable names are no longer read. Use the existing
+Keycloak client secrets when renaming; this change does not require rotating them.
+For HHS CircleCI project settings, including staging overrides, follow the
+[CircleCI rollout procedure](../../.circleci/README.md#keycloak-client-variables).
+After verifying login and sync, remove the obsolete variables from CircleCI and
+the backend/Celery application environments.
+
+If a Cloud.gov `tdp-keycloak-<space>` user-provided service is bound, its existing
+`django_client_id` and `django_client_secret` keys now configure both Django login
+and user sync. The duplicate `admin_client_id` / `admin_client_secret` keys are no
+longer read. If only those duplicate keys were populated, copy their values into
+the `django_client_*` keys through `cf update-user-provided-service` before
+restaging the apps. The existing `tdp_admin_*` service keys retain their names.
+Bound-service credentials take precedence over environment variables, so ensure
+their values match Keycloak too.
+
+### Testing checklist
+
+- Run `task backend-lint` and `task backend-pytest`.
+- Start the local stack with the two shared client secrets from `.env`; confirm
+  Django login/logout and React admin app login/logout both work.
+- Save a user and change a user's group membership; confirm attributes and groups
+  sync to both the `tdp` and `tdp-admin` realms.
+- Run `python manage.py sync_users_to_keycloak` and confirm both realms are synced.
+- Deploy backend and Celery through HHS CircleCI, including staging overrides;
+  confirm both apps receive the matching client secrets without logging values.
+- Repeat login/logout and user sync checks in the deployed environment; check
+  backend/Celery logs for `invalid_client` or authentication failures.
+
+Release digest entry: Keycloak client variables now identify the Django app
+(`KC_TDP_DJANGO_*`) and React admin app (`KC_TDP_ADMIN_*`). Operators must rename
+existing backend/Celery and CircleCI variables before deployment. Secret names and
+values now match the Keycloak deployment, and Django login and user sync share a
+single client credential pair. Use the checklist above for release verification;
+there are no visual UI changes requiring screenshots.
 
 ## Realm Configuration
 

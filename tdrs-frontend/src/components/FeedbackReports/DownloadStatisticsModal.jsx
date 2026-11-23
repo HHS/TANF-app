@@ -1,7 +1,71 @@
 import React, { Fragment, useCallback, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
+import { Link } from 'react-router-dom'
 import { useFocusTrap } from '../../hooks/useFocusTrap'
 import '../../assets/DownloadStatisticsModal.scss'
+
+function getSttReportUrl(stt, reportContext) {
+  const params = new URLSearchParams({
+    stt: stt.id,
+    year: reportContext.year,
+    type: reportContext.reportType,
+  })
+  return `/feedback-reports?${params}`
+}
+
+function SttReportLink({ stt, reportContext }) {
+  if (!reportContext) return stt.name
+
+  return <Link to={getSttReportUrl(stt, reportContext)}>{stt.name}</Link>
+}
+
+function DownloadStatisticsTable({ regions, formatDateTime, reportContext }) {
+  if (regions.length === 0) {
+    return <p>No jurisdictions are available for this report source.</p>
+  }
+
+  return (
+    <div
+      className="usa-table-container--scrollable"
+      tabIndex="0"
+      aria-label="Jurisdiction download statistics"
+    >
+      <table className="usa-table usa-table--striped download-statistics-table">
+        <thead>
+          <tr>
+            <th scope="col">STT</th>
+            <th scope="col">Downloaded at</th>
+          </tr>
+        </thead>
+        <tbody>
+          {regions.map((region) => (
+            <Fragment key={region.id ?? 'unassigned'}>
+              <tr className="download-statistics-region-row">
+                <th scope="rowgroup" colSpan="2">
+                  {region.id === null
+                    ? 'Unassigned Region'
+                    : `Region ${region.id}`}
+                </th>
+              </tr>
+              {region.stts.map((stt) => (
+                <tr key={stt.id}>
+                  <th scope="row">
+                    <SttReportLink stt={stt} reportContext={reportContext} />
+                  </th>
+                  <td>
+                    {stt.downloaded_at
+                      ? formatDateTime(stt.downloaded_at)
+                      : 'Not yet downloaded'}
+                  </td>
+                </tr>
+              ))}
+            </Fragment>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
 
 function DownloadStatisticsModal({
   statistics,
@@ -9,6 +73,7 @@ function DownloadStatisticsModal({
   error,
   formatDateTime,
   onClose,
+  reportContext,
 }) {
   const dialogRef = useRef(null)
   const returnFocusRef = useRef(document.activeElement)
@@ -97,47 +162,11 @@ function DownloadStatisticsModal({
                 </div>
               </div>
 
-              {statistics.regions.length > 0 ? (
-                <div
-                  className="usa-table-container--scrollable"
-                  tabIndex="0"
-                  aria-label="Jurisdiction download statistics"
-                >
-                  <table className="usa-table usa-table--striped download-statistics-table">
-                    <thead>
-                      <tr>
-                        <th scope="col">STT</th>
-                        <th scope="col">Downloaded at</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {statistics.regions.map((region) => (
-                        <Fragment key={region.id ?? 'unassigned'}>
-                          <tr className="download-statistics-region-row">
-                            <th scope="rowgroup" colSpan="2">
-                              {region.id === null
-                                ? 'Unassigned Region'
-                                : `Region ${region.id}`}
-                            </th>
-                          </tr>
-                          {region.stts.map((stt) => (
-                            <tr key={stt.id}>
-                              <th scope="row">{stt.name}</th>
-                              <td>
-                                {stt.downloaded_at
-                                  ? formatDateTime(stt.downloaded_at)
-                                  : 'Not yet downloaded'}
-                              </td>
-                            </tr>
-                          ))}
-                        </Fragment>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <p>No jurisdictions are available for this report source.</p>
-              )}
+              <DownloadStatisticsTable
+                regions={statistics.regions}
+                formatDateTime={formatDateTime}
+                reportContext={reportContext}
+              />
             </>
           )}
         </div>
@@ -152,28 +181,45 @@ function DownloadStatisticsModal({
   )
 }
 
+const sttPropType = PropTypes.shape({
+  id: PropTypes.number.isRequired,
+  name: PropTypes.string.isRequired,
+  downloaded_at: PropTypes.string,
+})
+
+const regionPropType = PropTypes.shape({
+  id: PropTypes.number,
+  stts: PropTypes.arrayOf(sttPropType).isRequired,
+})
+
+const reportContextPropType = PropTypes.shape({
+  year: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  reportType: PropTypes.string.isRequired,
+})
+
+SttReportLink.propTypes = {
+  stt: sttPropType.isRequired,
+  reportContext: reportContextPropType,
+}
+
+DownloadStatisticsTable.propTypes = {
+  regions: PropTypes.arrayOf(regionPropType).isRequired,
+  formatDateTime: PropTypes.func.isRequired,
+  reportContext: reportContextPropType,
+}
+
 DownloadStatisticsModal.propTypes = {
   statistics: PropTypes.shape({
     report_source_id: PropTypes.number.isRequired,
     downloaded_count: PropTypes.number.isRequired,
     total_count: PropTypes.number.isRequired,
-    regions: PropTypes.arrayOf(
-      PropTypes.shape({
-        id: PropTypes.number,
-        stts: PropTypes.arrayOf(
-          PropTypes.shape({
-            id: PropTypes.number.isRequired,
-            name: PropTypes.string.isRequired,
-            downloaded_at: PropTypes.string,
-          })
-        ).isRequired,
-      })
-    ).isRequired,
+    regions: PropTypes.arrayOf(regionPropType).isRequired,
   }),
   loading: PropTypes.bool.isRequired,
   error: PropTypes.string,
   formatDateTime: PropTypes.func.isRequired,
   onClose: PropTypes.func.isRequired,
+  reportContext: reportContextPropType,
 }
 
 export default DownloadStatisticsModal

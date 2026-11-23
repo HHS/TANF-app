@@ -71,7 +71,7 @@ def _expected_keycloak_issuer():
     return getattr(
         settings,
         "KEYCLOAK_ISSUER",
-        f"{settings.KEYCLOAK_SERVER_URL}/realms/{settings.KEYCLOAK_REALM}",
+        f"{settings.KEYCLOAK_SERVER_URL}/realms/{settings.KC_TDP_DJANGO_REALM}",
     )
 
 
@@ -80,7 +80,7 @@ def _expected_keycloak_audience():
     return getattr(
         settings,
         "KEYCLOAK_API_AUDIENCE",
-        settings.KEYCLOAK_DJANGO_CLIENT_ID,
+        settings.KC_TDP_DJANGO_CLIENT_ID,
     )
 
 
