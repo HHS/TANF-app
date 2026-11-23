@@ -24,20 +24,19 @@ def test_restored_views_preserve_environment_role_access(
 ) -> None:
     """Aggregate grants do not expose raw exiters to the ordinary reporting role."""
     settings.APP_NAME = app_name
-    apply_grafana_views.run()
     metadata = ("mr_record_counts_by_tableview", "stt_section_to_type_mapping")
     ordinary = "grafana_pipeline_read_test"
     sensitive = "grafana_pipeline_sensitive_test"
     admin = "grafana_pipeline_admin_test"
     production = app_name == "tdp-backend-prod"
 
-    create_grafana_postgres_role.run(
-        ordinary, "user_views", *(metadata if production else ())
-    )
-    create_grafana_postgres_role.run(sensitive, *metadata, "user_views", "admin_views")
-    create_grafana_postgres_role.run(admin, "all")
-
     for _ in range(2):
+        apply_grafana_views.run()
+        create_grafana_postgres_role.run(
+            ordinary, "user_views", *(metadata if production else ())
+        )
+        create_grafana_postgres_role.run(sensitive, *metadata, "user_views", "admin_views")
+        create_grafana_postgres_role.run(admin, "all")
         assert not can_select(ordinary, "latest_tanf_exiters_view_prod")
         assert can_select(sensitive, "latest_tanf_exiters_view_prod") == production
         assert can_select(admin, "latest_tanf_exiters_view_prod")
@@ -52,4 +51,3 @@ def test_restored_views_preserve_environment_role_access(
                     cursor.execute(f'SELECT * FROM public."{view}" LIMIT 0')
             finally:
                 cursor.execute("RESET ROLE")
-        apply_grafana_views.run()

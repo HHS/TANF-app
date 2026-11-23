@@ -36,7 +36,7 @@ def apply_view(path: Path) -> None:
 
 
 def run(*args: str) -> None:
-    """Apply Grafana views to the database."""
+    """Apply generated views and recreate the managed custom view batch."""
     # ./manage.py runscript apply_grafana_views
     for view_type in VIEW_TYPES_PATHS:
         view_type_path = Path(VIEWS_PATH) / view_type
@@ -52,6 +52,13 @@ def run(*args: str) -> None:
 
     # Counts depend on both generated views and the custom exiter view.
     with transaction.atomic():
+        with connection.cursor() as cursor:
+            for filename in reversed(CUSTOM_VIEW_FILES):
+                name = Path(filename).stem
+                logger.warning("Dropping custom view and its dependents: public.%s", name)
+                cursor.execute(
+                    f"DROP VIEW IF EXISTS public.{connection.ops.quote_name(name)} CASCADE"
+                )
         for filename in CUSTOM_VIEW_FILES:
             apply_view(Path(VIEWS_PATH) / "custom_views" / filename)
 
