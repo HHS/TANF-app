@@ -1,0 +1,41 @@
+CREATE OR REPLACE VIEW public.stt_section_to_type_mapping AS
+SELECT
+    map.program_type,
+    map.section_id,
+    map.stt_type,
+    st.region_id,
+    map.record_type,
+    map.table_view
+FROM ((
+    VALUES
+        ('TAN'::text, 'Active Case Data'::text, 'state'::text, 't1'::text, 'tanf_t1'::text),
+        ('TAN'::text, 'Active Case Data'::text, 'state'::text, 't2'::text, 'tanf_t2'::text),
+        ('TAN'::text, 'Active Case Data'::text, 'state'::text, 't3'::text, 'tanf_t3'::text),
+        ('TAN'::text, 'Active Case Data'::text, 'territory'::text, 't1'::text, 'tanf_t1'::text),
+        ('TAN'::text, 'Active Case Data'::text, 'territory'::text, 't2'::text, 'tanf_t2'::text),
+        ('TAN'::text, 'Active Case Data'::text, 'territory'::text, 't3'::text, 'tanf_t3'::text),
+        ('TAN'::text, 'Closed Case Data'::text, 'state'::text, 't4'::text, 'tanf_t4'::text),
+        ('TAN'::text, 'Closed Case Data'::text, 'state'::text, 't5'::text, 'tanf_t5'::text),
+        ('TAN'::text, 'Closed Case Data'::text, 'territory'::text, 't4'::text, 'tanf_t4'::text),
+        ('TAN'::text, 'Closed Case Data'::text, 'territory'::text, 't5'::text, 'tanf_t5'::text),
+        ('TAN'::text, 'Aggregate Data'::text, 'state'::text, 't6'::text, 'tanf_t6'::text),
+        ('TAN'::text, 'Aggregate Data'::text, 'territory'::text, 't6'::text, 'tanf_t6'::text),
+        ('TAN'::text, 'Stratum Data'::text, 'state'::text, 't7'::text, 'tanf_t7'::text),
+        ('TAN'::text, 'Stratum Data'::text, 'territory'::text, 't7'::text, 'tanf_t7'::text),
+        ('SSP'::text, 'Active Case Data'::text, 'state'::text, 'm1'::text, 'ssp_m1'::text),
+        ('SSP'::text, 'Active Case Data'::text, 'state'::text, 'm2'::text, 'ssp_m2'::text),
+        ('SSP'::text, 'Active Case Data'::text, 'state'::text, 'm3'::text, 'ssp_m3'::text),
+        ('SSP'::text, 'Closed Case Data'::text, 'state'::text, 'm4'::text, 'ssp_m4'::text),
+        ('SSP'::text, 'Closed Case Data'::text, 'state'::text, 'm5'::text, 'ssp_m5'::text),
+        ('SSP'::text, 'Aggregate Data'::text, 'state'::text, 'm6'::text, 'ssp_m6'::text),
+        ('SSP'::text, 'Stratum Data'::text, 'state'::text, 'm7'::text, 'ssp_m7'::text),
+        ('TRIBAL'::text, 'Active Case Data'::text, 'tribe'::text, 't1'::text, 'tribal_tanf_t1'::text),
+        ('TRIBAL'::text, 'Active Case Data'::text, 'tribe'::text, 't2'::text, 'tribal_tanf_t2'::text),
+        ('TRIBAL'::text, 'Active Case Data'::text, 'tribe'::text, 't3'::text, 'tribal_tanf_t3'::text),
+        ('TRIBAL'::text, 'Closed Case Data'::text, 'tribe'::text, 't4'::text, 'tribal_tanf_t4'::text),
+        ('TRIBAL'::text, 'Closed Case Data'::text, 'tribe'::text, 't5'::text, 'tribal_tanf_t5'::text),
+        ('TRIBAL'::text, 'Aggregate Data'::text, 'tribe'::text, 't6'::text, 'tribal_tanf_t6'::text),
+        ('TRIBAL'::text, 'Stratum Data'::text, 'tribe'::text, 't7'::text, 'tribal_tanf_t7'::text),
+        ('FRA'::text, 'Work Outcomes of TANF Exiters'::text, 'state'::text, 'te1'::text, 'latest_tanf_exiters_view_prod'::text),
+        ('FRA'::text, 'Work Outcomes of TANF Exiters'::text, 'territory'::text, 'te1'::text, 'latest_tanf_exiters_view_prod'::text)
+) map (program_type, section_id, stt_type, record_type, table_view) JOIN stts_stt st ON (((st.type)::text = map.stt_type)));
