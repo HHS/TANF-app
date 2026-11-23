@@ -1,18 +1,20 @@
 CREATE OR REPLACE VIEW public.latest_tanf_exiters_view_prod AS
 WITH latest_files AS (
     SELECT
-        DISTINCT ON (df.stt_id, df.section, df.year, df.quarter) df.id,
+        DISTINCT ON (df.stt_id, df.section_id, df.year, df.quarter) df.id,
         df.stt_id,
-        df.section,
+        section.name AS section,
         df.year,
         df.quarter,
         df.version,
         df.created_at
     FROM data_files_datafile df
-    WHERE ((df.year >= 2025) AND ((df.section)::text = 'Work Outcomes of TANF Exiters'::text))
+    JOIN data_files_section section ON section.id = df.section_id
+    JOIN data_files_program program ON program.id = section.program_id
+    WHERE ((df.year >= 2025) AND ((section.name)::text = 'Work Outcomes of TANF Exiters'::text) AND ((program.code)::text = 'FRA'::text))
     ORDER BY
         df.stt_id,
-        df.section,
+        df.section_id,
         df.year,
         df.quarter,
         df.version DESC
