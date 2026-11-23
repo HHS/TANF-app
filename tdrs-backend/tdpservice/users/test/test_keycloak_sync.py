@@ -162,12 +162,12 @@ def test_bulk_sync_all_users(mock_keycloak_admin):
 def test_get_sync_client_configures_standard_and_admin_realms(settings):
     """The aggregate sync client should target both configured Keycloak realms."""
     settings.KEYCLOAK_SERVER_URL = "https://keycloak.example.gov"
-    settings.KEYCLOAK_REALM = "tdp"
-    settings.KEYCLOAK_ADMIN_CLIENT_ID = "tdp-django"
-    settings.KEYCLOAK_ADMIN_CLIENT_SECRET = "django-secret"
-    settings.KEYCLOAK_TDP_ADMIN_REALM = "tdp-admin"
-    settings.KEYCLOAK_TDP_ADMIN_CLIENT_ID = "tdp-admin"
-    settings.KEYCLOAK_TDP_ADMIN_CLIENT_SECRET = "admin-secret"
+    settings.KC_TDP_DJANGO_REALM = "tdp"
+    settings.KC_TDP_DJANGO_CLIENT_ID = "tdp-django"
+    settings.KC_TDP_DJANGO_CLIENT_SECRET = "django-secret"
+    settings.KC_TDP_ADMIN_REALM = "tdp-admin"
+    settings.KC_TDP_ADMIN_CLIENT_ID = "tdp-admin"
+    settings.KC_TDP_ADMIN_CLIENT_SECRET = "admin-secret"
 
     with (
         patch(
