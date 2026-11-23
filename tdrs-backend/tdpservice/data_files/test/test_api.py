@@ -5,7 +5,10 @@ import os
 from unittest.mock import ANY, call
 
 from django.contrib.auth.models import Permission
+from django.core.files.base import ContentFile
+from django.core.files.storage import InMemoryStorage
 from django.db import IntegrityError, transaction
+from django.http.response import HttpResponseBase
 
 import openpyxl
 import pytest
@@ -34,10 +37,11 @@ from tdpservice.data_files.views import (
 )
 from tdpservice.parsers import util
 from tdpservice.parsers.factory import ParserFactory
-from tdpservice.parsers.models import ParserError
+from tdpservice.parsers.models import DataFileSummary, ParserError
 from tdpservice.parsers.test.factories import DataFileSummaryFactory
 from tdpservice.scheduling import parser_task
 from tdpservice.security.models import ClamAVFileScan
+from tdpservice.users.models import AccountApprovalStatusChoices, User
 
 
 @pytest.mark.django_db
@@ -643,9 +647,10 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         ],
     )
     def test_download_fra_error_report_file_for_own_stt(
-        self, request, api_client, file, dfs
+        self, request, api_client, file, dfs, user
     ):
         """Test that the fra error report file is downloaded as expected for a Data Analyst's set STT."""
+        user.user_permissions.add(Permission.objects.get(codename="has_fra_access"))
         datafile = request.getfixturevalue(file)
         dfs.datafile = datafile
         dfs.save()
@@ -1684,3 +1689,206 @@ class TestDataFileQuerysetFiltering:
                 f"stt={location.id}&year={year}&quarter={quarter}&file_type=program-integrity-audit",
             )
             self._assert_pia(k, pia_files, pia_file_ids, section_options)
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "action", ["list", "retrieve", "download", "download_error_report", "logs"]
+)
+class TestDataFileReadPermissions:
+    """FRA access augments existing role, location, approval, and model rules."""
+
+    @pytest.fixture(autouse=True)
+    def local_file_storage(self, mocker) -> None:
+        """Keep file and log downloads independent of external storage."""
+        storage = InMemoryStorage()
+        mocker.patch.object(DataFile._meta.get_field("file"), "storage", storage)
+        mocker.patch.object(
+            DataFileSummary._meta.get_field("error_report"), "storage", storage
+        )
+        mocker.patch(
+            "tdpservice.data_files.views.S3FileHandler.download_file",
+            side_effect=lambda **kwargs: io.BytesIO(b"parser log"),
+        )
+
+    def set_fra_access(self, user: User, allowed: bool) -> User:
+        """Set effective FRA access, including permissions inherited from groups."""
+        permission = Permission.objects.get(codename="has_fra_access")
+        user.user_permissions.remove(permission)
+        for group in user.groups.all():
+            group.permissions.remove(permission)
+        if allowed:
+            user.user_permissions.add(permission)
+        return User.objects.get(pk=user.pk)
+
+    def create_file(self, user: User, section: str, program: str) -> DataFile:
+        """Create a downloadable submission with a cached error report."""
+        datafile = DataFileFactory.create(
+            user=user,
+            stt=user.stt,
+            section=section,
+            program_type=program,
+            s3_versioning_id=None,
+        )
+        DataFileSummaryFactory.create(
+            datafile=datafile,
+            error_report=ContentFile(b"error report", name="report.xlsx"),
+        )
+        return datafile
+
+    def read_file(
+        self, client: APIClient, datafile: DataFile, action: str
+    ) -> HttpResponseBase:
+        """Request a submission through each public read endpoint."""
+        if action == "list":
+            file_type = "tanf"
+            if datafile.program.code == Program.Code.FRA:
+                file_type = datafile.section.name
+            elif datafile.program.code == Program.Code.SSP:
+                file_type = "ssp-moe"
+            return client.get(
+                "/v1/data_files/",
+                {"stt": datafile.stt_id, "file_type": file_type},
+            )
+        suffix = "" if action == "retrieve" else f"{action}/"
+        return client.get(f"/v1/data_files/{datafile.pk}/{suffix}")
+
+    @pytest.mark.parametrize("section", fra_section_options)
+    @pytest.mark.parametrize("allowed", [False, True])
+    def test_fra_reads_require_permission(
+        self, api_client, data_analyst, section: str, action: str, allowed: bool
+    ) -> None:
+        """Same-STT FRA reads require explicit access for every FRA section."""
+        data_analyst = self.set_fra_access(data_analyst, allowed)
+        datafile = self.create_file(data_analyst, section, Program.Code.FRA)
+        api_client.force_authenticate(user=data_analyst)
+
+        response = self.read_file(api_client, datafile, action)
+
+        expected = status.HTTP_200_OK if allowed else status.HTTP_403_FORBIDDEN
+        assert response.status_code == expected
+        if allowed and action == "list":
+            assert [record["id"] for record in response.data] == [datafile.pk]
+
+    def test_fra_reads_allow_group_permission(
+        self, api_client, data_analyst, action: str
+    ) -> None:
+        """FRA access inherited from a role authorizes the same read endpoints."""
+        data_analyst = self.set_fra_access(data_analyst, False)
+        data_analyst.groups.get().permissions.add(
+            Permission.objects.get(codename="has_fra_access")
+        )
+        datafile = self.create_file(
+            data_analyst, Section.Name.FRA_WORK_OUTCOMES, Program.Code.FRA
+        )
+        api_client.force_authenticate(user=data_analyst)
+
+        assert (
+            self.read_file(api_client, datafile, action).status_code
+            == status.HTTP_200_OK
+        )
+
+    def test_fra_reads_allow_system_admin_without_fra_permission(
+        self, api_client, ofa_system_admin, data_analyst, action: str
+    ) -> None:
+        """System administrators retain the exception used by FRA upload validation."""
+        ofa_system_admin = self.set_fra_access(ofa_system_admin, False)
+        assert not ofa_system_admin.has_fra_access
+        datafile = self.create_file(
+            data_analyst, Section.Name.FRA_WORK_OUTCOMES, Program.Code.FRA
+        )
+        api_client.force_authenticate(user=ofa_system_admin)
+
+        assert (
+            self.read_file(api_client, datafile, action).status_code
+            == status.HTTP_200_OK
+        )
+
+    @pytest.mark.parametrize("allowed", [False, True])
+    def test_regional_fra_reads_preserve_download_restriction(
+        self, api_client, regional_user, data_analyst, action: str, allowed: bool
+    ) -> None:
+        """Regional users need FRA access and still cannot download original files."""
+        regional_user = self.set_fra_access(regional_user, allowed)
+        datafile = self.create_file(
+            data_analyst, Section.Name.FRA_WORK_OUTCOMES, Program.Code.FRA
+        )
+        api_client.force_authenticate(user=regional_user)
+
+        expected = (
+            status.HTTP_200_OK
+            if allowed and action != "download"
+            else status.HTTP_403_FORBIDDEN
+        )
+        assert self.read_file(api_client, datafile, action).status_code == expected
+
+    @pytest.mark.parametrize("role", ["data_analyst", "regional_user"])
+    def test_fra_access_does_not_override_location_scope(
+        self, request, api_client, other_stt, role: str, action: str
+    ) -> None:
+        """FRA permission cannot grant access outside the user's STT or region."""
+        user = self.set_fra_access(request.getfixturevalue(role), True)
+        datafile = DataFileFactory.create(
+            stt=other_stt,
+            section=Section.Name.FRA_WORK_OUTCOMES,
+            program_type=Program.Code.FRA,
+        )
+        api_client.force_authenticate(user=user)
+
+        response = self.read_file(api_client, datafile, action)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    @pytest.mark.parametrize("program", [Program.Code.TANF, Program.Code.SSP])
+    def test_non_fra_reads_do_not_require_fra_access(
+        self, api_client, data_analyst, program: str, action: str
+    ) -> None:
+        """Existing TANF and SSP reads remain available without FRA permission."""
+        data_analyst = self.set_fra_access(data_analyst, False)
+        datafile = self.create_file(
+            data_analyst, Section.Name.ACTIVE_CASE_DATA, program
+        )
+        api_client.force_authenticate(user=data_analyst)
+
+        assert (
+            self.read_file(api_client, datafile, action).status_code
+            == status.HTTP_200_OK
+        )
+
+    def test_fra_access_does_not_override_approval(
+        self, api_client, data_analyst, action: str
+    ) -> None:
+        """FRA permission does not authorize an unapproved user."""
+        data_analyst = self.set_fra_access(data_analyst, True)
+        data_analyst.account_approval_status = AccountApprovalStatusChoices.INITIAL
+        data_analyst.save()
+        datafile = self.create_file(
+            data_analyst, Section.Name.FRA_WORK_OUTCOMES, Program.Code.FRA
+        )
+        api_client.force_authenticate(user=data_analyst)
+
+        assert (
+            self.read_file(api_client, datafile, action).status_code
+            == status.HTTP_403_FORBIDDEN
+        )
+
+    def test_fra_access_does_not_override_model_permissions(
+        self, api_client, data_analyst, action: str
+    ) -> None:
+        """FRA permission alone does not grant the ability to view data files."""
+        data_analyst = self.set_fra_access(data_analyst, True)
+        permission = Permission.objects.get(
+            content_type__app_label="data_files", codename="view_datafile"
+        )
+        for group in data_analyst.groups.all():
+            group.permissions.remove(permission)
+        data_analyst.user_permissions.remove(permission)
+        datafile = self.create_file(
+            data_analyst, Section.Name.FRA_WORK_OUTCOMES, Program.Code.FRA
+        )
+        api_client.force_authenticate(user=data_analyst)
+
+        assert (
+            self.read_file(api_client, datafile, action).status_code
+            == status.HTTP_403_FORBIDDEN
+        )
