@@ -318,7 +318,9 @@ describe('AdminFeedbackReports', () => {
         setDateInputValue('2025-02-28')
 
         fireEvent.click(screen.getByLabelText(nextType))
-        fireEvent.click(screen.getByRole('button', { name: 'OK' }))
+        fireEvent.click(
+          screen.getByRole('button', { name: 'Discard and continue' })
+        )
 
         expect(document.getElementById('date-extracted-on')).toHaveValue('')
         await selectFile('FY2025.zip')
@@ -1524,7 +1526,9 @@ describe('AdminFeedbackReports', () => {
 
       const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
       fireEvent.change(fiscalYearSelect, { target: { value: '2024' } })
-      fireEvent.click(screen.getByRole('button', { name: 'OK' }))
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Discard and continue' })
+      )
 
       expect(
         screen.queryByText(/Selected File feedback.zip/)
@@ -1532,7 +1536,9 @@ describe('AdminFeedbackReports', () => {
       expect(document.getElementById('date-extracted-on')).toHaveValue('')
 
       fireEvent.click(screen.getByLabelText('FRA'))
-      fireEvent.click(screen.getByRole('button', { name: 'OK' }))
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Discard and continue' })
+      )
       await selectFile('feedback.zip')
       setDateInputValue('2025-02-28')
       fireEvent.click(
@@ -1589,10 +1595,8 @@ describe('AdminFeedbackReports', () => {
       const fiscalYearSelect = screen.getByLabelText('Fiscal Year')
 
       fireEvent.change(fiscalYearSelect, { target: { value: '' } })
-      expect(
-        screen.getByText('Report Type or Fiscal Year changed')
-      ).toBeInTheDocument()
-      fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+      expect(screen.getByText('Discard unsaved changes?')).toBeInTheDocument()
+      fireEvent.click(screen.getByRole('button', { name: 'Keep editing' }))
 
       expect(fiscalYearSelect.value).toBe('2025')
       expect(document.getElementById('feedback_reports')).toBe(
@@ -1617,7 +1621,9 @@ describe('AdminFeedbackReports', () => {
       fireEvent.change(screen.getByLabelText('Fiscal Year'), {
         target: { value: '2024' },
       })
-      fireEvent.click(screen.getByRole('button', { name: 'OK' }))
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Discard and continue' })
+      )
 
       expect(screen.queryByText(mismatchMessage)).not.toBeInTheDocument()
       await selectFile('FY2024.zip')
