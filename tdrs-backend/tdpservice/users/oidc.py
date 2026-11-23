@@ -196,20 +196,20 @@ class KeycloakOIDCBackend(OIDCAuthenticationBackend):
         self.OIDC_OP_TOKEN_ENDPOINT = settings.OIDC_OP_TOKEN_ENDPOINT
         self.OIDC_OP_USER_ENDPOINT = settings.OIDC_OP_USER_ENDPOINT
         self.OIDC_OP_JWKS_ENDPOINT = settings.OIDC_OP_JWKS_ENDPOINT
-        self.OIDC_RP_CLIENT_ID = settings.KEYCLOAK_DJANGO_CLIENT_ID
-        self.OIDC_RP_CLIENT_SECRET = settings.KEYCLOAK_DJANGO_CLIENT_SECRET
+        self.OIDC_RP_CLIENT_ID = settings.KC_TDP_DJANGO_CLIENT_ID
+        self.OIDC_RP_CLIENT_SECRET = settings.KC_TDP_DJANGO_CLIENT_SECRET
         self.OIDC_OP_ISSUER = settings.KEYCLOAK_ISSUER
         self._oidc_expected_issuer = settings.KEYCLOAK_ISSUER
 
     def _use_admin_oidc_settings(self):
         """Use the dedicated admin realm for a single authentication call."""
-        self.OIDC_OP_TOKEN_ENDPOINT = settings.KEYCLOAK_TDP_ADMIN_TOKEN_ENDPOINT
-        self.OIDC_OP_USER_ENDPOINT = settings.KEYCLOAK_TDP_ADMIN_USER_ENDPOINT
-        self.OIDC_OP_JWKS_ENDPOINT = settings.KEYCLOAK_TDP_ADMIN_JWKS_ENDPOINT
-        self.OIDC_RP_CLIENT_ID = settings.KEYCLOAK_TDP_ADMIN_CLIENT_ID
-        self.OIDC_RP_CLIENT_SECRET = settings.KEYCLOAK_TDP_ADMIN_CLIENT_SECRET
-        self.OIDC_OP_ISSUER = settings.KEYCLOAK_TDP_ADMIN_ISSUER
-        self._oidc_expected_issuer = settings.KEYCLOAK_TDP_ADMIN_ISSUER
+        self.OIDC_OP_TOKEN_ENDPOINT = settings.KC_TDP_ADMIN_TOKEN_ENDPOINT
+        self.OIDC_OP_USER_ENDPOINT = settings.KC_TDP_ADMIN_USER_ENDPOINT
+        self.OIDC_OP_JWKS_ENDPOINT = settings.KC_TDP_ADMIN_JWKS_ENDPOINT
+        self.OIDC_RP_CLIENT_ID = settings.KC_TDP_ADMIN_CLIENT_ID
+        self.OIDC_RP_CLIENT_SECRET = settings.KC_TDP_ADMIN_CLIENT_SECRET
+        self.OIDC_OP_ISSUER = settings.KC_TDP_ADMIN_ISSUER
+        self._oidc_expected_issuer = settings.KC_TDP_ADMIN_ISSUER
 
     def authenticate(self, request, **kwargs):
         """Authenticate with the request-scoped Keycloak realm and client."""

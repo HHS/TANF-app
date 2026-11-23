@@ -15,6 +15,7 @@ services:
       - ADMIN_FRONTEND_ORIGIN=${ADMIN_FRONTEND_ORIGIN:-http://localhost:3001}
       - ADMIN_API_PROXY_TOKEN=${ADMIN_API_PROXY_TOKEN:-local-admin-proxy-token}
       - NEXT_PUBLIC_BACKEND_HOST=${NEXT_PUBLIC_BACKEND_HOST:-http://localhost:8989}
+      - TDP_HELP_URL=${TDP_HELP_URL:-http://localhost:3000/help/}
     networks:
       - default
 

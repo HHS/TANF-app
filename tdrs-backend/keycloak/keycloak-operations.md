@@ -219,8 +219,7 @@ This secret is used by both the Django OIDC flow and the Admin REST API sync lay
     # Example for dev space
     for app in tdp-backend-raft tdp-backend-qasp tdp-backend-a11y \
                tdp-celery-raft tdp-celery-qasp tdp-celery-a11y; do
-        cf set-env $app KEYCLOAK_ADMIN_CLIENT_SECRET "<new-secret>"
-        cf set-env $app KEYCLOAK_DJANGO_CLIENT_SECRET "<new-secret>"
+        cf set-env $app KC_TDP_DJANGO_CLIENT_SECRET "<new-secret>"
     done
     ```
 
@@ -236,7 +235,7 @@ This secret is used by both the Django OIDC flow and the Admin REST API sync lay
 
 ### Rotate the `tdp-admin` Client Secret
 
-The `tdp-admin` client is used by the standalone admin frontend OIDC flow.
+The `tdp-admin` client is used by the React admin app's OIDC flow and admin-realm user sync.
 
 1. Generate a new secret.
 
@@ -253,10 +252,13 @@ The `tdp-admin` client is used by the standalone admin frontend OIDC flow.
     cf logs keycloak --recent
     ```
 
-4. Update and restage every backend app that serves admin auth routes:
+4. Update and restage every backend and Celery app. Backends use this secret for
+   the React admin app's OIDC flow, and both services use it to sync admin users:
     ```bash
-    cf set-env tdp-backend-<name> KEYCLOAK_TDP_ADMIN_CLIENT_SECRET "<new-secret>"
-    cf restage tdp-backend-<name>
+    for app in tdp-backend-<name> tdp-celery-<name>; do
+        cf set-env "$app" KC_TDP_ADMIN_CLIENT_SECRET "<new-secret>"
+        cf restage "$app"
+    done
     ```
 
 ### Rotate the `tdp-grafana` Client Secret

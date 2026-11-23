@@ -25,6 +25,7 @@ from tdpservice.email.helpers.profile_change_request import (
 from tdpservice.stts.models import STT, Region
 from tdpservice.users.constants import REGIONAL_ROLES
 from tdpservice.users.mixins import ReviewerMixin as Reviewable
+from tdpservice.web_urls import help_url
 
 logger = logging.getLogger()
 
@@ -682,6 +683,7 @@ class User(AbstractUser, UserChangeRequestMixin):
                         "stt_name": str(self.stt) if self.stt else None,
                         "group_permission": str(self.groups.first()),
                         "url": settings.FRONTEND_BASE_URL,
+                        "help_url": help_url(),
                     },
                 )
 

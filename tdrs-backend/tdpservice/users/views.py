@@ -383,9 +383,9 @@ class AdminKeycloakLoginMixin:
         if attr == "OIDC_AUTHENTICATION_CALLBACK_URL":
             return ADMIN_OIDC_CALLBACK_URL_NAME
         if attr == "OIDC_OP_AUTHORIZATION_ENDPOINT":
-            return settings.KEYCLOAK_TDP_ADMIN_AUTHORIZATION_ENDPOINT
+            return settings.KC_TDP_ADMIN_AUTHORIZATION_ENDPOINT
         if attr == "OIDC_RP_CLIENT_ID":
-            return settings.KEYCLOAK_TDP_ADMIN_CLIENT_ID
+            return settings.KC_TDP_ADMIN_CLIENT_ID
 
         return OIDCAuthenticationRequestView.get_settings(attr, *args)
 
@@ -452,7 +452,7 @@ class KeycloakLogoutView(View):
     """Logout from the standard Django session and standard Keycloak realm."""
 
     logout_endpoint_setting = "OIDC_OP_LOGOUT_ENDPOINT"
-    client_id_setting = "KEYCLOAK_DJANGO_CLIENT_ID"
+    client_id_setting = "KC_TDP_DJANGO_CLIENT_ID"
     redirect_url_setting = "FRONTEND_BASE_URL"
 
     def get_logout_endpoint(self):
@@ -490,6 +490,6 @@ class KeycloakLogoutView(View):
 class AdminKeycloakLogoutView(KeycloakLogoutView):
     """Logout from the admin-scoped session and admin Keycloak realm."""
 
-    logout_endpoint_setting = "KEYCLOAK_TDP_ADMIN_LOGOUT_ENDPOINT"
-    client_id_setting = "KEYCLOAK_TDP_ADMIN_CLIENT_ID"
+    logout_endpoint_setting = "KC_TDP_ADMIN_LOGOUT_ENDPOINT"
+    client_id_setting = "KC_TDP_ADMIN_CLIENT_ID"
     redirect_url_setting = "ADMIN_FRONTEND_BASE_URL"

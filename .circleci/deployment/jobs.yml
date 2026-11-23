@@ -23,6 +23,11 @@
           cf-space: <<parameters.cf-space>>
 
   deploy-backend-application:
+    environment:
+      KC_TDP_DJANGO_REALM: tdp
+      KC_TDP_DJANGO_CLIENT_ID: tdp-django
+      KC_TDP_ADMIN_REALM: tdp-admin
+      KC_TDP_ADMIN_CLIENT_ID: tdp-admin
     parameters:
       backend-appname:
         type: string
@@ -50,6 +55,11 @@
           cf-space: <<parameters.cf-space>>
 
   deploy-celery-application:
+    environment:
+      KC_TDP_DJANGO_REALM: tdp
+      KC_TDP_DJANGO_CLIENT_ID: tdp-django
+      KC_TDP_ADMIN_REALM: tdp-admin
+      KC_TDP_ADMIN_CLIENT_ID: tdp-admin
     parameters:
       backend-appname:
         type: string

@@ -234,12 +234,12 @@ def test_standard_and_admin_login_logout_end_to_end_state_sequence(
     api_client, admin_console_user, settings
 ):
     """Standard and admin app sessions should remain independently scoped."""
-    settings.KEYCLOAK_DJANGO_CLIENT_ID = "tdp-django"
-    settings.KEYCLOAK_TDP_ADMIN_CLIENT_ID = "tdp-admin"
+    settings.KC_TDP_DJANGO_CLIENT_ID = "tdp-django"
+    settings.KC_TDP_ADMIN_CLIENT_ID = "tdp-admin"
     settings.OIDC_OP_LOGOUT_ENDPOINT = (
         "https://keycloak.example.gov/realms/tdp/protocol/openid-connect/logout"
     )
-    settings.KEYCLOAK_TDP_ADMIN_LOGOUT_ENDPOINT = (
+    settings.KC_TDP_ADMIN_LOGOUT_ENDPOINT = (
         "https://keycloak.example.gov/realms/tdp-admin/protocol/openid-connect/logout"
     )
 
@@ -268,7 +268,7 @@ def test_standard_and_admin_login_logout_end_to_end_state_sequence(
     response = api_client.get(reverse("admin-oidc-logout"))
     assert response.status_code == status.HTTP_302_FOUND
     assert (
-        _url_without_query(response.url) == settings.KEYCLOAK_TDP_ADMIN_LOGOUT_ENDPOINT
+        _url_without_query(response.url) == settings.KC_TDP_ADMIN_LOGOUT_ENDPOINT
     )
     query_params = parse_qs(urlparse(response.url).query)
     assert query_params["id_token_hint"] == ["admin-id-token"]
@@ -299,12 +299,12 @@ def test_logout_state_matrix(
     expected_admin,
 ):
     """Each logout endpoint should clear only its matching session scope."""
-    settings.KEYCLOAK_DJANGO_CLIENT_ID = "tdp-django"
-    settings.KEYCLOAK_TDP_ADMIN_CLIENT_ID = "tdp-admin"
+    settings.KC_TDP_DJANGO_CLIENT_ID = "tdp-django"
+    settings.KC_TDP_ADMIN_CLIENT_ID = "tdp-admin"
     settings.OIDC_OP_LOGOUT_ENDPOINT = (
         "https://keycloak.example.gov/realms/tdp/protocol/openid-connect/logout"
     )
-    settings.KEYCLOAK_TDP_ADMIN_LOGOUT_ENDPOINT = (
+    settings.KC_TDP_ADMIN_LOGOUT_ENDPOINT = (
         "https://keycloak.example.gov/realms/tdp-admin/protocol/openid-connect/logout"
     )
     initial_auth_states = {
@@ -335,7 +335,7 @@ def test_logout_state_matrix(
     elif logout_route == "admin-oidc-logout" and initial_state in ("admin", "both"):
         assert (
             _url_without_query(response.url)
-            == settings.KEYCLOAK_TDP_ADMIN_LOGOUT_ENDPOINT
+            == settings.KC_TDP_ADMIN_LOGOUT_ENDPOINT
         )
         query_params = parse_qs(urlparse(response.url).query)
         assert query_params["client_id"] == ["tdp-admin"]
@@ -542,8 +542,8 @@ def test_admin_auth_check_rejects_inactive_django_superuser(
 @pytest.mark.django_db
 def test_admin_login_uses_admin_keycloak_client(api_client, settings):
     """Admin login should initialize OIDC with the dedicated admin realm/client."""
-    settings.KEYCLOAK_TDP_ADMIN_CLIENT_ID = "tdp-admin"
-    settings.KEYCLOAK_TDP_ADMIN_AUTHORIZATION_ENDPOINT = (
+    settings.KC_TDP_ADMIN_CLIENT_ID = "tdp-admin"
+    settings.KC_TDP_ADMIN_AUTHORIZATION_ENDPOINT = (
         "https://keycloak.example.gov/realms/tdp-admin/protocol/openid-connect/auth"
     )
     settings.ADMIN_FRONTEND_BASE_URL = "http://localhost:3001"
@@ -551,7 +551,7 @@ def test_admin_login_uses_admin_keycloak_client(api_client, settings):
 
     assert response.status_code == status.HTTP_302_FOUND
     assert _url_without_query(response["Location"]) == (
-        settings.KEYCLOAK_TDP_ADMIN_AUTHORIZATION_ENDPOINT
+        settings.KC_TDP_ADMIN_AUTHORIZATION_ENDPOINT
     )
     query_params = parse_qs(urlparse(response["Location"]).query)
     assert query_params["client_id"] == ["tdp-admin"]
@@ -570,7 +570,7 @@ def test_admin_login_uses_admin_keycloak_client(api_client, settings):
 @pytest.mark.django_db
 def test_admin_login_preserves_allowed_admin_next_url(api_client, settings):
     """Admin login should return to the admin frontend when next is supplied."""
-    settings.KEYCLOAK_TDP_ADMIN_CLIENT_ID = "tdp-admin"
+    settings.KC_TDP_ADMIN_CLIENT_ID = "tdp-admin"
     settings.ADMIN_FRONTEND_BASE_URL = "http://localhost:3001"
     settings.OIDC_REDIRECT_ALLOWED_HOSTS = {"localhost:3001"}
 

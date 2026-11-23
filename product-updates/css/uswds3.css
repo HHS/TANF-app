@@ -22,15 +22,45 @@
 .search-pill {
   background-color: white; border-radius: 100px; padding: 8px; position: relative; border-color: #005ea2; color: #005ea2; font-weight: bold; margin-top: 8px; margin-right: 8px; box-shadow: none; cursor: pointer;
 }
-.on-this-page {
-  position: fixed;
-  right: 0;
-  top: 8em;
-  width: 17%;
-  height: 100vh;
-  overflow-y: auto;
-  padding: 2rem;
+/* 1. Ensure the parent container establishes a positioning anchor */
+.usa-section .grid-row {
+  position: relative;
 }
+
+/* 2. Update absolute position to anchor properly at the top right on load */
+.on-this-page {
+  position: fixed; /* Fixed by default so it appears immediately on load */
+  top: 15rem; /* Clears your top navigation bar */
+  right: 0px;
+  width: 300px;
+  height: 50vh;
+  padding: 1.5rem 1rem;
+  padding-bottom: 0;
+  border-left: 3px solid #000;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  box-sizing: border-box;
+  z-index: 10;
+}
+
+.on-this-page__title {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-weight: bold;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.on-this-page__scroll-container {
+  overflow-y: auto;
+  flex-grow: 1;
+  
+  /* Fade mask at the bottom */
+  -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 10px), transparent 100%);
+  mask-image: linear-gradient(to bottom, black calc(100% - 10px), transparent 100%);
+}
+
 @media (max-width: 86em) {
   .on-this-page {
     display: none;
@@ -41,6 +71,8 @@
 html {
   scroll-behavior: smooth;
 }
+
+
 
 code {
   background-color: #f8f8f8;
@@ -841,7 +873,7 @@ iframe:focus,
   font-style:normal;
   font-weight:300;
   font-display:fallback;
-  src:url(../fonts/source-sans-pro/sourcesanspro-light-webfont.woff2) format("woff2"), url(../fonts/source-sans-pro/sourcesanspro-light-webfont.woff) format("woff"), url(../fonts/source-sans-pro/sourcesanspro-light-webfont.ttf) format("truetype");
+  src:url(../fonts/source-sans-pro/sourcesanspro-Light.ttf) format("ttf"), url(../fonts/source-sans-pro/sourcesanspro-light-webfont.woff) format("woff"), url(../fonts/source-sans-pro/sourcesanspro-light-webfont.ttf) format("truetype");
 }
 @font-face{
   font-family:"Source Sans Pro Web";
@@ -862,14 +894,14 @@ iframe:focus,
   font-style:italic;
   font-weight:300;
   font-display:fallback;
-  src:url(../fonts/source-sans-pro/sourcesanspro-lightitalic-webfont.woff2) format("woff2"), url(../fonts/source-sans-pro/sourcesanspro-lightitalic-webfont.woff) format("woff"), url(../fonts/source-sans-pro/sourcesanspro-lightitalic-webfont.ttf) format("truetype");
+  src:url(../fonts/source-sans-pro/sourcesanspro-LightItalic-ttf) format("ttf"), url(../fonts/source-sans-pro/sourcesanspro-lightitalic-webfont.woff) format("woff"), url(../fonts/source-sans-pro/sourcesanspro-lightitalic-webfont.ttf) format("truetype");
 }
 @font-face{
   font-family:"Source Sans Pro Web";
   font-style:italic;
   font-weight:400;
   font-display:fallback;
-  src:url(../fonts/source-sans-pro/sourcesanspro-italic-webfont.woff2) format("woff2"), url(../fonts/source-sans-pro/sourcesanspro-italic-webfont.woff) format("woff"), url(../fonts/source-sans-pro/sourcesanspro-italic-webfont.ttf) format("truetype");
+  src:url(../fonts/source-sans-pro/sourcesanspro-Italic.ttf) format("ttf"), url(../fonts/source-sans-pro/sourcesanspro-Italic.ttf) format("ttf"), url(../fonts/source-sans-pro/sourcesanspro-Italic.ttf) format("truetype");
 }
 @font-face{
   font-family:"Source Sans Pro Web";
@@ -1502,7 +1534,7 @@ dfn{
   color:#1b1b1b;
 }
 .usa-alert--success:before{
-  background:url("../img/usa-icons/check_circle.svg") no-repeat center/contain;
+  background:url("../img//alerts/success.svg") no-repeat center/contain;
   display:inline-block;
   height:2rem;
   width:2rem;
@@ -1517,8 +1549,8 @@ dfn{
   .usa-alert--success:before{
     background:none;
     background-color:#1b1b1b;
-    -webkit-mask:url("../img/usa-icons/check_circle.svg") no-repeat center/contain;
-            mask:url("../img/usa-icons/check_circle.svg") no-repeat center/contain;
+    -webkit-mask:url("../img//alerts/success.svg") no-repeat center/contain;
+            mask:url("../img//alerts/success.svg") no-repeat center/contain;
   }
 }
 .usa-alert--success.usa-alert--slim:before{
@@ -1965,7 +1997,7 @@ dfn{
   text-decoration:underline;
 }
 .usa-banner__header-action::after{
-  background:url("../img/usa-icons/expand_more.svg") no-repeat center/contain;
+  background:url("../img/usa-icons/chevron-white.svg") no-repeat center/contain;
   display:inline-block;
   height:1rem;
   width:1rem;
@@ -1977,8 +2009,8 @@ dfn{
   .usa-banner__header-action::after{
     background:none;
     background-color:#005ea2;
-    -webkit-mask:url("../img/usa-icons/expand_more.svg") no-repeat center/contain;
-            mask:url("../img/usa-icons/expand_more.svg") no-repeat center/contain;
+    -webkit-mask:url("../img/usa-icons/chevron-white.svg") no-repeat center/contain;
+            mask:url("../img/usa-icons/chevron-white.svg") no-repeat center/contain;
   }
   .usa-banner__header-action::after:hover{
     background-color:#1a4480;
@@ -2124,20 +2156,21 @@ dfn{
     position:relative;
   }
   .usa-banner__button::after{
-    background:url("../img/usa-icons/expand_more.svg") no-repeat center/contain;
+    background:url("../img/usa-icons/chevron-white.svg") no-repeat center/contain;
     display:inline-block;
-    height:1rem;
-    width:1rem;
+    height:.6rem;
+    width:.6rem;
     content:"";
     vertical-align:middle;
     margin-left:2px;
+    margin-top: 3px;
   }
   @supports ((-webkit-mask: url("")) or (mask: url(""))){
     .usa-banner__button::after{
       background:none;
       background-color:#fff;
-      -webkit-mask:url("../img/usa-icons/expand_more.svg") no-repeat center/contain;
-              mask:url("../img/usa-icons/expand_more.svg") no-repeat center/contain;
+      -webkit-mask:url("../img/usa-icons/chevron-white.svg") no-repeat center/contain;
+              mask:url("../img/usa-icons/chevron-white.svg") no-repeat center/contain;
     }
     .usa-banner__button::after:hover{
       background-color:#1a4480;
@@ -2213,8 +2246,8 @@ dfn{
   .usa-banner__button[aria-expanded=true]::after{
     background:url("../img/usa-icons/expand_less.svg") no-repeat center/contain;
     display:inline-block;
-    height:1rem;
-    width:1rem;
+    height:.6rem;
+    width:.6rem;
     content:"";
     vertical-align:middle;
     margin-left:2px;
@@ -2222,17 +2255,17 @@ dfn{
   @supports ((-webkit-mask: url("")) or (mask: url(""))){
     .usa-banner__button[aria-expanded=true]::after{
       background:none;
-      background-color:#005ea2;
+      background-color:#fff;
       -webkit-mask:url("../img/usa-icons/expand_less.svg") no-repeat center/contain;
               mask:url("../img/usa-icons/expand_less.svg") no-repeat center/contain;
     }
     .usa-banner__button[aria-expanded=true]::after:hover{
-      background-color:#1a4480;
+      background-color:#fff;
     }
   }
   .usa-banner__button[aria-expanded=true]:hover::after{
     content:"";
-    background-color:#1a4480;
+    background-color:#fff;
   }
   .usa-banner__button[aria-expanded=true]:after{
     position:absolute;
@@ -3835,7 +3868,7 @@ dfn{
   justify-content:flex-start;
 }
 .usa-footer--big .usa-footer__primary-content--collapsible .usa-footer__primary-link::before{
-  background-image:url("../img/usa-icons/expand_more.svg"), linear-gradient(transparent, transparent);
+  background-image:url("../img/usa-icons/chevron-white.svg"), linear-gradient(transparent, transparent);
   background-repeat:no-repeat;
   height:1.25rem;
   width:1.25rem;
@@ -7344,7 +7377,7 @@ html.usa-js-loading .usa-nav__submenu.usa-megamenu{
 }
 @media all and (min-width: 64em){
   .usa-nav__primary button[aria-expanded=false]{
-    background-image:url("../img/usa-icons/expand_more.svg"), linear-gradient(transparent, transparent);
+    background-image:url("../img/usa-icons/chevron-white.svg"), linear-gradient(transparent, transparent);
     background-repeat:no-repeat;
     background-size:1rem;
     background-position:right 0.75rem top 53%;
