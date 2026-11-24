@@ -78,11 +78,11 @@ def test_serializer_increment_create(data_file_data, other_data_file_data, user)
     """Test serializer produces data_files with correct version."""
     serializer_1 = DataFileSerializer(context={"user": user}, data=data_file_data)
     assert serializer_1.is_valid() is True
-    data_file_1 = serializer_1.save()
+    data_file_1 = serializer_1.save(user=user)
 
     serializer_2 = DataFileSerializer(context={"user": user}, data=other_data_file_data)
     assert serializer_2.is_valid() is True
-    data_file_2 = serializer_2.save()
+    data_file_2 = serializer_2.save(user=user)
 
     assert data_file_2.version == data_file_1.version + 1
     assert data_file_1.program.code == "TAN"
@@ -117,9 +117,23 @@ def test_created_at(data_file_data, data_analyst):
         context={"user": data_analyst}, data=data_file_data
     )
     assert create_serializer.is_valid() is True
-    data_file = create_serializer.save()
+    data_file = create_serializer.save(user=data_analyst)
 
     assert data_file.created_at
+
+
+@pytest.mark.django_db
+def test_user_is_read_only_on_create(data_file_data, data_analyst, user):
+    """Test serializer input cannot select the user who owns a data file."""
+    data_file_data["user"] = str(user.id)
+    serializer = DataFileSerializer(context={"user": data_analyst}, data=data_file_data)
+
+    serializer.is_valid(raise_exception=True)
+    data_file = serializer.save(user=data_analyst)
+
+    assert "user" not in serializer.validated_data
+    assert data_file.user == data_analyst
+    assert serializer.fields["user"].read_only is True
 
 
 @pytest.mark.django_db
@@ -173,7 +187,7 @@ def test_lifecycle_state_is_read_only_on_create(data_file_data, data_analyst):
     serializer = DataFileSerializer(context={"user": data_analyst}, data=data_file_data)
 
     serializer.is_valid(raise_exception=True)
-    data_file = serializer.save()
+    data_file = serializer.save(user=data_analyst)
 
     assert "state" not in serializer.validated_data
     assert data_file.state == SubmissionState.UPLOADED
@@ -215,12 +229,28 @@ def test_accepts_valid_file_extensions(file_name):
         "ADS.E2J.FTP1.TS38WRONG",
         "ADS.E2J.FTP1.MS38483",
         "ADS.E2J.FTP1.MS38WRONG",
+        "ADS.E2J.FTP4.TS06.txtcsv",
+        "ADS.E2J.FTP4.TS06.txtzip",
     ],
 )
 def test_rejects_invalid_file_extensions(file_name):
     """Test invalid file names are rejected by serializer validation."""
     with pytest.raises(ValidationError):
         validate_file_extension(file_name)
+
+
+@pytest.mark.parametrize(
+    "file_name",
+    [
+        "fra.csvzip",
+        "fra.xlsxabc",
+        "fra.csv.exe",
+    ],
+)
+def test_rejects_invalid_fra_file_extensions(file_name):
+    """Test FRA file names are matched whole, not by prefix."""
+    with pytest.raises(ValidationError):
+        validate_file_extension(file_name, is_fra=True)
 
 
 @pytest.mark.django_db

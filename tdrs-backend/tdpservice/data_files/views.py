@@ -3,11 +3,12 @@
 import logging
 import uuid
 from distutils.util import strtobool
+from typing import Any
 from wsgiref.util import FileWrapper
 
 from django.conf import settings
 from django.db.models import Exists, OuterRef, Prefetch
-from django.http import FileResponse, Http404, HttpResponse
+from django.http import FileResponse, Http404
 
 from django_filters import rest_framework as filters
 from drf_yasg.openapi import Parameter
@@ -23,17 +24,16 @@ from rest_framework.viewsets import ModelViewSet
 from tdpservice.core.utils import get_feature_flag
 from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.error_reports import ErrorReportFactory
-from tdpservice.data_files.models import (
-    DataFile,
-    Program,
-    ReparseFileMeta,
-    Section,
-)
+from tdpservice.data_files.models import DataFile, Program, ReparseFileMeta, Section
 from tdpservice.data_files.s3_client import S3Client
 from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.submission_lifecycle import (
     complete_datafile_av_scan,
     start_datafile_av_scan,
+)
+from tdpservice.data_files.util import (
+    create_legacy_s3_log_file_path,
+    create_s3_log_file_path,
 )
 from tdpservice.log_handler import S3FileHandler
 from tdpservice.parsers.models import ParserError
@@ -45,17 +45,8 @@ from tdpservice.users.permissions import DataFilePermissions, IsApprovedPermissi
 
 logger = logging.getLogger(__name__)
 
-
-def get_log_file(request, remaining_path):
-    """Get log file."""
-    try:
-        response = FileResponse(
-            FileWrapper(S3FileHandler.download_file(key=remaining_path))
-        )
-        return HttpResponse(response, content_type="text/plain")
-    except Exception as e:
-        logger.error(f"Error retrieving log file: {e}")
-        raise Http404("Log file not found.")
+FRA_SUBMISSION_YEARS_FEATURE_FLAG = "fra_submission_years"
+FRA_READ_ONLY_ERROR = "FRA submissions for this fiscal year are read-only."
 
 
 class DataFileFilter(filters.FilterSet):
@@ -142,6 +133,35 @@ class DataFileViewSet(ModelViewSet):
 
         return None
 
+    def _validate_fra_submission_year(
+        self, validated_data: dict[str, Any]
+    ) -> Response | None:
+        """Reject FRA submissions unless the reporting year is active."""
+        if not Section.is_fra(validated_data["section"]):
+            return None
+
+        feature_enabled, feature_config = get_feature_flag(
+            FRA_SUBMISSION_YEARS_FEATURE_FLAG
+        )
+        active_years = (
+            feature_config.get("activeYears", [])
+            if isinstance(feature_config, dict)
+            else []
+        )
+        year = validated_data["year"]
+
+        if (
+            not feature_enabled
+            or not isinstance(active_years, list)
+            or year not in active_years
+        ):
+            return Response(
+                {"detail": FRA_READ_ONLY_ERROR},
+                status=HTTP_400_BAD_REQUEST,
+            )
+
+        return None
+
     def _scan_uploaded_file(self, uploaded_file, user, data_file):
         """Run ClamAV before saving the uploaded file to persistent storage.
 
@@ -207,8 +227,12 @@ class DataFileViewSet(ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        fra_error = self._validate_fra_submission_year(serializer.validated_data)
+        if fra_error is not None:
+            return fra_error
+
         uploaded_file = serializer.validated_data.get("file")
-        data_file = serializer.save(file=None)
+        data_file = serializer.save(file=None, user=request.user)
         event_id = uuid.uuid4()
 
         start_datafile_av_scan(
@@ -349,6 +373,20 @@ class DataFileViewSet(ModelViewSet):
                 filename=record.original_filename,
             )
         return response
+
+    @action(methods=["get"], detail=True, url_path="logs")
+    def download_log(self, request, pk=None):
+        """Retrieve this data file's parser log from S3."""
+        datafile = self.get_object()
+        log_file = S3FileHandler.download_file(key=create_s3_log_file_path(datafile))
+        if log_file is None:
+            log_file = S3FileHandler.download_file(
+                key=create_legacy_s3_log_file_path(datafile)
+            )
+        if log_file is None:
+            raise Http404("Log file not found.")
+
+        return FileResponse(FileWrapper(log_file), content_type="text/plain")
 
     @action(methods=["get"], detail=True)
     def download_error_report(self, request, pk=None):

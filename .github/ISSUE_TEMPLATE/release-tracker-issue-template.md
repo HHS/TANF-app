@@ -2,7 +2,7 @@
 name: Release Tracker
 about: Track the release handoff to OFA, staging validation, and production deployment.
 title: Release Tracker vX.X.X
-labels: 'QASP Review'
+labels: ''
 assignees: 'kennymcnett,reitermb,victoriaatraft,jtimpe'
 ---
 
@@ -57,6 +57,10 @@ https://github.com/raft-tech/TANF-app/releases/tag/vX.X.X
 ### PLG Deployment
 - [ ] Does NOT require PLG deployment.
 - [ ] Requires PLG deployment.
+
+### Keycloak Deployment
+- [ ] Does NOT require Keycloak deployment.
+- [ ] Requires Keycloak deployment.
 
 ---
 

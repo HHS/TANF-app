@@ -21,10 +21,6 @@ from tdpservice.common.models import FileRecord
 from tdpservice.common.shadow_models import create_shadow_model
 from tdpservice.core.models import BaseLog
 from tdpservice.data_files.enums import GoParserMode, SubmissionState
-from tdpservice.data_files.util import (
-    create_legacy_s3_log_file_path,
-    create_s3_log_file_path,
-)
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
 
@@ -305,21 +301,10 @@ class DataFile(FileRecord):
 
     @property
     def log_file(self):
-        """Generate S3 path for the log file."""
-        from tdpservice.log_handler import S3FileHandler
-
-        datafile = self
-        if not datafile:
-            return None
-        LOG_PRE_FIX = "v1/data_files/logs"
+        """Generate the authenticated API link for the log file."""
+        LOG_PRE_FIX = "v1/data_files"
         DOMAIN = settings.FRONTEND_BASE_URL
-
-        # Try the new per-parse path first, fall back to the legacy shared path
-        s3_path = create_s3_log_file_path(datafile)
-        if S3FileHandler.download_file(key=s3_path) is None:
-            s3_path = create_legacy_s3_log_file_path(datafile)
-
-        link = f"{LOG_PRE_FIX}/{s3_path}"
+        link = f"{LOG_PRE_FIX}/{self.pk}/logs/"
         url = f"{DOMAIN}/{link}"
         return format_html("<a href='{url}'>{field}</a>", field="Parser logs", url=url)
 

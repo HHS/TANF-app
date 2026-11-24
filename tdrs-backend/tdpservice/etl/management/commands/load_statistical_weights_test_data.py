@@ -357,7 +357,6 @@ class Command(BaseCommand):
                 "original_filename": self._synthetic_filename(spec, stt_code, quarter),
                 "slug": self._synthetic_slug(spec, stt_code, quarter),
                 "extension": "csv",
-                "state": SubmissionState.UPLOADED,
                 "user": importer,
                 "file": None,
                 "s3_versioning_id": None,

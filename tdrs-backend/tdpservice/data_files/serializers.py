@@ -13,7 +13,6 @@ from tdpservice.data_files.validators import validate_file_extension
 from tdpservice.parsers.models import ParserError
 from tdpservice.parsers.serializers import DataFileSummarySerializer
 from tdpservice.stts.models import STT
-from tdpservice.users.models import User
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +37,6 @@ class DataFileSerializer(serializers.ModelSerializer):
 
     file = serializers.FileField(write_only=True)
     stt = serializers.PrimaryKeyRelatedField(queryset=STT.objects.all())
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     ssp = serializers.BooleanField(write_only=True)
     has_error = serializers.SerializerMethodField()
     summary = DataFileSummarySerializer(many=False, read_only=True)
@@ -79,7 +77,7 @@ class DataFileSerializer(serializers.ModelSerializer):
             "allowed_next_states",
         ]
 
-        read_only_fields = ("version", "program_type", "state")
+        read_only_fields = ("version", "program_type", "state", "user")
 
     def to_representation(self, instance):
         """Project the canonical Section relationship to its API string."""
@@ -146,11 +144,7 @@ class DataFileSerializer(serializers.ModelSerializer):
             )
         except Section.DoesNotExist as error:
             raise serializers.ValidationError(
-                {
-                    "section": (
-                        "Section is not valid for the derived reporting program."
-                    )
-                }
+                {"section": ("Section is not valid for the derived reporting program.")}
             ) from error
 
         data_file = DataFile.create_new_version(validated_data)
