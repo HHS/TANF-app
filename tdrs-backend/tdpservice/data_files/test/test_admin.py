@@ -38,8 +38,8 @@ def test_DataFileAdmin_status():
     assert data_file_admin.case_totals(data_file) == data_file_summary.case_aggregates
 
 
-def test_DataFileAdmin_exposes_transitional_fields_in_admin():
-    """Test DataFileAdmin surfaces state and canonical section details."""
+def test_DataFileAdmin_exposes_canonical_classification_in_admin():
+    """Test DataFileAdmin surfaces state and canonical classification details."""
     data_file_admin = DataFileAdmin(DataFile, AdminSite())
     properties_fieldset = next(
         fieldset
@@ -49,7 +49,10 @@ def test_DataFileAdmin_exposes_transitional_fields_in_admin():
 
     assert "parsing_state" in data_file_admin.list_display
     assert "parsing_state" in properties_fieldset[1]["fields"]
-    assert "section_ref" in properties_fieldset[1]["fields"]
+    assert "section" in properties_fieldset[1]["fields"]
+    assert "program" in properties_fieldset[1]["fields"]
+    assert "program_type" not in properties_fieldset[1]["fields"]
+    assert "section_ref" not in properties_fieldset[1]["fields"]
     assert data_file_admin.inlines[0] is DataFileStateTransitionInline
 
 
@@ -129,6 +132,7 @@ def test_DataFileAdmin_changelist_summary_is_eager_loaded(
     with CaptureQueriesContext(connection) as captured_queries:
         for data_file in data_files:
             str(data_file.stt)
+            data_file_admin.program(data_file)
             data_file_admin.status(data_file)
             data_file_admin.case_totals(data_file)
             data_file_admin.data_file_summary(data_file)

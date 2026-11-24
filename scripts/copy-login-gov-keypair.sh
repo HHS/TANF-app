@@ -8,7 +8,7 @@ DEST_APP=${2}
 set -e
 
 SOURCE_APP_GUID=$(cf app "$SOURCE_APP" --guid)
-SOURCE_APP_ENV=$(cf curl "/v2/apps/$SOURCE_APP_GUID/env")
+SOURCE_APP_ENV=$(cf curl "/v3/apps/$SOURCE_APP_GUID/env")
 ENVIRONMENT_JSON=$(printf '%s\n' "$SOURCE_APP_ENV" | jq -r '.environment_json')
 
 JWT_KEY=$(printf '%s\n' "$ENVIRONMENT_JSON" | jq -r '.JWT_KEY')

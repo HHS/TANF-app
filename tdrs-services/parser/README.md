@@ -423,6 +423,15 @@ Admin file pages. To compare a submission across parsers, search for its file ID
 in the Base Log admin view and use the shared event ID, source, and content type
 to distinguish each processing attempt. Reparses retain their own event IDs.
 
+Django's shared transition metadata includes section, program type, reason,
+and available task/reparse correlation. Pre-batch recovery may have no reparse
+metadata ID. Production outcomes always return to Django; the Go source guard
+checks for production state SQL even when SET columns are reordered or table
+names are quoted. This is a best-effort syntax check, not a substitute for
+reviewing dynamically constructed SQL. See the
+[lifecycle controller guide](../../docs/Technical-Documentation/datafile-lifecycle-orchestrator.md)
+for ownership, recovery boundaries, and the legacy-state backfill runbook.
+
 The PostgreSQL tests for state persistence, correlation, and rollback run when
 `TEST_DATABASE_URL` is set to a disposable test database:
 

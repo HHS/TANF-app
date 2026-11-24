@@ -1,4 +1,5 @@
 """Validator functions which may be assigned to model fields."""
+
 import logging
 import re
 
@@ -41,7 +42,7 @@ def validate_file_extension(file_name: str, is_fra: bool = False):
     )
 
     allowed_ext_patterns = "|".join(allowed_list)
-    if file_extension is not None and not re.match(
+    if file_extension is not None and not re.fullmatch(
         allowed_ext_patterns, file_extension
     ):
         msg = _get_unsupported_msg("file extension", file_extension, allowed_list)

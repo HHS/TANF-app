@@ -17,8 +17,8 @@ def mock_datafile(mocker):
     df.year = 2024
     df.quarter = "Q1"
     df.stt = "test_stt"
-    df.program_type = "TAN"
-    df.section = "Active Case Data"
+    df.program.code = "TAN"
+    df.section.name = "Active Case Data"
     df.id = 99
     return df
 

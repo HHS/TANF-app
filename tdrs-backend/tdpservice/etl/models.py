@@ -3,7 +3,7 @@
 from django.conf import settings
 from django.db import models
 
-from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.models import Program
 
 
 class ETLPipelineRun(models.Model):
@@ -326,7 +326,7 @@ class StatisticalWeight(models.Model):
 
     fiscal_year = models.PositiveIntegerField()
     reporting_month = models.PositiveIntegerField()
-    program = models.CharField(max_length=16, choices=DataFile.ProgramType.choices)
+    program = models.CharField(max_length=16, choices=Program.Code.choices)
     section = models.CharField(max_length=16)
     stt_code = models.CharField(max_length=3)
     stratum = models.CharField(max_length=2)

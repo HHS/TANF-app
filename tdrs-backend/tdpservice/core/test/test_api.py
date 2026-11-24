@@ -74,7 +74,7 @@ def test_log_entry_creation(api_client, data_file_instance):
         "slug": data_file_instance.slug,
         "user": data_file_instance.user.username,
         "year": data_file_instance.year,
-        "section": data_file_instance.section,
+        "section": data_file_instance.section.name,
         "timestamp": "2021-04-26T18:32:43.330Z",
         "type": "alert",
         "message": "User submitted file(s)",

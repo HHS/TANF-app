@@ -190,8 +190,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
                     "quarter",
                     "year",
                     "section",
-                    "section_ref",
-                    "program_type",
+                    "program",
                     "is_program_audit",
                     "stt",
                     "version",
@@ -222,6 +221,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "state",
         "state_changed_at",
         "parsing_state",
+        "program",
         "versioned_file_download_link",
     )
 
@@ -253,13 +253,11 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         qs = (
             super()
             .get_queryset(request)
-            .select_related("stt", "summary", "user")
+            .select_related("section__program", "stt", "summary", "user")
         )
         # return data files based on user's section
         if not (request.user.has_fra_access or request.user.is_an_admin):
-            filtered_for_fra = qs.exclude(
-                section__in=DataFile.get_fra_section_list(),
-            )
+            filtered_for_fra = qs.exclude(section__program__code=Program.Code.FRA)
             return filtered_for_fra
         else:
             return qs
@@ -472,6 +470,11 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
 
     parsing_state.short_description = "Parsing State"
 
+    @admin.display(ordering="section__program", description="Program")
+    def program(self, obj):
+        """Return the program derived from the data file's section."""
+        return obj.program
+
     def status(self, obj):
         """Return the status of the data file summary."""
         return obj.summary.status
@@ -562,9 +565,9 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         def queryset(self, request, queryset):
             """Return a queryset."""
             if self.value() == "1":
-                return queryset.filter(section__in=DataFile.get_fra_section_list())
+                return queryset.filter(section__program__code=Program.Code.FRA)
             elif self.value() == "0":
-                return queryset.exclude(section__in=DataFile.get_fra_section_list())
+                return queryset.exclude(section__program__code=Program.Code.FRA)
             else:
                 return queryset
 
@@ -576,7 +579,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "parsing_state",
         "year",
         "quarter",
-        "program_type",
+        "program",
         "section",
         "is_program_audit",
         "version",
@@ -587,7 +590,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "stt",
         "year",
         "quarter",
-        "program_type",
+        "section__program",
         "section",
         "is_program_audit",
         "summary__status",
@@ -617,13 +620,14 @@ class ShadowDataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     """Shadow admin model for convenience."""
 
     inlines = [DataFileStateTransitionInline]
+    list_select_related = ["section__program", "stt"]
     list_display = [
         "id",
         "stt",
         # "parsing_state",
         "year",
         "quarter",
-        "program_type",
+        "program",
         "section",
         "is_program_audit",
         "version",
@@ -632,7 +636,7 @@ class ShadowDataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         "stt",
         "year",
         "quarter",
-        "program_type",
+        "section__program",
         "section",
         "is_program_audit",
         "stt__type",

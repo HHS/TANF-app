@@ -5,7 +5,7 @@ from django.db import transaction
 import pytest
 
 from tdpservice.data_files.enums import SubmissionState
-from tdpservice.data_files.models import DataFile, ReparseFileMeta
+from tdpservice.data_files.models import DataFile, Program, ReparseFileMeta, Section
 from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.etl.models import ETLPipelineRun
 from tdpservice.etl.pipelines.sources import (
@@ -24,8 +24,8 @@ def _datafile(stt, user, version):
     return DataFileFactory.create(
         stt=stt,
         user=user,
-        section=DataFile.Section.ACTIVE_CASE_DATA,
-        program_type=DataFile.ProgramType.TANF,
+        section=Section.Name.ACTIVE_CASE_DATA,
+        program_type=Program.Code.TANF,
         quarter=DataFile.Quarter.Q1,
         year=FISCAL_YEAR,
         version=version,
@@ -36,7 +36,7 @@ def _datafile(stt, user, version):
 def _pipeline_run():
     """Create a statistical weights pipeline run for snapshot tests."""
     return PipelineRunFactory.for_pipeline_key("statistical_weights").create(
-        parameters={"fiscal_year": FISCAL_YEAR, "program": DataFile.ProgramType.TANF},
+        parameters={"fiscal_year": FISCAL_YEAR, "program": Program.Code.TANF},
         trigger_source=ETLPipelineRun.TriggerSource.ADMIN,
     )
 
@@ -49,8 +49,8 @@ def test_datafile_source_snapshotter_reuses_existing_snapshot(stt, user):
     pipeline_run = _pipeline_run()
     source = DataFileSource(
         key="active",
-        program_type=DataFile.ProgramType.TANF,
-        section=DataFile.Section.ACTIVE_CASE_DATA,
+        program_type=Program.Code.TANF,
+        section=Section.Name.ACTIVE_CASE_DATA,
     )
     snapshotter = DataFileSourceSnapshot()
 
@@ -75,8 +75,8 @@ def test_datafile_source_snapshotter_rejects_duplicate_source_keys(stt, user):
     """Source keys must be unique so downstream nodes receive stable contracts."""
     source = DataFileSource(
         key="active",
-        program_type=DataFile.ProgramType.TANF,
-        section=DataFile.Section.ACTIVE_CASE_DATA,
+        program_type=Program.Code.TANF,
+        section=Section.Name.ACTIVE_CASE_DATA,
     )
     snapshotter = DataFileSourceSnapshot()
 
@@ -97,8 +97,8 @@ def test_datafile_source_snapshotter_rejects_active_reparse_overlap(stt, user):
     ReparseFileMeta.objects.create(data_file=data_file, reparse_meta=reparse)
     source = DataFileSource(
         key="active",
-        program_type=DataFile.ProgramType.TANF,
-        section=DataFile.Section.ACTIVE_CASE_DATA,
+        program_type=Program.Code.TANF,
+        section=Section.Name.ACTIVE_CASE_DATA,
     )
     snapshotter = DataFileSourceSnapshot()
 

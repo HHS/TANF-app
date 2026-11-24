@@ -14,6 +14,17 @@ yarn dev
 
 Open [http://localhost:3001](http://localhost:3001) to reach the admin login page.
 
+Local development uses Webpack (`next dev --webpack`). We observed repeated
+Turbopack `ChunkLoadError` failures in Safari after a successful login, causing
+the development client to reload `/dashboard` many times before it settled.
+Webpack avoids that development chunk loader; production build and start
+commands are unchanged. If a running Docker service still uses Turbopack after
+pulling this change, restart it from this directory:
+
+```bash
+docker compose -f docker-compose.local.yml restart tdp-admin
+```
+
 ## Environment
 
 Copy `.env.example` to `.env` for Docker Compose, or `.env.local` for
@@ -74,8 +85,8 @@ Next.js proxy only forwards request context and the server-side proxy token.
 - `/login` renders the same login page.
 - `/logout` redirects through the admin-scoped Django logout flow.
 - `/api/backend-health` is a backing JSON probe for the Django auth endpoint.
-  The login and home pages show its result as page detail instead of linking
-  admins directly to the JSON response.
+  The login page shows recovery guidance when the service is unavailable,
+  without exposing internal URLs or probe errors.
 - `/api/admin/*` forwards backend API requests with the Django session cookie,
   CSRF token required by mutating requests, and server-side proxy token to
   `/admin-api/v1/*`.
@@ -135,3 +146,74 @@ yarn dev
 open http://localhost:3001/api-validation?endpoint=test-viewset
 open http://localhost:3001/users
 ```
+
+## Reference read-only list/detail pattern
+
+The first migrated surface is **User accounts**. `/dashboard` places live, database-aggregated user counts first, followed by
+the #5966 operational cards. The other
+cards explicitly say **Not available yet** until their APIs are migrated; they do
+not report sample scan results, service health, or activity as live data.
+
+- `/users` is a server component. A GET form stores `search`, `status`, `active`,
+  and `page_size` in the URL. Applying filters resets the page to 1.
+- `page` selects a backend page; page sizes are 25 (default), 50, or 100.
+  Django caps even direct API requests at 100 records, orders by last name,
+  first name, and ID, and applies search and filters before pagination.
+- Search is a case-insensitive match on first name, last name, email, or username.
+  Approval and active/inactive filters can be combined with search.
+- `/users/[id]` displays account details. Its return link preserves the original
+  list's filters, search, page, and page size. The existing edit workflow remains
+  available as a separate link.
+- `/admin-api/v1/users/`, `/admin-api/v1/users/[id]/`, and
+  `/admin-api/v1/users/summary/` are read-only admin endpoints. The standard
+  `/v1/users/` API is unchanged. Django requires an approved, active staff
+  superuser, an admin-scoped session, and the existing proxy token boundary.
+- Dashboard summaries use a database aggregate rather than fetching all users.
+  The list makes one bounded server-side request. Detail links disable prefetch
+  to avoid fetching every account detail while scanning a page.
+- Shared `readAdminResource` maps network/HTTP failures into explicit states,
+  redirects expired sessions to login, and invokes the forbidden page for 403s.
+  Empty results are never inferred from failed requests. Loading and error
+  boundaries cover both routes. An out-of-range page offers a filtered page-1 link.
+- Reuse `adminApi`, `readAdminResource`, `AdminDataLoadError`, and `AdminPagination`
+  for later surfaces. Keep query parsing and URL construction next to each
+  resource, with backend validation and authorization remaining authoritative.
+
+### Testing checklist
+
+Automated checks:
+
+```bash
+yarn test
+yarn lint
+yarn tsc --noEmit
+yarn build
+# From the repository root, with the backend Compose services running:
+docker exec tdrs-backend-web-1 python -m pytest -k test_admin_user_reads --no-cov -q
+docker exec tdrs-backend-web-1 python -m flake8 tdpservice/users/admin_views.py tdpservice/users/test/test_admin_user_reads.py
+```
+
+Manual usability/release checks (use test accounts):
+
+1. Sign in as an authorized admin and open `/dashboard`. Verify the named cards,
+   unavailable labels, and user totals; follow each count to its filtered list.
+2. Open `/users`, search a name or email, combine both filters, and change page
+   size. Confirm Apply resets pagination and Clear removes all filters.
+3. Go to page 2, refresh, and open the URL in another authorized session. Confirm
+   the same query and page. Open a user and use Back to user accounts.
+4. Verify no-match search, an out-of-range page, and a missing user ID. Confirm
+   clear recovery links. Simulate backend failure and a slow connection to check
+   error and loading states. Check anonymous and non-admin access are denied.
+5. Use a large fixture dataset and confirm each API response contains no more
+   than the selected page size; there should be no browser-side bulk user fetch.
+6. Check keyboard navigation, labels, table scrolling, and narrow/mobile layout.
+   Capture dashboard, filtered list, and detail screenshots with synthetic data
+   for the release digest.
+
+No database migration is required. Deploy the Django API and admin app together.
+
+Design context: the Mural “IA Django Admin” board prioritizes outstanding requests,
+new feedback, and failed nightly database backups. User accounts, access requests,
+change requests, feedback, and audit logs are separate surfaces. This preliminary
+release implements account reads and status totals; feedback/task integration and
+request approval workflows remain future work.

@@ -59,6 +59,26 @@ class BaseDecoder(ABC):
         """To be implemented in child class."""
         pass
 
+    def close(self):
+        """Close the decoder and release underlying file handles."""
+        try:
+            if self.raw_file and not getattr(self.raw_file, "closed", True):
+                logger.info(f"File closed -> {repr(self.raw_file)}.")
+                self.raw_file.close()
+        except Exception:
+            logger.exception("Encountered exception while closing raw file.")
+
+    def __enter__(self):
+        """Enter context manager."""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Exit context manager and close decoder."""
+        try:
+            self.close()
+        except Exception:
+            logger.exception("Encountered exception while closing decoder.")
+
 
 class Utf8Decoder(BaseDecoder):
     """Decoder for UTF-8 files."""
@@ -107,7 +127,11 @@ class CsvDecoder(BaseDecoder):
         super().__init__(raw_file)
         self.local_file = None
         self.csv_file = None
-        self._open_as_csv()
+        try:
+            self._open_as_csv()
+        except Exception:
+            self.close()
+            raise
 
     def _open_as_csv(self):
         """Read binary csv to local storage and reopen in text mode."""
@@ -162,17 +186,22 @@ class CsvDecoder(BaseDecoder):
                 record_type=record_type,
             )
 
-    def __del__(self):
-        """Close and delete the file when destructed."""
+    def close(self):
+        """Close and delete local file instance, and close raw_file."""
         try:
-            self.local_file.close()
-            if os.path.exists(self.local_file.name):
-                os.remove(self.local_file.name)
-                assert os.path.exists(self.local_file.name) is False
+            if self.local_file:
+                if not getattr(self.local_file, "closed", True):
+                    self.local_file.close()
+                if os.path.exists(self.local_file.name):
+                    os.remove(self.local_file.name)
         except Exception:
             logger.exception(
                 "Encountered exception while closing and deleting file instance."
             )
+        finally:
+            self.local_file = None
+            self.csv_file = None
+            super().close()
 
 
 class XlsxDecoder(BaseDecoder):
@@ -180,7 +209,12 @@ class XlsxDecoder(BaseDecoder):
 
     def __init__(self, raw_file):
         super().__init__(raw_file)
-        self.work_book = load_workbook(raw_file, data_only=True)
+        self.work_book = None
+        try:
+            self.work_book = load_workbook(raw_file, data_only=True)
+        except Exception:
+            self.close()
+            raise
 
     def get_record_type(self, raw_data):
         """Get the record type based on the raw data."""
@@ -218,6 +252,17 @@ class XlsxDecoder(BaseDecoder):
                 row_num=self.current_row_num,
                 record_type=record_type,
             )
+
+    def close(self):
+        """Close workbook and close raw_file."""
+        try:
+            if self.work_book:
+                self.work_book.close()
+        except Exception:
+            logger.exception("Encountered exception while closing XLSX workbook.")
+        finally:
+            self.work_book = None
+            super().close()
 
 
 class DecoderFactory:
@@ -280,7 +325,13 @@ class DecoderFactory:
     @classmethod
     def get_instance(cls, raw_file):
         """Return the correct parser class to be constructed manually."""
-        decoder = cls.get_suggested_decoder(raw_file)
+        try:
+            decoder = cls.get_suggested_decoder(raw_file)
+        except Exception:
+            if raw_file and not getattr(raw_file, "closed", True):
+                raw_file.close()
+            raise
+
         match decoder:
             case Decoder.UTF8:
                 return Utf8Decoder(raw_file)
@@ -289,4 +340,6 @@ class DecoderFactory:
             case Decoder.XLSX:
                 return XlsxDecoder(raw_file)
             case Decoder.UNKNOWN:
+                if raw_file and not getattr(raw_file, "closed", True):
+                    raw_file.close()
                 raise ValueError("Could not determine what decoder to use for file.")

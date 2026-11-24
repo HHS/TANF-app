@@ -19,13 +19,13 @@ def case_aggregates_by_month(
     record_model_resolver=lambda model: model,
 ):
     """Return case aggregates by month."""
-    program_type = str(df.program_type)
-
     # from datafile year/quarter, generate short month names for each month in quarter ala 'Jan', 'Feb', 'Mar'
     calendar_year, calendar_qtr = fiscal_to_calendar(df.year, df.quarter)
     month_list = transform_to_months(calendar_qtr)
 
-    schemas = ProgramManager.get_schemas(program_type, df.section, df.is_program_audit)
+    schemas = ProgramManager.get_schemas(
+        df.program.code, df.section.name, df.is_program_audit
+    )
 
     aggregate_data = {"months": [], "rejected": 0}
     all_errors = parser_error_model.objects.filter(file=df, deprecated=False)

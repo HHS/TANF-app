@@ -562,6 +562,7 @@ const FRAReportsContent = () => {
     fraUploadError,
     setFraUploadError,
     fraHasUploadedFile,
+    isFraSubmissionYearActive,
     headerRef,
     uploadAlertRef,
     selectStt,
@@ -929,7 +930,18 @@ const FRAReportsContent = () => {
             />
           )}
 
-          {!isRegionalStaff && (
+          {!isRegionalStaff && !isFraSubmissionYearActive && (
+            <div className="usa-alert usa-alert--info usa-alert--slim margin-top-4">
+              <div className="usa-alert__body">
+                <p className="usa-alert__text">
+                  Fiscal year {yearInputValue} is read-only. New FRA submissions
+                  are not accepted for this year.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {!isRegionalStaff && isFraSubmissionYearActive && (
             <>
               {/* Screen-reader announcer */}
               <div className="usa-sr-only">

@@ -4,7 +4,7 @@ from django.test import Client
 
 import pytest
 
-from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.models import Program, Section
 from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.stts.models import STT, Region
 
@@ -77,15 +77,14 @@ def test_user_with_fra_access(client, ofa_system_admin):
     client.login(username=ofa_system_admin.username, password="test_password")
 
     datafile = DataFileFactory()
-    datafile.section = DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS
+    datafile.section = Section.objects.get(
+        program__code=Program.Code.FRA, name=Section.Name.FRA_WORK_OUTCOMES
+    )
     datafile.save()
 
     response = client.get(f"/admin/data_files/datafile/{datafile.id}/change/")
     assert response.status_code == 200
-    assert (
-        '<div class="readonly">Fra Work Outcome Tanf Exiters</div>'
-        in response.content.decode("utf-8")
-    )
+    assert "FRA - Work Outcomes of TANF Exiters" in response.content.decode("utf-8")
 
 
 @pytest.mark.django_db
@@ -100,7 +99,9 @@ def test_user_without_fra_access(client, data_analyst):
     client.login(username=data_analyst.username, password="test_password")
 
     datafile = DataFileFactory()
-    datafile.section = DataFile.Section.FRA_WORK_OUTCOME_TANF_EXITERS
+    datafile.section = Section.objects.get(
+        program__code=Program.Code.FRA, name=Section.Name.FRA_WORK_OUTCOMES
+    )
     datafile.save()
 
     response = client.get(f"/admin/data_files/datafile/{datafile.id}/change/")
