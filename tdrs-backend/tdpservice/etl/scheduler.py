@@ -11,9 +11,9 @@ from tdpservice.etl.pipelines.statistical_weights import StatisticalWeightsPipel
 from tdpservice.etl.runner import PipelineRunFactory
 
 
-def fiscal_year_for_date(value: date) -> int:
-    """Return the federal fiscal year for a date."""
-    return value.year + 1 if value.month >= 10 else value.year
+def reporting_fiscal_year_for_date(value: date) -> int:
+    """Return the reporting fiscal year, advancing on February 1."""
+    return value.year - 1 if value.month == 1 else value.year
 
 
 def is_first_workday(value: date) -> bool:
@@ -39,7 +39,7 @@ def schedule_statistical_weights_run(
     if not is_first_workday(today):
         return None
 
-    fiscal_year = fiscal_year_for_date(today)
+    fiscal_year = reporting_fiscal_year_for_date(today)
     definition = StatisticalWeightsPipeline()
     parameters = definition.validate_parameters(
         {"fiscal_year": fiscal_year, "program": program}

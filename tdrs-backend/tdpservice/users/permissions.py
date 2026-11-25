@@ -13,6 +13,7 @@ from rest_framework import permissions
 from rest_framework.request import Request
 from rest_framework.views import APIView
 
+from tdpservice.data_files.models import DataFile, Program, Section
 from tdpservice.stts.models import STT
 from tdpservice.users.models import AccountApprovalStatusChoices
 
@@ -241,7 +242,7 @@ class ReportSourcePermissions(DjangoModelCRUDPermissions):
 class DataFilePermissions(DjangoModelCRUDPermissions):
     """Permission for data file downloads & uploads."""
 
-    def has_permission(self, request, view):
+    def has_permission(self, request: Request, view: APIView) -> bool:
         """Check if a user has the relevant Model Permissions for DataFile.
 
         Certain groups may also have additional constraints applied here, that
@@ -253,6 +254,14 @@ class DataFilePermissions(DjangoModelCRUDPermissions):
 
         # Checks for existence of `data_files.view_datafile` Permission
         has_permission = super().has_permission(request, view)
+
+        if (
+            has_permission
+            and getattr(view, "action", None) == "list"
+            and Section.is_fra(request.query_params.get("file_type"))
+            and not (request.user.has_fra_access or request.user.is_ofa_sys_admin)
+        ):
+            return False
 
         # Regional Staff are not allowed to submit or download data files
         if has_permission and hasattr(view, "action"):
@@ -273,7 +282,9 @@ class DataFilePermissions(DjangoModelCRUDPermissions):
 
         return has_permission
 
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(
+        self, request: Request, view: APIView, obj: DataFile
+    ) -> bool:
         """
         Check if a user can interact with a specific file, based on STT.
 
@@ -282,6 +293,11 @@ class DataFilePermissions(DjangoModelCRUDPermissions):
         requested for download via the ID of the data_file. This is not called
         on POST requests (creating new data_files) or for a list of data_files.
         """
+        if obj.section.program.code == Program.Code.FRA and not (
+            request.user.has_fra_access or request.user.is_ofa_sys_admin
+        ):
+            return False
+
         # Data Analysts can only see files uploaded for their designated STT
         if request.user.is_data_analyst:
             user_stt = request.user.stt.id if hasattr(request.user, "stt") else None

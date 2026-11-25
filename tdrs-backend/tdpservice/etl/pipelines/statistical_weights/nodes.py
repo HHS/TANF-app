@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from django.db import transaction
 from django.db.models import Count, Sum
 
+from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.models import Section
 from tdpservice.etl.artifacts import upsert_table_dataset_artifact
 from tdpservice.etl.models import StatisticalWeightsCaseCount
@@ -24,6 +25,7 @@ from tdpservice.etl.pipelines.statistical_weights.publishing import (
     StatisticalWeightsPublisher,
 )
 from tdpservice.etl.pipelines.statistical_weights.qa import StatisticalWeightsQA
+from tdpservice.parsers.models import DataFileSummary
 
 
 @dataclass(frozen=True)
@@ -57,22 +59,26 @@ class StatisticalWeightsNode(PipelineNode):
     def datafile_sources(self, program: str) -> tuple[DataFileSource, ...]:
         """Return this pipeline's DataFile source declarations."""
         adapter = adapter_for_program(program)
-        return (
+        return tuple(
             DataFileSource(
-                key=self.resources.source_keys["active"],
+                key=self.resources.source_keys[source_key],
                 program_type=adapter.program_type,
-                section=Section.Name.ACTIVE_CASE_DATA,
-            ),
-            DataFileSource(
-                key=self.resources.source_keys["aggregate"],
-                program_type=adapter.program_type,
-                section=Section.Name.AGGREGATE_DATA,
-            ),
-            DataFileSource(
-                key=self.resources.source_keys["stratum"],
-                program_type=adapter.program_type,
-                section=Section.Name.STRATUM_DATA,
-            ),
+                section=section,
+                parser_states=(
+                    SubmissionState.PARSE_COMPLETED,
+                    SubmissionState.PARSED_WITH_ERRORS,
+                ),
+                summary_statuses=(
+                    DataFileSummary.Status.ACCEPTED,
+                    DataFileSummary.Status.ACCEPTED_WITH_ERRORS,
+                    DataFileSummary.Status.PARTIALLY_ACCEPTED,
+                ),
+            )
+            for source_key, section in (
+                ("active", Section.Name.ACTIVE_CASE_DATA),
+                ("aggregate", Section.Name.AGGREGATE_DATA),
+                ("stratum", Section.Name.STRATUM_DATA),
+            )
         )
 
     def snapshot_source_datafile_ids(

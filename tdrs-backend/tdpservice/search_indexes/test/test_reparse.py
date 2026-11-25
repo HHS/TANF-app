@@ -11,6 +11,7 @@ from django.utils import timezone
 
 import pytest
 
+from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.models import Program, ReparseFileMeta
 from tdpservice.data_files.submission_lifecycle import (
     prepare_datafile_for_reparse,
@@ -583,9 +584,29 @@ def test_reparse_no_files(mocker):
 
 
 @pytest.mark.django_db()
-def test_reparse_command_rejects_active_pipeline_source(big_file):
+@pytest.mark.parametrize(
+    "status",
+    [
+        DataFileSummary.Status.ACCEPTED,
+        DataFileSummary.Status.ACCEPTED_WITH_ERRORS,
+        DataFileSummary.Status.PARTIALLY_ACCEPTED,
+    ],
+)
+@pytest.mark.parametrize(
+    "run_status", [ETLPipelineRun.Status.PENDING, ETLPipelineRun.Status.RUNNING]
+)
+def test_reparse_command_rejects_active_pipeline_source(big_file, status, run_status):
     """Direct reparse command cannot overlap active ETL source snapshots."""
-    _active_pipeline_run_for_datafile(big_file)
+    big_file.state = (
+        SubmissionState.PARSE_COMPLETED
+        if status == DataFileSummary.Status.ACCEPTED
+        else SubmissionState.PARSED_WITH_ERRORS
+    )
+    big_file.save(update_fields=["state"])
+    DataFileSummaryFactory(datafile=big_file, status=status)
+    run = _active_pipeline_run_for_datafile(big_file)
+    run.status = run_status
+    run.save(update_fields=["status"])
     cmd = clean_and_reparse.Command()
 
     with pytest.raises(ActivePipelineDataFileOverlapError, match=str(big_file.id)):
@@ -595,9 +616,29 @@ def test_reparse_command_rejects_active_pipeline_source(big_file):
 
 
 @pytest.mark.django_db()
-def test_clean_reparse_rejects_active_pipeline_source(big_file):
+@pytest.mark.parametrize(
+    "status",
+    [
+        DataFileSummary.Status.ACCEPTED,
+        DataFileSummary.Status.ACCEPTED_WITH_ERRORS,
+        DataFileSummary.Status.PARTIALLY_ACCEPTED,
+    ],
+)
+@pytest.mark.parametrize(
+    "run_status", [ETLPipelineRun.Status.PENDING, ETLPipelineRun.Status.RUNNING]
+)
+def test_clean_reparse_rejects_active_pipeline_source(big_file, status, run_status):
     """Worker reparse path cannot overlap active ETL source snapshots."""
-    _active_pipeline_run_for_datafile(big_file)
+    big_file.state = (
+        SubmissionState.PARSE_COMPLETED
+        if status == DataFileSummary.Status.ACCEPTED
+        else SubmissionState.PARSED_WITH_ERRORS
+    )
+    big_file.save(update_fields=["state"])
+    DataFileSummaryFactory(datafile=big_file, status=status)
+    run = _active_pipeline_run_for_datafile(big_file)
+    run.status = run_status
+    run.save(update_fields=["status"])
 
     with pytest.raises(ActivePipelineDataFileOverlapError, match=str(big_file.id)):
         clean_reparse([str(big_file.id)])
