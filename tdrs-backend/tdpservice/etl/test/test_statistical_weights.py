@@ -22,6 +22,12 @@ from tdpservice.etl.pipelines.base import NodeContext
 from tdpservice.etl.pipelines.sources import SOURCE_DATAFILE_IDS_KEY
 from tdpservice.etl.pipelines.statistical_weights import StatisticalWeightsPipeline
 from tdpservice.etl.runner import PipelineRunFactory
+from tdpservice.etl.test.weights_fixtures import (
+    create_weights_file,
+    mixed_status_weights_data,
+)
+from tdpservice.parsers.models import DataFileSummary
+from tdpservice.parsers.test.factories import DataFileSummaryFactory
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M6, SSP_M7
 from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T6, TANF_T7
 from tdpservice.search_indexes.models.tribal import (
@@ -32,14 +38,14 @@ from tdpservice.search_indexes.models.tribal import (
 from tdpservice.stts.models import STT
 
 FISCAL_YEAR = 2026
-REPORTING_MONTH = 202501
+REPORTING_MONTH = 202510
 PIPELINE = StatisticalWeightsPipeline()
 TANF_PROGRAM = Program.Code.TANF
 
 
 def _datafile(stt, user, section, version=1, program_type=TANF_PROGRAM):
     """Create a parse-completed DataFile in the weights fiscal year."""
-    return DataFileFactory.create(
+    datafile = DataFileFactory.create(
         stt=stt,
         user=user,
         section=section,
@@ -49,6 +55,8 @@ def _datafile(stt, user, section, version=1, program_type=TANF_PROGRAM):
         version=version,
         state=SubmissionState.PARSE_COMPLETED,
     )
+    DataFileSummaryFactory(datafile=datafile, status=DataFileSummary.Status.ACCEPTED)
+    return datafile
 
 
 def _node_context(pipeline_run):
@@ -617,3 +625,89 @@ def test_statistical_weights_notification_routes_through_email_helper(
     assert called_run == pipeline_run
     assert set(recipients) == {ofa_system_admin.email, digit_team.email}
     assert result["notification"] == "sent"
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "program", [Program.Code.TANF, Program.Code.SSP, Program.Code.TRIBAL]
+)
+@pytest.mark.parametrize("status_shift", range(3))
+def test_mixed_status_sources_persist_exact_counts_and_candidates(
+    stt, user, program, status_shift
+):
+    """All programs/families use eligible rows and retain frozen IDs and counts."""
+    expected_ids = mixed_status_weights_data(stt, user, program, status_shift)
+    pipeline_run = _create_pipeline_run(program)
+    _execute_node(pipeline_run, "validate_run_sources")
+    pipeline_run.refresh_from_db()
+    assert pipeline_run.metadata[SOURCE_DATAFILE_IDS_KEY] == expected_ids
+
+    for source in PIPELINE.nodes.validate_run_sources.datafile_sources(program):
+        create_weights_file(
+            stt,
+            user,
+            program,
+            source,
+            version=8,
+            status=DataFileSummary.Status.ACCEPTED_WITH_ERRORS,
+            state=SubmissionState.PARSED_WITH_ERRORS,
+        )
+    for node in (
+        "extract_active_family_counts",
+        "extract_aggregate_case_counts",
+        "extract_stratum_case_counts",
+    ):
+        _execute_node(pipeline_run, node)
+
+    pipeline_run.refresh_from_db()
+    assert pipeline_run.metadata[SOURCE_DATAFILE_IDS_KEY] == expected_ids
+    assert set(
+        StatisticalWeightsCaseCount.objects.filter(pipeline_run=pipeline_run).values_list(
+            "count_kind", "stt_code", "reporting_month", "stratum", "count"
+        )
+    ) == {
+        (StatisticalWeightsCaseCount.CountKind.ACTIVE_FAMILY, "55", REPORTING_MONTH, "1", 2),
+        (StatisticalWeightsCaseCount.CountKind.ACTIVE_FAMILY, "55", REPORTING_MONTH, "2", 1),
+        (StatisticalWeightsCaseCount.CountKind.AGGREGATE_CASE, "55", REPORTING_MONTH, "", 12),
+        (StatisticalWeightsCaseCount.CountKind.STRATUM_CASE, "55", REPORTING_MONTH, "1", 8),
+    }
+    candidates = PIPELINE.nodes.publish_weights.build_candidates(
+        _node_context(pipeline_run)
+    )
+    assert [
+        (
+            row.program, row.stt_code, row.reporting_month, row.stratum,
+            row.case_count, row.cases, row.weight,
+        )
+        for row in candidates
+    ] == [
+        (program, "55", REPORTING_MONTH, "1", 2, 8, Decimal("4.0000")),
+        (program, "55", REPORTING_MONTH, "2", 1, 12, Decimal("12.0000")),
+    ]
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "program", [Program.Code.TANF, Program.Code.SSP, Program.Code.TRIBAL]
+)
+@pytest.mark.parametrize("family", ["active", "aggregate", "stratum"])
+def test_validate_run_sources_rejects_all_ineligible_family(stt, user, program, family):
+    """Globally empty required families still fail normal source validation."""
+    selected_ids = mixed_status_weights_data(stt, user, program)
+    source = next(
+        source
+        for source in PIPELINE.nodes.validate_run_sources.datafile_sources(program)
+        if source.key == family
+    )
+    DataFileSummary.objects.filter(
+        datafile__section__program__code=program,
+        datafile__section__name=source.section,
+    ).update(status=DataFileSummary.Status.REJECTED)
+    pipeline_run = _create_pipeline_run(program)
+
+    with pytest.raises(ValueError, match=f"sources: {family}\\."):
+        _execute_node(pipeline_run, "validate_run_sources")
+
+    pipeline_run.refresh_from_db()
+    selected_ids[family] = []
+    assert pipeline_run.metadata[SOURCE_DATAFILE_IDS_KEY] == selected_ids

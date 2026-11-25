@@ -653,16 +653,35 @@ def test_prepare_datafile_for_reparse_rejects_stuck_file_without_upload_bytes():
 
 
 @pytest.mark.django_db
-def test_prepare_datafile_for_reparse_rejects_active_pipeline_source():
+@pytest.mark.parametrize(
+    "status",
+    [
+        DataFileSummary.Status.ACCEPTED,
+        DataFileSummary.Status.ACCEPTED_WITH_ERRORS,
+        DataFileSummary.Status.PARTIALLY_ACCEPTED,
+    ],
+)
+@pytest.mark.parametrize(
+    "run_status", [ETLPipelineRun.Status.PENDING, ETLPipelineRun.Status.RUNNING]
+)
+def test_prepare_datafile_for_reparse_rejects_active_pipeline_source(status, run_status):
     """Reparse cannot take a DataFile already snapshotted by active ETL."""
-    data_file = DataFileFactory(state=SubmissionState.PARSE_COMPLETED)
-    _active_pipeline_run_for_datafile(data_file)
+    state = (
+        SubmissionState.PARSE_COMPLETED
+        if status == DataFileSummary.Status.ACCEPTED
+        else SubmissionState.PARSED_WITH_ERRORS
+    )
+    data_file = DataFileFactory(state=state)
+    DataFileSummary.objects.create(datafile=data_file, status=status)
+    run = _active_pipeline_run_for_datafile(data_file)
+    run.status = run_status
+    run.save(update_fields=["status"])
 
     with pytest.raises(ReparsePreparationError, match="active ETL pipeline"):
         prepare_datafile_for_reparse(data_file)
 
     data_file.refresh_from_db()
-    assert data_file.state == SubmissionState.PARSE_COMPLETED
+    assert data_file.state == state
 
 
 @pytest.mark.parametrize(

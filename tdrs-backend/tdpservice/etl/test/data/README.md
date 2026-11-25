@@ -43,6 +43,22 @@ files by `FIPS_CODE + RPT_MONTH_YEAR`. Federal quarters are derived from
 `RPT_MONTH_YEAR`: October through December map to `Q1`, January through March to
 `Q2`, April through June to `Q3`, and July through September to `Q4`.
 
+Each synthetic file gets an explicit `Accepted` `DataFileSummary` whose
+`total_number_of_records_in_file` and `total_number_of_records_created` equal
+its imported parsed-row count (including when a row limit is used). `--replace`
+recreates these summaries with the replacement imports. Only marked synthetic
+imports are affected; this command must not be used to backfill production
+summaries or replace real submissions. Weights exclude summary-less files.
+The FY2024 expected output remains the unchanged numerical regression baseline,
+not evidence of FY2026 legacy/SAS reconciliation. Small generated mixed-status
+fixtures separately cover TANF, SSP, and Tribal TANF publication.
+
+For hands-on inspection of source IDs, summary statuses, intermediate counts,
+published weights, calendar boundaries, and reparse guards in a disposable
+integration database, follow the
+[local review guide](../../../../../docs/Technical-Documentation/tech-memos/etl-pipelines/statistical-weights-local-review.md).
+Always use the integration command's dedicated trailing `--basetemp` override.
+
 The fixture inputs are stored as per-file `.csv.xz` archives so individual
 large extracts can be updated independently. Expected ETL outputs live under
 `expected_outputs/` and use the same per-file `.csv.xz` compression convention.

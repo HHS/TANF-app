@@ -201,9 +201,13 @@ Every translated query must apply the same source-selection contract:
 - latest accepted `DataFile` version per STT, period, program type, and section,
 - parser lifecycle states approved for that pipeline.
 
-The default parser state for calculations should be successfully parsed data.
+`DataFileSource` is an immutable declaration with a tuple of `parser_states` (default: only `PARSE_COMPLETED`), an optional tuple of `summary_statuses` (default: no summary predicate), and an audit flag (default: false). Defaults preserve lifecycle-only selection for other declarations, including summary-less completed files. When a summary allowlist is supplied, lifecycle and summary eligibility are intersected in the same queryset before ranking candidates by maximum version.
+
+Statistical weights explicitly declares `PARSE_COMPLETED` and `PARSED_WITH_ERRORS`, intersected with `Accepted`, `Accepted with Errors`, and `Partially Accepted with Errors`, for all three families in TANF, SSP, and Tribal TANF. Missing, Pending, unknown, and Rejected summaries are ineligible. Newer ineligible versions (including in-flight/reparsing uploads) do not hide older eligible versions; all-ineligible groups contribute no source. Scope remains fiscal year, canonical program/section, audit flag, STT, and quarter.
 
 Pipelines that read submitted files should declare their `DataFileSource` inputs and use the shared `DataFileSourceSnapshot` helper to freeze latest accepted `DataFile` IDs once per run. Downstream nodes should consume that run-scoped snapshot instead of recalculating latest files independently.
+
+New and reused snapshots reject active reparse overlap, and reparse startup rejects selected IDs belonging to PENDING/RUNNING pipeline runs. A selected eligible ID with unfinished reparse metadata blocks execution rather than being replaced. ID snapshots are not immutable parsed-row copies or atomic reservations; existing safeguards do not eliminate concurrency races. Downstream persisted intermediate artifacts remain unchanged.
 
 ---
 
@@ -226,6 +230,21 @@ First implementation:
 - fiscal-year and program scoped,
 - one shared pipeline with program adapters,
 - database output plus QA email.
+
+Scheduled weights use the approved reporting year, not an automatic October 1
+federal-year rollover. In the scheduler's existing local timezone (UTC by
+default), February 1 is the inclusive transition: January uses calendar year
+minus one; all other months use calendar year. October 1, 2026 and January 31,
+2027 therefore refresh FY2026; February 1, 2027 begins FY2027. First-workday
+Monday-Friday cadence and monthly scope/status/created-at suppression remain
+unchanged, with no extra post-deadline run or holiday calendar. Manual requests
+retain the explicit validated fiscal year and existing System Admin permissions.
+
+The live integration suite uses PostgreSQL and eager Celery; it is not evidence
+of distributed worker behavior or FY2026 recovery. See the
+[local review guide](statistical-weights-local-review.md) for safe synthetic
+inspection and the [dataset memo](etl-statistical-weights-dataset.md#authorized-fy2026-reconciliation)
+for separately authorized legacy/SAS reconciliation and historical-output handling.
 
 Later extensions:
 

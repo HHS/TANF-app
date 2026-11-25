@@ -12,7 +12,9 @@ import pytest
 
 from tdpservice.data_files.enums import SubmissionState
 from tdpservice.data_files.models import DataFile, Program, Section
+from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.etl.pipelines.statistical_weights import StatisticalWeightsPipeline
+from tdpservice.parsers.models import DataFileSummary
 from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T6, TANF_T7
 
 PIPELINE = StatisticalWeightsPipeline()
@@ -75,6 +77,10 @@ def test_load_statistical_weights_test_data_creates_datafiles_and_rows(tmp_path,
         SubmissionState.PARSE_COMPLETED
     }
     assert not datafiles.filter(section__isnull=True).exists()
+    assert set(datafiles.values_list(
+        "summary__status", "summary__total_number_of_records_in_file",
+        "summary__total_number_of_records_created",
+    )) == {(DataFileSummary.Status.ACCEPTED, 1, 1)}
     assert set(datafiles.values_list("section__program__code", flat=True)) == {
         Program.Code.TANF
     }
@@ -159,6 +165,9 @@ def test_load_statistical_weights_test_data_requires_replace(tmp_path, stt):
             datafile_version=9001,
         )
 
+    old_ids = set(DataFile.objects.values_list("id", flat=True))
+    DataFileSummary.objects.update(status=DataFileSummary.Status.REJECTED)
+
     call_command(
         "load_statistical_weights_test_data",
         data_dir=str(tmp_path),
@@ -170,6 +179,11 @@ def test_load_statistical_weights_test_data_requires_replace(tmp_path, stt):
     assert TANF_T1.objects.count() == 2
     assert TANF_T6.objects.count() == 1
     assert TANF_T7.objects.count() == 1
+    assert not DataFile.objects.filter(id__in=old_ids).exists()
+    assert DataFileSummary.objects.count() == 4
+    assert set(DataFileSummary.objects.values_list(
+        "status", "total_number_of_records_in_file", "total_number_of_records_created",
+    )) == {(DataFileSummary.Status.ACCEPTED, 1, 1)}
 
 
 @pytest.mark.django_db
@@ -184,3 +198,30 @@ def test_load_statistical_weights_test_data_rejects_wrong_fiscal_year(tmp_path, 
             fiscal_year=2024,
             datafile_version=9001,
         )
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("limit,expected_count", [(None, 2), (1, 1)])
+def test_synthetic_summaries_count_only_imported_rows(tmp_path, stt, limit, expected_count):
+    """Summary totals count per-file imported rows, not all CSV rows or real files."""
+    _write_weights_csvs(tmp_path, reporting_months=["202310", "202311"])
+    real_file = DataFileFactory(
+        stt=stt, year=2024, state=SubmissionState.PARSE_COMPLETED
+    )
+    call_command(
+        "load_statistical_weights_test_data",
+        data_dir=str(tmp_path),
+        fiscal_year=2024,
+        limit_per_file=limit,
+        batch_size=1,
+    )
+
+    summary = DataFileSummary.objects.get(
+        datafile__version=9001,
+        datafile__section__name=Section.Name.ACTIVE_CASE_DATA,
+    )
+    assert summary.status == DataFileSummary.Status.ACCEPTED
+    assert summary.total_number_of_records_in_file == expected_count
+    assert summary.total_number_of_records_created == expected_count
+    assert TANF_T1.objects.filter(datafile=summary.datafile).count() == expected_count
+    assert not DataFileSummary.objects.filter(datafile=real_file).exists()

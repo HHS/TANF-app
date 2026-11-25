@@ -30,12 +30,13 @@ class DataFileSource:
     key: str
     program_type: str
     section: str
-    parser_state: str = SubmissionState.PARSE_COMPLETED
+    parser_states: tuple[str, ...] = (SubmissionState.PARSE_COMPLETED,)
     is_program_audit: bool = False
+    summary_statuses: tuple[str, ...] | None = None
 
 
 class DataFileSourceSnapshot:
-    """Snapshot latest accepted DataFile ids once for a pipeline run."""
+    """Snapshot latest eligible DataFile ids once for a pipeline run."""
 
     def __init__(self, metadata_key: str = SOURCE_DATAFILE_IDS_KEY):
         """Initialize the source snapshot with its run metadata key."""
@@ -86,7 +87,7 @@ class DataFileSourceSnapshot:
         fiscal_year: int,
         sources: tuple[DataFileSource, ...],
     ) -> dict[str, list[int]]:
-        """Build a fresh latest-accepted DataFile id snapshot."""
+        """Build a fresh latest-eligible DataFile id snapshot."""
         self._validate_sources(sources)
         source_ids = {
             source.key: self.latest_datafile_ids(fiscal_year, source)
@@ -106,22 +107,21 @@ class DataFileSourceSnapshot:
         fiscal_year: int,
         source: DataFileSource,
     ) -> list[int]:
-        """Return latest accepted DataFile ids by STT and quarter for a source."""
-        accepted_files = DataFile.objects.filter(
+        """Return latest eligible DataFile ids by STT and quarter for a source."""
+        eligible_files = DataFile.objects.filter(
             year=fiscal_year,
             section__program__code=source.program_type,
             section__name=source.section,
             is_program_audit=source.is_program_audit,
-            state=source.parser_state,
+            state__in=source.parser_states,
         )
+        if source.summary_statuses is not None:
+            eligible_files = eligible_files.filter(
+                summary__status__in=source.summary_statuses
+            )
 
         latest_version = (
-            DataFile.objects.filter(
-                year=fiscal_year,
-                section__program__code=source.program_type,
-                section__name=source.section,
-                is_program_audit=source.is_program_audit,
-                state=source.parser_state,
+            eligible_files.filter(
                 stt_id=OuterRef("stt_id"),
                 quarter=OuterRef("quarter"),
             )
@@ -130,7 +130,7 @@ class DataFileSourceSnapshot:
         )
 
         return list(
-            accepted_files.annotate(latest_version=Subquery(latest_version))
+            eligible_files.annotate(latest_version=Subquery(latest_version))
             .filter(version=F("latest_version"))
             .values_list("id", flat=True)
         )

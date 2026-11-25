@@ -1,5 +1,6 @@
 """Tests for ETL pipeline API endpoints."""
 
+from datetime import date
 from unittest.mock import patch
 
 import pytest
@@ -12,6 +13,7 @@ from tdpservice.etl.models import (
     StatisticalWeightsCaseCount,
 )
 from tdpservice.etl.runner import PipelineRunFactory
+from tdpservice.etl.scheduler import schedule_statistical_weights_run
 
 
 @pytest.mark.django_db
@@ -154,3 +156,47 @@ def test_pipeline_run_create_rejects_active_duplicate(api_client, ofa_system_adm
     assert first_response.status_code == 201
     assert second_response.status_code == 409
     assert ETLPipelineRun.objects.count() == 1
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "program", [Program.Code.TANF, Program.Code.SSP, Program.Code.TRIBAL]
+)
+@pytest.mark.parametrize(
+    "today,scheduled_year,manual_year",
+    [(date(2026, 10, 1), 2026, 2027), (date(2027, 2, 1), 2027, 2026)],
+)
+def test_manual_fiscal_year_is_independent_of_scheduled_reporting_year(
+    api_client, ofa_system_admin, program, today, scheduled_year, manual_year
+):
+    """Explicit manual years are preserved on either side of the reporting cutoff."""
+    scheduled_run = schedule_statistical_weights_run(today, program)
+    assert scheduled_run.parameters["fiscal_year"] == scheduled_year
+    api_client.force_authenticate(user=ofa_system_admin)
+
+    with patch("tdpservice.etl.views.enqueue_pipeline_run") as enqueue:
+        response = api_client.post(
+            "/v1/etl/runs/",
+            {
+                "pipeline_key": "statistical_weights",
+                "parameters": {"fiscal_year": manual_year, "program": program},
+            },
+            format="json",
+        )
+
+    assert response.status_code == 201
+    assert response.data["parameters"] == {
+        "fiscal_year": manual_year,
+        "program": program,
+    }
+    manual_run = ETLPipelineRun.objects.get(id=response.data["id"])
+    assert manual_run.parameters == response.data["parameters"]
+    assert manual_run.output_scope == {
+        "pipeline": "statistical_weights",
+        "fiscal_year": manual_year,
+        "program": program,
+        "section": "1",
+    }
+    assert manual_run.trigger_source == ETLPipelineRun.TriggerSource.ADMIN
+    assert ETLPipelineRun.objects.count() == 2
+    enqueue.assert_called_once_with(manual_run)
