@@ -295,7 +295,9 @@
   secrets-check:
     executor: docker-executor
     steps:
-      - checkout
+      # TruffleHog clones this checkout locally and needs all historical objects.
+      - checkout:
+          method: full
       - run:
           name: "git-secrets: Scan repository for committed secrets"
           command: ./scripts/git-secrets-check.sh

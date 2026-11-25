@@ -50,10 +50,10 @@ class TestAuthenticateClientSelection:
         self, backend, request_factory, settings
     ):
         """Admin client credentials are restored and the session marker is cleared."""
-        settings.KEYCLOAK_DJANGO_CLIENT_ID = "tdp-django"
-        settings.KEYCLOAK_DJANGO_CLIENT_SECRET = "django-secret"
-        settings.KEYCLOAK_TDP_ADMIN_CLIENT_ID = "tdp-admin"
-        settings.KEYCLOAK_TDP_ADMIN_CLIENT_SECRET = "admin-secret"
+        settings.KC_TDP_DJANGO_CLIENT_ID = "tdp-django"
+        settings.KC_TDP_DJANGO_CLIENT_SECRET = "django-secret"
+        settings.KC_TDP_ADMIN_CLIENT_ID = "tdp-admin"
+        settings.KC_TDP_ADMIN_CLIENT_SECRET = "admin-secret"
 
         backend.OIDC_RP_CLIENT_ID = "original-client"
         backend.OIDC_RP_CLIENT_SECRET = "original-secret"
@@ -82,10 +82,10 @@ class TestAuthenticateClientSelection:
         self, backend, request_factory, settings
     ):
         """A reused backend instance does not leak admin credentials into later calls."""
-        settings.KEYCLOAK_DJANGO_CLIENT_ID = "tdp-django"
-        settings.KEYCLOAK_DJANGO_CLIENT_SECRET = "django-secret"
-        settings.KEYCLOAK_TDP_ADMIN_CLIENT_ID = "tdp-admin"
-        settings.KEYCLOAK_TDP_ADMIN_CLIENT_SECRET = "admin-secret"
+        settings.KC_TDP_DJANGO_CLIENT_ID = "tdp-django"
+        settings.KC_TDP_DJANGO_CLIENT_SECRET = "django-secret"
+        settings.KC_TDP_ADMIN_CLIENT_ID = "tdp-admin"
+        settings.KC_TDP_ADMIN_CLIENT_SECRET = "admin-secret"
 
         seen_clients = []
 
@@ -116,10 +116,10 @@ class TestAuthenticateClientSelection:
         self, backend, request_factory, settings
     ):
         """Admin credentials are used only for the matching OIDC state."""
-        settings.KEYCLOAK_DJANGO_CLIENT_ID = "tdp-django"
-        settings.KEYCLOAK_DJANGO_CLIENT_SECRET = "django-secret"
-        settings.KEYCLOAK_TDP_ADMIN_CLIENT_ID = "tdp-admin"
-        settings.KEYCLOAK_TDP_ADMIN_CLIENT_SECRET = "admin-secret"
+        settings.KC_TDP_DJANGO_CLIENT_ID = "tdp-django"
+        settings.KC_TDP_DJANGO_CLIENT_SECRET = "django-secret"
+        settings.KC_TDP_ADMIN_CLIENT_ID = "tdp-admin"
+        settings.KC_TDP_ADMIN_CLIENT_SECRET = "admin-secret"
 
         request = request_factory.get("/oidc/callback/", {"state": "admin-state"})
         request.session = {
@@ -148,10 +148,10 @@ class TestAuthenticateClientSelection:
         self, backend, request_factory, settings
     ):
         """An abandoned admin state does not change credentials for a later login."""
-        settings.KEYCLOAK_DJANGO_CLIENT_ID = "tdp-django"
-        settings.KEYCLOAK_DJANGO_CLIENT_SECRET = "django-secret"
-        settings.KEYCLOAK_TDP_ADMIN_CLIENT_ID = "tdp-admin"
-        settings.KEYCLOAK_TDP_ADMIN_CLIENT_SECRET = "admin-secret"
+        settings.KC_TDP_DJANGO_CLIENT_ID = "tdp-django"
+        settings.KC_TDP_DJANGO_CLIENT_SECRET = "django-secret"
+        settings.KC_TDP_ADMIN_CLIENT_ID = "tdp-admin"
+        settings.KC_TDP_ADMIN_CLIENT_SECRET = "admin-secret"
 
         request = request_factory.get("/oidc/callback/", {"state": "standard-state"})
         request.session = {"oidc_clients": {"abandoned-admin-state": "tdp-admin"}}
@@ -175,20 +175,20 @@ class TestAuthenticateClientSelection:
         self, backend, request_factory, settings
     ):
         """Admin callbacks must exchange tokens with the admin redirect_uri."""
-        settings.KEYCLOAK_DJANGO_CLIENT_ID = "tdp-django"
-        settings.KEYCLOAK_DJANGO_CLIENT_SECRET = "django-secret"
-        settings.KEYCLOAK_TDP_ADMIN_CLIENT_ID = "tdp-admin"
-        settings.KEYCLOAK_TDP_ADMIN_CLIENT_SECRET = "admin-secret"
-        settings.KEYCLOAK_TDP_ADMIN_TOKEN_ENDPOINT = (
+        settings.KC_TDP_DJANGO_CLIENT_ID = "tdp-django"
+        settings.KC_TDP_DJANGO_CLIENT_SECRET = "django-secret"
+        settings.KC_TDP_ADMIN_CLIENT_ID = "tdp-admin"
+        settings.KC_TDP_ADMIN_CLIENT_SECRET = "admin-secret"
+        settings.KC_TDP_ADMIN_TOKEN_ENDPOINT = (
             "https://auth.example.gov/realms/tdp-admin/protocol/openid-connect/token"
         )
-        settings.KEYCLOAK_TDP_ADMIN_JWKS_ENDPOINT = (
+        settings.KC_TDP_ADMIN_JWKS_ENDPOINT = (
             "https://auth.example.gov/realms/tdp-admin/protocol/openid-connect/certs"
         )
-        settings.KEYCLOAK_TDP_ADMIN_USER_ENDPOINT = (
+        settings.KC_TDP_ADMIN_USER_ENDPOINT = (
             "https://auth.example.gov/realms/tdp-admin/protocol/openid-connect/userinfo"
         )
-        settings.KEYCLOAK_TDP_ADMIN_ISSUER = "https://auth.example.gov/realms/tdp-admin"
+        settings.KC_TDP_ADMIN_ISSUER = "https://auth.example.gov/realms/tdp-admin"
 
         request = request_factory.get(
             "/admin-auth/oidc/callback/",
@@ -235,7 +235,7 @@ class TestAuthenticateClientSelection:
             "https://auth.example.gov/realms/tdp-admin/protocol/openid-connect/token"
         ]
         assert (
-            backend.OIDC_OP_JWKS_ENDPOINT != settings.KEYCLOAK_TDP_ADMIN_JWKS_ENDPOINT
+            backend.OIDC_OP_JWKS_ENDPOINT != settings.KC_TDP_ADMIN_JWKS_ENDPOINT
         )
         assert not hasattr(backend, "_oidc_callback_url")
 
@@ -359,7 +359,7 @@ class TestKeycloakLogout:
     ):
         """Standard logout must only clear the standard app session."""
         settings.FRONTEND_BASE_URL = "https://tdp.example.gov"
-        settings.KEYCLOAK_DJANGO_CLIENT_ID = "tdp-django"
+        settings.KC_TDP_DJANGO_CLIENT_ID = "tdp-django"
         settings.OIDC_OP_LOGOUT_ENDPOINT = (
             "https://keycloak.example.gov/realms/tdp/protocol/openid-connect/logout"
         )
@@ -391,8 +391,8 @@ class TestKeycloakLogout:
     ):
         """Admin logout must only clear the admin app session."""
         settings.ADMIN_FRONTEND_BASE_URL = "https://admin.example.gov"
-        settings.KEYCLOAK_TDP_ADMIN_CLIENT_ID = "tdp-admin"
-        settings.KEYCLOAK_TDP_ADMIN_LOGOUT_ENDPOINT = "https://keycloak.example.gov/realms/tdp-admin/protocol/openid-connect/logout"
+        settings.KC_TDP_ADMIN_CLIENT_ID = "tdp-admin"
+        settings.KC_TDP_ADMIN_LOGOUT_ENDPOINT = "https://keycloak.example.gov/realms/tdp-admin/protocol/openid-connect/logout"
         api_client.cookies[settings.SESSION_COOKIE_NAME] = _session_cookie(
             settings,
             {"session_scope": "standard", "oidc_id_token": "standard-id-token"},
@@ -408,7 +408,7 @@ class TestKeycloakLogout:
         query_params = parse_qs(parsed_url.query)
         assert (
             f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
-            == settings.KEYCLOAK_TDP_ADMIN_LOGOUT_ENDPOINT
+            == settings.KC_TDP_ADMIN_LOGOUT_ENDPOINT
         )
         assert query_params["client_id"] == ["tdp-admin"]
         assert query_params["id_token_hint"] == ["admin-id-token"]

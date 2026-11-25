@@ -1,3 +1,5 @@
+@use "uswds-core" as *;
+
 .usa-combo-box__input::placeholder {
   // Override the default placeholder color to match the mockups
   color: #1b1b1b;
@@ -65,3 +67,63 @@
     transform: rotate(360deg);
   }
 }
+
+// Notes Modal
+.notes-modal-body {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.notes-modal-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.5;
+  margin-top: 1rem;
+}
+
+.notes-read-more-button {
+  display: inline !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  vertical-align: baseline;
+  text-decoration: underline;
+
+  &:focus,
+  &:active {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  &:focus-visible {
+    outline: 0.25rem solid #2491ff !important;
+    outline-offset: 0.125rem;
+  }
+}
+
+// Feedback Reports Upload - Notes Input
+.feedback-reports-notes__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  max-width: units('mobile-lg');
+  gap: units(2);
+}
+
+.feedback-reports-notes__count {
+  white-space: nowrap;
+  text-align: right;
+  margin-top: 0;
+  flex-shrink: 0;
+}
+
+.feedback-reports-notes__textarea {
+  max-width: units('mobile-lg');
+}
+
+.feedback-reports-notes__preview {
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+

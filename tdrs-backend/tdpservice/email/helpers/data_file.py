@@ -9,6 +9,7 @@ from tdpservice.email.email import automated_email, log
 from tdpservice.email.email_enums import AdminEmail, FraDataFileEmail, TanfDataFileEmail
 from tdpservice.parsers.models import DataFileSummary
 from tdpservice.users.models import User
+from tdpservice.web_urls import help_url
 
 
 def get_friendly_program_type(program):
@@ -140,6 +141,7 @@ def get_base_context(datafile_summary):
         "is_aggregate": is_aggregate,
         "is_program_audit": is_program_audit,
         "url": settings.FRONTEND_BASE_URL,
+        "help_url": help_url(),
     }
 
     return context

@@ -104,10 +104,17 @@ describe('Modal tests', () => {
       const cancelButton = getByText('Cancel')
       const uncancelButton = getByText('Uncancel')
 
-      // Focus Uncancel manually
-      uncancelButton.focus()
+      // Focus is initially on the modal header; Shift+Tab should wrap to the last button
+      expect(document.activeElement).toHaveTextContent('Test')
+      fireEvent.keyDown(modal, {
+        key: 'Tab',
+        code: 'Tab',
+        shiftKey: true,
+        bubbles: true,
+      })
       expect(document.activeElement).toBe(uncancelButton)
 
+      // Shift+Tab again moves to the previous button
       fireEvent.keyDown(modal, {
         key: 'Tab',
         code: 'Tab',
@@ -118,17 +125,82 @@ describe('Modal tests', () => {
       expect(document.activeElement).toBe(cancelButton)
     })
 
-    it('renders correctly with no buttons', async () => {
-      const { queryByText } = render(
+    it('renders nothing by default when isVisible is omitted', () => {
+      const { container } = render(<Modal title="Hidden" message="Hidden" />)
+      expect(container.querySelector('#modal')).toBeNull()
+    })
+
+    it('renders correctly with no buttons and handles Tab/Escape/other keys gracefully', async () => {
+      const { container, queryByText } = render(
+        <Modal title="Info" message="Read-only modal" isVisible={true}>
+          <span>Additional child content</span>
+        </Modal>
+      )
+
+      expect(queryByText('Read-only modal')).toBeInTheDocument()
+      expect(queryByText('Additional child content')).toBeInTheDocument()
+
+      const modal = container.querySelector('#modal')
+      fireEvent.keyDown(modal, { key: 'Tab' })
+      fireEvent.keyDown(modal, { key: 'Escape' })
+      fireEvent.keyDown(modal, { key: 'Enter' })
+    })
+
+    it('calls onClose when Escape key is pressed', () => {
+      const onClose = jest.fn()
+      const { container } = render(
         <Modal
           title="Info"
-          message="Read-only modal"
+          message="Escape modal"
           isVisible={true}
+          onClose={onClose}
           buttons={[]}
         />
       )
 
-      expect(queryByText('Read-only modal')).toBeInTheDocument()
+      const modal = container.querySelector('#modal')
+      fireEvent.keyDown(modal, { key: 'Escape' })
+      expect(onClose).toHaveBeenCalledTimes(1)
+    })
+
+    it('calls onClose when clicking the backdrop overlay if closeOnOutsideClick is true', () => {
+      const onClose = jest.fn()
+      const { container, getByRole } = render(
+        <Modal
+          title="Info"
+          message="Informational modal"
+          isVisible={true}
+          onClose={onClose}
+          closeOnOutsideClick={true}
+          buttons={[]}
+        />
+      )
+
+      // Clicking inside dialog should not trigger onClose
+      fireEvent.click(getByRole('dialog', { name: 'Info' }))
+      expect(onClose).not.toHaveBeenCalled()
+
+      // Clicking backdrop overlay should trigger onClose
+      const overlay = container.querySelector('#modal')
+      fireEvent.click(overlay)
+      expect(onClose).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not call onClose when clicking the backdrop overlay if closeOnOutsideClick is false', () => {
+      const onClose = jest.fn()
+      const { container } = render(
+        <Modal
+          title="Confirm"
+          message="Confirmation modal"
+          isVisible={true}
+          onClose={onClose}
+          buttons={[]}
+        />
+      )
+
+      const overlay = container.querySelector('#modal')
+      fireEvent.click(overlay)
+      expect(onClose).not.toHaveBeenCalled()
     })
   })
 })

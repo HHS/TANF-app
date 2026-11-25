@@ -77,6 +77,7 @@ update_frontend()
     fi
 
     cf set-env "$CGAPPNAME_FRONTEND" BACKEND_HOST "$CGHOSTNAME_BACKEND"
+    cf set-env "$CGAPPNAME_FRONTEND" FRONTEND_ROUTE "$FRONTEND_ROUTE"
 
     yarn build:$ENVIRONMENT
     unlink .env.production
@@ -130,6 +131,7 @@ update_frontend()
         cf push "$CGAPPNAME_FRONTEND" --no-route -f manifest.buildpack.yml
         cf set-env "$CGAPPNAME_FRONTEND" CONNECT_SRC '*.tanfdata.acf.hhs.gov'
         cf set-env "$CGAPPNAME_FRONTEND" BACKEND_HOST "$CGHOSTNAME_BACKEND"
+        cf set-env "$CGAPPNAME_FRONTEND" FRONTEND_ROUTE "$FRONTEND_ROUTE"
         cf restage "$CGAPPNAME_FRONTEND"
     fi
 

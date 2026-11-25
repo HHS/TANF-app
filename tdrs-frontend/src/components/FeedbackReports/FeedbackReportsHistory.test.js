@@ -1,5 +1,5 @@
 import React from 'react'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import FeedbackReportsHistory from './FeedbackReportsHistory'
 
 describe('FeedbackReportsHistory', () => {
@@ -86,6 +86,7 @@ describe('FeedbackReportsHistory', () => {
       expect(screen.getByText('Status')).toBeInTheDocument()
       expect(screen.getByText('Error')).toBeInTheDocument()
       expect(screen.getByText('File')).toBeInTheDocument()
+      expect(screen.getByText('Notes')).toBeInTheDocument()
       expect(screen.getByText('Downloaded by')).toBeInTheDocument()
     })
 
@@ -133,10 +134,10 @@ describe('FeedbackReportsHistory', () => {
       expect(mockViewDownloadStatistics).toHaveBeenCalledWith(42)
     })
 
-    it('spans all seven columns in the empty state', () => {
+    it('spans all eight columns in the empty state', () => {
       const { container } = renderComponent({ data: [] })
 
-      expect(container.querySelector('td')).toHaveAttribute('colspan', '7')
+      expect(container.querySelector('td')).toHaveAttribute('colspan', '8')
     })
   })
 
@@ -621,6 +622,183 @@ describe('FeedbackReportsHistory', () => {
 
       expect(screen.getByText('Parsed & Notified')).toBeInTheDocument()
       expect(screen.getByText('None')).toBeInTheDocument()
+    })
+  })
+
+  describe('Notes Column', () => {
+    it('displays "No Notes" when notes field is empty or not provided', () => {
+      const mockData = [
+        {
+          id: 1,
+          year: 2025,
+          date_extracted_on: '2025-02-28',
+          created_at: '2025-03-05T10:31:00Z',
+          processed_at: '2025-03-05T10:41:00Z',
+          status: 'SUCCEEDED',
+          original_filename: 'test.zip',
+          notes: '',
+        },
+      ]
+
+      renderComponent({ data: mockData })
+
+      expect(screen.getByText('No Notes')).toBeInTheDocument()
+    })
+
+    it('displays short note text directly without Read more button', () => {
+      const mockData = [
+        {
+          id: 1,
+          year: 2025,
+          date_extracted_on: '2025-02-28',
+          created_at: '2025-03-05T10:31:00Z',
+          processed_at: '2025-03-05T10:41:00Z',
+          status: 'SUCCEEDED',
+          original_filename: 'test.zip',
+          notes: 'Short note for this upload.',
+        },
+      ]
+
+      renderComponent({ data: mockData })
+
+      expect(
+        screen.getByText('Short note for this upload.')
+      ).toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: /Read more notes for/i })
+      ).not.toBeInTheDocument()
+    })
+
+    it('preserves note whitespace while wrapping text within the notes column', () => {
+      const note = 'First line\nSecond line'
+      const mockData = [
+        {
+          id: 1,
+          year: 2025,
+          date_extracted_on: '2025-02-28',
+          created_at: '2025-03-05T10:31:00Z',
+          processed_at: '2025-03-05T10:41:00Z',
+          status: 'SUCCEEDED',
+          original_filename: 'test.zip',
+          notes: note,
+        },
+      ]
+
+      renderComponent({ data: mockData })
+
+      const noteText = screen.getByText(
+        (_, element) =>
+          element.tagName === 'SPAN' && element.textContent === note
+      )
+      expect(noteText).toHaveStyle({
+        whiteSpace: 'pre-wrap',
+        overflowWrap: 'anywhere',
+      })
+      expect(noteText.closest('td')).toHaveStyle({ maxWidth: '100ch' })
+    })
+
+    it('displays truncated note with inline ... button when notes exceed 290 characters, and opens modal on click', () => {
+      const longNote = 'A'.repeat(320)
+      const mockData = [
+        {
+          id: 1,
+          year: 2025,
+          date_extracted_on: '2025-02-28',
+          created_at: '2025-03-05T10:31:00Z',
+          processed_at: '2025-03-05T10:41:00Z',
+          status: 'SUCCEEDED',
+          original_filename: 'test.zip',
+          notes: longNote,
+        },
+      ]
+
+      renderComponent({ data: mockData })
+
+      expect(screen.getByText('A'.repeat(290))).toBeInTheDocument()
+      const ellipsisButton = screen.getByRole('button', {
+        name: /Read more notes for/i,
+      })
+      expect(ellipsisButton).toBeInTheDocument()
+      expect(ellipsisButton).toHaveTextContent('...')
+
+      // Click ... to open modal
+      fireEvent.click(ellipsisButton)
+
+      const dialog = screen.getByRole('dialog', { name: 'Notes' })
+      expect(dialog).toBeInTheDocument()
+      expect(within(dialog).getByText(longNote)).toBeInTheDocument()
+      expect(within(dialog).getByText('test.zip')).toBeInTheDocument()
+
+      // Close modal
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Close' }))
+      expect(
+        screen.queryByRole('dialog', { name: 'Notes' })
+      ).not.toBeInTheDocument()
+    })
+
+    it('uses report source id in aria-label when original_filename is missing on long note', () => {
+      const longNote = 'A'.repeat(320)
+      renderComponent({
+        data: [
+          {
+            id: 99,
+            year: 2025,
+            date_extracted_on: '2025-02-28',
+            created_at: '2025-03-05T10:31:00Z',
+            processed_at: '2025-03-05T10:41:00Z',
+            status: 'SUCCEEDED',
+            original_filename: null,
+            notes: longNote,
+          },
+        ],
+      })
+
+      expect(
+        screen.getByRole('button', {
+          name: 'Read more notes for report source 99',
+        })
+      ).toBeInTheDocument()
+    })
+
+    it('does not show ... button for notes with 290 or fewer characters', () => {
+      const note290 = 'B'.repeat(290)
+      const mockData = [
+        {
+          id: 1,
+          year: 2025,
+          date_extracted_on: '2025-02-28',
+          created_at: '2025-03-05T10:31:00Z',
+          processed_at: '2025-03-05T10:41:00Z',
+          status: 'SUCCEEDED',
+          original_filename: 'test.zip',
+          notes: note290,
+        },
+      ]
+
+      renderComponent({ data: mockData })
+      expect(screen.getByText(note290)).toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: /Read more notes for/i })
+      ).not.toBeInTheDocument()
+    })
+
+    it('applies vertical-align: top to data rows', () => {
+      const mockData = [
+        {
+          id: 1,
+          year: 2025,
+          date_extracted_on: '2025-02-28',
+          created_at: '2025-03-05T10:31:00Z',
+          processed_at: '2025-03-05T10:41:00Z',
+          status: 'SUCCEEDED',
+          original_filename: 'test.zip',
+          notes: 'Test note',
+        },
+      ]
+
+      const { container } = renderComponent({ data: mockData })
+      const dataRow = container.querySelector('tbody tr')
+      expect(dataRow).toHaveStyle({ verticalAlign: 'top' })
     })
   })
 })

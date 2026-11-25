@@ -28,6 +28,7 @@ from tdpservice.users.models import (
     UserChangeRequest,
     UserChangeRequestStatus,
 )
+from tdpservice.web_urls import help_url
 
 logger = logging.getLogger(__name__)
 
@@ -252,6 +253,7 @@ def send_data_submission_reminder(due_date, reporting_period, fiscal_quarter):
                 "fiscal_quarter": fiscal_quarter,
                 "submission_deadline": due_date,
                 "url": settings.FRONTEND_BASE_URL,
+                "help_url": help_url(),
                 "subject": subject,
             }
 

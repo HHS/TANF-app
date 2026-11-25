@@ -24,6 +24,39 @@ Contains workflows, jobs, and commands for deploying the application on Cloud go
 
 Application deployments use a fan-out/fan-in workflow. Infrastructure and database configuration complete first, then the Django backend, Python Celery worker, and Go parser worker deploy as independent jobs. The frontend deploys independently after infrastructure. A final verification job waits for all application jobs before environment-level tests run.
 
+### Keycloak client variables
+
+Before deploying this rename, update **HHS/TANF-app → Project Settings →
+Environment Variables**. The backend and Celery jobs both pass these variables
+through `scripts/deploy-backend.sh`:
+
+| Variable | Value / source |
+|---|---|
+| `KC_TDP_DJANGO_REALM` | `tdp` (set in both deployment jobs) |
+| `KC_TDP_DJANGO_CLIENT_ID` | `tdp-django` (set in both deployment jobs) |
+| `KC_TDP_DJANGO_CLIENT_SECRET` | Existing `tdp-django` secret from the Keycloak app's identically named variable; replaces both `KEYCLOAK_ADMIN_CLIENT_SECRET` and `KEYCLOAK_DJANGO_CLIENT_SECRET` |
+| `KC_TDP_ADMIN_REALM` | `tdp-admin` (set in both deployment jobs) |
+| `KC_TDP_ADMIN_CLIENT_ID` | `tdp-admin` (set in both deployment jobs) |
+| `KC_TDP_ADMIN_CLIENT_SECRET` | Existing `tdp-admin` secret from the Keycloak app's identically named variable; replaces `KEYCLOAK_TDP_ADMIN_CLIENT_SECRET` |
+
+Update `STAGING_KC_TDP_DJANGO_CLIENT_SECRET` and
+`STAGING_KC_TDP_ADMIN_CLIENT_SECRET` with the staging Keycloak app's matching
+secrets. These replace `STAGING_KEYCLOAK_ADMIN_CLIENT_SECRET`,
+`STAGING_KEYCLOAK_DJANGO_CLIENT_SECRET`, and
+`STAGING_KEYCLOAK_TDP_ADMIN_CLIENT_SECRET`. Deployments to `tanf-staging` use
+`STAGING_` overrides when present; both base secret variables must also be set.
+The base secrets must match the target Keycloak app for dev/production; use the
+appropriate CircleCI project's existing environment-specific values.
+
+Do not copy secrets into this repository, logs, screenshots, or release notes.
+If the two old Django secret variables disagree, use the current Keycloak
+`tdp-django` client secret for the consolidated variable. Update any bound
+`tdp-keycloak-<space>` service credentials as described in the
+[upgrade instructions](../tdrs-backend/keycloak/README.md#upgrading-existing-deployments).
+Deploy backend and Celery together, run the
+[testing checklist](../tdrs-backend/keycloak/README.md#testing-checklist), then
+remove the old CircleCI and application variable names after verification.
+
 #### owasp
 Contains workflows, jobs, and commands for running OWASP scans on the application in during the pipeline against Cloud.gov environments.
 

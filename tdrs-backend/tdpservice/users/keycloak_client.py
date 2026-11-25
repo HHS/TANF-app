@@ -117,9 +117,9 @@ class KeycloakSyncClient:
         client_secret: str | None = None,
     ) -> None:
         """Initialize the realm-specific sync client."""
-        self.realm_name = realm_name or settings.KEYCLOAK_REALM
-        self.client_id = client_id or settings.KEYCLOAK_ADMIN_CLIENT_ID
-        self.client_secret = client_secret or settings.KEYCLOAK_ADMIN_CLIENT_SECRET
+        self.realm_name = realm_name or settings.KC_TDP_DJANGO_REALM
+        self.client_id = client_id or settings.KC_TDP_DJANGO_CLIENT_ID
+        self.client_secret = client_secret or settings.KC_TDP_DJANGO_CLIENT_SECRET
         connection = KeycloakOpenIDConnection(
             server_url=settings.KEYCLOAK_SERVER_URL,
             realm_name=self.realm_name,
@@ -135,14 +135,14 @@ class KeycloakSyncClient:
         """Return the Keycloak realms Django should sync into."""
         configs = [
             (
-                settings.KEYCLOAK_REALM,
-                settings.KEYCLOAK_ADMIN_CLIENT_ID,
-                settings.KEYCLOAK_ADMIN_CLIENT_SECRET,
+                settings.KC_TDP_DJANGO_REALM,
+                settings.KC_TDP_DJANGO_CLIENT_ID,
+                settings.KC_TDP_DJANGO_CLIENT_SECRET,
             ),
             (
-                settings.KEYCLOAK_TDP_ADMIN_REALM,
-                settings.KEYCLOAK_TDP_ADMIN_CLIENT_ID,
-                settings.KEYCLOAK_TDP_ADMIN_CLIENT_SECRET,
+                settings.KC_TDP_ADMIN_REALM,
+                settings.KC_TDP_ADMIN_CLIENT_ID,
+                settings.KC_TDP_ADMIN_CLIENT_SECRET,
             ),
         ]
 
@@ -156,9 +156,9 @@ class KeycloakSyncClient:
         client_secret: str | None = None,
     ) -> "KeycloakSyncClient":
         """Return a singleton instance of a realm-specific client."""
-        realm_name = realm_name or settings.KEYCLOAK_REALM
-        client_id = client_id or settings.KEYCLOAK_ADMIN_CLIENT_ID
-        client_secret = client_secret or settings.KEYCLOAK_ADMIN_CLIENT_SECRET
+        realm_name = realm_name or settings.KC_TDP_DJANGO_REALM
+        client_id = client_id or settings.KC_TDP_DJANGO_CLIENT_ID
+        client_secret = client_secret or settings.KC_TDP_DJANGO_CLIENT_SECRET
         key = (realm_name, client_id)
 
         if key not in cls._instances:

@@ -182,41 +182,36 @@ class CloudGov(Common):
     KEYCLOAK_SERVER_URL = os.getenv(
         "KEYCLOAK_SERVER_URL", "http://keycloak.apps.internal:8080"
     )
-    KEYCLOAK_REALM = os.getenv("KEYCLOAK_REALM", "tdp")
-    KEYCLOAK_ADMIN_CLIENT_ID = keycloak_creds.get(
-        "admin_client_id", os.getenv("KEYCLOAK_ADMIN_CLIENT_ID", "tdp-django")
+    KC_TDP_DJANGO_REALM = os.getenv("KC_TDP_DJANGO_REALM", "tdp")
+    KC_TDP_DJANGO_CLIENT_ID = keycloak_creds.get(
+        "django_client_id", os.getenv("KC_TDP_DJANGO_CLIENT_ID", "tdp-django")
     )
-    KEYCLOAK_ADMIN_CLIENT_SECRET = keycloak_creds.get(
-        "admin_client_secret", os.getenv("KEYCLOAK_ADMIN_CLIENT_SECRET", "")
+    KC_TDP_DJANGO_CLIENT_SECRET = keycloak_creds.get(
+        "django_client_secret", os.getenv("KC_TDP_DJANGO_CLIENT_SECRET", "")
     )
-    KEYCLOAK_DJANGO_CLIENT_ID = keycloak_creds.get(
-        "django_client_id", os.getenv("KEYCLOAK_DJANGO_CLIENT_ID", "tdp-django")
-    )
-    KEYCLOAK_DJANGO_CLIENT_SECRET = keycloak_creds.get(
-        "django_client_secret", os.getenv("KEYCLOAK_DJANGO_CLIENT_SECRET", "")
-    )
-    KEYCLOAK_TDP_ADMIN_CLIENT_ID = keycloak_creds.get(
+    KEYCLOAK_API_AUDIENCE = os.getenv("KEYCLOAK_API_AUDIENCE", KC_TDP_DJANGO_CLIENT_ID)
+    KC_TDP_ADMIN_CLIENT_ID = keycloak_creds.get(
         "tdp_admin_client_id",
-        os.getenv("KEYCLOAK_TDP_ADMIN_CLIENT_ID", "tdp-admin"),
+        os.getenv("KC_TDP_ADMIN_CLIENT_ID", "tdp-admin"),
     )
-    KEYCLOAK_TDP_ADMIN_CLIENT_SECRET = keycloak_creds.get(
+    KC_TDP_ADMIN_CLIENT_SECRET = keycloak_creds.get(
         "tdp_admin_client_secret",
-        os.getenv("KEYCLOAK_TDP_ADMIN_CLIENT_SECRET", ""),
+        os.getenv("KC_TDP_ADMIN_CLIENT_SECRET", ""),
     )
-    KEYCLOAK_TDP_ADMIN_REALM = keycloak_creds.get(
+    KC_TDP_ADMIN_REALM = keycloak_creds.get(
         "tdp_admin_realm",
-        os.getenv("KEYCLOAK_TDP_ADMIN_REALM", "tdp-admin"),
+        os.getenv("KC_TDP_ADMIN_REALM", "tdp-admin"),
     )
 
     # mozilla-django-oidc: derive OIDC settings from Keycloak URLs
-    OIDC_RP_CLIENT_ID = KEYCLOAK_DJANGO_CLIENT_ID
-    OIDC_RP_CLIENT_SECRET = KEYCLOAK_DJANGO_CLIENT_SECRET
+    OIDC_RP_CLIENT_ID = KC_TDP_DJANGO_CLIENT_ID
+    OIDC_RP_CLIENT_SECRET = KC_TDP_DJANGO_CLIENT_SECRET
 
     # In Cloud.gov, the browser-facing URL is the public Keycloak route
     KEYCLOAK_BROWSER_URL = os.getenv("KEYCLOAK_BROWSER_URL", KEYCLOAK_SERVER_URL)
 
-    _KC_REALM_URL = f"{KEYCLOAK_SERVER_URL}/realms/{KEYCLOAK_REALM}"
-    _KC_BROWSER_REALM_URL = f"{KEYCLOAK_BROWSER_URL}/realms/{KEYCLOAK_REALM}"
+    _KC_REALM_URL = f"{KEYCLOAK_SERVER_URL}/realms/{KC_TDP_DJANGO_REALM}"
+    _KC_BROWSER_REALM_URL = f"{KEYCLOAK_BROWSER_URL}/realms/{KC_TDP_DJANGO_REALM}"
     KEYCLOAK_ISSUER = os.getenv("KEYCLOAK_ISSUER", _KC_BROWSER_REALM_URL)
     OIDC_OP_ISSUER = KEYCLOAK_ISSUER
 
@@ -244,46 +239,44 @@ class CloudGov(Common):
         f"{_KC_REALM_URL}/protocol/openid-connect/certs",
     )
 
-    _KC_ADMIN_REALM_URL = f"{KEYCLOAK_SERVER_URL}/realms/{KEYCLOAK_TDP_ADMIN_REALM}"
-    _KC_ADMIN_BROWSER_REALM_URL = (
-        f"{KEYCLOAK_BROWSER_URL}/realms/{KEYCLOAK_TDP_ADMIN_REALM}"
-    )
-    KEYCLOAK_TDP_ADMIN_ISSUER = keycloak_creds.get(
+    _KC_ADMIN_REALM_URL = f"{KEYCLOAK_SERVER_URL}/realms/{KC_TDP_ADMIN_REALM}"
+    _KC_ADMIN_BROWSER_REALM_URL = f"{KEYCLOAK_BROWSER_URL}/realms/{KC_TDP_ADMIN_REALM}"
+    KC_TDP_ADMIN_ISSUER = keycloak_creds.get(
         "tdp_admin_issuer",
-        os.getenv("KEYCLOAK_TDP_ADMIN_ISSUER", _KC_ADMIN_BROWSER_REALM_URL),
+        os.getenv("KC_TDP_ADMIN_ISSUER", _KC_ADMIN_BROWSER_REALM_URL),
     )
-    KEYCLOAK_TDP_ADMIN_AUTHORIZATION_ENDPOINT = keycloak_creds.get(
+    KC_TDP_ADMIN_AUTHORIZATION_ENDPOINT = keycloak_creds.get(
         "tdp_admin_authorization_endpoint",
         os.getenv(
-            "KEYCLOAK_TDP_ADMIN_AUTHORIZATION_ENDPOINT",
+            "KC_TDP_ADMIN_AUTHORIZATION_ENDPOINT",
             f"{_KC_ADMIN_BROWSER_REALM_URL}/protocol/openid-connect/auth",
         ),
     )
-    KEYCLOAK_TDP_ADMIN_LOGOUT_ENDPOINT = keycloak_creds.get(
+    KC_TDP_ADMIN_LOGOUT_ENDPOINT = keycloak_creds.get(
         "tdp_admin_logout_endpoint",
         os.getenv(
-            "KEYCLOAK_TDP_ADMIN_LOGOUT_ENDPOINT",
+            "KC_TDP_ADMIN_LOGOUT_ENDPOINT",
             f"{_KC_ADMIN_BROWSER_REALM_URL}/protocol/openid-connect/logout",
         ),
     )
-    KEYCLOAK_TDP_ADMIN_TOKEN_ENDPOINT = keycloak_creds.get(
+    KC_TDP_ADMIN_TOKEN_ENDPOINT = keycloak_creds.get(
         "tdp_admin_token_endpoint",
         os.getenv(
-            "KEYCLOAK_TDP_ADMIN_TOKEN_ENDPOINT",
+            "KC_TDP_ADMIN_TOKEN_ENDPOINT",
             f"{_KC_ADMIN_REALM_URL}/protocol/openid-connect/token",
         ),
     )
-    KEYCLOAK_TDP_ADMIN_USER_ENDPOINT = keycloak_creds.get(
+    KC_TDP_ADMIN_USER_ENDPOINT = keycloak_creds.get(
         "tdp_admin_user_endpoint",
         os.getenv(
-            "KEYCLOAK_TDP_ADMIN_USER_ENDPOINT",
+            "KC_TDP_ADMIN_USER_ENDPOINT",
             f"{_KC_ADMIN_REALM_URL}/protocol/openid-connect/userinfo",
         ),
     )
-    KEYCLOAK_TDP_ADMIN_JWKS_ENDPOINT = keycloak_creds.get(
+    KC_TDP_ADMIN_JWKS_ENDPOINT = keycloak_creds.get(
         "tdp_admin_jwks_endpoint",
         os.getenv(
-            "KEYCLOAK_TDP_ADMIN_JWKS_ENDPOINT",
+            "KC_TDP_ADMIN_JWKS_ENDPOINT",
             f"{_KC_ADMIN_REALM_URL}/protocol/openid-connect/certs",
         ),
     )

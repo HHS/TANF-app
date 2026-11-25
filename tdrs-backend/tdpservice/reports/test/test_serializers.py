@@ -8,7 +8,7 @@ from django.utils.dateparse import parse_datetime
 import pytest
 from rest_framework.exceptions import ValidationError
 
-from tdpservice.reports.models import ReportType
+from tdpservice.reports.models import ReportSource, ReportType
 from tdpservice.reports.serializers import (
     ReportFileSerializer,
     ReportSourceDownloadStatisticsSerializer,
@@ -200,3 +200,126 @@ def test_report_source_download_statistics_serializer_contract():
 
     assert output == data
     assert "file" not in output
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "valid_note",
+    [
+        "Valid notes for report upload.",
+        "Exclude counts < 5 and flag counts > 100",
+        "Count < 10 and Increase > 5%",
+        "OFA's revisions for TANF & SSP",
+    ],
+)
+def test_report_source_serializer_with_valid_notes(
+    report_source_data, data_analyst, valid_note
+):
+    """Test ReportSourceSerializer accepts and persists valid plain text notes."""
+    report_source_data["notes"] = valid_note
+    ser = ReportSourceSerializer(
+        context={"user": data_analyst}, data=report_source_data
+    )
+    assert ser.is_valid(), ser.errors
+    obj = ser.save()
+    assert obj.notes == valid_note
+
+    # Test serialized output includes notes
+    serialized = ReportSourceSerializer(obj).data
+    assert serialized["notes"] == valid_note
+    assert ser.validate_notes("") == ""
+
+
+@pytest.mark.django_db
+def test_report_source_serializer_rejects_notes_exceeding_max_length(
+    report_source_data, data_analyst
+):
+    """Test ReportSourceSerializer rejects notes exceeding 2000 characters."""
+    report_source_data["notes"] = "a" * 2001
+    ser = ReportSourceSerializer(
+        context={"user": data_analyst}, data=report_source_data
+    )
+    with pytest.raises(ValidationError) as exc:
+        ser.is_valid(raise_exception=True)
+    assert "notes" in exc.value.detail
+    assert "2000 characters" in str(exc.value.detail["notes"])
+
+
+@pytest.mark.django_db
+def test_report_source_serializer_normalizes_crlf_notes_up_to_2000_chars(
+    report_source_data, data_analyst
+):
+    """Test ReportSourceSerializer normalizes CRLF and accepts multiline notes up to 2000 characters."""
+    # 1999 characters in JS (1989 chars + 10 newlines); wire has 2009 chars due to CRLF
+    note_1999_js = ("a" * 1989) + ("\n" * 10)
+    note_1999_wire = note_1999_js.replace("\n", "\r\n")
+    report_source_data["notes"] = note_1999_wire
+    ser = ReportSourceSerializer(
+        context={"user": data_analyst}, data=report_source_data
+    )
+    assert ser.is_valid(), ser.errors
+    obj = ser.save()
+    assert "\r" not in obj.notes
+    assert len(obj.notes) <= 2000
+
+    # Exactly 2000 characters with newlines (wire has 2005 chars due to CRLF)
+    note_2000_js = ("b" * 1995) + "\n" + ("c" * 4)
+    note_2000_wire = note_2000_js.replace("\n", "\r\n")
+    report_source_data["notes"] = note_2000_wire
+    ser2 = ReportSourceSerializer(
+        context={"user": data_analyst}, data=report_source_data
+    )
+    assert ser2.is_valid(), ser2.errors
+    obj2 = ser2.save()
+    assert "\r" not in obj2.notes
+    assert len(obj2.notes) == 2000
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "prohibited_note",
+    [
+        "<script>alert('xss')</script>",
+        "<p>Some html paragraph</p>",
+        "<b>Bold text</b>",
+        "<img src=x onerror=alert(1)>",
+        "counts < 5 and flag counts > 100. <div>Hello</div>",
+        "javascript:alert(1)",
+        "Please visit: javascript:void(0)",
+    ],
+)
+def test_report_source_serializer_rejects_html_and_javascript(
+    report_source_data, data_analyst, prohibited_note
+):
+    """Test ReportSourceSerializer rejects HTML tags and javascript protocol in notes."""
+    report_source_data["notes"] = prohibited_note
+    ser = ReportSourceSerializer(
+        context={"user": data_analyst}, data=report_source_data
+    )
+    with pytest.raises(ValidationError) as exc:
+        ser.is_valid(raise_exception=True)
+    assert "notes" in exc.value.detail
+    assert "HTML and JavaScript are not allowed" in str(exc.value.detail["notes"])
+
+
+@pytest.mark.django_db
+def test_report_file_serializer_includes_notes(report_file_instance):
+    """Test ReportFileSerializer includes notes from parent source in output."""
+    # Without source, notes defaults to empty string
+    output_without_source = ReportFileSerializer(report_file_instance).data
+    assert "notes" in output_without_source
+    assert output_without_source["notes"] == ""
+
+    # With source, notes property reads from source.notes
+    source = ReportSource.objects.create(
+        original_filename="test.zip",
+        slug="test.zip",
+        extension="zip",
+        notes="STT specific notes.",
+    )
+    report_file_instance.source = source
+    report_file_instance.save(update_fields=["source"])
+
+    output = ReportFileSerializer(report_file_instance).data
+    assert "notes" in output
+    assert output["notes"] == "STT specific notes."

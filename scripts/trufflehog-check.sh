@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-pythonVersion="3.10"
+pythonVersion="3.14"
 
 if ! [ -x "$(command -v truffleHog)" ]; then
     echo The command truffleHog is not available, installing...

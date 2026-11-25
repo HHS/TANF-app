@@ -31,18 +31,21 @@ export const ReprocessedButton = ({ date, reprocessedState }) => {
 
 const ReprocessedModal = ({ date, isVisible, setModalVisible }) => {
   const message = <Message date={date} />
+  const handleClose = () => {
+    setModalVisible(false)
+  }
   return (
     <Modal
       title="Most Recent Reprocessed Date"
       message={message}
       isVisible={isVisible}
+      onClose={handleClose}
+      closeOnOutsideClick
       buttons={[
         {
           key: '1',
           text: 'Close',
-          onClick: () => {
-            setModalVisible(false)
-          },
+          onClick: handleClose,
         },
       ]}
     />

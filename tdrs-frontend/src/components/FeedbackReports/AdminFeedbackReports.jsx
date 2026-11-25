@@ -5,6 +5,7 @@ import createFileInputErrorState from '../../utils/createFileInputErrorState'
 import FeedbackReportsUpload from './FeedbackReportsUpload'
 import FeedbackReportsHistory from './FeedbackReportsHistory'
 import DownloadStatisticsModal from './DownloadStatisticsModal'
+import Modal from '../Modal'
 import { PaginatedComponent } from '../Paginator/Paginator'
 import { Spinner } from '../Spinner'
 import { constructYears } from '../Reports/utils'
@@ -55,6 +56,9 @@ function AdminFeedbackReports() {
   )
   const [selectedYear, setSelectedYear] = useState(getValidatedYear)
   const [selectedFile, setSelectedFile] = useState(null)
+  const [notes, setNotes] = useState('')
+  const [notesError, setNotesError] = useState(null)
+  const [uploadFormVersion, setUploadFormVersion] = useState(0)
   const [uploadHistory, setUploadHistory] = useState([])
   const [loading, setLoading] = useState(false)
   const [historyLoading, setHistoryLoading] = useState(false)
@@ -70,10 +74,13 @@ function AdminFeedbackReports() {
   const [dateTouched, setDateTouched] = useState(false)
   const [downloadStatistics, setDownloadStatistics] = useState({
     sourceId: null,
+    reportContext: null,
     data: null,
     loading: false,
     error: null,
   })
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false)
+  const [pendingChange, setPendingChange] = useState(null)
 
   const inputRef = useRef(null)
   const uploadFormRef = useRef(null)
@@ -84,6 +91,7 @@ function AdminFeedbackReports() {
     statisticsRequestIdRef.current += 1
     setDownloadStatistics({
       sourceId: null,
+      reportContext: null,
       data: null,
       loading: false,
       error: null,
@@ -91,10 +99,16 @@ function AdminFeedbackReports() {
   }
 
   const viewDownloadStatistics = async (sourceId) => {
+    const source = uploadHistory.find((report) => report.id === sourceId)
+    const reportContext = {
+      year: source.year,
+      reportType: source.report_type,
+    }
     const requestId = statisticsRequestIdRef.current + 1
     statisticsRequestIdRef.current = requestId
     setDownloadStatistics({
       sourceId,
+      reportContext,
       data: null,
       loading: true,
       error: null,
@@ -107,11 +121,18 @@ function AdminFeedbackReports() {
     if (requestId !== statisticsRequestIdRef.current) return
 
     if (ok) {
-      setDownloadStatistics({ sourceId, data, loading: false, error: null })
+      setDownloadStatistics({
+        sourceId,
+        reportContext,
+        data,
+        loading: false,
+        error: null,
+      })
     } else {
       console.error('Failed to fetch download statistics:', error)
       setDownloadStatistics({
         sourceId,
+        reportContext,
         data: null,
         loading: false,
         error: 'Failed to load download statistics. Please try again.',
@@ -167,10 +188,23 @@ function AdminFeedbackReports() {
     return match ? parseInt(match[1], 10) : null
   }
 
+  const getFileError = (file, year) => {
+    if (!/\.zip$/i.test(file.name)) return INVALID_EXT_ERROR
+    const fileYear = extractFYFromFilename(file.name)
+    return fileYear && year && fileYear !== parseInt(year, 10)
+      ? FY_MISMATCH_ERROR
+      : null
+  }
+
   /**
    * Handles file selection from the file input
    */
   const handleFileChange = async (e) => {
+    if (selectedFile) {
+      clearDatePicker()
+      setDateError(null)
+      setDateTouched(false)
+    }
     setSelectedFile(null)
     setFileError(null)
     setAlert({ active: false, type: null, message: null })
@@ -195,21 +229,11 @@ function AdminFeedbackReports() {
 
     await loadFile()
 
-    // Validate file extension after USWDS has created preview
-    const zipExtension = /(\.zip)$/i
-    const isZip = zipExtension.exec(fileInputValue.name)
-
-    if (!isZip) {
+    setSelectedFile(fileInputValue)
+    const validationError = getFileError(fileInputValue, selectedYear)
+    if (validationError) {
       createFileInputErrorState(input, dropTarget)
-      setFileError(INVALID_EXT_ERROR)
-      return
-    }
-
-    // Validate fiscal year in filename matches selected fiscal year
-    const fileFY = extractFYFromFilename(fileInputValue.name)
-    if (fileFY && selectedYear && fileFY !== parseInt(selectedYear, 10)) {
-      createFileInputErrorState(input, dropTarget)
-      setFileError(FY_MISMATCH_ERROR)
+      setFileError(validationError)
       return
     }
 
@@ -222,8 +246,10 @@ function AdminFeedbackReports() {
     }
     dropTarget.classList.remove('has-invalid-file')
 
+    if (inputRef.current) {
+      inputRef.current.value = null
+    }
     setSelectedFile(fileInputValue)
-    inputRef.current.value = null
   }
 
   /**
@@ -234,10 +260,40 @@ function AdminFeedbackReports() {
   }
 
   /**
+   * Clears the file input value and resets USWDS file input DOM preview
+   */
+  const clearFileInput = () => {
+    setSelectedFile(null)
+    setFileError(null)
+    uploadFormRef.current?.clearFileInput()
+  }
+
+  /**
    * Clears the upload form's date picker
    */
   const clearDatePicker = () => {
     uploadFormRef.current?.clearDate()
+  }
+
+  /**
+   * Validates notes field content
+   */
+  const validateNotes = (value) => {
+    if (!value) return null
+    const cleanedText = new DOMParser().parseFromString(value, 'text/html').body
+      .textContent
+    if (cleanedText !== value || /javascript\s*:/i.test(value)) {
+      return 'HTML and JavaScript are not allowed in the notes field.'
+    }
+    return null
+  }
+
+  const handleNotesChange = (e) => {
+    const value = e.target.value
+    setNotes(value)
+    if (formSubmitAttempted || notesError) {
+      setNotesError(validateNotes(value))
+    }
   }
 
   /**
@@ -251,6 +307,10 @@ function AdminFeedbackReports() {
     if (!selectedFile) {
       setFileError(NO_FILE_ERROR)
       isValid = false
+    } else {
+      const validationError = getFileError(selectedFile, selectedYear)
+      setFileError(validationError)
+      if (validationError) isValid = false
     }
 
     // Read date directly from DOM since USWDS manages the input
@@ -258,6 +318,14 @@ function AdminFeedbackReports() {
     if (!dateValue) {
       setDateError(NO_DATE_ERROR)
       isValid = false
+    }
+
+    const nError = validateNotes(notes)
+    if (nError) {
+      setNotesError(nError)
+      isValid = false
+    } else {
+      setNotesError(null)
     }
 
     return isValid
@@ -277,6 +345,9 @@ function AdminFeedbackReports() {
     formData.append('year', selectedYear)
     formData.append('date_extracted_on', getDatePickerValue())
     formData.append('report_type', selectedReportType)
+    if (notes && notes.trim()) {
+      formData.append('notes', notes.trim())
+    }
 
     const { data, ok } = await post(
       `${process.env.REACT_APP_BACKEND_URL}/reports/report-sources/`,
@@ -292,18 +363,21 @@ function AdminFeedbackReports() {
       })
 
       // Clear the form
-      setSelectedFile(null)
-      setFileError(null)
+      clearFileInput()
+      setNotes('')
+      setNotesError(null)
       clearDatePicker()
       setDateError(null)
       setFormSubmitAttempted(false)
       setDateTouched(false)
+      setUploadFormVersion((version) => version + 1)
 
       // Refresh upload history
       fetchUploadHistory()
     } else {
       const errorMessage =
         data?.file?.[0] ||
+        data?.notes?.[0] ||
         data?.detail ||
         data?.message ||
         'Upload failed. Please try again.'
@@ -355,8 +429,9 @@ function AdminFeedbackReports() {
    */
   const resetFormState = () => {
     closeDownloadStatistics()
-    setSelectedFile(null)
-    setFileError(null)
+    clearFileInput()
+    setNotes('')
+    setNotesError(null)
     clearDatePicker()
     setDateError(null)
     setFormSubmitAttempted(false)
@@ -365,12 +440,28 @@ function AdminFeedbackReports() {
   }
 
   /**
+   * Checks if any unsubmitted form values have been entered
+   */
+  const hasEnteredFormValues = () => {
+    if (selectedFile) return true
+    if (notes && notes.length > 0) return true
+    if (getDatePickerValue()) return true
+    if (inputRef.current?.files?.length) return true
+    return false
+  }
+
+  /**
    * Handles report type selection change
    */
   const handleReportTypeChange = (value) => {
-    setSelectedReportType(value)
-    resetFormState()
-    updateSearchParams({ type: value })
+    if (hasEnteredFormValues()) {
+      setPendingChange({ type: 'reportType', value })
+      setConfirmModalVisible(true)
+    } else {
+      setSelectedReportType(value)
+      updateSearchParams({ type: value })
+      resetFormState()
+    }
   }
 
   /**
@@ -378,9 +469,40 @@ function AdminFeedbackReports() {
    */
   const handleYearChange = (e) => {
     const newYear = e.target.value || null
-    setSelectedYear(newYear)
+    if (newYear === selectedYear) return
+
+    if (hasEnteredFormValues()) {
+      setPendingChange({ type: 'year', value: newYear })
+      setConfirmModalVisible(true)
+    } else {
+      setSelectedYear(newYear)
+      updateSearchParams(newYear ? { year: newYear } : { year: undefined })
+      resetFormState()
+    }
+  }
+
+  const handleConfirmChange = () => {
     resetFormState()
-    updateSearchParams(newYear ? { year: newYear } : { year: undefined })
+
+    if (pendingChange.type === 'reportType') {
+      setSelectedReportType(pendingChange.value)
+      updateSearchParams({ type: pendingChange.value })
+    } else {
+      setSelectedYear(pendingChange.value)
+      updateSearchParams(
+        pendingChange.value
+          ? { year: pendingChange.value }
+          : { year: undefined }
+      )
+    }
+
+    setPendingChange(null)
+    setConfirmModalVisible(false)
+  }
+
+  const handleCancelChange = () => {
+    setPendingChange(null)
+    setConfirmModalVisible(false)
   }
 
   /**
@@ -447,9 +569,9 @@ function AdminFeedbackReports() {
           </select>
         </div>
 
-        {/* Conditional content - only show when fiscal year is selected */}
-        {selectedYear && (
-          <>
+        {/* Keep the upload mounted so clearing a selector preserves the file preview. */}
+        {(selectedYear || selectedFile) && (
+          <div hidden={!selectedYear}>
             <hr className="margin-top-4 margin-bottom-4" />
 
             <h2
@@ -474,6 +596,7 @@ function AdminFeedbackReports() {
 
             {/* File Upload Section */}
             <FeedbackReportsUpload
+              key={uploadFormVersion}
               ref={uploadFormRef}
               selectedFile={selectedFile}
               fileError={fileError}
@@ -483,6 +606,9 @@ function AdminFeedbackReports() {
               inputRef={inputRef}
               dateError={showDateError ? dateError : null}
               onDateBlur={handleDateBlur}
+              notes={notes}
+              notesError={notesError}
+              onNotesChange={handleNotesChange}
             />
 
             {/* Upload History Section */}
@@ -507,7 +633,7 @@ function AdminFeedbackReports() {
                 </PaginatedComponent>
               )}
             </div>
-          </>
+          </div>
         )}
         {downloadStatistics.sourceId !== null && (
           <DownloadStatisticsModal
@@ -516,8 +642,28 @@ function AdminFeedbackReports() {
             error={downloadStatistics.error}
             formatDateTime={formatDateTime}
             onClose={closeDownloadStatistics}
+            reportContext={downloadStatistics.reportContext}
           />
         )}
+
+        <Modal
+          title="Discard unsaved changes?"
+          message="Changing the report type or fiscal year will discard your unsaved notes and remove any files you've added. Do you want to continue?"
+          isVisible={confirmModalVisible}
+          onClose={handleCancelChange}
+          buttons={[
+            {
+              key: '1',
+              text: 'Keep editing',
+              onClick: handleCancelChange,
+            },
+            {
+              key: '2',
+              text: 'Discard and continue',
+              onClick: handleConfirmChange,
+            },
+          ]}
+        />
       </div>
     </div>
   )

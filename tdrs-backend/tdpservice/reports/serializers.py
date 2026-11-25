@@ -1,8 +1,36 @@
 """Serialize report data."""
+
+import re
+from html.parser import HTMLParser
+
 from rest_framework import serializers
 
 from tdpservice.reports.models import ReportFile, ReportSource, ReportType
 from tdpservice.stts.models import STT
+
+
+class _HTMLTextExtractor(HTMLParser):
+    """Extract plain text from a string using Python's built-in HTML parser."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=False)
+        self.text_parts = []
+
+    def handle_data(self, data):
+        """Collect non-markup text data."""
+        self.text_parts.append(data)
+
+    def get_text(self):
+        """Return the concatenated plain text with any HTML/XML markup removed."""
+        return "".join(self.text_parts)
+
+
+def _extract_plain_text(value: str) -> str:
+    """Parse text with html.parser and return only pure string data."""
+    parser = _HTMLTextExtractor()
+    parser.feed(value)
+    parser.close()
+    return parser.get_text()
 
 
 class ReportDownloadStatisticsSTTSerializer(serializers.Serializer):
@@ -47,6 +75,7 @@ class ReportFileSerializer(serializers.ModelSerializer):
             "date_extracted_on",
             "year",
             "report_type",
+            "notes",
             "version",
             "original_filename",
             "extension",
@@ -58,6 +87,7 @@ class ReportFileSerializer(serializers.ModelSerializer):
         read_only_fields = [
             "id",
             "user",
+            "notes",
             "version",
             "original_filename",
             "slug",
@@ -91,9 +121,25 @@ class ReportFileSerializer(serializers.ModelSerializer):
         return file
 
 
+class NormalizedCharField(serializers.CharField):
+    """CharField that normalizes CRLF and CR line endings to LF before validation."""
+
+    def to_internal_value(self, data):
+        """Normalize line breaks before validation."""
+        if isinstance(data, str):
+            data = data.replace("\r\n", "\n").replace("\r", "\n")
+        return super().to_internal_value(data)
+
+
 class ReportSourceSerializer(serializers.ModelSerializer):
     """Serializer for Report Source."""
 
+    notes = NormalizedCharField(
+        max_length=2000,
+        required=False,
+        allow_blank=True,
+        error_messages={"max_length": "Notes cannot exceed 2000 characters."},
+    )
     downloaded_count = serializers.SerializerMethodField()
     total_count = serializers.SerializerMethodField()
 
@@ -110,6 +156,7 @@ class ReportSourceSerializer(serializers.ModelSerializer):
             "processed_at",
             "num_reports_created",
             "error_message",
+            "notes",
             "date_extracted_on",
             "year",
             "report_type",
@@ -136,11 +183,27 @@ class ReportSourceSerializer(serializers.ModelSerializer):
         """Return the annotated distinct count without issuing another query."""
         return getattr(obj, "total_count", 0)
 
+    def validate_notes(self, value):
+        """Ensure notes do not exceed max length and contain no HTML or JavaScript."""
+        if not value:
+            return ""
+        value = value.replace("\r\n", "\n").replace("\r", "\n")
+        if _extract_plain_text(value) != value:
+            raise serializers.ValidationError(
+                "HTML and JavaScript are not allowed in the notes field."
+            )
+        if re.search(r"javascript\s*:", value, re.IGNORECASE):
+            raise serializers.ValidationError(
+                "HTML and JavaScript are not allowed in the notes field."
+            )
+        return value.strip()
+
     def create(self, validated_data):
         """Create a ReportSource record for a report source zip file upload."""
         file = validated_data.get("file")
         date_extracted_on = validated_data.get("date_extracted_on")  # optional
         year = validated_data.get("year")  # optional
+        notes = validated_data.get("notes", "")
         user = self.context["user"]
 
         source = ReportSource.objects.create(
@@ -150,6 +213,7 @@ class ReportSourceSerializer(serializers.ModelSerializer):
             uploaded_by=user,
             date_extracted_on=date_extracted_on,
             year=year,
+            notes=notes,
             report_type=validated_data.get("report_type", ReportType.TANF_SSP),
             file=file,
         )

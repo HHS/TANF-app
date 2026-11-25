@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 import gzip
 import lzma
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, TextIO
@@ -19,6 +20,7 @@ from tdpservice.data_files.models import DataFile, Program, Section
 from tdpservice.data_files.submission_lifecycle import (
     record_synthetic_import_completed,
 )
+from tdpservice.parsers.models import DataFileSummary
 from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T6, TANF_T7
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
@@ -221,6 +223,7 @@ class Command(BaseCommand):
     def _load_csv(self, csv_path: Path, spec: CsvSpec, importer: User) -> int:
         """Stream one CSV into its parsed-record table."""
         loaded_count = 0
+        datafile_counts: Counter[int] = Counter()
         batch: list[models.Model] = []
 
         with self._open_csv(csv_path) as csv_file:
@@ -243,6 +246,7 @@ class Command(BaseCommand):
                 )
                 batch.append(spec.model(**values))
                 loaded_count += 1
+                datafile_counts[datafile_id] += 1
 
                 if len(batch) >= self.batch_size:
                     spec.model.objects.bulk_create(batch, batch_size=self.batch_size)
@@ -252,6 +256,16 @@ class Command(BaseCommand):
         if batch:
             spec.model.objects.bulk_create(batch, batch_size=self.batch_size)
             self._write_progress(spec, loaded_count)
+
+        for datafile_id, count in datafile_counts.items():
+            DataFileSummary.objects.update_or_create(
+                datafile_id=datafile_id,
+                defaults={
+                    "status": DataFileSummary.Status.ACCEPTED,
+                    "total_number_of_records_in_file": count,
+                    "total_number_of_records_created": count,
+                },
+            )
 
         return loaded_count
 
