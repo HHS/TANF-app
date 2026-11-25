@@ -112,14 +112,19 @@
   });
 });</script> -->
 
-<script>document.addEventListener("DOMContentLoaded", () => {
+<script>
+document.addEventListener("DOMContentLoaded", () => {
   const headings = Array.from(document.querySelectorAll("main h2"));
   const list = document.getElementById("on-this-page-list");
+  const scrollContainer = document.querySelector(".on-this-page__scroll-container");
+  const sidebar = document.querySelector(".on-this-page");
+  const mainContent = document.getElementById("main-content");
 
-  // CONFIG: adjust to your sticky header height or desired active line
-  const HEADER_OFFSET = 64; // px. Update this to match your header height.
+  const HEADER_OFFSET = 64; 
+  let currentActiveId = null;
+  let isFullyLoaded = false;
 
-  // Build nav
+  // Build nav dynamically
   headings.forEach(h2 => {
     if (!h2.id) h2.id = h2.textContent.trim().toLowerCase().replace(/\s+/g, "-");
     const li = document.createElement("li");
@@ -133,94 +138,106 @@
 
   const links = Array.from(list.querySelectorAll("a"));
 
-  // Helper: set active by id
-  function setActiveById(id) {
-    links.forEach(l => l.classList.toggle("active", l.getAttribute("href") === `#${id}`));
+  // Safely scroll ONLY the sidebar container locally without affecting window scroll
+  function scrollSidebarToElement(targetLink) {
+    if (!scrollContainer || !targetLink) return;
+
+    const containerRect = scrollContainer.getBoundingClientRect();
+    const linkRect = targetLink.getBoundingClientRect();
+
+    const isAbove = linkRect.top < containerRect.top;
+    const isBelow = linkRect.bottom > containerRect.bottom;
+
+    if (isAbove) {
+      scrollContainer.scrollTop -= (containerRect.top - linkRect.top) + 8;
+    } else if (isBelow) {
+      scrollContainer.scrollTop += (linkRect.bottom - containerRect.bottom) + 8;
+    }
   }
 
-  // Helper: compute active based on scroll position relative to HEADER_OFFSET
-  function updateActiveFromScrollPoint() {
-    const activeLine = HEADER_OFFSET; // Measure against viewport top + offset
-    let candidate = headings[0];
+  // Set active link; guard against redundant calls & infinite loops
+  function setActiveById(id, forceSidebarScroll = false) {
+    if (currentActiveId === id && !forceSidebarScroll) return;
+    currentActiveId = id;
 
-    headings.forEach(h2 => {
-      const top = h2.getBoundingClientRect().top;
-      // We want the last heading whose top is <= activeLine
-      if (top - activeLine <= 0) {
-        candidate = h2;
-      }
+    let activeLink = null;
+    links.forEach(l => {
+      const isActive = l.getAttribute("href") === `#${id}`;
+      l.classList.toggle("active", isActive);
+      if (isActive) activeLink = l;
     });
 
-    // If none are above the line yet, keep the first section active
-    setActiveById(candidate.id);
+    if (activeLink && (isFullyLoaded || forceSidebarScroll)) {
+      scrollSidebarToElement(activeLink);
+    }
   }
 
-  // IntersectionObserver tuned to the same concept
-  const observer = new IntersectionObserver(
-    entries => {
-      // When multiple sections intersect, pick the one closest to the active line
-      const visible = entries
-        .filter(e => e.isIntersecting)
-        .map(e => ({ id: e.target.id, delta: Math.abs(e.target.getBoundingClientRect().top - HEADER_OFFSET) }))
-        .sort((a, b) => a.delta - b.delta);
+  function updateActiveFromScrollPoint() {
+    let candidate = headings[0];
 
-      if (visible.length) {
-        setActiveById(visible[0].id);
+    for (let i = 0; i < headings.length; i++) {
+      const top = headings[i].getBoundingClientRect().top;
+      if (top - HEADER_OFFSET <= 10) {
+        candidate = headings[i];
       } else {
-        // Fallback to scroll-point logic (e.g., during fast jumps)
-        updateActiveFromScrollPoint();
+        break;
       }
-    },
-    {
-      // Push the observation window down by the header height
-      rootMargin: `-${HEADER_OFFSET}px 0px -70% 0px`,
-      threshold: [0, 0.01, 0.1] // small thresholds to catch crossings
     }
-  );
 
-  headings.forEach(h2 => observer.observe(h2));
+    if (candidate) {
+      setActiveById(candidate.id);
+    }
+  }
 
-  // Click behavior: immediate highlight, smooth scroll, then precise recheck
+  // Click handling for smooth scrolling to sections
   links.forEach(link => {
     link.addEventListener("click", e => {
       const target = document.querySelector(link.getAttribute("href"));
       if (!target) return;
 
       e.preventDefault();
-
-      // Immediate visual feedback
-      setActiveById(target.id);
-
-      // Smooth scroll (adjust block if you prefer 'nearest')
+      setActiveById(target.id, true);
       target.scrollIntoView({ behavior: "smooth", block: "start" });
-
-      // Post-scroll recheck: use rAF loop until scroll settles
-      let ticking = true;
-      let lastPos = window.scrollY;
-
-      function settleCheck() {
-        const now = window.scrollY;
-        if (Math.abs(now - lastPos) < 1) {
-          ticking = false;
-          updateActiveFromScrollPoint();
-          return;
-        }
-        lastPos = now;
-        requestAnimationFrame(settleCheck);
-      }
-
-      requestAnimationFrame(settleCheck);
     });
   });
 
-  // Initial sync on load
+  // Debounced scroll listener for main window
+  let ticking = false;
+  window.addEventListener("scroll", () => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        updateActiveFromScrollPoint();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
+
+  // Initial load sync
   updateActiveFromScrollPoint();
 
-  // Also update on manual scroll
-  window.addEventListener("scroll", () => {
-    updateActiveFromScrollPoint();
-  }, { passive: true });
-});</script>
+  // Allow sidebar auto-scrolling after initial layout settles
+  setTimeout(() => {
+    isFullyLoaded = true;
+  }, 300);
+
+  // Sticky sidebar toggle anchored to main content top offset
+  if (sidebar && mainContent) {
+    const triggerPoint = mainContent.offsetTop - 80;
+
+    function handleSticky() {
+      if (window.scrollY >= triggerPoint) {
+        sidebar.classList.add("is-sticky");
+      } else {
+        sidebar.classList.remove("is-sticky");
+      }
+    }
+
+    window.addEventListener("scroll", handleSticky, { passive: true });
+    handleSticky(); // Evaluates immediately on load so it appears right away
+  }
+});
+</script>
 
 
   </head>
@@ -267,6 +284,7 @@
       <div
         class="usa-banner__content usa-accordion__content"
         id="gov-banner-default"
+        hidden
       >
         <div class="grid-row grid-gap-lg">
           <div class="usa-banner__guidance tablet:grid-col-6">
@@ -388,11 +406,6 @@
         class="usa-layout-docs__main desktop:grid-col-9 usa-prose usa-layout-docs"
         id="main-content">
 
-            <aside class="on-this-page" aria-label="On this page">
-  <nav>
-    <ul id="on-this-page-list"></ul>
-  </nav>
-</aside>
 
       <!-- Shutdown banner, uncomment the shut-down tag below to enable. See components/shutdown-banner.html for content -->
 
@@ -413,7 +426,51 @@
         </p>
 
                  <hr class="releaseHr">
+ <h2 style="margin-top: 32px;" id="oct292026">October 29, 2026 (v 4.29.0)</h2>
 
+       
+       <h3 style="margin-top: 16px; color: #595959;">Changed/Fixed:</h3>
+
+           <ul class="usa-icon-list">
+          <li class="usa-icon-list__item" style="margin-top: 16px;">
+            <div class="usa-icon-list__icon text-ink">
+                <img src="../img/changed.svg" aria-hidden="true" alt="" style="background-color: #b3e2ff; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 36px; margin-left: 5px;"/>
+  
+              </div>
+                <div class="usa-icon-list__content">
+              <h5 class="usa-icon-list__title">
+                Updated Tribal TANF Feedback Report Guide 
+              </h5>
+              <p>The Tribal TANF Feedback Report Guide has been updated to provide the latest guidance on understanding and reviewing feedback reports. The downloadable guide now opens in a new tab, allowing you to reference it without leaving the Knowledge Center. View the updated guide in the <a href="feedback-reports.html#tribal">Tribal TANF Feedback Reports</a> section.</p>
+            </div>
+          </li>
+  <li class="usa-icon-list__item" style="margin-top: 16px;">
+            <div class="usa-icon-list__icon text-ink">
+                <img src="../img/changed.svg" aria-hidden="true" alt="" style="background-color: #b3e2ff; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 20px; margin-left: 5px;"/>
+  
+              </div>
+                <div class="usa-icon-list__content">
+              <h5 class="usa-icon-list__title">
+               FRA submissions for Fiscal Year 2025 are closing
+              </h5>
+              <p>November 30, 2026 is the last day to submit FRA data files for Fiscal Year 2025. Beginning December 1, 2026 TDP will no longer accept resubmissions for this reporting period. Previously submitted files will remain available for review.</p>
+            </div>
+          </li>
+          <!-- <li class="usa-icon-list__item" style="margin-top: 16px;">
+            <div class="usa-icon-list__icon text-ink">
+                <img src="../img/changed.svg" aria-hidden="true" alt="" style="background-color: #b3e2ff; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 20px; margin-left: 5px;"/>
+  
+              </div>
+                <div class="usa-icon-list__content">
+              <h5 class="usa-icon-list__title">
+                The Knowledge Center URL has been updated 
+              </h5>
+              <p> The TDP Knowledge Center has a new web address under the tanfdata.acf.hhs.gov domain. Existing links and bookmarks will automatically redirect to the new URL, so no action is required. This change only affects the web address. All Knowledge Center content and functionality remain the same.</p>
+            </div>
+          </li> -->
+          </ul>
+
+                 <hr class="releaseHr">
 
         <h2 style="margin-top: 32px;" id="sept252026">September 25, 2026 (v 4.25.0)</h2>
 
@@ -445,18 +502,7 @@
               <p>Improvements to how TDP handles FRA Exiter Report files help make uploads more reliable and reduce issues that could prevent files from being successfully processed.</p>
             </div>
           </li>
-          <!-- <li class="usa-icon-list__item" style="margin-top: 16px;">
-            <div class="usa-icon-list__icon text-ink">
-                <img src="../img/changed.svg" aria-hidden="true" alt="" style="background-color: #b3e2ff; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 20px; margin-left: 5px;"/>
-  
-              </div>
-                <div class="usa-icon-list__content">
-              <h5 class="usa-icon-list__title">
-                The Knowledge Center URL has been updated 
-              </h5>
-              <p> The TDP Knowledge Center has a new web address under the tanfdata.acf.hhs.gov domain. Existing links and bookmarks will automatically redirect to the new URL, so no action is required. This change only affects the web address. All Knowledge Center content and functionality remain the same.</p>
-            </div>
-          </li> -->
+         
           </ul>
 
          <hr class="releaseHr">
@@ -1677,11 +1723,10 @@
 
 </ul>
 
-<div style="min-height: 200px"></div>
+<div style="min-height: 500px"></div>
 
       </main>
-
-
+      
 
 
     </div>
@@ -1689,6 +1734,42 @@
 
 
   </div>
+
+   <div class="desktop:grid-col-3">
+        <aside class="on-this-page" aria-label="On this page">
+          <p class="on-this-page__title">On This Page:</p>
+          <div class="on-this-page__scroll-container">
+            <nav>
+              <ul id="on-this-page-list"></ul>
+            </nav>
+          </div>
+        </aside>
+      </div>
+      
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const sidebar = document.querySelector(".on-this-page");
+  if (!sidebar) return;
+
+  // Get the initial distance from the top of the document to the sidebar
+  const sidebarTopOffset = sidebar.offsetTop;
+  const stickyTriggerPoint = sidebarTopOffset - 80; // 80px buffer for your top nav
+
+  function handleScroll() {
+    if (window.scrollY >= stickyTriggerPoint) {
+      sidebar.classList.add("is-sticky");
+    } else {
+      sidebar.classList.remove("is-sticky");
+    }
+  }
+
+  // Listen to window scrolls
+  window.addEventListener("scroll", handleScroll, { passive: true });
+  
+  // Run once on load in case the page is refreshed midway down
+  handleScroll();
+});
+</script>
 
   <footer class="usa-footer usa-footer--slim">
   <div class="grid-container usa-footer__return-to-top">

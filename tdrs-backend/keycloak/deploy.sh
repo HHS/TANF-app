@@ -23,8 +23,8 @@ REQUIRED_ENV_VARS=(
     "AMS_CLIENT_SECRET"            # AMS OIDC client secret
 )
 OPTIONAL_ENV_VARS=(
-    "KEYCLOAK_REALM"               # Standard TDP realm name
-    "KEYCLOAK_TDP_ADMIN_REALM"     # Admin TDP realm name
+    "KC_TDP_DJANGO_REALM"           # Django app realm name
+    "KC_TDP_ADMIN_REALM"            # React admin app realm name
     "KEYCLOAK_CONFIG_IMPORT_ON_STARTUP" # Run config-cli from entrypoint after Keycloak readiness
     "LOGIN_GOV_ACR_VALUES"         # Login.gov identity assurance level
     "LOGIN_GOV_CLIENT_ID"           # Login.gov OIDC client ID

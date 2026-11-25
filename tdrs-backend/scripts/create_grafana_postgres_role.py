@@ -26,11 +26,6 @@ USER_VIEWS = [f"{section}{num}" for section in SECTION_TYPES for num in SECTION_
 
 ADMIN_VIEWS = [f"admin_{view}" for view in USER_VIEWS]
 
-# The views appended below are custom view(s) that OFA admins have created that they want included. Prod only.
-if hasattr(settings, "APP_NAME") and settings.APP_NAME == "tdp-backend-prod":
-    ADMIN_VIEWS.append("latest_tanf_exiters_view_prod")
-
-
 def run(*args):  # noqa: C901
     """Create a read-only user for the PLG database.
 
@@ -74,6 +69,8 @@ def run(*args):  # noqa: C901
                 tables.extend(USER_VIEWS)
             elif arg == "admin_views":
                 tables.extend(ADMIN_VIEWS)
+                if getattr(settings, "APP_NAME", None) == "tdp-backend-prod":
+                    tables.append("latest_tanf_exiters_view_prod")
             else:
                 tables.append(arg)
 
