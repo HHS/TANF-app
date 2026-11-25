@@ -1326,22 +1326,29 @@ describe('STTFeedbackReports', () => {
     })
 
     it('clears reports when STT selection changes', async () => {
-      get.mockResolvedValue({
-        data: {
-          results: [
-            {
-              id: 1,
-              year: 2025,
-              date_extracted_on: '2025-02-28',
-              created_at: '2025-03-05T10:41:00Z',
-              original_filename: 'test.zip',
-            },
-          ],
-        },
-        ok: true,
-        status: 200,
-        error: null,
-      })
+      get
+        .mockResolvedValueOnce({
+          data: {
+            results: [
+              {
+                id: 1,
+                year: 2025,
+                date_extracted_on: '2025-02-28',
+                created_at: '2025-03-05T10:41:00Z',
+                original_filename: 'test.zip',
+              },
+            ],
+          },
+          ok: true,
+          status: 200,
+          error: null,
+        })
+        .mockResolvedValueOnce({
+          data: { results: [] },
+          ok: true,
+          status: 200,
+          error: null,
+        })
 
       renderComponent(regionalStore)
 

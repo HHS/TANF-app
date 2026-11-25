@@ -1,6 +1,7 @@
 import React, { useEffect, useImperativeHandle, forwardRef } from 'react'
 import PropTypes from 'prop-types'
 import { fileInput, datePicker } from '@uswds/uswds/src/js/components'
+import { removeOldPreviews } from '../FileUpload/utils'
 import Button from '../Button'
 
 const INVALID_EXT_ERROR = 'Invalid file. Make sure to select a zip file.'
@@ -24,6 +25,50 @@ const convertToISODate = (value) => {
 }
 
 /**
+ * Formats typed date input as MM/DD/YYYY by auto-inserting slashes.
+ */
+export const formatTypedDate = (value, prevValue = '') => {
+  if (!value) return ''
+
+  const isDeleting = prevValue.length > value.length
+  const sanitized = value.replace(/[^\d/]/g, '')
+  if (!sanitized) return ''
+
+  if (!sanitized.includes('/')) {
+    const digits = sanitized.slice(0, 8)
+    if (digits.length === 2) {
+      return isDeleting ? digits : `${digits}/`
+    }
+    if (digits.length > 2 && digits.length <= 4) {
+      const formatted = `${digits.slice(0, 2)}/${digits.slice(2)}`
+      return digits.length === 4 && !isDeleting ? `${formatted}/` : formatted
+    }
+    if (digits.length > 4) {
+      return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`
+    }
+    return digits
+  }
+
+  const parts = sanitized.split('/').slice(0, 3)
+  const month = parts[0].slice(0, 2)
+
+  if (parts.length === 2) {
+    const day = parts[1]
+    if (day.length === 2 && !isDeleting) {
+      return `${month}/${day}/`
+    }
+    if (day.length > 2) {
+      return `${month}/${day.slice(0, 2)}/${day.slice(2, 6)}`
+    }
+    return `${month}/${day}`
+  }
+
+  const day = parts[1].slice(0, 2)
+  const year = parts[2].slice(0, 4)
+  return `${month}/${day}/${year}`
+}
+
+/**
  * FeedbackReportsUpload component handles the file upload section
  * for feedback reports
  */
@@ -37,6 +82,9 @@ const FeedbackReportsUpload = forwardRef(function FeedbackReportsUpload(
     inputRef,
     dateError,
     onDateBlur,
+    notes = '',
+    notesError,
+    onNotesChange,
   },
   ref
 ) {
@@ -48,6 +96,25 @@ const FeedbackReportsUpload = forwardRef(function FeedbackReportsUpload(
   useEffect(() => {
     fileInput.init()
     datePicker.init()
+
+    const externalInput = document.querySelector(
+      '.usa-date-picker__external-input'
+    )
+    if (!externalInput) return undefined
+
+    let prevValue = externalInput.value || ''
+    const handleExternalDateInput = (e) => {
+      const formatted = formatTypedDate(e.target.value, prevValue)
+      if (e.target.value !== formatted) {
+        e.target.value = formatted
+      }
+      prevValue = formatted
+    }
+
+    externalInput.addEventListener('input', handleExternalDateInput)
+    return () => {
+      externalInput.removeEventListener('input', handleExternalDateInput)
+    }
   }, [])
 
   /**
@@ -87,10 +154,31 @@ const FeedbackReportsUpload = forwardRef(function FeedbackReportsUpload(
     }
   }
 
+  /**
+   * Clears the USWDS file input and removes file previews
+   */
+  const clearFileInput = () => {
+    if (inputRef?.current) {
+      inputRef.current.value = ''
+      const dropTarget = inputRef.current.closest('.usa-file-input__target')
+      if (dropTarget) {
+        const instructions = dropTarget.querySelector(
+          '.usa-file-input__instructions'
+        )
+        if (instructions) {
+          instructions.classList.remove('display-block')
+        }
+        dropTarget.classList.remove('has-invalid-file')
+        removeOldPreviews(dropTarget, instructions)
+      }
+    }
+  }
+
   // Expose methods to parent component via ref
   useImperativeHandle(ref, () => ({
     getDateValue,
     clearDate,
+    clearFileInput,
   }))
 
   return (
@@ -165,6 +253,47 @@ const FeedbackReportsUpload = forwardRef(function FeedbackReportsUpload(
         </div>
       </div>
 
+      {/* Notes Input */}
+      <div
+        className={`usa-form-group margin-top-3 ${notesError ? 'usa-form-group--error' : ''}`}
+      >
+        <label
+          className="usa-label text-bold"
+          htmlFor="feedback-reports-notes"
+          id="notes-label"
+        >
+          Notes (optional)
+        </label>
+        <div className="feedback-reports-notes__header">
+          <div className="usa-hint margin-top-0" id="notes-hint">
+            STTs will see what you enter here.
+          </div>
+          <div
+            className="usa-character-count__message feedback-reports-notes__count"
+            aria-live="polite"
+            id="notes-count-message"
+          >
+            {`${notes.length}/2000`}
+          </div>
+        </div>
+        {notesError && (
+          <div className="usa-error-message" id="notes-error" role="alert">
+            {notesError}
+          </div>
+        )}
+        <textarea
+          className="usa-textarea feedback-reports-notes__textarea"
+          id="feedback-reports-notes"
+          name="notes"
+          aria-labelledby="notes-label"
+          aria-describedby={`notes-hint notes-count-message ${notesError ? 'notes-error' : ''}`.trim()}
+          value={notes}
+          onChange={onNotesChange}
+          maxLength={2000}
+          rows={4}
+        />
+      </div>
+
       <Button
         type="submit"
         onClick={onUpload}
@@ -186,6 +315,9 @@ FeedbackReportsUpload.propTypes = {
   inputRef: PropTypes.object.isRequired,
   dateError: PropTypes.string,
   onDateBlur: PropTypes.func,
+  notes: PropTypes.string,
+  notesError: PropTypes.string,
+  onNotesChange: PropTypes.func,
 }
 
 export default FeedbackReportsUpload

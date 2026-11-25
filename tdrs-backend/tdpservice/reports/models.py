@@ -65,6 +65,7 @@ class ReportSource(FileRecord):
     )
     num_reports_created = models.PositiveIntegerField(default=0)
     error_message = models.TextField(null=True, blank=True)
+    notes = models.TextField(blank=True, default="", max_length=2000)
 
     file = models.FileField(
         storage=DataFilesS3Storage,
@@ -81,7 +82,6 @@ def get_s3_upload_path(instance, filename):
         f"reports/{instance.year}/{date_str}/{instance.stt.id}/{instance.report_type}/",
         filename,
     )
-
 
 class ReportFile(FileRecord):
     """Represents a version of a report file."""
@@ -137,6 +137,11 @@ class ReportFile(FileRecord):
     file = models.FileField(
         storage=DataFilesS3Storage, upload_to=get_s3_upload_path, null=True, blank=True
     )
+
+    @property
+    def notes(self):
+        """Return the notes from the parent source if present, else empty string."""
+        return self.source.notes if self.source else ""
 
     @classmethod
     def create_new_version(self, data):

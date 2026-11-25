@@ -1,45 +1,54 @@
 import React, { useRef, useEffect } from 'react'
+import PropTypes from 'prop-types'
 import Button from '../Button'
 
-const Modal = ({ title, message, buttons = [], isVisible = false }) => {
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), textarea:not([disabled]), select:not([disabled]), input:not([type="hidden"]):not([disabled]), [tabindex]:not([tabindex="-1"])'
+
+const Modal = ({
+  title,
+  message,
+  children,
+  buttons = [],
+  isVisible = false,
+  onClose,
+  closeOnOutsideClick = false,
+}) => {
   const modalRef = useRef(null)
-  useEffect(
-    () =>
-      isVisible && modalRef && modalRef.current
-        ? modalRef.current.querySelector('h1').focus()
-        : undefined,
-    [isVisible, modalRef, buttons]
-  )
 
-  const onTabPressed = (shiftKey = false) => {
-    const selectedButton = document.activeElement
-    const selectedButtonKey = selectedButton
-      ? selectedButton.getAttribute('buttonkey')
-      : null
+  useEffect(() => {
+    if (!isVisible) return undefined
 
-    let nextButtonIndex = 0
+    const returnFocusElement = document.activeElement
+    modalRef.current.querySelector('h1').focus()
 
-    if (selectedButtonKey !== null) {
-      const selectedButtonIndex = buttons.findIndex(
-        (b) => b.key === selectedButtonKey
-      )
-
-      const btnIdxMinOne = Math.max(0, buttons.length - 1)
-      if (shiftKey) {
-        // go backward
-        const selectedIdxMinOne = Math.max(0, selectedButtonIndex - 1)
-        nextButtonIndex =
-          selectedButtonIndex >= 0 ? selectedIdxMinOne : btnIdxMinOne
-      } else {
-        nextButtonIndex =
-          selectedButtonIndex < btnIdxMinOne ? selectedButtonIndex + 1 : 0
-      }
+    return () => {
+      returnFocusElement?.focus?.()
     }
-    const nextButtonKey = buttons[nextButtonIndex].key
-    const nextButton = modalRef.current.querySelector(
-      `button[buttonkey="${nextButtonKey}"]`
+  }, [isVisible])
+
+  const onTabPressed = (shiftKey) => {
+    const focusableElements = Array.from(
+      modalRef.current.querySelectorAll(FOCUSABLE_SELECTOR)
     )
-    nextButton.focus()
+    if (focusableElements.length === 0) return
+
+    const currentIndex = focusableElements.indexOf(document.activeElement)
+    let nextIndex = 0
+
+    if (currentIndex !== -1) {
+      if (shiftKey) {
+        nextIndex =
+          (currentIndex - 1 + focusableElements.length) %
+          focusableElements.length
+      } else {
+        nextIndex = (currentIndex + 1) % focusableElements.length
+      }
+    } else if (shiftKey) {
+      nextIndex = focusableElements.length - 1
+    }
+
+    focusableElements[nextIndex].focus()
   }
 
   const onKeyDown = (e) => {
@@ -50,11 +59,22 @@ const Modal = ({ title, message, buttons = [], isVisible = false }) => {
         e.preventDefault()
         break
 
+      case 'Escape':
+        if (onClose) {
+          e.preventDefault()
+          onClose()
+        }
+        break
+
       default:
         break
     }
+  }
 
-    return
+  const onOverlayClick = (e) => {
+    if (closeOnOutsideClick && onClose && e.target === e.currentTarget) {
+      onClose()
+    }
   }
 
   return isVisible ? (
@@ -62,9 +82,17 @@ const Modal = ({ title, message, buttons = [], isVisible = false }) => {
       id="modal"
       className="modal display-block"
       onKeyDown={onKeyDown}
+      onClick={onOverlayClick}
       role="presentation"
     >
-      <div className="modal-content" ref={modalRef}>
+      <div
+        className="modal-content"
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modalHeader"
+        tabIndex="-1"
+      >
         <h1
           className="font-serif-xl margin-4 margin-bottom-0 text-normal"
           tabIndex="-1"
@@ -73,9 +101,19 @@ const Modal = ({ title, message, buttons = [], isVisible = false }) => {
         >
           {title}
         </h1>
-        <p id="modalDescription" className="margin-4 margin-top-1">
-          {message}
-        </p>
+        {Boolean(message) && (
+          <p id="modalDescription" className="margin-4 margin-top-1">
+            {message}
+          </p>
+        )}
+        {children && (
+          <div
+            id={!message ? 'modalDescription' : undefined}
+            className="margin-4 margin-top-1"
+          >
+            {children}
+          </div>
+        )}
         <div className="margin-x-4 margin-bottom-4">
           {buttons.map((b) => (
             <Button
@@ -92,6 +130,22 @@ const Modal = ({ title, message, buttons = [], isVisible = false }) => {
       </div>
     </div>
   ) : null
+}
+
+Modal.propTypes = {
+  title: PropTypes.string,
+  message: PropTypes.node,
+  children: PropTypes.node,
+  buttons: PropTypes.arrayOf(
+    PropTypes.shape({
+      key: PropTypes.string.isRequired,
+      text: PropTypes.string.isRequired,
+      onClick: PropTypes.func.isRequired,
+    })
+  ),
+  isVisible: PropTypes.bool,
+  onClose: PropTypes.func,
+  closeOnOutsideClick: PropTypes.bool,
 }
 
 export default Modal

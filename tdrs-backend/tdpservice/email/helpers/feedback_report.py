@@ -49,10 +49,13 @@ def send_feedback_report_available_email(report_file: ReportFile, recipients):
         report_type, ReportType.TANF_SSP.label
     )
     subject = f"{report_type_label} Feedback Report Available: {report_file.stt.name} - FY {report_file.year}"
+    notes = getattr(report_file, "notes", "") or ""
     text_message = (
         f"A new {report_type_label} feedback report is available for {report_file.stt.name} "
         f"for Fiscal Year {report_file.year} (reflects data submitted through {date_extracted_str})."
     )
+    if notes:
+        text_message += f"\n\nNotes:\n{notes}"
 
     context = {
         "stt_name": report_file.stt.name,
@@ -61,6 +64,7 @@ def send_feedback_report_available_email(report_file: ReportFile, recipients):
         "report_date": report_file.created_at.strftime("%m/%d/%Y"),
         "report_type": report_type,
         "report_type_label": report_type_label,
+        "notes": notes,
         "url": settings.FRONTEND_BASE_URL,
         "subject": subject,
     }
